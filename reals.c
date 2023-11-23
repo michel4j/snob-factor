@@ -132,13 +132,13 @@ void reals_define(typindx) int typindx;
 /*    -------------------  setvar -----------------------------  */
 void setvar(iv) int iv;
 {
-    avi = CurAttrs + iv;
-    vtp = avi->vtype;
+    CurAttr = CurAttrList + iv;
+    CurVType = CurAttr->vtype;
     pvi = pvars + iv;
     paux = (Paux *)pvi->paux;
-    svi = svars + iv;
-    vaux = (Vaux *)avi->vaux;
-    saux = (Saux *)svi->saux;
+    CurVar = CurVarList + iv;
+    vaux = (Vaux *)CurAttr->vaux;
+    saux = (Saux *)CurVar->saux;
     cvi = (Basic *)CurClass->basics[iv];
     evi = (Stats *)CurClass->stats[iv];
     if (CurDad)
@@ -198,9 +198,9 @@ void printdat(char *loc) {
 /*    ---------------------  setsizes  -----------------------   */
 void setsizes(iv) int iv;
 {
-    avi = CurAttrs + iv;
-    avi->basic_size = sizeof(Basic);
-    avi->stats_size = sizeof(Stats);
+    CurAttr = CurAttrList + iv;
+    CurAttr->basic_size = sizeof(Basic);
+    CurAttr->stats_size = sizeof(Stats);
     return;
 }
 
@@ -271,7 +271,7 @@ void scorevar(iv) int iv;
     double del, md2;
 
     setvar(iv);
-    if (avi->inactive)
+    if (CurAttr->inactive)
         return;
 
     if (saux->missing)
@@ -332,14 +332,14 @@ void derivvar(iv, fac) int iv, fac;
     if (saux->missing)
         return;
     /*    Do non-fac first  */
-    evi->cnt += cwt;
+    evi->cnt += CurCaseWeight;
     /*    For non-fac, rather than getting derivatives I just collect
         the sufficient statistics, sum of xn, sum of xn^2  */
-    evi->tx += cwt * saux->xn;
-    evi->txx += cwt * (saux->xn * saux->xn + saux->epssq);
+    evi->tx += CurCaseWeight * saux->xn;
+    evi->txx += CurCaseWeight * (saux->xn * saux->xn + saux->epssq);
     /*    Accumulate weighted item cost  */
-    evi->stcost += cwt * evi->parkstcost;
-    evi->ftcost += cwt * evi->parkftcost;
+    evi->stcost += CurCaseWeight * evi->parkstcost;
+    evi->ftcost += CurCaseWeight * evi->parkftcost;
 
     /*    Now for factor form  */
     if (!fac)
@@ -353,12 +353,12 @@ void derivvar(iv, fac) int iv, fac;
         var has been kept in stats.  */
     /*    Add to derivatives:  */
     var = evi->var;
-    evi->fsdld1 += cwt * (1.0 - frsds * var);
-    evi->fsdld2 += 2.0 * cwt;
-    evi->fmud1 += cwt * del * frsds;
-    evi->fmud2 += cwt * frsds;
-    evi->ldd1 += cwt * frsds * (del * cvv + cvi->ld * cvvsprd);
-    evi->ldd2 += cwt * frsds * (cvvsq + cvvsprd);
+    evi->fsdld1 += CurCaseWeight * (1.0 - frsds * var);
+    evi->fsdld2 += 2.0 * CurCaseWeight;
+    evi->fmud1 += CurCaseWeight * del * frsds;
+    evi->fmud2 += CurCaseWeight * frsds;
+    evi->ldd1 += CurCaseWeight * frsds * (del * cvv + cvi->ld * cvvsprd);
+    evi->ldd2 += CurCaseWeight * frsds * (cvvsq + cvvsprd);
 facdone:
     return;
 }
@@ -583,7 +583,7 @@ void vprint(ccl, iv) Class *ccl;
 int iv;
 {
 
-    setclass1(ccl);
+    set_class(ccl);
     setvar(iv);
 
     printf("V%3d  Cnt%6.1f  %s\n", iv + 1, evi->cnt,
@@ -725,7 +725,7 @@ void ncostvar(iv, vald) int iv, vald;
         cvi->nsdlsprd = cvi->ssdlsprd * evi->cnt;
         return;
     }
-    if (avi->inactive) {
+    if (CurAttr->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }

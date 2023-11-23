@@ -163,13 +163,13 @@ void vonm_define(int typindx) {
 
 /*    -------------------  setvar -----------------------------  */
 void setvar(int iv) {
-    avi = CurAttrs + iv;
-    vtp = avi->vtype;
+    CurAttr = CurAttrList + iv;
+    CurVType = CurAttr->vtype;
     pvi = pvars + iv;
     paux = (Paux *)pvi->paux;
-    svi = svars + iv;
-    vaux = (Vaux *)avi->vaux;
-    saux = (Saux *)svi->saux;
+    CurVar = CurVarList + iv;
+    vaux = (Vaux *)CurAttr->vaux;
+    saux = (Saux *)CurVar->saux;
     cvi = (Basic *)CurClass->basics[iv];
     evi = (Stats *)CurClass->stats[iv];
     if (CurDad)
@@ -223,9 +223,9 @@ int readdat(char *loc, int iv) {
     i = readdf(&(xn.xx), 1);
     if (!i) {
         /*    Get the unit code from Saux   */
-        unit = ((Saux *)(svi->saux))->unit;
+        unit = ((Saux *)(CurVar->saux))->unit;
         /*    Get quantization effect from Saux  */
-        epsfac = ((Saux *)(svi->saux))->epsfac;
+        epsfac = ((Saux *)(CurVar->saux))->epsfac;
         if (unit)
             xn.xx *= (pi / 180.0);
         xn.sinxx = epsfac * sin(xn.xx);
@@ -245,9 +245,9 @@ void printdat(char *loc) {
 
 /*    ---------------------  setsizes  -----------------------   */
 void setsizes(int iv) {
-    avi = CurAttrs + iv;
-    avi->basic_size = sizeof(Basic);
-    avi->stats_size = sizeof(Stats);
+    CurAttr = CurAttrList + iv;
+    CurAttr->basic_size = sizeof(Basic);
+    CurAttr->stats_size = sizeof(Stats);
     return;
 }
 
@@ -332,7 +332,7 @@ void scorevar(int iv) {
     double dwdt, dwdv, r2, dr2dw;
 
     setvar(iv);
-    if (avi->inactive)
+    if (CurAttr->inactive)
         return;
 
     if (saux->missing)
@@ -448,14 +448,14 @@ void derivvar(int iv, int fac) {
     if (saux->missing)
         return;
     /*    Do non-fac first  */
-    evi->cnt += cwt;
+    evi->cnt += CurCaseWeight;
     /*    For non-fac, rather than getting derivatives I just collect
         the sufficient statistics, sum of xn.sinxx, xn.cosxx  */
-    evi->tssin += cwt * saux->xn.sinxx;
-    evi->tscos += cwt * saux->xn.cosxx;
+    evi->tssin += CurCaseWeight * saux->xn.sinxx;
+    evi->tscos += CurCaseWeight * saux->xn.cosxx;
     /*    Accumulate weighted item cost  */
-    evi->stcost += cwt * evi->parkstcost;
-    evi->ftcost += cwt * evi->parkftcost;
+    evi->stcost += CurCaseWeight * evi->parkstcost;
+    evi->ftcost += CurCaseWeight * evi->parkftcost;
 
     /*    Now for factor form  */
     if (!fac)
@@ -473,16 +473,16 @@ void derivvar(int iv, int fac) {
         accumulation as tfcos, tssin  */
 
     coser = saux->xn.cosxx * cosw + saux->xn.sinxx * sinw;
-    evi->tfcos += cwt * coser;
+    evi->tfcos += CurCaseWeight * coser;
     siner = saux->xn.sinxx * cosw - saux->xn.cosxx * sinw;
-    evi->tfsin += cwt * siner;
+    evi->tfsin += CurCaseWeight * siner;
 
     /*    These should be sufficient to get derivs of mc1 wrt hx, hy,
         also derivs of mc2, but there remains mc3, and load. */
 
     /*    Cost mc3 = 0.5 * Fmu * tsprd * r2  */
     tsprd = cvvsq * cvi->ldsprd + cvi->ldsq * cvvsprd;
-    wtr2 = cwt * r2;
+    wtr2 = CurCaseWeight * r2;
     /*    Accumulate wsprd = tsprd * r2  */
     evi->fwd2 += tsprd * wtr2;
 
@@ -495,7 +495,7 @@ void derivvar(int iv, int fac) {
 
     /*    The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
     /*    and so to a deriv wrt ld of: (vv * wd1 * dwdt)  */
-    evi->ldd1 += cwt * cvv * wd1 * dwdt;
+    evi->ldd1 += CurCaseWeight * cvv * wd1 * dwdt;
 
     /*    There is also a deriv wrt ld via tsprd.  */
     evi->ldd1 += cvi->fmufish * wtr2 * cvi->ld * cvvsprd;
@@ -724,7 +724,7 @@ adjdone:
 void vprint(Class *ccl, int iv) {
     double mu, kappa;
 
-    setclass1(ccl);
+    set_class(ccl);
     setvar(iv);
 
     printf("V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out", evi->adj);
@@ -867,7 +867,7 @@ void ncostvar(iv, vald) int iv, vald;
         cvi->nhsprd = cvi->shsprd * evi->cnt;
         return;
     }
-    if (avi->inactive) {
+    if (CurAttr->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }

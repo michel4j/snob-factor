@@ -8,16 +8,16 @@ void set_population() {
     CurPopln = CurCtx.popln;
     CurSample = CurCtx.sample;
     CurVSet = CurCtx.vset;
-    nv = CurVSet->num_vars;
-    CurAttrs = CurVSet->attrs;
+    NumVars = CurVSet->num_vars;
+    CurAttrList = CurVSet->attrs;
     if (CurSample) {
-        nc = CurSample->num_cases;
-        svars = CurSample->var_info;
+        NumCases = CurSample->num_cases;
+        CurVarList = CurSample->var_info;
         CurRecLen = CurSample->record_length;
         CurRecords = CurSample->records;
     } else {
-        nc = 0;
-        svars = 0;
+        NumCases = 0;
+        CurVarList = 0;
         CurRecords = 0;
     }
     pvars = CurPopln->pvars;
@@ -71,22 +71,22 @@ int make_population(int fill){
     CurSample = CurCtx.sample;
     CurVSet = CurCtx.vset;
     if (CurSample)
-        nc = CurSample->num_cases;
+        NumCases = CurSample->num_cases;
     else
-        nc = 0;
+        NumCases = 0;
     if ((!CurSample) && fill) {
         printf("Makepop cannot fill because no sample defined\n");
         return (-1);
     }
     /*    Find vacant popln slot    */
     for (indx = 0; indx < MAX_POPULATIONS; indx++) {
-        if (poplns[indx] == 0)
+        if (Populations[indx] == 0)
             goto gotit;
     }
     goto nospace;
 
 gotit:
-    CurPopln = poplns[indx] = (Population *)malloc(sizeof(Population));
+    CurPopln = Populations[indx] = (Population *)malloc(sizeof(Population));
     if (!CurPopln)
         goto nospace;
     CurPopln->id = indx;
@@ -102,16 +102,16 @@ gotit:
     CurPopln->num_classes = 0; /*  Initially no class  */
 
     /*    Make vector of PVinsts    */
-    pvars = CurPopln->pvars = (PVinst *)gtsp(1, nv * sizeof(PVinst));
+    pvars = CurPopln->pvars = (PVinst *)gtsp(1, NumVars * sizeof(PVinst));
     if (!pvars)
         goto nospace;
     /*    Copy from variable-set AVinsts to PVinsts  */
-    for (i = 0; i < nv; i++) {
-        avi = CurAttrs + i;
-        vtp = avi->vtype;
+    for (i = 0; i < NumVars; i++) {
+        CurAttr = CurAttrList + i;
+        CurVType = CurAttr->vtype;
         pvi = pvars + i;
-        pvi->id = avi->id;
-        pvi->paux = (char *)gtsp(1, vtp->pop_aux_size);
+        pvi->id = CurAttr->id;
+        pvi->paux = (char *)gtsp(1, CurVType->pop_aux_size);
         if (!pvi->paux)
             goto nospace;
     }
@@ -127,9 +127,9 @@ gotit:
 
     if (fill) {
         strcpy(CurPopln->sample_name, CurSample->name);
-        CurPopln->sample_size = nc;
+        CurPopln->sample_size = NumCases;
     }
-    CurRoot = CurPopln->root = makeclass();
+    CurRoot = CurPopln->root = make_class();
     if (CurRoot < 0)
         goto nospace;
     cls = CurPopln->classes[CurRoot];
@@ -189,7 +189,7 @@ void make_subclasses(int kk){
     if (NoSubs)
         return;
     clp = CurPopln->classes[kk];
-    setclass1(clp);
+    set_class(clp);
     clsa = clsb = 0;
     /*    Check that class has no subs   */
     if (CurClass->num_sons > 0) {
@@ -206,14 +206,14 @@ void make_subclasses(int kk){
     Control = 0;
     adjust_class(clp, 0);
     Control = DControl;
-    kka = makeclass();
+    kka = make_class();
     if (kka < 0) {
         i = 2;
         goto finish;
     }
     clsa = CurPopln->classes[kka];
 
-    kkb = makeclass();
+    kkb = make_class();
     if (kkb < 0) {
         i = 2;
         goto finish;
@@ -222,7 +222,7 @@ void make_subclasses(int kk){
     clsa->serial = clp->serial + 1;
     clsb->serial = clp->serial + 2;
 
-    setclass1(clp);
+    set_class(clp);
 
     /*    Fix hierarchy links.  */
     CurClass->num_sons = 2;
@@ -233,10 +233,10 @@ void make_subclasses(int kk){
     clsb->sib_id = -1;
 
     /*    Copy kk's Basics into both subs  */
-    for (iv = 0; iv < nv; iv++) {
+    for (iv = 0; iv < NumVars; iv++) {
         cvi = CurClass->basics[iv];
         scvi = clsa->basics[iv];
-        nch = CurAttrs[iv].basic_size;
+        nch = CurAttrList[iv].basic_size;
         memcpy(scvi, cvi, nch);
         scvi = clsb->basics[iv];
         memcpy(scvi, cvi, nch);
@@ -273,7 +273,7 @@ void killpop(int px){
         prev = CurCtx.popln->id;
     else
         prev = -1;
-    CurPopln = poplns[px];
+    CurPopln = Populations[px];
     if (!CurPopln)
         return;
 
@@ -282,13 +282,13 @@ void killpop(int px){
     freesp(2);
     freesp(1);
     free(CurPopln);
-    poplns[px] = 0;
+    Populations[px] = 0;
     CurPopln = CurCtx.popln = 0;
     if (px == prev)
         return;
     if (prev < 0)
         return;
-    CurCtx.popln = poplns[prev];
+    CurCtx.popln = Populations[prev];
     set_population();
     return;
 }
@@ -318,7 +318,7 @@ int copypop(int p1, int fill, char *newname){
     nomcnt = 0.0;
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     indx = -1;
-    fpop = poplns[p1];
+    fpop = Populations[p1];
     if (!fpop) {
         printf("No popln index %d\n", p1);
         indx = -106;
@@ -330,9 +330,9 @@ int copypop(int p1, int fill, char *newname){
         indx = -101;
         goto finish;
     }
-    CurVSet = CurCtx.vset = vsets[kk];
+    CurVSet = CurCtx.vset = VSets[kk];
     sindx = -1;
-    nc = 0;
+    NumCases = 0;
     if (!fill)
         goto sampfound;
     if (fpop->sample_size) {
@@ -352,11 +352,11 @@ int copypop(int p1, int fill, char *newname){
 
 sampfound:
     if (sindx >= 0) {
-        CurSample = CurCtx.sample = samples[sindx];
-        nc = CurSample->num_cases;
+        CurSample = CurCtx.sample = Samples[sindx];
+        NumCases = CurSample->num_cases;
     } else {
         CurSample = CurCtx.sample = 0;
-        fill = nc = 0;
+        fill = NumCases = 0;
     }
 
     /*    See if destn popln already exists  */
@@ -377,7 +377,7 @@ sampfound:
         goto finish;
     }
 
-    CurCtx.popln = poplns[indx];
+    CurCtx.popln = Populations[indx];
     set_population();
     if (CurSample) {
         strcpy(CurPopln->sample_name, CurSample->name);
@@ -403,7 +403,7 @@ newclass:
     if (fcls->dad_id < 0)
         kk = CurPopln->root;
     else
-        kk = makeclass();
+        kk = make_class();
     if (kk < 0) {
         indx = -105;
         goto finish;
@@ -418,18 +418,18 @@ newclass:
         hiser = cls->serial;
 
     /*    Copy Basics. the structures should have been made.  */
-    for (iv = 0; iv < nv; iv++) {
+    for (iv = 0; iv < NumVars; iv++) {
         fcvi = fcls->basics[iv];
         cvi = cls->basics[iv];
-        nch = CurAttrs[iv].basic_size;
+        nch = CurAttrList[iv].basic_size;
         memcpy(cvi, fcvi, nch);
     }
 
     /*    Copy stats  */
-    for (iv = 0; iv < nv; iv++) {
+    for (iv = 0; iv < NumVars; iv++) {
         fevi = fcls->stats[iv];
         evi = cls->stats[iv];
-        nch = CurAttrs[iv].stats_size;
+        nch = CurAttrList[iv].stats_size;
         memcpy(evi, fevi, nch);
     }
     if (fill == 0)
@@ -439,12 +439,12 @@ newclass:
     if (fpop->sample_size == 0)
         goto fakeit;
     /*    Copy scores  */
-    for (n = 0; n < nc; n++)
+    for (n = 0; n < NumCases; n++)
         cls->vv[n] = fcls->vv[n];
     goto classdone;
 
 fakeit: /*  initialize scorevectors  */
-    for (n = 0; n < nc; n++) {
+    for (n = 0; n < NumCases; n++) {
         CurRecord = CurRecords + n * CurRecLen;
         cls->vv[n] = 0;
     }
@@ -613,7 +613,7 @@ void trackbest(int verify) {
         printf("Cannot make BST_ model\n");
         return;
     }
-    bstpop = poplns[bstid];
+    bstpop = Populations[bstid];
     bstroot = bstpop->root;
     bstcst = bstpop->classes[bstroot]->best_cost;
     if (CurPopln->classes[CurRoot]->best_cost >= bstcst)
@@ -654,7 +654,7 @@ int pname2id(char *nam)
             return (-1);
     }
     for (i = 0; i < MAX_POPULATIONS; i++) {
-        if (poplns[i] && (!strcmp(lname, poplns[i]->name)))
+        if (Populations[i] && (!strcmp(lname, Populations[i]->name)))
             return (i);
     }
     return (-1);
@@ -696,13 +696,13 @@ int savepop(int p1, int fill, char *newname){
 
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     fl = 0;
-    if (!poplns[p1]) {
+    if (!Populations[p1]) {
         printf("No popln index %d\n", p1);
         leng = -106;
         goto finish;
     }
     /*    Begin by copying the popln to a clean TrialPop   */
-    CurPopln = poplns[p1];
+    CurPopln = Populations[p1];
     if (!strcmp(CurPopln->name, "TrialPop")) {
         printf("Cannot save TrialPop\n");
         leng = -105;
@@ -734,9 +734,9 @@ namefixed:
     /*    We can now be sure that, in TrialPop, all subs are gone and classes
         have id-s from 0 up, starting with root  */
     /*    switch context to TrialPop  */
-    CurCtx.popln = poplns[i];
+    CurCtx.popln = Populations[i];
     set_population();
-    CurVSet = CurCtx.vset = vsets[vname2id(CurPopln->vst_name)];
+    CurVSet = CurCtx.vset = VSets[vname2id(CurPopln->vst_name)];
     nc = CurPopln->sample_size;
     if (!fill)
         nc = 0;
@@ -780,17 +780,17 @@ newclass:
     leng += nch;
 
     /*    Copy Basics..  */
-    for (iv = 0; iv < nv; iv++) {
+    for (iv = 0; iv < NumVars; iv++) {
         cvi = cls->basics[iv];
-        nch = CurAttrs[iv].basic_size;
+        nch = CurAttrList[iv].basic_size;
         recordit(fl, cvi, nch);
         leng += nch;
     }
 
     /*    Copy stats  */
-    for (iv = 0; iv < nv; iv++) {
+    for (iv = 0; iv < NumVars; iv++) {
         evi = cls->stats[iv];
-        nch = CurAttrs[iv].stats_size;
+        nch = CurAttrList[iv].stats_size;
         recordit(fl, evi, nch);
         leng += nch;
     }
@@ -846,8 +846,8 @@ int restorepop(char *nam){
         printf("Model needs variableset %s\n", name);
         goto error;
     }
-    CurVSet = CurCtx.vset = vsets[j];
-    nv = CurVSet->num_vars;
+    CurVSet = CurCtx.vset = VSets[j];
+    NumVars = CurVSet->num_vars;
     fscanf(fl, "%s", name);          /* Reading sample name */
     fscanf(fl, "%d%d", &fncl, &fnc); /* num of classes, cases */
                                      /*    Advance to real data */
@@ -858,32 +858,32 @@ int restorepop(char *nam){
         j = sname2id(name, 1);
         if (j < 0) {
             printf("Sample %s unknown.\n", name);
-            nc = 0;
+            NumCases = 0;
             CurSample = CurCtx.sample = 0;
         } else {
-            CurSample = CurCtx.sample = samples[j];
+            CurSample = CurCtx.sample = Samples[j];
             if (CurSample->num_cases != fnc) {
-                printf("Size conflict Model%9d vs. Sample%9d\n", fnc, nc);
+                printf("Size conflict Model%9d vs. Sample%9d\n", fnc, NumCases);
                 goto error;
             }
-            nc = fnc;
+            NumCases = fnc;
         }
     } else { /* file model unattached.  */
         CurSample = CurCtx.sample = 0;
-        nc = 0;
+        NumCases = 0;
     }
 
     /*    Build input model in TrialPop  */
     j = pname2id("TrialPop");
     if (j >= 0)
         killpop(j);
-    indx = make_population(nc);
+    indx = make_population(NumCases);
     if (indx < 0)
         goto error;
-    CurPopln = CurCtx.popln = poplns[indx];
-    CurPopln->sample_size = nc;
+    CurPopln = CurCtx.popln = Populations[indx];
+    CurPopln->sample_size = NumCases;
     strcpy(CurPopln->name, "TrialPop");
-    if (!nc)
+    if (!NumCases)
         strcpy(CurPopln->sample_name, "??");
     set_population();
     CurPopln->num_leaves = 0;
@@ -892,7 +892,7 @@ int restorepop(char *nam){
     goto haveclass;
 
 newclass:
-    j = makeclass();
+    j = make_class();
     if (j < 0) {
         printf("RestoreClass fails in Makeclass\n");
         goto error;
@@ -905,18 +905,18 @@ haveclass:
         *jp = fgetc(fl);
         jp++;
     }
-    for (iv = 0; iv < nv; iv++) {
+    for (iv = 0; iv < NumVars; iv++) {
         cvi = cls->basics[iv];
-        nch = CurAttrs[iv].basic_size;
+        nch = CurAttrList[iv].basic_size;
         jp = (char *)cvi;
         for (k = 0; k < nch; k++) {
             *jp = fgetc(fl);
             jp++;
         }
     }
-    for (iv = 0; iv < nv; iv++) {
+    for (iv = 0; iv < NumVars; iv++) {
         evi = cls->stats[iv];
-        nch = CurAttrs[iv].stats_size;
+        nch = CurAttrList[iv].stats_size;
         jp = (char *)evi;
         for (k = 0; k < nch; k++) {
             *jp = fgetc(fl);
@@ -929,13 +929,13 @@ haveclass:
         goto classdone;
 
     /*    Read scores but throw away if nc = 0  */
-    if (!nc) {
+    if (!NumCases) {
         nch = fnc * sizeof(short);
         for (k = 0; k < nch; k++)
             fgetc(fl);
         goto classdone;
     }
-    nch = nc * sizeof(short);
+    nch = NumCases * sizeof(short);
     jp = (char *)(cls->vv);
     for (k = 0; k < nch; k++) {
         *jp = fgetc(fl);
@@ -981,7 +981,7 @@ int loadpop(int pp){
     fpop = 0;
     if (pp < 0)
         goto error;
-    fpop = CurPopln = poplns[pp];
+    fpop = CurPopln = Populations[pp];
     if (!CurPopln)
         goto error;
     /*    Save the 'nc' of the popln to be loaded  */
@@ -992,7 +992,7 @@ int loadpop(int pp){
         printf("Load cannot find variable set\n");
         goto error;
     }
-    CurVSet = CurCtx.vset = vsets[j];
+    CurVSet = CurCtx.vset = VSets[j];
     /*    Check Vset  */
     if (strcmp(CurVSet->name, oldctx.sample->vset_name)) {
         printf("Picked popln has incompatible VariableSet\n");
@@ -1009,7 +1009,7 @@ int loadpop(int pp){
     windx = copypop(pp, 1, "work");
     if (windx < 0)
         goto error;
-    if (poplns[pp]->sample_size)
+    if (Populations[pp]->sample_size)
         goto finish;
 
     /*    The popln was copied as if unattached, so scores, weights must be
@@ -1061,7 +1061,7 @@ void correlpops(int xid){
 
     set_population();
     wpop = CurPopln;
-    xpop = poplns[xid];
+    xpop = Populations[xid];
     if (!xpop) {
         printf("No such model\n");
         goto finish;
@@ -1074,7 +1074,7 @@ void correlpops(int xid){
         printf("Model not for same sample.\n");
         goto finish;
     }
-    if (xpop->sample_size != nc) {
+    if (xpop->sample_size != NumCases) {
         printf("Models have unequal numbers of cases.\n");
         goto finish;
     }
@@ -1111,7 +1111,7 @@ void correlpops(int xid){
 
     /*    Now accumulate cross products of weights for each active item */
     SeeAll = 2;
-    for (n = 0; n < nc; n++) {
+    for (n = 0; n < NumCases; n++) {
         CurCtx.popln = wpop;
         set_population();
         CurRecord = CurRecords + n * CurRecLen;

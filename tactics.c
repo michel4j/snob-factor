@@ -71,10 +71,10 @@ double insdad(int ser1, int ser2, int *dadid)
 
     origcost = CurRootClass->best_par_cost;
     *dadid = -1;
-    k1 = s2id(ser1);
+    k1 = serial_to_id(ser1);
     if (k1 < 0)
         goto nullit;
-    k2 = s2id(ser2);
+    k2 = serial_to_id(ser2);
     if (k2 < 0)
         goto nullit;
     cls1 = CurPopln->classes[k1];
@@ -107,7 +107,7 @@ double insdad(int ser1, int ser2, int *dadid)
 
 configok:
     odad = CurPopln->classes[oldid];
-    newid = makeclass();
+    newid = make_class();
     if (newid < 0)
         goto nullit;
     ndad = CurPopln->classes[newid]; /*  The new dad  */
@@ -119,18 +119,18 @@ configok:
     ndad->age = MinFacAge - 3;
     ndad->hold_type = 0;
     /*      Copy Basics. the structures should have been made.  */
-    for (iv = 0; iv < nv; iv++) {
+    for (iv = 0; iv < NumVars; iv++) {
         fcvi = odad->basics[iv];
         cvi = ndad->basics[iv];
-        nch = CurAttrs[iv].basic_size;
+        nch = CurAttrList[iv].basic_size;
         memcpy(cvi, fcvi, nch);
     }
 
     /*      Copy stats  */
-    for (iv = 0; iv < nv; iv++) {
+    for (iv = 0; iv < NumVars; iv++) {
         fevi = odad->stats[iv];
         evi = ndad->stats[iv];
-        nch = CurAttrs[iv].stats_size;
+        nch = CurAttrList[iv].stats_size;
         memcpy(evi, fevi, nch);
     }
 
@@ -222,7 +222,7 @@ inner:
     newp = copypop(CurPopln->id, 0, "TrialPop");
     if (newp < 0)
         goto popfails;
-    CurCtx.popln = poplns[newp];
+    CurCtx.popln = Populations[newp];
     set_population();
     res = insdad(ser1, ser2, &newid);
     if (newid < 0) {
@@ -257,7 +257,7 @@ alldone:
     newp = copypop(CurPopln->id, 1, "TrialPop");
     if (newp < 0)
         goto popfails;
-    CurCtx.popln = poplns[newp];
+    CurCtx.popln = Populations[newp];
     set_population();
     flp();
     printf("TRYING INSERT %6d,%6d\n", bser1 >> 2, bser2 >> 2);
@@ -330,8 +330,8 @@ double deldad(int ser)
     double drop, origcost, newcost;
 
     drop = -1.0e20;
-    kk = s2id(ser);
-    setclass1(CurPopln->classes[kk]);
+    kk = serial_to_id(ser);
+    set_class(CurPopln->classes[kk]);
     if (CurClass->type != Dad)
         goto finish;
     if (kk == CurRoot)
@@ -394,7 +394,7 @@ loop:
     newp = copypop(CurPopln->id, 0, "TrialPop");
     if (newp < 0)
         goto popfails;
-    CurCtx.popln = poplns[newp];
+    CurCtx.popln = Populations[newp];
     set_population();
     res = deldad(ser);
     if (res < -1000000.0) {
@@ -419,7 +419,7 @@ i1done:
     newp = copypop(CurPopln->id, 1, "TrialPop");
     if (newp < 0)
         goto popfails;
-    CurCtx.popln = poplns[newp];
+    CurCtx.popln = Populations[newp];
     set_population();
     flp();
     printf("TRYING DELETE %6d\n", bser >> 2);
@@ -507,7 +507,7 @@ finish:
 
 kicked:
     nn = pname2id("work");
-    CurCtx.popln = poplns[nn];
+    CurCtx.popln = Populations[nn];
     set_population();
     printf("BinHier ends prematurely\n");
     goto finish;
@@ -568,7 +568,7 @@ again:
     }
     /*    Split sons[ib]  */
     dad = Sons[ib];
-    if (splitleaf(dad->id))
+    if (split_leaf(dad->id))
         goto windup;
     printf("Splitting %s size%8.1f\n", sers(dad), dad->weights_sum);
     dad->hold_type = Forever;
@@ -597,10 +597,10 @@ double moveclass(int ser1, int ser2)
     double origcost, newcost, drop;
 
     origcost = CurRootClass->best_par_cost;
-    k1 = s2id(ser1);
+    k1 = serial_to_id(ser1);
     if (k1 < 0)
         goto nullit;
-    k2 = s2id(ser2);
+    k2 = serial_to_id(ser2);
     if (k2 < 0)
         goto nullit;
     cls1 = CurPopln->classes[k1];
@@ -732,7 +732,7 @@ inner:
     newp = copypop(CurPopln->id, 0, "TrialPop");
     if (newp < 0)
         goto popfails;
-    CurCtx.popln = poplns[newp];
+    CurCtx.popln = Populations[newp];
     set_population();
     res = moveclass(ser1, ser2);
     if (res > bestdrop) {
@@ -764,7 +764,7 @@ alldone:
     newp = copypop(CurPopln->id, 1, "TrialPop");
     if (newp < 0)
         goto popfails;
-    CurCtx.popln = poplns[newp];
+    CurCtx.popln = Populations[newp];
     set_population();
     flp();
     printf("TRYING MOVE CLASS %6d TO DAD %6d\n", bser1 >> 2, bser2 >> 2);

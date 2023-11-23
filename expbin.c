@@ -101,28 +101,28 @@ when installing a new type of variable. It is also necessary to change the
 void expbinary_define(typindx) int typindx;
 /*    typindx is the index in types[] of this type   */
 {
-    vtp = Types + typindx;
-    vtp->id = typindx;
+    CurVType = Types + typindx;
+    CurVType->id = typindx;
     /*     Set type name as string up to 59 chars  */
-    vtp->name = "ExpBinary";
-    vtp->data_size = sizeof(Datum);
-    vtp->attr_aux_size = sizeof(Vaux);
-    vtp->pop_aux_size = sizeof(Paux);
-    vtp->smpl_aux_size = sizeof(Saux);
-    vtp->readvaux = &readvaux;
-    vtp->readsaux = &readsaux;
-    vtp->readdat = &readdat;
-    vtp->printdat = &printdat;
-    vtp->setsizes = &setsizes;
-    vtp->setbestparam = &setbestparam;
-    vtp->clearstats = &clearstats;
-    vtp->scorevar = &scorevar;
-    vtp->costvar = &costvar;
-    vtp->derivvar = &derivvar;
-    vtp->ncostvar = &ncostvar;
-    vtp->adjust = &adjust;
-    vtp->vprint = &vprint;
-    vtp->setvar = &setvar;
+    CurVType->name = "ExpBinary";
+    CurVType->data_size = sizeof(Datum);
+    CurVType->attr_aux_size = sizeof(Vaux);
+    CurVType->pop_aux_size = sizeof(Paux);
+    CurVType->smpl_aux_size = sizeof(Saux);
+    CurVType->readvaux = &readvaux;
+    CurVType->readsaux = &readsaux;
+    CurVType->readdat = &readdat;
+    CurVType->printdat = &printdat;
+    CurVType->setsizes = &setsizes;
+    CurVType->setbestparam = &setbestparam;
+    CurVType->clearstats = &clearstats;
+    CurVType->scorevar = &scorevar;
+    CurVType->costvar = &costvar;
+    CurVType->derivvar = &derivvar;
+    CurVType->ncostvar = &ncostvar;
+    CurVType->adjust = &adjust;
+    CurVType->vprint = &vprint;
+    CurVType->setvar = &setvar;
 
     return;
 }
@@ -130,13 +130,13 @@ void expbinary_define(typindx) int typindx;
 /*    ----------------------- setvar --------------------------  */
 void setvar(iv) int iv;
 {
-    avi = CurAttrs + iv;
-    vtp = avi->vtype;
+    CurAttr = CurAttrList + iv;
+    CurVType = CurAttr->vtype;
     pvi = pvars + iv;
     paux = (Paux *)pvi->paux;
-    svi = svars + iv;
-    vaux = (Vaux *)avi->vaux;
-    saux = (Saux *)svi->saux;
+    CurVar = CurVarList + iv;
+    vaux = (Vaux *)CurAttr->vaux;
+    saux = (Saux *)CurVar->saux;
     cvi = (Basic *)CurClass->basics[iv];
     evi = (Stats *)CurClass->stats[iv];
     return;
@@ -195,11 +195,11 @@ blocks for variable, and place in AVinst basicsize, statssize.
 void setsizes( int iv)
 {
 
-    avi = CurAttrs + iv;
+    CurAttr = CurAttrList + iv;
 
     /*    Set sizes of CVinst (basic) and EVinst (stats) in AVinst  */
-    avi->basic_size = sizeof(Basic);
-    avi->stats_size = sizeof(Stats);
+    CurAttr->basic_size = sizeof(Basic);
+    CurAttr->stats_size = sizeof(Stats);
     return;
 }
 
@@ -270,7 +270,7 @@ void scorevar(int iv)
 {
     double cc, pr0, pr1, ff, ft, dbyv, hdffbydv, hdftbydv;
     setvar(iv);
-    if (avi->inactive)
+    if (CurAttr->inactive)
         return;
     if (saux->missing)
         return;
@@ -390,23 +390,23 @@ void derivvar(int iv, int fac)
     if (saux->missing)
         return;
     /*    Do no-fac first  */
-    evi->cnt += cwt;
+    evi->cnt += CurCaseWeight;
     /*    For non-fac, just accum weight of 1s in cnt1  */
     if (saux->xn == 1)
-        evi->cnt1 += cwt;
+        evi->cnt1 += CurCaseWeight;
     /*    Accum. weighted item cost  */
-    evi->stcost += cwt * evi->scst[saux->xn];
-    evi->ftcost += cwt * evi->parkftcost;
+    evi->stcost += CurCaseWeight * evi->scst[saux->xn];
+    evi->ftcost += CurCaseWeight * evi->parkftcost;
 
     /*    Now for factor form  */
     if (!fac)
         goto facdone;
-    evi->vsq += cwt * cvvsq;
-    evi->fapd1 += cwt * evi->dbya;
-    evi->fbpd1 += cwt * evi->dbyb;
+    evi->vsq += CurCaseWeight * cvvsq;
+    evi->fapd1 += CurCaseWeight * evi->dbya;
+    evi->fbpd1 += CurCaseWeight * evi->dbyb;
     /*    Accum actual 2nd derivs  */
-    evi->apd2 += cwt * evi->parkft;
-    evi->bpd2 += cwt * evi->parkft * cvvsq;
+    evi->apd2 += CurCaseWeight * evi->parkft;
+    evi->bpd2 += CurCaseWeight * evi->parkft * cvvsq;
 facdone:
     return;
 }
@@ -570,7 +570,7 @@ adjdone:
 /*    ------------------------  vprint  -----------------------   */
 void vprint(Class* ccl, int iv){
 
-    setclass1(ccl);
+    set_class(ccl);
     setvar(iv);
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out", evi->adj);
@@ -600,7 +600,7 @@ void ncostvar(int iv) {
     int n, ison, nson, nints;
 
     setvar(iv);
-    if (avi->inactive) {
+    if (CurAttr->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }

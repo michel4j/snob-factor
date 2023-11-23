@@ -188,7 +188,7 @@ typedef struct ClassStruct {
     double dad_cost, nofac_cost, fac_cost; /* Class costs as dad, sansfac, confac */
     double best_par_cost;
     double dad_par_cost, nofac_par_cost, fac_par_cost; /* Parameter costs in above */
-    double cbtcost;
+    double best_case_cost;
     double best_fac_cost; /*  Used to track best cfcost to detect improvement*/
     double weights_sum;   /* sum of weights of members  */
     double sum_score_sq;  /* Sum of squared scores */
@@ -196,7 +196,7 @@ typedef struct ClassStruct {
     double avvv;          /* average vv  */
     char type;            /* 0 = ?, 1 = root, 2 = dad, 3 = leaf, 4 = sub */
     char hold_type;
-    char use;             /* Current use: 1=sansfac, 2=confac */
+    char use; /* Current use: 1=sansfac, 2=confac */
     char hold_use;
     int boost_count;            /*  Monitors need to boost vsq  */
     int score_change_count;     /*  Counts significant score changes  */
@@ -321,8 +321,8 @@ void correlpops(int xid);
 /*        end poplns.c        */
 
 /*    In CLASSES.c    */
-int s2id(int ss);
-int makeclass();
+int serial_to_id(int ss);
+int make_class();
 void cleartcosts(Class *ccl);
 void setbestparall(Class *ccl);
 void scorevarall(Class *ccl);
@@ -331,12 +331,12 @@ void derivvarall(Class *ccl);
 void ncostvarall(Class *ccl, int valid);
 void adjust_class(Class *ccl, int dod);
 void killsons(int kk);
-void printclass(int kk, int full);
-void setclass1(Class *ccl);
-void setclass2(Class *ccl);
-int splitleaf(int kk);
+void print_class(int kk, int full);
+void set_class(Class *ccl);
+void set_class_with_scores(Class *ccl);
+int split_leaf(int kk);
 void deleteallclasses();
-int nextleaf(Population *cpop, int iss);
+int next_leaf(Population *cpop, int iss);
 /*        end classes.c        */
 
 /*    In DOALL.c    */
@@ -417,12 +417,11 @@ EXT double FacLog[MAX_CLASSES + 1];
 
 /*    general:    */
 EXT int Ntypes;     /* The number of different attribute types */
-EXT Vtype *Types;   /* a vector of Ntypes type definitions,
-           created in dotypes */
+EXT Vtype *Types;   /* a vector of Ntypes type definitions, created in dotypes */
 EXT Context CurCtx; /* current context */
-EXT Vset *vsets[MAX_VSETS];
-EXT Sample *samples[MAX_SAMPLES];
-EXT Population *poplns[MAX_POPULATIONS];
+EXT Vset *VSets[MAX_VSETS];
+EXT Sample *Samples[MAX_SAMPLES];
+EXT Population *Populations[MAX_POPULATIONS];
 EXT int NSamples;
 
 /*    re inputs for main  */
@@ -451,22 +450,22 @@ EXT int DFix, Fix;
 EXT Vset *CurVSet;
 EXT Sample *CurSample;
 EXT Population *CurPopln;
-EXT AVinst *avi;
+EXT AVinst *CurAttr;
 EXT PVinst *pvi;
-EXT SVinst *svi;
-EXT Vtype *vtp;
-EXT int nc; /* Number of cases */
-EXT int nv; /* Number of variables */
+EXT SVinst *CurVar;
+EXT Vtype *CurVType;
+EXT int NumCases; /* Number of cases */
+EXT int NumVars;  /* Number of variables */
 EXT int CurRoot;
 EXT Class *CurRootClass;
-EXT AVinst *CurAttrs;
+EXT AVinst *CurAttrList;
 EXT PVinst *pvars;
-EXT SVinst *svars;
+EXT SVinst *CurVarList;
 
 /*    re Classes  */
 EXT Class *CurClass, *CurDad;
 EXT short *vv;
-EXT double cwt; /*  weight of case in class  */
+EXT double CurCaseWeight; /*  weight of case in class  */
 EXT double cvv, cvvsq, cvvsprd;
 EXT double ctv, ctvsq, ctvd1, ctvd1sq, ctvd1cu, ctvsprd, ctd1d2;
 EXT int icvv; /*  integer form of cvv*4096 */

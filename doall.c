@@ -626,14 +626,14 @@ void docase(int cse, int all, int derivs) {
 
     /*    Unpack data into 'xn' fields of the Saux for each variable. The
     'xn' field is at the beginning of the Saux. Also the "missing" flag. */
-    for (i = 0; i < nv; i++) {
-        CurField = CurRecord + svars[i].offset;
-        psaux = (PSaux *)svars[i].saux;
+    for (i = 0; i < NumVars; i++) {
+        CurField = CurRecord + CurVarList[i].offset;
+        psaux = (PSaux *)CurVarList[i].saux;
         if (*CurField == 1) {
             psaux->missing = 1;
         } else {
             psaux->missing = 0;
-            memcpy(&(psaux->xn), CurField + 1, CurAttrs[i].vtype->data_size);
+            memcpy(&(psaux->xn), CurField + 1, CurAttrList[i].vtype->data_size);
         }
     }
 
@@ -641,7 +641,7 @@ void docase(int cse, int all, int derivs) {
 
     clc = 0;
     while (clc < NumSon) {
-        setclass2(Sons[clc]);
+        set_class_with_scores(Sons[clc]);
         if ((!SeeAll) && (icvv & 1)) { /* Ignore this and decendants */
             clc = NextIc[clc];
             continue;

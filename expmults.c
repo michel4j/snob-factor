@@ -151,28 +151,28 @@ void expmults_define(typindx) int typindx;
     int ig;
     double xg;
 
-    vtp = Types + typindx;
-    vtp->id = typindx;
+    CurVType = Types + typindx;
+    CurVType->id = typindx;
     /*     Set type name as string up to 59 chars  */
-    vtp->name = "ExpMultiState";
-    vtp->data_size = sizeof(Datum);
-    vtp->attr_aux_size = sizeof(Vaux);
-    vtp->pop_aux_size = sizeof(Paux);
-    vtp->smpl_aux_size = sizeof(Saux);
-    vtp->readvaux = &readvaux;
-    vtp->readsaux = &readsaux;
-    vtp->readdat = &readdat;
-    vtp->printdat = &printdat;
-    vtp->setsizes = &setsizes;
-    vtp->setbestparam = &setbestparam;
-    vtp->clearstats = &clearstats;
-    vtp->scorevar = &scorevar;
-    vtp->costvar = &costvar;
-    vtp->derivvar = &derivvar;
-    vtp->ncostvar = &ncostvar;
-    vtp->adjust = &adjust;
-    vtp->vprint = &vprint;
-    vtp->setvar = &setvar;
+    CurVType->name = "ExpMultiState";
+    CurVType->data_size = sizeof(Datum);
+    CurVType->attr_aux_size = sizeof(Vaux);
+    CurVType->pop_aux_size = sizeof(Paux);
+    CurVType->smpl_aux_size = sizeof(Saux);
+    CurVType->readvaux = &readvaux;
+    CurVType->readsaux = &readsaux;
+    CurVType->readdat = &readdat;
+    CurVType->printdat = &printdat;
+    CurVType->setsizes = &setsizes;
+    CurVType->setbestparam = &setbestparam;
+    CurVType->clearstats = &clearstats;
+    CurVType->scorevar = &scorevar;
+    CurVType->costvar = &costvar;
+    CurVType->derivvar = &derivvar;
+    CurVType->ncostvar = &ncostvar;
+    CurVType->adjust = &adjust;
+    CurVType->vprint = &vprint;
+    CurVType->setvar = &setvar;
 
     /*    Make table of exp (-0.5 * x * x) in gaustab[]
         Entry for x = 0 is at gaustab[1]  */
@@ -187,13 +187,13 @@ void expmults_define(typindx) int typindx;
 /*    ----------------------- setvar --------------------------  */
 void setvar(iv) int iv;
 {
-    avi = CurAttrs + iv;
-    vtp = avi->vtype;
+    CurAttr = CurAttrList + iv;
+    CurVType = CurAttr->vtype;
     pvi = pvars + iv;
     paux = (Paux *)pvi->paux;
-    svi = svars + iv;
-    vaux = (Vaux *)avi->vaux;
-    saux = (Saux *)svi->saux;
+    CurVar = CurVarList + iv;
+    vaux = (Vaux *)CurAttr->vaux;
+    saux = (Saux *)CurVar->saux;
     cvi = (Basic *)CurClass->basics[iv];
     evi = (Stats *)CurClass->stats[iv];
     states = vaux->states;
@@ -269,7 +269,7 @@ int readdat(char *loc, int iv) {
     int i;
     Datum xn;
 
-    vaux = (Vaux *)(CurAttrs[iv].vaux);
+    vaux = (Vaux *)(CurAttrList[iv].vaux);
     states = vaux->states;
     /*    Read datum into xn, return error.  */
     i = readint(&xn, 1);
@@ -300,14 +300,14 @@ blocks for variable, and place in AVinst basicsize, statssize.
 void setsizes(iv) int iv;
 {
 
-    avi = CurAttrs + iv;
-    vaux = (Vaux *)avi->vaux;
+    CurAttr = CurAttrList + iv;
+    vaux = (Vaux *)CurAttr->vaux;
     states = vaux->states;
 
     /*    Set sizes of CVinst (basic) and EVinst (stats) in AVinst  */
     /*    Each inst has a number of vectors appended, of length 'states' */
-    avi->basic_size = sizeof(Basic) + (5 * states - 1) * sizeof(double);
-    avi->stats_size = sizeof(Stats) + (5 * states - 1) * sizeof(double);
+    CurAttr->basic_size = sizeof(Basic) + (5 * states - 1) * sizeof(double);
+    CurAttr->stats_size = sizeof(Stats) + (5 * states - 1) * sizeof(double);
     return;
 }
 
@@ -447,7 +447,7 @@ void scorevar(iv) int iv;
 {
     double t1d1, t2d1, t3d1;
     setvar(iv);
-    if (avi->inactive)
+    if (CurAttr->inactive)
         return;
     if (saux->missing)
         return;
@@ -514,30 +514,30 @@ void derivvar(iv, fac) int iv, fac;
     if (saux->missing)
         return;
     /*    Do no-fac first  */
-    evi->cnt += cwt;
+    evi->cnt += CurCaseWeight;
     /*    For non-fac, I just accumulate counts in scnt[]  */
-    scnt[saux->xn] += cwt;
+    scnt[saux->xn] += CurCaseWeight;
     /*    Accum. weighted item cost  */
-    evi->stcost += cwt * scst[saux->xn];
-    evi->ftcost += cwt * evi->parkftcost;
+    evi->stcost += CurCaseWeight * scst[saux->xn];
+    evi->ftcost += CurCaseWeight * evi->parkftcost;
 
     /*    Now for factor form  */
-    evi->vsq += cwt * cvvsq;
+    evi->vsq += CurCaseWeight * cvvsq;
     if (!fac)
         goto facdone;
     b1p = evi->parkb1p;
     b1p2 = b1p * b1p;
     b2p = evi->parkb2p;
     /*    From 1st cost term:  */
-    fapd1[saux->xn] -= cwt;
-    fbpd1[saux->xn] -= cwt * cvv;
+    fapd1[saux->xn] -= CurCaseWeight;
+    fbpd1[saux->xn] -= CurCaseWeight * cvv;
     Fork {
-        fapd1[k] += cwt * pr[k];
-        fbpd1[k] += cwt * pr[k] * cvv;
+        fapd1[k] += CurCaseWeight * pr[k];
+        fbpd1[k] += CurCaseWeight * pr[k] * cvv;
     }
 
     /*    Second cost term :  */
-    cons1 = cwt * evi->conff * rstatesm;
+    cons1 = CurCaseWeight * evi->conff * rstatesm;
     cons2 = states * cons1;
     Fork {
         inc = cons1 - pr[k] * cons2;
@@ -547,20 +547,20 @@ void derivvar(iv, fac) int iv, fac;
 
     /*    Third cost term:  */
     cons1 = 2.0 * b1p2 - b2p;
-    cons2 = cwt * cvvsprd * Mbeta * rstates;
+    cons2 = CurCaseWeight * cvvsprd * Mbeta * rstates;
     Fork {
-        inc = 0.5 * cwt * cvvsprd * pr[k] *
+        inc = 0.5 * CurCaseWeight * cvvsprd * pr[k] *
               (fbp[k] * fbp[k] - 2.0 * fbp[k] * b1p + cons1);
         fapd1[k] += inc;
         fbpd1[k] += cvv * inc;
         /*    Terms I forgot :  */
-        fbpd1[k] += cwt * cvvsprd * pr[k] * (fbp[k] - b1p);
+        fbpd1[k] += CurCaseWeight * cvvsprd * pr[k] * (fbp[k] - b1p);
         fbpd1[k] += cons2 * fbp[k];
     }
 
     /*    Second derivs (i.e. derivs wrt fapsprd, bpsprd)  */
-    evi->apd2 += cwt * evi->ff;
-    evi->bpd2 += cwt * evi->ff * cvvsq;
+    evi->apd2 += CurCaseWeight * evi->ff;
+    evi->bpd2 += CurCaseWeight * evi->ff * cvvsq;
 facdone:
     return;
 }
@@ -821,7 +821,7 @@ int iv;
 {
     int k;
 
-    setclass1(ccl);
+    set_class(ccl);
     setvar(iv);
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out", evi->adj);
@@ -857,7 +857,7 @@ void ncostvar(iv) int iv;
     int n, k, ison, nson, nints;
 
     setvar(iv);
-    if (avi->inactive) {
+    if (CurAttr->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
