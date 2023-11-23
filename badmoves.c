@@ -3,22 +3,22 @@
 
 static char *movestr[] = {" ", "Insert", "Delete", "Move"};
 
-/*    ---------------  clearbadm  --------------------------------  */
+/*    ---------------  clear_bad_move  --------------------------------  */
 /*    To clear the badmoves table  */
-void clearbadm() {
+void clear_bad_move() {
     for (int i = 0; i < BadSize; i++)
         BadKey[i] = 0;
     return;
 }
 
-/*    -----------------  testbadm  -----------------------------  */
+/*    -----------------  check_bad_move  -----------------------------  */
 /*    To test a move for known recent fail  */
 /*    code 1 means insert ,code 2 means delete  */
 /*    code 3 means move */
-int testbadm(int code, int w1, int w2) {
+int check_bad_move(int code, int w1, int w2) {
     int hi, key, bad, s1, s2;
 
-    setpop();
+    set_population();
     s1 = w1;
     s2 = w2;
     if ((code == 1) || (code == 3)) {
@@ -46,9 +46,9 @@ int testbadm(int code, int w1, int w2) {
     return (bad);
 }
 
-/*    ------------------  setbadm  -----------------------------   */
+/*    ------------------  set_bad_move  -----------------------------   */
 /*    To log a bad move  */
-void setbadm(int code, int s1, int s2) {
+void set_bad_move(int code, int s1, int s2) {
     int hi, key;
 
     if ((code == 1) || (code == 3)) {
@@ -60,7 +60,7 @@ void setbadm(int code, int s1, int s2) {
     } else
         s1 = 0;
     key = hi = (((code << 13) + s1) << 13) + s2;
-    setpop();
+    set_population();
     if (hi < 0)
         hi = -1 - hi;
     hi = hi % BadSize;

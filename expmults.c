@@ -280,7 +280,7 @@ int readdat(char *loc, int iv) {
     xn--;
     if ((xn < 0) || (xn >= states))
         return (2);
-    cmcpy(loc, &xn, sizeof(Datum));
+    memcpy(loc, &xn, sizeof(Datum));
     return (0);
 }
 

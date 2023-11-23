@@ -183,7 +183,7 @@ int readdat(char *loc, int iv) {
     /*    Read datum into xn, return error.  */
     i = readdf(&xn, 1);
     if (!i)
-        cmcpy(loc, &xn, sizeof(Datum));
+        memcpy(loc, &xn, sizeof(Datum));
     return (i);
 }
 

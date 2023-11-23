@@ -497,7 +497,7 @@ int main() {
     k = readsample(sparam);
     printf("Readsample returns %d\n", k);
     cspace = repspace(1);
-    kk = firstpop();
+    kk = init_population();
     flp();
     printf("Firstpop returns %d\n", kk);
     cspace = repspace(1);
@@ -546,7 +546,7 @@ loop:
         kk = 13;
         goto pickapop;
     }
-    setpop();
+    set_population();
     Fix = DFix;
     Control = DControl;
     tidy(1);
@@ -780,9 +780,9 @@ loop:
     case 17: /* readsamp  */
         if (readsparam(kk) < 0)
             goto error;
-        cmcpy(&oldctx, &CurCtx, sizeof(Context));
+        memcpy(&oldctx, &CurCtx, sizeof(Context));
         k = readsample(sparam);
-        cmcpy(&CurCtx, &oldctx, sizeof(Context));
+        memcpy(&CurCtx, &oldctx, sizeof(Context));
         if (k < 0)
             goto error;
         printf("Sample %s index%2d from file %s\n", samples[k]->name, k + 1,
@@ -838,7 +838,7 @@ loop:
         goto loop;
 
     case 23: /*  bestinsdad  */
-        clearbadm();
+        clear_bad_move();
         Log " " EL k = bestinsdad(0);
         if (k < 0)
             printf("No good dad insertion found\n");
@@ -847,7 +847,7 @@ loop:
         goto loop;
 
     case 24: /*  bestdeldad  */
-        clearbadm();
+        clear_bad_move();
         Log " " EL k = bestdeldad();
         if (k < 0)
             printf("No good dad deletion found\n");
@@ -926,7 +926,7 @@ loop:
         goto loop;
 
     case 32: /*  bestmoveclass  */
-        clearbadm();
+        clear_bad_move();
         Log " " EL bestmoveclass(0);
         goto loop;
 
@@ -976,7 +976,7 @@ loop:
             killpop(CurCtx.popln->id);
         CurPopln = CurCtx.popln = 0;
         CurSample = CurCtx.sample = samples[k];
-        i = firstpop();
+        i = init_population();
         if (i < 0) {
             printf("Cannot make first population for sample\n");
             goto error;

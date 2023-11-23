@@ -16,3 +16,6 @@ pro: prompt.c
 
 clean:
 	rm -f *.o snob-factor pro
+
+test:
+	cd ./examples && time ../snob-factor < phi.cmd 

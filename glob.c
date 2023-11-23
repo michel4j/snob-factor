@@ -45,20 +45,3 @@ char *sers(Class *cll) {
 done:
     return (decsers);
 }
-
-/*    A memory-to-memory copier replacing memcpy, which I can't use
-properly on all systems.   */
-void cmcpy(void *pt, void *pf, int ntm) {
-    char *cpt, *cpf;
-    cpt = (char *)pt;
-    cpf = (char *)pf;
-/*    Copy ntm chars from pf to pt  */
-next:
-    *cpt = *cpf;
-    cpt++;
-    cpf++;
-    ntm--;
-    if (ntm)
-        goto next;
-    return;
-}

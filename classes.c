@@ -7,7 +7,7 @@
 int s2id(int ss) {
     int k;
     Class *clp;
-    setpop();
+    set_population();
 
     if (ss >= 1) {
         for (k = 0; k <= CurPopln->hi_class; k++) {
@@ -38,9 +38,11 @@ void setclass1(Class *ccl) {
 /*    ---------------------  setclass2 --------------------------   */
 void setclass2(Class *ccl) {
     CurClass = ccl;
+    
     vv = CurClass->vv;
     CurClass->case_score = icvv = vv[CurItem];
     cwt = CurClass->case_weight;
+
     CurDadID = CurClass->dad_id;
     if (CurDadID >= 0)
         CurDad = CurPopln->classes[CurDadID];
@@ -223,13 +225,13 @@ void printclass(int kk, int full) {
         printf("%d passed to printclass\n", kk);
         return;
     }
-    setpop();
+    set_population();
     clp = CurRootClass;
 
     do {
         if ((kk == -2) || (clp->type != Sub))
             print1class(clp, full);
-        nextclass(&clp);
+        next_class(&clp);
     } while (clp);
 
     return;
@@ -472,10 +474,10 @@ void derivvarall(Class *ccl) {
     return;
 }
 
-/*    --------------------  adjustclass  -----------------------   */
+/*    --------------------  adjust_class  -----------------------   */
 /*    To compute pcosts of a class, and if needed, adjust params  */
 /*    Will process as-dad params only if 'dod'  */
-void adjustclass(Class *ccl, int dod) {
+void adjust_class(Class *ccl, int dod) {
     int iv, fac, npars, small;
     Class *son;
     double leafcost;
@@ -688,7 +690,7 @@ void ncostvarall(Class *ccl, int valid) {
     abcost += (nson - 1) * (log(CurClass->weights_sum) + lattice);
     /*    And from prior:  */
     abcost -= FacLog[nson - 1];
-    /*    The sons will have been processed by 'adjustclass' already, and
+    /*    The sons will have been processed by 'adjust_class' already, and
     this will have caused their best pcosts to be added into cls->cnpcost  */
     CurClass->dad_par_cost += abcost;
     return;

@@ -171,7 +171,7 @@ int readsample(char *fname) {
     Context oldctx;
     char *saux, vstnam[80], sampname[80];
 
-    cmcpy(&oldctx, &CurCtx, sizeof(Context));
+    memcpy(&oldctx, &CurCtx, sizeof(Context));
     buf = &bufst;
     strcpy(buf->cname, fname);
     CurCtx.buffer = buf;
@@ -315,7 +315,7 @@ gotit:
             CurSample->num_active++;
         }
         CurField++;
-        cmcpy(CurField, &caseid, sizeof(int));
+        memcpy(CurField, &caseid, sizeof(int));
         CurField += sizeof(int);
         /*    Posn now points to where the (missing, val) pair for the
         attribute should start.  */
@@ -351,7 +351,7 @@ nospace:
     i = -1;
 error:
     bufclose();
-    cmcpy(&CurCtx, &oldctx, sizeof(Context));
+    memcpy(&CurCtx, &oldctx, sizeof(Context));
     return (i);
 }
 
@@ -430,11 +430,11 @@ again:
     /*    Do a short block by bubble  */
     rp1 = bot;
     for (nt = 0; nt < nn - 1; nt++) {
-        cmcpy(&bv, rp1 + 1, sizeof(int));
+        memcpy(&bv, rp1 + 1, sizeof(int));
         rp2 = cen = rp1;
         for (nb = nt + 1; nb < nn; nb++) {
             rp2 += len;
-            cmcpy(&av, rp2 + 1, sizeof(int));
+            memcpy(&av, rp2 + 1, sizeof(int));
             if (av < bv) {
                 bv = av;
                 cen = rp2;
@@ -452,13 +452,13 @@ recurse:
     if (nt == nn)
         nt = nn / 2;
     cen = bot + nt * len;
-    cmcpy(&cv, cen + 1, sizeof(int));
+    memcpy(&cv, cen + 1, sizeof(int));
     top = bot + (nn - 1) * len;
     rp1 = bot;
     rp2 = top;
     nt = nb = 0;
 loop1:
-    cmcpy(&av, rp2 + 1, sizeof(int));
+    memcpy(&av, rp2 + 1, sizeof(int));
     if (av >= cv) {
         nt++;
         rp2 -= len;
@@ -468,7 +468,7 @@ loop1:
             goto done;
     }
 loop2:
-    cmcpy(&bv, rp1 + 1, sizeof(int));
+    memcpy(&bv, rp1 + 1, sizeof(int));
     if (bv < cv) {
         nb++;
         rp1 += len;
@@ -536,7 +536,7 @@ int id2ind(int id)
     il = 0;
 chop:
     ic = (iu + il) >> 1;
-    cmcpy(&cid, recs + ic * len, sizeof(int));
+    memcpy(&cid, recs + ic * len, sizeof(int));
     if (ic == il)
         goto chopped;
     if (cid > id) {
@@ -566,7 +566,7 @@ int thinglist(char *tlstname)
         return (-1);
     if (!CurCtx.sample)
         return (-2);
-    setpop();
+    set_population();
     if (!CurSample->num_cases)
         return (-3);
 
@@ -587,7 +587,7 @@ treeloop:
         dadser = -4;
     fprintf(tlst, "%8d\n", dadser >> 2);
 nextcl1:
-    nextclass(&clp);
+    next_class(&clp);
     if (clp)
         goto treeloop;
     fprintf(tlst, "0 0\n");
@@ -611,7 +611,7 @@ nextcl1:
             }
         }
 
-        cmcpy(&tid, CurRecord + 1, sizeof(int));
+        memcpy(&tid, CurRecord + 1, sizeof(int));
         fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, Sons[bc]->serial >> 2,
                 Sons[bl]->serial >> 2, ScoreRscale * Sons[bl]->vv[nn]);
     }

@@ -11,7 +11,7 @@ void flatten() {
 
     int i;
 
-    setpop();
+    set_population();
     tidy(0);
     if (CurRootClass->num_sons == 0) {
         printf("Nothing to flatten\n");
@@ -113,7 +113,7 @@ configok:
     ndad = CurPopln->classes[newid]; /*  The new dad  */
                                 /*    Copy old dad's basics, stats into new dad  */
     nch = ((char *)&odad->id) - ((char *)odad);
-    cmcpy(ndad, odad, nch);
+    memcpy(ndad, odad, nch);
     ndad->serial = CurPopln->next_serial << 2;
     CurPopln->next_serial++;
     ndad->age = MinFacAge - 3;
@@ -123,7 +123,7 @@ configok:
         fcvi = odad->basics[iv];
         cvi = ndad->basics[iv];
         nch = CurAttrs[iv].basic_size;
-        cmcpy(cvi, fcvi, nch);
+        memcpy(cvi, fcvi, nch);
     }
 
     /*      Copy stats  */
@@ -131,7 +131,7 @@ configok:
         fevi = odad->stats[iv];
         evi = ndad->stats[iv];
         nch = CurAttrs[iv].stats_size;
-        cmcpy(evi, fevi, nch);
+        memcpy(evi, fevi, nch);
     }
 
     ndad->dad_id = oldid; /* So new dad is son of old dad */
@@ -182,7 +182,7 @@ int bestinsdad(int force)
     bestdrop = -1.0e20;
     bser1 = bser2 = -1;
     newser = 0;
-    setpop();
+    set_population();
     origcost = CurRootClass->best_cost;
     hiid = CurPopln->hi_class;
     if (CurPopln->num_classes < 4) {
@@ -191,7 +191,7 @@ int bestinsdad(int force)
         succ = -1;
         goto alldone;
     }
-    cmcpy(&oldctx, &CurCtx, sizeof(Context));
+    memcpy(&oldctx, &CurCtx, sizeof(Context));
 
     i1 = 0;
 outer:
@@ -215,7 +215,7 @@ inner:
     if (cls1->dad_id != cls2->dad_id)
         goto i2done;
     ser2 = cls2->serial;
-    if (testbadm(1, ser1, ser2))
+    if (check_bad_move(1, ser1, ser2))
         goto i2done;
 
     /*    Copy population to TrialPop, unfilled  */
@@ -223,7 +223,7 @@ inner:
     if (newp < 0)
         goto popfails;
     CurCtx.popln = poplns[newp];
-    setpop();
+    set_population();
     res = insdad(ser1, ser2, &newid);
     if (newid < 0) {
         goto i2done;
@@ -234,8 +234,8 @@ inner:
         bser2 = ser2;
     }
 i2done:
-    cmcpy(&CurCtx, &oldctx, sizeof(Context));
-    setpop(); /* Return to original popln */
+    memcpy(&CurCtx, &oldctx, sizeof(Context));
+    set_population(); /* Return to original popln */
     i2++;
     if (i2 <= hiid)
         goto inner;
@@ -258,7 +258,7 @@ alldone:
     if (newp < 0)
         goto popfails;
     CurCtx.popln = poplns[newp];
-    setpop();
+    set_population();
     flp();
     printf("TRYING INSERT %6d,%6d\n", bser1 >> 2, bser2 >> 2);
     res = insdad(bser1, bser2, &newid);
@@ -280,10 +280,10 @@ alldone:
     succ = 0;
     if (force)
         goto winner;
-    setbadm(1, bser1, bser2);
+    set_bad_move(1, bser1, bser2);
     newser = 0;
-    cmcpy(&CurCtx, &oldctx, sizeof(Context));
-    setpop(); /* Return to original popln */
+    memcpy(&CurCtx, &oldctx, sizeof(Context));
+    set_population(); /* Return to original popln */
     flp();
     printf("Failed ******\n");
     goto finish;
@@ -298,7 +298,7 @@ winner:
     flp();
     printf("%s\n", (succ) ? "ACCEPTED !!!" : "FORCED");
     printtree();
-    clearbadm();
+    clear_bad_move();
     /*    Reverse roles of 'work' and TrialPop  */
     strcpy(oldctx.popln->name, "TrialPop");
     strcpy(CurPopln->name, "work");
@@ -373,12 +373,12 @@ int bestdeldad() {
     NoSubs++;
     bestdrop = -1.0e20;
     bser = -1;
-    setpop();
+    set_population();
     /*    Do one pass of doall to set costs  */
     doall(1, 1);
     origcost = CurRootClass->best_cost;
     hiid = CurPopln->hi_class;
-    cmcpy(&oldctx, &CurCtx, sizeof(Context));
+    memcpy(&oldctx, &CurCtx, sizeof(Context));
     i1 = 0;
 loop:
     if (i1 == CurRoot)
@@ -389,13 +389,13 @@ loop:
     if (cls->type != Dad)
         goto i1done;
     ser = cls->serial;
-    if (testbadm(2, 0, ser))
+    if (check_bad_move(2, 0, ser))
         goto i1done;
     newp = copypop(CurPopln->id, 0, "TrialPop");
     if (newp < 0)
         goto popfails;
     CurCtx.popln = poplns[newp];
-    setpop();
+    set_population();
     res = deldad(ser);
     if (res < -1000000.0) {
         goto i1done;
@@ -405,8 +405,8 @@ loop:
         bser = ser;
     }
 i1done:
-    cmcpy(&CurCtx, &oldctx, sizeof(Context));
-    setpop();
+    memcpy(&CurCtx, &oldctx, sizeof(Context));
+    set_population();
     i1++;
     if (i1 <= hiid)
         goto loop;
@@ -420,7 +420,7 @@ i1done:
     if (newp < 0)
         goto popfails;
     CurCtx.popln = poplns[newp];
-    setpop();
+    set_population();
     flp();
     printf("TRYING DELETE %6d\n", bser >> 2);
     res = deldad(bser);
@@ -433,10 +433,10 @@ i1done:
     }
     if (CurRootClass->best_cost < origcost)
         goto winner;
-    setbadm(2, 0, bser); /* log failure in badmoves */
+    set_bad_move(2, 0, bser); /* log failure in badmoves */
     bser = 0;
-    cmcpy(&CurCtx, &oldctx, sizeof(Context));
-    setpop();
+    memcpy(&CurCtx, &oldctx, sizeof(Context));
+    set_population();
     flp();
     printf("Failed ******\n");
     goto finish;
@@ -449,7 +449,7 @@ popfails:
 
 winner:
     flp();
-    clearbadm();
+    clear_bad_move();
     printf("ACCEPTED !!!\n");
     printtree();
     strcpy(oldctx.popln->name, "TrialPop");
@@ -469,13 +469,13 @@ void binhier(int flat)
 {
     int nn;
 
-    setpop();
+    set_population();
     if (flat)
         flatten();
     NoSubs++;
     if (Heard)
         goto kicked;
-    clearbadm();
+    clear_bad_move();
 insloop:
     nn = bestinsdad(1);
     if (Heard)
@@ -502,13 +502,13 @@ finish:
     printtree();
     if (NoSubs > 0)
         NoSubs--;
-    clearbadm();
+    clear_bad_move();
     return;
 
 kicked:
     nn = pname2id("work");
     CurCtx.popln = poplns[nn];
-    setpop();
+    set_population();
     printf("BinHier ends prematurely\n");
     goto finish;
 }
@@ -521,7 +521,7 @@ void ranclass(int nn)
     double bs;
     Class *sub, *dad;
 
-    setpop();
+    set_population();
     if (!CurPopln) {
         printf("Ranclass needs a model\n");
         goto finish;
@@ -685,7 +685,7 @@ int bestmoveclass(int force)
     NoSubs++;
     bestdrop = -1.0e20;
     bser1 = bser2 = -1;
-    setpop();
+    set_population();
     doall(1, 1); /* To set costs */
     origcost = CurRootClass->best_cost;
     hiid = CurPopln->hi_class;
@@ -695,7 +695,7 @@ int bestmoveclass(int force)
         succ = -1;
         goto alldone;
     }
-    cmcpy(&oldctx, &CurCtx, sizeof(Context));
+    memcpy(&oldctx, &CurCtx, sizeof(Context));
 
     i1 = 0;
 outer:
@@ -725,7 +725,7 @@ inner:
         odad = CurPopln->classes[od2];
     }
     ser2 = cls2->serial;
-    if (testbadm(3, ser1, ser2))
+    if (check_bad_move(3, ser1, ser2))
         goto i2done;
 
     /*    Copy pop to TrialPop, unfilled  */
@@ -733,7 +733,7 @@ inner:
     if (newp < 0)
         goto popfails;
     CurCtx.popln = poplns[newp];
-    setpop();
+    set_population();
     res = moveclass(ser1, ser2);
     if (res > bestdrop) {
         bestdrop = res;
@@ -741,8 +741,8 @@ inner:
         bser2 = ser2;
     }
 i2done:
-    cmcpy(&CurCtx, &oldctx, sizeof(Context));
-    setpop(); /* Return to original popln */
+    memcpy(&CurCtx, &oldctx, sizeof(Context));
+    set_population(); /* Return to original popln */
     i2++;
     if (i2 <= hiid)
         goto inner;
@@ -765,7 +765,7 @@ alldone:
     if (newp < 0)
         goto popfails;
     CurCtx.popln = poplns[newp];
-    setpop();
+    set_population();
     flp();
     printf("TRYING MOVE CLASS %6d TO DAD %6d\n", bser1 >> 2, bser2 >> 2);
     res = moveclass(bser1, bser2);
@@ -782,9 +782,9 @@ alldone:
     succ = 0;
     if (force)
         goto winner;
-    setbadm(3, bser1, bser2);
-    cmcpy(&CurCtx, &oldctx, sizeof(Context));
-    setpop(); /* Return to original popln */
+    set_bad_move(3, bser1, bser2);
+    memcpy(&CurCtx, &oldctx, sizeof(Context));
+    set_population(); /* Return to original popln */
     flp();
     printf("Failed ******\n");
     goto finish;
@@ -799,7 +799,7 @@ winner:
     flp();
     printf("%s\n", (succ) ? "ACCEPTED !!!" : "FORCED");
     printtree();
-    clearbadm();
+    clear_bad_move();
     /*    Reverse roles of 'work' and TrialPop  */
     strcpy(oldctx.popln->name, "TrialPop");
     strcpy(CurPopln->name, "work");
@@ -820,7 +820,7 @@ void trymoves(int ntry){
 
     NoSubs++;
     doall(1, 1);
-    clearbadm();
+    clear_bad_move();
     nfail = 0;
 
     while (nfail < ntry) {

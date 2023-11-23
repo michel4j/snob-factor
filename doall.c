@@ -40,7 +40,7 @@ void findall(int class_type) {
     int i, j;
     Class *cls;
 
-    setpop();
+    set_population();
     tidy(1);
     j = 0;
     cls = CurRootClass;
@@ -49,7 +49,7 @@ void findall(int class_type) {
         if (class_type & cls->type) {
             Sons[j++] = cls;
         }
-        nextclass(&cls);
+        next_class(&cls);
     }
     NumSon = j;
 
@@ -224,7 +224,7 @@ void tidy(int hit) {
             dad = CurPopln->classes[i];
             // Check if conditions are met to make subclasses
             if (dad->type == Leaf && !dad->num_sons && dad->weights_sum >= (2.1 * MinSize) && dad->age >= MinAge) {
-                makesubs(i);
+                make_subclasses(i);
                 kkd++;
             }
         }
@@ -323,7 +323,7 @@ int find_and_estimate(int *all, int niter, int ncycles) {
 double update_leaf_classes(double *oldleafsum, int *nfail) {
     double leafsum = 0.0;
     for (int k = 0; k < NumSon; k++) {
-        adjustclass(Sons[k], 0);
+        adjust_class(Sons[k], 0);
         /*    The second para tells adjust not to do as-dad params  */
         leafsum += Sons[k]->best_cost;
     }
@@ -357,7 +357,7 @@ void update_all_classes(double *oldcost, int *nfail) {
             continue;
         }
         while (1) {
-            adjustclass(CurClass, 1);
+            adjust_class(CurClass, 1);
             if (CurClass->dad_id >= 0) {
                 CurDad = CurPopln->classes[CurClass->dad_id];
                 CurDad->dad_par_cost += CurClass->best_par_cost;
@@ -465,7 +465,7 @@ int doall(int ncycles, int all) {
 }
 
 /*    ----------------------  dodads  -----------------------------  */
-/*    Runs adjustclass on all leaves without adjustment.
+/*    Runs adjust_class on all leaves without adjustment.
     This leaves class cb*costs set up. Adjustclass is told not to
     consider a leaf as a potential dad.
     Then runs ncostvarall on all dads, with param adjustment. The
@@ -484,7 +484,7 @@ int dodads(int ncy) {
     nfail = Control;
     Control = Noprior;
     for (nn = 0; nn < NumSon; nn++) {
-        adjustclass(Sons[nn], 0);
+        adjust_class(Sons[nn], 0);
     }
     Control = nfail;
     nn = nfail = 0;
@@ -507,10 +507,10 @@ int dodads(int ncy) {
         goto newdad;
 
     complete:
-        /*    If a leaf, use adjustclass, else use ncostvarall  */
+        /*    If a leaf, use adjust_class, else use ncostvarall  */
         if (CurClass->type == Leaf) {
             Control = Tweak;
-            adjustclass(CurClass, 0);
+            adjust_class(CurClass, 0);
         } else {
             Control = AdjPr;
             ncostvarall(CurClass, 1);
@@ -633,7 +633,7 @@ void docase(int cse, int all, int derivs) {
             psaux->missing = 1;
         } else {
             psaux->missing = 0;
-            cmcpy(&(psaux->xn), CurField + 1, CurAttrs[i].vtype->data_size);
+            memcpy(&(psaux->xn), CurField + 1, CurAttrs[i].vtype->data_size);
         }
     }
 

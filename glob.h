@@ -303,11 +303,11 @@ void flp();
 /*    end inputs.c  */
 
 /*    In POPLNS.c   */
-void nextclass(Class **ptr);
-int makepop(int fill);
-int firstpop();
-void makesubs(int kk);
-void setpop();
+void next_class(Class **ptr);
+int make_population(int fill);
+int init_population();
+void make_subclasses(int kk);
+void set_population();
 void killpop(int px);
 int copypop(int p1, int fill, char *newname);
 int savepop(int p1, int fill, char *newname);
@@ -329,7 +329,7 @@ void scorevarall(Class *ccl);
 void costvarall(Class *ccl);
 void derivvarall(Class *ccl);
 void ncostvarall(Class *ccl, int valid);
-void adjustclass(Class *ccl, int dod);
+void adjust_class(Class *ccl, int dod);
 void killsons(int kk);
 void printclass(int kk, int full);
 void setclass1(Class *ccl);
@@ -372,9 +372,9 @@ void trial(int param);
 
 /*    In BADMOVES.c    */
 #define BadSize 1013
-void clearbadm();
-int testbadm(int code, int w1, int w2);
-void setbadm(int code, int s1, int s2);
+void clear_bad_move();
+int check_bad_move(int code, int w1, int w2);
+void set_bad_move(int code, int s1, int s2);
 /* end badmoves.c        */
 
 /*    In BLOCK.c    */
