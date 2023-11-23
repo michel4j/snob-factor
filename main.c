@@ -540,7 +540,7 @@ loop:
             if (!(Control & AdjTr))
                 printf(" TREE");
         }
-        printf("  Cost%8.1f\n", CurRootClass->cbcost);
+        printf("  Cost%8.1f\n", CurRootClass->best_cost);
     }
     if (!CurCtx.popln) {
         kk = 13;
@@ -556,9 +556,9 @@ loop:
         CurPopln = CurCtx.popln;
         CurClass = CurPopln->classes[CurPopln->root];
         printf("P%1d  %4d classes, %4d leaves,  Pcost%8.1f", CurPopln->id + 1,
-               CurPopln->num_classes, CurPopln->num_leaves, CurClass->cbpcost);
+               CurPopln->num_classes, CurPopln->num_leaves, CurClass->best_par_cost);
         if (CurPopln->sample_size)
-            printf("  Tcost%10.1f,  Cost%10.1f", CurClass->cbtcost, CurClass->cbcost);
+            printf("  Tcost%10.1f,  Cost%10.1f", CurClass->cbtcost, CurClass->best_cost);
         printf("\n");
         printf("Sample %2d %s\n", (CurCtx.sample) ? CurCtx.sample->id + 1 : 0,
                (CurCtx.sample) ? CurCtx.sample->name : "NULL");
@@ -603,14 +603,14 @@ loop:
         }
         if (k < 0)
             goto error;
-        Log "%s", sers(CurPopln->classes[k]) EL CurPopln->classes[k]->cnt = 0.0;
+        Log "%s", sers(CurPopln->classes[k]) EL CurPopln->classes[k]->weights_sum = 0.0;
         goto loop;
     case 4: /* killsons */
         k = readserial(kk);
         if (k < 0)
             goto error;
         Log "%s", sers(CurPopln->classes[k]) EL killsons(k);
-        CurPopln->classes[k]->holdtype = HoldTime;
+        CurPopln->classes[k]->hold_type = HoldTime;
         goto loop;
     case 5: /* prclass */
         k = readserial(kk);

@@ -40,7 +40,7 @@ void flatten() {
     NoSubs++;
     tidy(0);
     CurRootClass->type = Dad;
-    CurRootClass->holdtype = Forever;
+    CurRootClass->hold_type = Forever;
     doall(1, 1);
     dodads(3);
     doall(3, 0);
@@ -69,7 +69,7 @@ double insdad(int ser1, int ser2, int *dadid)
     double origcost, newcost, drop;
     int oldid, newid, od1, od2;
 
-    origcost = CurRootClass->cbpcost;
+    origcost = CurRootClass->best_par_cost;
     *dadid = -1;
     k1 = s2id(ser1);
     if (k1 < 0)
@@ -117,7 +117,7 @@ configok:
     ndad->serial = CurPopln->next_serial << 2;
     CurPopln->next_serial++;
     ndad->age = MinFacAge - 3;
-    ndad->holdtype = 0;
+    ndad->hold_type = 0;
     /*      Copy Basics. the structures should have been made.  */
     for (iv = 0; iv < nv; iv++) {
         fcvi = odad->basics[iv];
@@ -138,12 +138,12 @@ configok:
     cls1->dad_id = cls2->dad_id = newid;
     /*    Set relab and cnt in new dad  */
     ndad->relab = cls1->relab + cls2->relab;
-    ndad->cnt = cls1->cnt + cls2->cnt;
+    ndad->weights_sum = cls1->weights_sum + cls2->weights_sum;
 
     /*    Fix linkages  */
     tidy(0);
     dodads(20);
-    newcost = CurRootClass->cbpcost;
+    newcost = CurRootClass->best_par_cost;
     drop = origcost - newcost;
     *dadid = newid;
     goto done;
@@ -183,7 +183,7 @@ int bestinsdad(int force)
     bser1 = bser2 = -1;
     newser = 0;
     setpop();
-    origcost = CurRootClass->cbcost;
+    origcost = CurRootClass->best_cost;
     hiid = CurPopln->hi_class;
     if (CurPopln->num_classes < 4) {
         flp();
@@ -275,7 +275,7 @@ alldone:
         newser = 0;
     /*    See if the trial model has improved over original  */
     succ = 1;
-    if (CurRootClass->cbcost < origcost)
+    if (CurRootClass->best_cost < origcost)
         goto winner;
     succ = 0;
     if (force)
@@ -342,7 +342,7 @@ double deldad(int ser)
     if (CurClass->num_sons <= 0)
         goto finish;
     /*    All seems OK. Fix idads in kk's sons  */
-    origcost = CurRootClass->cbpcost;
+    origcost = CurRootClass->best_par_cost;
     for (kks = CurClass->son_id; kks >= 0; kks = son->sib_id) {
         son = CurPopln->classes[kks];
         son->dad_id = kkd;
@@ -353,7 +353,7 @@ double deldad(int ser)
     /*    Fix linkages  */
     tidy(0);
     dodads(20);
-    newcost = CurRootClass->cbpcost;
+    newcost = CurRootClass->best_par_cost;
     drop = origcost - newcost;
 finish:
     return (drop);
@@ -376,7 +376,7 @@ int bestdeldad() {
     setpop();
     /*    Do one pass of doall to set costs  */
     doall(1, 1);
-    origcost = CurRootClass->cbcost;
+    origcost = CurRootClass->best_cost;
     hiid = CurPopln->hi_class;
     cmcpy(&oldctx, &CurCtx, sizeof(Context));
     i1 = 0;
@@ -431,7 +431,7 @@ i1done:
         printf("BestDelDad ends prematurely\n");
         return (0);
     }
-    if (CurRootClass->cbcost < origcost)
+    if (CurRootClass->best_cost < origcost)
         goto winner;
     setbadm(2, 0, bser); /* log failure in badmoves */
     bser = 0;
@@ -530,7 +530,7 @@ void ranclass(int nn)
         printf("Model has no sample\n");
         goto finish;
     }
-    if (nn > (CurPopln->mncl - 2)) {
+    if (nn > (CurPopln->cls_vec_len - 2)) {
         printf("Too many classes\n");
         goto finish;
     }
@@ -555,8 +555,8 @@ again:
         sub = CurPopln->classes[CurClass->son_id];
         if (sub->age < MinAge)
             goto icdone;
-        if (CurClass->cnt > bs) {
-            bs = CurClass->cnt;
+        if (CurClass->weights_sum > bs) {
+            bs = CurClass->weights_sum;
             ib = ic;
         }
     icdone:;
@@ -570,8 +570,8 @@ again:
     dad = Sons[ib];
     if (splitleaf(dad->id))
         goto windup;
-    printf("Splitting %s size%8.1f\n", sers(dad), dad->cnt);
-    dad->holdtype = Forever;
+    printf("Splitting %s size%8.1f\n", sers(dad), dad->weights_sum);
+    dad->hold_type = Forever;
     n++;
     goto again;
 
@@ -582,7 +582,7 @@ windup:
     doall(6, 0);
     doall(4, 1);
     printtree();
-    CurRootClass->holdtype = 0;
+    CurRootClass->hold_type = 0;
 
 finish:
     return;
@@ -596,7 +596,7 @@ double moveclass(int ser1, int ser2)
     int k1, k2, od2;
     double origcost, newcost, drop;
 
-    origcost = CurRootClass->cbpcost;
+    origcost = CurRootClass->best_par_cost;
     k1 = s2id(ser1);
     if (k1 < 0)
         goto nullit;
@@ -638,7 +638,7 @@ double moveclass(int ser1, int ser2)
         if (Heard)
             goto kicked;
     }
-    newcost = CurRootClass->cbpcost;
+    newcost = CurRootClass->best_par_cost;
     drop = origcost - newcost;
     goto done;
 
@@ -687,7 +687,7 @@ int bestmoveclass(int force)
     bser1 = bser2 = -1;
     setpop();
     doall(1, 1); /* To set costs */
-    origcost = CurRootClass->cbcost;
+    origcost = CurRootClass->best_cost;
     hiid = CurPopln->hi_class;
     if (CurPopln->num_classes < 4) {
         flp();
@@ -777,7 +777,7 @@ alldone:
     /*    Setting dogood's target to origcost-1 allows early exit  */
     /*    See if the trial model has improved over original  */
     succ = 1;
-    if (CurRootClass->cbcost < origcost)
+    if (CurRootClass->best_cost < origcost)
         goto winner;
     succ = 0;
     if (force)

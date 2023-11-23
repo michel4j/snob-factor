@@ -144,7 +144,7 @@ void tidy(int hit) {
                     ;
             }
             int hard = 0;
-            if (hit && (cls->cnt < MinSize)) {
+            if (hit && (cls->weights_sum < MinSize)) {
                 cause = Deadsmall;
                 hard = 1;
             } else if (hit && (cls->type == Sub) && ((cls->age > MaxSubAge) || NoSubs)) {
@@ -199,7 +199,7 @@ void tidy(int hit) {
                     SeeAll = 2;
                 dad->type = cls->type;
                 dad->use = cls->use;
-                dad->holdtype = cls->holdtype;
+                dad->hold_type = cls->hold_type;
                 dad->hold_use = cls->hold_use;
                 dad->num_sons = cls->num_sons;
                 dad->son_id = cls->son_id;
@@ -223,7 +223,7 @@ void tidy(int hit) {
         for (i = 0; i <= CurPopln->hi_class; i++) {
             dad = CurPopln->classes[i];
             // Check if conditions are met to make subclasses
-            if (dad->type == Leaf && !dad->num_sons && dad->cnt >= (2.1 * MinSize) && dad->age >= MinAge) {
+            if (dad->type == Leaf && !dad->num_sons && dad->weights_sum >= (2.1 * MinSize) && dad->age >= MinAge) {
                 makesubs(i);
                 kkd++;
             }
@@ -308,7 +308,7 @@ int find_and_estimate(int *all, int niter, int ncycles) {
     if (Control & (AdjPr + AdjTr)) {
         for (int k = 0; k < NumSon; k++) {
             if (Sons[k]->newcnt < MinSize) {
-                Sons[k]->cnt = 0.0;
+                Sons[k]->weights_sum = 0.0;
                 Sons[k]->type = Vacant;
                 SeeAll = 2;
                 NewSubs = 0;
@@ -325,7 +325,7 @@ double update_leaf_classes(double *oldleafsum, int *nfail) {
     for (int k = 0; k < NumSon; k++) {
         adjustclass(Sons[k], 0);
         /*    The second para tells adjust not to do as-dad params  */
-        leafsum += Sons[k]->cbcost;
+        leafsum += Sons[k]->best_cost;
     }
     if (SeeAll == 0) {
         rep('.');
@@ -349,7 +349,7 @@ void update_all_classes(double *oldcost, int *nfail) {
     int repeat;
     do {
         repeat = 0;
-        CurClass->cnpcost = 0.0;
+        CurClass->dad_par_cost = 0.0;
         if (CurClass->num_sons >= 2) {
             CurDad = CurClass;
             CurClass = CurPopln->classes[CurClass->son_id];
@@ -360,7 +360,7 @@ void update_all_classes(double *oldcost, int *nfail) {
             adjustclass(CurClass, 1);
             if (CurClass->dad_id >= 0) {
                 CurDad = CurPopln->classes[CurClass->dad_id];
-                CurDad->cnpcost += CurClass->cbpcost;
+                CurDad->dad_par_cost += CurClass->best_par_cost;
                 if (CurClass->sib_id >= 0) {
                     CurClass = CurPopln->classes[CurClass->sib_id];
                     repeat = 1;
@@ -378,9 +378,9 @@ void update_all_classes(double *oldcost, int *nfail) {
     /*    Test for an improvement  */
     if (SeeAll == 0) {
         rep('.');
-    } else if (CurRootClass->cbcost < (*oldcost - MinGain)) {
+    } else if (CurRootClass->best_cost < (*oldcost - MinGain)) {
         *nfail = 0;
-        *oldcost = CurRootClass->cbcost;
+        *oldcost = CurRootClass->best_cost;
         rep('A');
     } else {
         (*nfail)++;
@@ -408,12 +408,12 @@ int doall(int ncycles, int all) {
     nfail = niter = ncydone = 0;
     ncyask = ncycles;
     all = (all) ? (Dad + Leaf + Sub) : Leaf;
-    oldcost = CurRootClass->cbcost;
+    oldcost = CurRootClass->best_cost;
     /*    Get sum of class costs, meaningful only if 'all' = Leaf  */
     oldleafsum = 0.0;
     findall(Leaf);
     for (k = 0; k < NumSon; k++) {
-        oldleafsum += Sons[k]->cbcost;
+        oldleafsum += Sons[k]->best_cost;
     }
 
     while (1) {
@@ -490,7 +490,7 @@ int dodads(int ncy) {
     nn = nfail = 0;
 
     do {
-        oldcost = CurRootClass->cnpcost;
+        oldcost = CurRootClass->dad_par_cost;
         if (CurRootClass->type != Dad) {
             return (0);
         }
@@ -500,8 +500,8 @@ int dodads(int ncy) {
     newdad:
         if (CurClass->type == Leaf)
             goto complete;
-        CurClass->cnpcost = 0.0;
-        CurClass->relab = CurClass->cnt = 0.0;
+        CurClass->dad_par_cost = 0.0;
+        CurClass->relab = CurClass->weights_sum = 0.0;
         dad = CurClass;
         CurClass = CurPopln->classes[CurClass->son_id];
         goto newdad;
@@ -514,13 +514,13 @@ int dodads(int ncy) {
         } else {
             Control = AdjPr;
             ncostvarall(CurClass, 1);
-            CurClass->cbpcost = CurClass->cnpcost;
+            CurClass->best_par_cost = CurClass->dad_par_cost;
         }
         if (CurClass->dad_id < 0)
             goto alladjusted;
         dad = CurPopln->classes[CurClass->dad_id];
-        dad->cnpcost += CurClass->cbpcost;
-        dad->cnt += CurClass->cnt;
+        dad->dad_par_cost += CurClass->best_par_cost;
+        dad->weights_sum += CurClass->weights_sum;
         dad->relab += CurClass->relab;
         if (CurClass->sib_id >= 0) {
             CurClass = CurPopln->classes[CurClass->sib_id];
@@ -530,12 +530,12 @@ int dodads(int ncy) {
         goto complete;
 
     alladjusted:
-        CurRootClass->cbpcost = CurRootClass->cnpcost;
-        CurRootClass->cbcost = CurRootClass->cnpcost + CurRootClass->cntcost;
+        CurRootClass->best_par_cost = CurRootClass->dad_par_cost;
+        CurRootClass->best_cost = CurRootClass->dad_par_cost + CurRootClass->cntcost;
         /*    Test for convergence  */
         nn++;
         nfail++;
-        if (CurRootClass->cnpcost < (oldcost - MinGain))
+        if (CurRootClass->dad_par_cost < (oldcost - MinGain))
             nfail = 0;
         rep((nfail) ? 'd' : 'D');
         if (nfail > 3) {
@@ -559,12 +559,12 @@ int dogood(int ncy, double target) {
 
     doall(1, 1);
     for (nn = 0; nn < 6; nn++)
-        olddogcosts[nn] = CurRootClass->cbcost + 10000.0;
+        olddogcosts[nn] = CurRootClass->best_cost + 10000.0;
     nfail = 0;
     for (nn = 0; nn < ncy; nn++) {
-        oldcost = CurRootClass->cbcost;
+        oldcost = CurRootClass->best_cost;
         doall(2, 0);
-        if (CurRootClass->cbcost < (oldcost - MinGain))
+        if (CurRootClass->best_cost < (oldcost - MinGain))
             nfail = 0;
         else
             nfail++;
@@ -573,12 +573,12 @@ int dogood(int ncy, double target) {
             goto kicked;
         if (nfail > 2)
             goto done;
-        if (CurRootClass->cbcost < target)
+        if (CurRootClass->best_cost < target)
             goto bullseye;
         /*    See if new cost significantly better than cost 5 cycles ago */
         for (j = 0; j < 5; j++)
             olddogcosts[j] = olddogcosts[j + 1];
-        olddogcosts[5] = CurRootClass->cbcost;
+        olddogcosts[5] = CurRootClass->best_cost;
         if ((olddogcosts[0] - olddogcosts[5]) < 0.2)
             goto done;
     }
@@ -633,7 +633,7 @@ void docase(int cse, int all, int derivs) {
             psaux->missing = 1;
         } else {
             psaux->missing = 0;
-            cmcpy(&(psaux->xn), CurField + 1, CurAttrs[i].vtype->datsize);
+            cmcpy(&(psaux->xn), CurField + 1, CurAttrs[i].vtype->data_size);
         }
     }
 
@@ -665,22 +665,22 @@ void docase(int cse, int all, int derivs) {
         while (clc < NumSon) {
             CurClass = Sons[clc];
             if ((!SeeAll) && (CurClass->case_score & 1)) {
-                CurClass->case_cost = 1.0e30;
+                CurClass->total_case_cost = 1.0e30;
                 clc = NextIc[clc];
                 continue;
             }
             clc++;
             if (Fix == Random) {
                 w1 = 2.0 * fran();
-                CurClass->case_cost += w1;
-                CurClass->fac_cost += w1;
-                CurClass->nofac_cost += w1;
+                CurClass->total_case_cost += w1;
+                CurClass->fac_case_cost += w1;
+                CurClass->nofac_case_cost += w1;
             }
             if (CurClass->type != Leaf) {
                 continue;
             }
-            if (CurClass->case_cost < mincost) {
-                mincost = CurClass->case_cost;
+            if (CurClass->total_case_cost < mincost) {
+                mincost = CurClass->total_case_cost;
             }
         }
 
@@ -698,13 +698,13 @@ void docase(int cse, int all, int derivs) {
                 if (CurClass->type != Leaf) {
                     continue;
                 }
-                CurClass->case_weight = exp(mincost - CurClass->case_cost);
+                CurClass->case_weight = exp(mincost - CurClass->total_case_cost);
                 sum += CurClass->case_weight;
             }
         } else {
             for (clc = 0; clc < NumSon; clc++) {
                 CurClass = Sons[clc];
-                if ((CurClass->type == Leaf) && (CurClass->case_cost == mincost)) {
+                if ((CurClass->type == Leaf) && (CurClass->total_case_cost == mincost)) {
                     sum += 1.0;
                     CurClass->case_weight = 1.0;
                 }
@@ -720,7 +720,7 @@ void docase(int cse, int all, int derivs) {
             rootcost = mincost;
         else
             rootcost = mincost - log(sum);
-        CurRootClass->fac_dad_cost = CurRootClass->case_cost = rootcost;
+        CurRootClass->dad_case_cost = CurRootClass->total_case_cost = rootcost;
         sum = 1.0 / sum;
         clc = 0;
         while (clc < NumSon) {
@@ -747,23 +747,23 @@ void docase(int cse, int all, int derivs) {
                 if (sub1->case_score & 1) {
                     if (!(sub2->case_score & 1)) {
                         sub2->case_weight = CurClass->case_weight;
-                        CurClass->fac_dad_cost = sub2->case_cost;
+                        CurClass->dad_case_cost = sub2->total_case_cost;
                         continue;
                     }
                 } else {
                     if (sub2->case_score & 1) { /* Only sub1 has weight */
                         sub1->case_weight = CurClass->case_weight;
-                        CurClass->fac_dad_cost = sub1->case_cost;
+                        CurClass->dad_case_cost = sub1->total_case_cost;
                         continue;
                     }
                 }
             }
 
             /*    Both subs costed  */
-            diff = sub1->case_cost - sub2->case_cost;
+            diff = sub1->total_case_cost - sub2->total_case_cost;
             /*    Diff can be used to set cls's casencost  */
             if (diff < 0.0) {
-                low = sub1->case_cost;
+                low = sub1->total_case_cost;
                 w2 = exp(diff);
                 w1 = 1.0 / (1.0 + w2);
                 w2 *= w1;
@@ -773,11 +773,11 @@ void docase(int cse, int all, int derivs) {
                     sub2->case_score &= -2;
                 sub2->vv[CurItem] = sub2->case_score;
                 if (Fix == Random)
-                    CurClass->fac_dad_cost = low;
+                    CurClass->dad_case_cost = low;
                 else
-                    CurClass->fac_dad_cost = low + log(w1);
+                    CurClass->dad_case_cost = low + log(w1);
             } else {
-                low = sub2->case_cost;
+                low = sub2->total_case_cost;
                 w1 = exp(-diff);
                 w2 = 1.0 / (1.0 + w1);
                 w1 *= w2;
@@ -787,9 +787,9 @@ void docase(int cse, int all, int derivs) {
                     sub1->case_score &= -2;
                 sub1->vv[CurItem] = sub1->case_score;
                 if (Fix == Random)
-                    CurClass->fac_dad_cost = low;
+                    CurClass->dad_case_cost = low;
                 else
-                    CurClass->fac_dad_cost = low + log(w2);
+                    CurClass->dad_case_cost = low + log(w2);
             }
             /*    Assign randomly if sub age 0, or to-best if sub age < MinAge */
             if (sub1->age < MinAge) {
@@ -823,10 +823,10 @@ void docase(int cse, int all, int derivs) {
                      * dad's wt
                      */
                     if (CurClass->case_weight > 0.0)
-                        CurClass->fac_dad_cost = rootcost - log(CurClass->case_weight);
+                        CurClass->dad_case_cost = rootcost - log(CurClass->case_weight);
                     else
-                        CurClass->fac_dad_cost = rootcost + 200.0;
-                    CurClass->case_cost = CurClass->fac_dad_cost;
+                        CurClass->dad_case_cost = rootcost + 200.0;
+                    CurClass->total_case_cost = CurClass->dad_case_cost;
                 }
             }
         }

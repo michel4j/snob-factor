@@ -275,7 +275,7 @@ gotit:
 
         /*    Set the offset of the (missing, value) pair  */
         svi->offset = CurRecLen;
-        CurRecLen += (1 + vtp->datsize); /* missing flag and value */
+        CurRecLen += (1 + vtp->data_size); /* missing flag and value */
     }                                 /* End of variables loop */
 
     /*    Now attempt to read in the data. The first item is the number of cases*/
@@ -334,7 +334,7 @@ gotit:
                 *CurField = 0;
                 svi->nval++;
             }
-            CurField += (vtp->datsize + 1);
+            CurField += (vtp->data_size + 1);
         }
     }
     printf("Number of active cases = %d\n", CurSample->num_active);
@@ -601,9 +601,9 @@ nextcl1:
         bs = CurSample->num_cases + 1;
         for (i = 0; i < NumSon; i++) {
             clp = Sons[i];
-            if ((clp->case_weight > 0.5) && (clp->cnt < bs)) {
+            if ((clp->case_weight > 0.5) && (clp->weights_sum < bs)) {
                 bc = i;
-                bs = clp->cnt;
+                bs = clp->weights_sum;
             }
             if ((clp->type == Leaf) && (clp->case_weight > bw)) {
                 bl = i;

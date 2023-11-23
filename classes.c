@@ -75,7 +75,7 @@ int makeclass() {
     nv = CurVSet->num_vars;
     pvars = CurPopln->pvars;
     /*    Find a vacant slot in the popln's classes vec   */
-    for (kk = 0; kk < CurPopln->mncl; kk++) {
+    for (kk = 0; kk < CurPopln->cls_vec_len; kk++) {
         if (!CurPopln->classes[kk])
             goto gotit;
         /*    Also test for a vacated class   */
@@ -136,8 +136,8 @@ vacant1: /* Vacant type shows structure set up but vacated.
     CurClass->type = Vacant;
 
 donebasic:
-    CurClass->cbcost = CurClass->cscost = CurClass->cfcost = 0.0;
-    CurClass->cnt = 0.0;
+    CurClass->best_cost = CurClass->nofac_cost = CurClass->fac_cost = 0.0;
+    CurClass->weights_sum = 0.0;
     /*    Invalidate hierarchy links  */
     CurClass->dad_id = CurClass->sib_id = CurClass->son_id = -1;
     CurClass->num_sons = 0;
@@ -163,8 +163,8 @@ expanded:
         evars[i]->num_values = 0.0;
 finish:
     CurClass->age = 0;
-    CurClass->holdtype = CurClass->hold_use = 0;
-    CurClass->cnt = 0.0;
+    CurClass->hold_type = CurClass->hold_use = 0;
+    CurClass->weights_sum = 0.0;
     return (kk);
 
 nospace:
@@ -187,11 +187,11 @@ void print1class(Class *clp, int full) {
         printf("    Root");
     else
         printf(" Dad%s", sers(CurPopln->classes[((int)clp->dad_id)]));
-    printf(" Age%4d  Sz%6.1f  Use %s", clp->age, clp->cnt, usestr[((int)clp->use)]);
+    printf(" Age%4d  Sz%6.1f  Use %s", clp->age, clp->weights_sum, usestr[((int)clp->use)]);
     printf("%c", (clp->use == Fac) ? ' ' : '(');
-    vrms = sqrt(clp->sum_score_sq / clp->cnt);
+    vrms = sqrt(clp->sum_score_sq / clp->weights_sum);
     printf("Vv%6.2f", vrms);
-    printf("%c", (CurClass->boostcnt) ? 'B' : ' ');
+    printf("%c", (CurClass->boost_count) ? 'B' : ' ');
     printf(" +-%5.3f", (clp->vav));
     printf(" Avv%6.3f", clp->avvv);
     printf("%c", (clp->use == Fac) ? ' ' : ')');
@@ -199,10 +199,10 @@ void print1class(Class *clp, int full) {
         printf("%4d sons", clp->num_sons);
     }
     printf("\n");
-    printf("Pcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->cspcost, clp->cfpcost, clp->cnpcost, clp->cbpcost);
+    printf("Pcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->nofac_par_cost, clp->fac_par_cost, clp->dad_par_cost, clp->best_par_cost);
     printf("Tcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->cstcost, clp->cftcost - CurClass->cfvcost, clp->cntcost, clp->cbtcost);
     printf("Vcost     ---------  F:%9.2f\n", clp->cfvcost);
-    printf("totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->cscost, clp->cfcost, clp->cncost, clp->cbcost);
+    printf("totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->nofac_cost, clp->fac_cost, clp->dad_cost, clp->best_cost);
     if (!full)
         return;
     for (i = 0; i < CurVSet->num_vars; i++) {
@@ -265,16 +265,16 @@ void setbestparall(Class *ccl) {
 
     setclass1(ccl);
     if (CurClass->type == Dad) {
-        CurClass->cbcost = CurClass->cncost;
-        CurClass->cbpcost = CurClass->cnpcost;
+        CurClass->best_cost = CurClass->dad_cost;
+        CurClass->best_par_cost = CurClass->dad_par_cost;
         CurClass->cbtcost = CurClass->cntcost;
     } else if (CurClass->use != Fac) {
-        CurClass->cbcost = CurClass->cscost;
-        CurClass->cbpcost = CurClass->cspcost;
+        CurClass->best_cost = CurClass->nofac_cost;
+        CurClass->best_par_cost = CurClass->nofac_par_cost;
         CurClass->cbtcost = CurClass->cstcost;
     } else {
-        CurClass->cbcost = CurClass->cfcost;
-        CurClass->cbpcost = CurClass->cfpcost;
+        CurClass->best_cost = CurClass->fac_cost;
+        CurClass->best_par_cost = CurClass->fac_par_cost;
         CurClass->cbtcost = CurClass->cftcost;
     }
     for (i = 0; i < CurVSet->num_vars; i++) {
@@ -303,7 +303,7 @@ void scorevarall(Class *ccl) {
     if (CurClass->sum_score_sq > 0.0)
         goto started;
     /*    Generate a fake score to get started.   */
-    CurClass->boostcnt = 0;
+    CurClass->boost_count = 0;
     cvvsprd = 0.1 / nv;
     oldicvv = igbit = 0;
     cvv = (sran() < 0) ? 1.0 : -1.0;
@@ -318,8 +318,8 @@ started:
     /*xx
         cvv -= cls->avvv;
     */
-    if (CurClass->boostcnt && ((Control & AdjSP) == AdjSP)) {
-        cvv *= CurClass->vboost;
+    if (CurClass->boost_count && ((Control & AdjSP) == AdjSP)) {
+        cvv *= CurClass->score_boost;
         if (cvv > Maxv)
             cvv = Maxv;
         else if (cvv < -Maxv)
@@ -408,11 +408,11 @@ void costvarall(Class *ccl) {
     vdone:;
     }
 
-    CurClass->case_cost = CurClass->nofac_cost = scasecost;
-    CurClass->fac_cost = scasecost + 10.0;
+    CurClass->total_case_cost = CurClass->nofac_case_cost = scasecost;
+    CurClass->fac_case_cost = scasecost + 10.0;
     if (CurClass->num_sons < 2)
-        CurClass->fac_dad_cost = 0.0;
-    CurClass->fac_coding_cost = 0.0;
+        CurClass->dad_case_cost = 0.0;
+    CurClass->coding_case_cost = 0.0;
     if (!fac)
         goto finish;
     /*    Now we add the cost of coding the score, and its roundoff */
@@ -428,10 +428,10 @@ void costvarall(Class *ccl) {
         to the class cost. This is added later, once cnt is known.
         */
     fcasecost += tmp;
-    CurClass->fac_cost = fcasecost;
-    CurClass->fac_coding_cost = tmp;
+    CurClass->fac_case_cost = fcasecost;
+    CurClass->coding_case_cost = tmp;
     if (CurClass->use == Fac)
-        CurClass->case_cost = fcasecost;
+        CurClass->total_case_cost = fcasecost;
 finish:
     return;
 }
@@ -464,10 +464,10 @@ void derivvarall(Class *ccl) {
     }
 
     /*    Collect case item costs   */
-    CurClass->cstcost += cwt * CurClass->nofac_cost;
-    CurClass->cftcost += cwt * CurClass->fac_cost;
-    CurClass->cntcost += cwt * CurClass->fac_dad_cost;
-    CurClass->cfvcost += cwt * CurClass->fac_coding_cost;
+    CurClass->cstcost += cwt * CurClass->nofac_case_cost;
+    CurClass->cftcost += cwt * CurClass->fac_case_cost;
+    CurClass->cntcost += cwt * CurClass->dad_case_cost;
+    CurClass->cfvcost += cwt * CurClass->coding_case_cost;
 
     return;
 }
@@ -486,14 +486,14 @@ void adjustclass(Class *ccl, int dod) {
     if (Control & AdjSc)
         CurClass->sum_score_sq = CurClass->newvsq;
     if (Control & AdjPr) {
-        CurClass->cnt = CurClass->newcnt;
+        CurClass->weights_sum = CurClass->newcnt;
         /*    Count down holds   */
-        if ((CurClass->holdtype) && (CurClass->holdtype < Forever))
-            CurClass->holdtype--;
+        if ((CurClass->hold_type) && (CurClass->hold_type < Forever))
+            CurClass->hold_type--;
         if ((CurClass->hold_use) && (CurClass->hold_use < Forever))
             CurClass->hold_use--;
         if (CurDad) {
-            CurClass->relab = (CurDad->relab * (CurClass->cnt + 0.5)) / (CurDad->cnt + 0.5 * CurDad->num_sons);
+            CurClass->relab = (CurDad->relab * (CurClass->weights_sum + 0.5)) / (CurDad->weights_sum + 0.5 * CurDad->num_sons);
             CurClass->mlogab = -log(CurClass->relab);
         } else {
             CurClass->relab = 1.0;
@@ -519,7 +519,7 @@ void adjustclass(Class *ccl, int dod) {
 
     /*    cls->cnpcost was zeroed in doall, and has accumulated the cbpcosts
     of cls's sons, so we don't zero it here. 'ncostvarall' will add to it.  */
-    CurClass->cspcost = CurClass->cfpcost = 0.0;
+    CurClass->nofac_par_cost = CurClass->fac_par_cost = 0.0;
     for (iv = 0; iv < CurVSet->num_vars; iv++) {
         avi = CurAttrs + iv;
         if (avi->inactive)
@@ -531,35 +531,35 @@ void adjustclass(Class *ccl, int dod) {
 
     /*    If vsq less than 0.3, set vboost to inflate  */
     /*    but only if both scores and params are being adjusted  */
-    if (((Control & AdjSP) == AdjSP) && fac && (CurClass->sum_score_sq < (0.3 * CurClass->cnt))) {
-        CurClass->vboost = sqrt((1.0 * CurClass->cnt) / (CurClass->sum_score_sq + 1.0));
-        CurClass->boostcnt++;
+    if (((Control & AdjSP) == AdjSP) && fac && (CurClass->sum_score_sq < (0.3 * CurClass->weights_sum))) {
+        CurClass->score_boost = sqrt((1.0 * CurClass->weights_sum) / (CurClass->sum_score_sq + 1.0));
+        CurClass->boost_count++;
     } else {
-        CurClass->vboost = 1.0;
-        CurClass->boostcnt = 0;
+        CurClass->score_boost = 1.0;
+        CurClass->boost_count = 0;
     }
 
     /*    Get average score   */
-    CurClass->avvv = CurClass->totvv / CurClass->cnt;
+    CurClass->avvv = CurClass->totvv / CurClass->weights_sum;
 
     if (dod)
         ncostvarall(ccl, npars);
 
-    CurClass->cscost = CurClass->cspcost + CurClass->cstcost;
+    CurClass->nofac_cost = CurClass->nofac_par_cost + CurClass->cstcost;
     /*    The 'lattice' effect on the cost of coding scores is approx
         (log (2 Pi cnt))/2 + 1,  which adds to cftcost  */
     CurClass->cftcost += 0.5 * log(CurClass->newcnt + 1.0) + hlg2pi + 1.0;
-    CurClass->cfcost = CurClass->cfpcost + CurClass->cftcost;
+    CurClass->fac_cost = CurClass->fac_par_cost + CurClass->cftcost;
     if (npars)
-        CurClass->cncost = CurClass->cnpcost + CurClass->cntcost;
+        CurClass->dad_cost = CurClass->dad_par_cost + CurClass->cntcost;
     else
-        CurClass->cncost = CurClass->cnpcost = CurClass->cntcost = 0.0;
+        CurClass->dad_cost = CurClass->dad_par_cost = CurClass->cntcost = 0.0;
 
     /*    Contemplate changes to class use and type   */
     if (CurClass->hold_use || (!(Control & AdjPr)))
         goto usechecked;
     /*    If scores boosted too many times, make Tiny and hold   */
-    if (CurClass->boostcnt > 20) {
+    if (CurClass->boost_count > 20) {
         CurClass->use = Tiny;
         CurClass->hold_use = 10;
         goto usechecked;
@@ -576,7 +576,7 @@ void adjustclass(Class *ccl, int dod) {
     vidle:;
     }
     /*    I want at least 1.5 data vals per param  */
-    small = (leafcost < (9 * small + 1.5 * CurClass->cnt + 1)) ? 1 : 0;
+    small = (leafcost < (9 * small + 1.5 * CurClass->weights_sum + 1)) ? 1 : 0;
     if (small) {
         if (CurClass->use != Tiny) {
             CurClass->use = Tiny;
@@ -592,40 +592,40 @@ void adjustclass(Class *ccl, int dod) {
     if (CurClass->age < MinFacAge)
         goto usechecked;
     if (CurClass->use == Plain) {
-        if (CurClass->cfcost < CurClass->cscost) {
+        if (CurClass->fac_cost < CurClass->nofac_cost) {
             CurClass->use = Fac;
-            CurClass->boostcnt = 0;
-            CurClass->vboost = 1.0;
+            CurClass->boost_count = 0;
+            CurClass->score_boost = 1.0;
         }
     } else {
-        if (CurClass->cscost < CurClass->cfcost) {
+        if (CurClass->nofac_cost < CurClass->fac_cost) {
             CurClass->use = Plain;
         }
     }
 usechecked:
     if (!dod)
         goto typechecked;
-    if (CurClass->holdtype)
+    if (CurClass->hold_type)
         goto typechecked;
     if (!(Control & AdjTr))
         goto typechecked;
     if (CurClass->num_sons < 2)
         goto typechecked;
-    leafcost = (CurClass->use == Fac) ? CurClass->cfcost : CurClass->cscost;
+    leafcost = (CurClass->use == Fac) ? CurClass->fac_cost : CurClass->nofac_cost;
 
-    if ((CurClass->type == Dad) && (leafcost < CurClass->cncost) && (Fix != Random)) {
+    if ((CurClass->type == Dad) && (leafcost < CurClass->dad_cost) && (Fix != Random)) {
         flp();
         printf("Changing type of class%s from Dad to Leaf\n", sers(CurClass));
         SeeAll = 4;
         /*    Kill all sons  */
         killsons(CurClass->id); /* which changes type to leaf */
-    } else if (npars && (leafcost > CurClass->cncost) && (CurClass->type == Leaf)) {
+    } else if (npars && (leafcost > CurClass->dad_cost) && (CurClass->type == Leaf)) {
         flp();
         printf("Changing type of class%s from Leaf to Dad\n", sers(CurClass));
         SeeAll = 4;
         CurClass->type = Dad;
         if (CurDad)
-            CurDad->holdtype += 3;
+            CurDad->hold_type += 3;
         /*    Make subs into leafs  */
         son = CurPopln->classes[CurClass->son_id];
         son->type = Leaf;
@@ -666,7 +666,7 @@ void ncostvarall(Class *ccl, int valid) {
     }
 
     if (!valid) {
-        CurClass->cnpcost = CurClass->cncost = 0.0;
+        CurClass->dad_par_cost = CurClass->dad_cost = 0.0;
         return;
     }
     nson = CurClass->num_sons;
@@ -685,12 +685,12 @@ void ncostvarall(Class *ccl, int valid) {
         abcost -= 0.5 * log(son->relab * rrelab);
     }
     /*    Add other terms from Fisher  */
-    abcost += (nson - 1) * (log(CurClass->cnt) + lattice);
+    abcost += (nson - 1) * (log(CurClass->weights_sum) + lattice);
     /*    And from prior:  */
     abcost -= FacLog[nson - 1];
     /*    The sons will have been processed by 'adjustclass' already, and
     this will have caused their best pcosts to be added into cls->cnpcost  */
-    CurClass->cnpcost += abcost;
+    CurClass->dad_par_cost += abcost;
     return;
 }
 
@@ -716,7 +716,7 @@ void killsons(int kk) {
     clp->son_id = -1;
     if (clp->type == Dad)
         clp->type = Leaf;
-    clp->holdtype = 0;
+    clp->hold_type = 0;
     return;
 }
 
@@ -727,11 +727,11 @@ int splitleaf(int kk) {
     Class *son;
     int kks;
     CurClass = CurPopln->classes[kk];
-    if ((CurClass->type != Leaf) || (CurClass->num_sons < 2) || CurClass->holdtype) {
+    if ((CurClass->type != Leaf) || (CurClass->num_sons < 2) || CurClass->hold_type) {
         return (1);
     }
     CurClass->type = Dad;
-    CurClass->holdtype = HoldTime;
+    CurClass->hold_type = HoldTime;
     for (kks = CurClass->son_id; kks >= 0; kks = son->sib_id) {
         son = CurPopln->classes[kks];
         son->type = Leaf;
@@ -764,7 +764,7 @@ void deleteallclasses() {
     CurClass->serial = 4;
     CurPopln->next_serial = 2;
     CurClass->age = 0;
-    CurClass->holdtype = CurClass->hold_use = 0;
+    CurClass->hold_type = CurClass->hold_use = 0;
     CurClass->type = Leaf;
     NoSubs++;
     tidy(1);

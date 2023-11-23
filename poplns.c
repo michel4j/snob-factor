@@ -93,7 +93,7 @@ gotit:
     CurPopln->sample_size = 0;
     strcpy(CurPopln->sample_name, "??");
     strcpy(CurPopln->vst_name, CurVSet->name);
-    CurPopln->pblks = CurPopln->jblks = 0;
+    CurPopln->blocks = CurPopln->model_blocks = 0;
     CurCtx.popln = CurPopln;
     for (i = 0; i < 80; i++)
         CurPopln->name[i] = 0;
@@ -121,8 +121,8 @@ gotit:
     CurPopln->classes = (Class **)gtsp(1, MAX_CLASSES * sizeof(Class *));
     if (!CurPopln->classes)
         goto nospace;
-    CurPopln->mncl = MAX_CLASSES;
-    for (i = 0; i < CurPopln->mncl; i++)
+    CurPopln->cls_vec_len = MAX_CLASSES;
+    for (i = 0; i < CurPopln->cls_vec_len; i++)
         CurPopln->classes[i] = 0;
 
     if (fill) {
@@ -140,7 +140,7 @@ gotit:
     /*      Set type as leaf, no fac  */
     cls->type = Leaf;
     cls->use = Plain;
-    cls->cnt = 0.0;
+    cls->weights_sum = 0.0;
 
     setpop();
     return (indx);
@@ -197,7 +197,7 @@ void makesubs(int kk){
         goto finish;
     }
     /*    And that it is big enough to support subs    */
-    cntk = CurClass->cnt;
+    cntk = CurClass->weights_sum;
     if (cntk < (2 * MinSize + 2.0)) {
         i = 1;
         goto finish;
@@ -248,7 +248,7 @@ void makesubs(int kk){
     clsa->use = clsb->use = Plain;
     clsa->relab = clsb->relab = 0.5 * CurClass->relab;
     clsa->mlogab = clsb->mlogab = -log(clsa->relab);
-    clsa->cnt = clsb->cnt = 0.5 * CurClass->cnt;
+    clsa->weights_sum = clsb->weights_sum = 0.5 * CurClass->weights_sum;
     i = 3;
 
 finish:
@@ -448,9 +448,9 @@ fakeit: /*  initialize scorevectors  */
         CurRecord = CurRecords + n * CurRecLen;
         cls->vv[n] = 0;
     }
-    cls->cnt = nomcnt;
+    cls->weights_sum = nomcnt;
     if (cls->dad_id < 0) /* Root class */
-        cls->cnt = CurSample->num_active;
+        cls->weights_sum = CurSample->num_active;
 
 classdone:
     if (fill)
@@ -501,7 +501,7 @@ void printsubtree(int kk){
         printf("Leaf");
     if (clp->type == Sub)
         printf(" Sub");
-    if (clp->holdtype)
+    if (clp->hold_type)
         printf(" H");
     else
         printf("  ");
@@ -534,7 +534,7 @@ void printtree() {
     setpop();
     printf("Popln%3d on sample%3d,%4d classes,%6d things", CurPopln->id + 1,
            CurSample->id + 1, CurPopln->num_classes, CurSample->num_cases);
-    printf("  Cost %10.2f\n", CurPopln->classes[CurPopln->root]->cbcost);
+    printf("  Cost %10.2f\n", CurPopln->classes[CurPopln->root]->best_cost);
     printf("\n  Assign mode ");
     if (Fix == Partial)
         printf("Partial    ");
@@ -584,7 +584,7 @@ int bestpopid() {
     if (i < 0)
         goto gotit;
     /*    Set bestcost in samp from current cost  */
-    CurSample->best_cost = CurPopln->classes[CurRoot]->cbcost;
+    CurSample->best_cost = CurPopln->classes[CurRoot]->best_cost;
     /*    Set goodtime as current pop age  */
     CurSample->best_time = CurPopln->classes[CurRoot]->age;
 
@@ -615,8 +615,8 @@ void trackbest(int verify) {
     }
     bstpop = poplns[bstid];
     bstroot = bstpop->root;
-    bstcst = bstpop->classes[bstroot]->cbcost;
-    if (CurPopln->classes[CurRoot]->cbcost >= bstcst)
+    bstcst = bstpop->classes[bstroot]->best_cost;
+    if (CurPopln->classes[CurRoot]->best_cost >= bstcst)
         return;
     /*    Current looks better, but do a doall to ensure cost is correct */
     /*    But only bother if 'verify'  */
@@ -625,14 +625,14 @@ void trackbest(int verify) {
         Control = 0;
         doall(1, 1);
         Control = kk;
-        if (CurPopln->classes[CurRoot]->cbcost >= (bstcst))
+        if (CurPopln->classes[CurRoot]->best_cost >= (bstcst))
             return;
     }
 
     /*    Seems better, so kill old 'bestmodel' and make a new one */
     setpop();
     kk = copypop(CurPopln->id, 0, BSTname);
-    CurSample->best_cost = CurPopln->classes[CurRoot]->cbcost;
+    CurSample->best_cost = CurPopln->classes[CurRoot]->best_cost;
     CurSample->best_time = CurPopln->classes[CurRoot]->age;
     return;
 }
@@ -809,7 +809,7 @@ classdone:
 finish:
     fclose(fl);
     printf("\nModel %s  Cost %10.2f  saved in file %s\n", oldname,
-           CurPopln->classes[0]->cbcost, newname);
+           CurPopln->classes[0]->best_cost, newname);
     cmcpy(&CurCtx, &oldctx, sizeof(Context));
     setpop();
     return (leng);

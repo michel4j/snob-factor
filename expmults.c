@@ -155,7 +155,7 @@ void expmults_define(typindx) int typindx;
     vtp->id = typindx;
     /*     Set type name as string up to 59 chars  */
     vtp->name = "ExpMultiState";
-    vtp->datsize = sizeof(Datum);
+    vtp->data_size = sizeof(Datum);
     vtp->attr_aux_size = sizeof(Vaux);
     vtp->pop_aux_size = sizeof(Paux);
     vtp->smpl_aux_size = sizeof(Saux);
@@ -677,8 +677,8 @@ facdone1:
     evi->spcost = spcost;
     evi->fpcost = fpcost;
     /*    Add to class param costs  */
-    CurClass->cspcost += spcost;
-    CurClass->cfpcost += fpcost;
+    CurClass->nofac_par_cost += spcost;
+    CurClass->fac_par_cost += fpcost;
     if (!(Control & AdjPr))
         goto adjdone;
     if (cnt < MinSize)

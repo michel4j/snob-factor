@@ -31,12 +31,12 @@ void *gtsp(int gr, int size) {
         CurCtx.sample->blocks = blk;
         break;
     case 1:
-        blk->next = CurCtx.popln->pblks;
-        CurCtx.popln->pblks = blk;
+        blk->next = CurCtx.popln->blocks;
+        CurCtx.popln->blocks = blk;
         break;
     case 2:
-        blk->next = CurCtx.popln->jblks;
-        CurCtx.popln->jblks = blk;
+        blk->next = CurCtx.popln->model_blocks;
+        CurCtx.popln->model_blocks = blk;
         break;
     case 3:
         blk->next = CurCtx.vset->blocks;
@@ -57,12 +57,12 @@ void freesp(int gr) {
         CurCtx.sample->blocks = 0;
         break;
     case 1:
-        blk = CurCtx.popln->pblks;
-        CurCtx.popln->pblks = 0;
+        blk = CurCtx.popln->blocks;
+        CurCtx.popln->blocks = 0;
         break;
     case 2:
-        blk = CurCtx.popln->jblks;
-        CurCtx.popln->jblks = 0;
+        blk = CurCtx.popln->model_blocks;
+        CurCtx.popln->model_blocks = 0;
         break;
     case 3:
         blk = CurCtx.vset->blocks;
