@@ -15,7 +15,7 @@ pro: prompt.c
 	$(CC) -opro prompt.c
 
 clean:
-	rm -f *.o snob-factor pro
+	rm -f *.o snob-factor
 
 test:
 	cd ./examples && time ../snob-factor < phi.cmd 
