@@ -1,4 +1,4 @@
-/*	File of stuff for Multistate variables.   */
+/*    File of stuff for Multistate variables.   */
 
 #include "glob.h"
 
@@ -37,7 +37,7 @@ typedef struct Pauxst {
     int dummy;
 } Paux;
 
-/*	Common variable for holding a data value  */
+/*    Common variable for holding a data value  */
 
 typedef struct Basicst { /* Basic parameter info about var in class.
             The first few fields are standard and must
@@ -65,12 +65,12 @@ typedef struct Basicst { /* Basic parameter info about var in class.
                */
 } Basic;
 
-/*	Pointers to vectors in Basic  */
+/*    Pointers to vectors in Basic  */
 static double *nap;       /* Log odds as dad */
 static double *sap;       /*  Log odds without factor  */
 static double *fap, *fbp; /* Const and load params for logodds */
 static double *frate;
-/*	The factor model is that prob of state k for a case with score v
+/*    The factor model is that prob of state k for a case with score v
     is proportional to
         exp (fap[k] + fbp[k] * v)
     frate[k] is defined as
@@ -101,24 +101,24 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
     double origin; /* First element of states vectors */
 } Stats;
 
-/*	Pointers to vectors in stats  */
+/*    Pointers to vectors in stats  */
 static double *scnt;          /*  vector of counts in states  */
 static double *scst;          /*  vector of non-fac state costs  */
 static double *pr;            /* vec. of factor state probs  */
 static double *fapd1, *fbpd1; /*  vectors of derivs of cost wrt params */
 
-/*	Static variables useful for many types of variable    */
+/*    Static variables useful for many types of variable    */
 static Saux *saux;
 static Paux *paux;
 static Vaux *vaux;
 static Basic *cvi, *dcvi;
 static Stats *evi;
 
-/*	The macro below abbreviates a scan over states  */
+/*    The macro below abbreviates a scan over states  */
 #define Fork for (k = 0; k < states; k++)
 #define Forj for (j = 0; j < states; j++)
 
-/*	Static variables specific to this type   */
+/*    Static variables specific to this type   */
 static int states;
 static double statesm; /*  states - 1.0 */
 static double rstates; /*  1.0 / states  */
@@ -128,7 +128,7 @@ static double b1p, b2p, b3p, b1p2, gg, ff;
 static double *dadnap; /* To dad's nap[] */
 static double dapsprd; /* Dad's napsprd */
 
-/*	Stuff for a table of the function exp (-0.5 * x * x)
+/*    Stuff for a table of the function exp (-0.5 * x * x)
     for x in the range 0 to Grange in Gns steps per unit of x  */
 #define Grange ((int)6)
 #define Gns ((int)512)
@@ -138,7 +138,7 @@ static double gaustab[Gnt];
 static double *gausorg; /* ptr to gaustab[1] */
 
 /*--------------------------  define ------------------------------- */
-/*	This routine is used to set up a Vtype entry in the global "types"
+/*    This routine is used to set up a Vtype entry in the global "types"
 array.  It is the only function whose name needs to be altered for different
 types of variable, and this name must be copied into the file "definetypes.c"
 when installing a new type of variable. It is also necessary to change the
@@ -146,19 +146,19 @@ when installing a new type of variable. It is also necessary to change the
     */
 
 void expmults_define(typindx) int typindx;
-/*	typindx is the index in types[] of this type   */
+/*    typindx is the index in types[] of this type   */
 {
     int ig;
     double xg;
 
-    vtp = types + typindx;
+    vtp = Types + typindx;
     vtp->id = typindx;
-    /* 	Set type name as string up to 59 chars  */
+    /*     Set type name as string up to 59 chars  */
     vtp->name = "ExpMultiState";
     vtp->datsize = sizeof(Datum);
-    vtp->vauxsize = sizeof(Vaux);
-    vtp->pauxsize = sizeof(Paux);
-    vtp->sauxsize = sizeof(Saux);
+    vtp->attr_aux_size = sizeof(Vaux);
+    vtp->pop_aux_size = sizeof(Paux);
+    vtp->smpl_aux_size = sizeof(Saux);
     vtp->readvaux = &readvaux;
     vtp->readsaux = &readsaux;
     vtp->readdat = &readdat;
@@ -174,7 +174,7 @@ void expmults_define(typindx) int typindx;
     vtp->vprint = &vprint;
     vtp->setvar = &setvar;
 
-    /*	Make table of exp (-0.5 * x * x) in gaustab[]
+    /*    Make table of exp (-0.5 * x * x) in gaustab[]
         Entry for x = 0 is at gaustab[1]  */
     gausorg = gaustab + 1;
     for (ig = -1; ig <= (Grange * Gns + 1); ig++) {
@@ -184,18 +184,18 @@ void expmults_define(typindx) int typindx;
     return;
 }
 
-/*	----------------------- setvar --------------------------  */
+/*    ----------------------- setvar --------------------------  */
 void setvar(iv) int iv;
 {
-    avi = vlist + iv;
-    vtp = avi->vtp;
+    avi = CurAttrs + iv;
+    vtp = avi->vtype;
     pvi = pvars + iv;
     paux = (Paux *)pvi->paux;
     svi = svars + iv;
     vaux = (Vaux *)avi->vaux;
     saux = (Saux *)svi->saux;
-    cvi = (Basic *)cls->basics[iv];
-    evi = (Stats *)cls->stats[iv];
+    cvi = (Basic *)CurClass->basics[iv];
+    evi = (Stats *)CurClass->stats[iv];
     states = vaux->states;
     statesm = states - 1;
     rstates = 1.0 / states;
@@ -213,8 +213,8 @@ void setvar(iv) int iv;
     return;
 }
 
-/*	---------------------  readvaux ---------------------------   */
-/*	To read any auxiliary info about a variable of this type in some
+/*    ---------------------  readvaux ---------------------------   */
+/*    To read any auxiliary info about a variable of this type in some
 sample.
     */
 int readvaux(vax)
@@ -223,7 +223,7 @@ Vaux *vax;
     int i;
     double lstates;
 
-    /*	Read in auxiliary info into vaux, return 0 if OK else 1  */
+    /*    Read in auxiliary info into vaux, return 0 if OK else 1  */
     i = readint(&(vax->states), 1);
     if (i < 0) {
         vax->states = 0;
@@ -236,15 +236,15 @@ Vaux *vax;
     }
     lstates = log((double)(vax->states));
     vax->lstatessq = 2.0 * lstates;
-    /*	Calc a maximum value for ff, the (K-1)th root of the Fisher
+    /*    Calc a maximum value for ff, the (K-1)th root of the Fisher
         given by K^2 * Prod_k {pr_k}.  The maximum occurs when
         pr_k = 1/K for all k, so  */
     rstatesm = 1.0 / (vax->states - 1);
     vax->mff = exp(-rstatesm * (vax->states - 2) * lstates);
-    /*	For safety, inflate by states/statesm  */
+    /*    For safety, inflate by states/statesm  */
     vax->mff *= vax->states * rstatesm;
 #ifdef UseBin
-    /*	If states = 2, change type to binary by changing vtp, avi->vtp,
+    /*    If states = 2, change type to binary by changing vtp, avi->vtp,
         and avi->itype  */
     if (vax->states == 2) {
         avi->itype++;
@@ -254,24 +254,24 @@ Vaux *vax;
     return (0);
 }
 
-/*	-------------------  readsaux ------------------------------  */
-/*	To read auxilliary info re sample for this attribute   */
+/*    -------------------  readsaux ------------------------------  */
+/*    To read auxilliary info re sample for this attribute   */
 int readsaux(sax)
 Saux *sax;
 {
-    /*	Multistate has no auxilliary info re sample  */
+    /*    Multistate has no auxilliary info re sample  */
     return (0);
 }
 
-/*	-------------------  readdat -------------------------------  */
-/*	To read a value for this variable type         */
+/*    -------------------  readdat -------------------------------  */
+/*    To read a value for this variable type         */
 int readdat(char *loc, int iv) {
     int i;
     Datum xn;
 
-    vaux = (Vaux *)(vlist[iv].vaux);
+    vaux = (Vaux *)(CurAttrs[iv].vaux);
     states = vaux->states;
-    /*	Read datum into xn, return error.  */
+    /*    Read datum into xn, return error.  */
     i = readint(&xn, 1);
     if (i)
         return (i);
@@ -284,45 +284,45 @@ int readdat(char *loc, int iv) {
     return (0);
 }
 
-/*	---------------------  printdat --------------------------  */
-/*	To print a Datum value   */
+/*    ---------------------  printdat --------------------------  */
+/*    To print a Datum value   */
 void printdat(loc) Datum *loc;
 {
-    /*	Print datum from address loc   */
+    /*    Print datum from address loc   */
     printf("%3d", (*((Datum *)loc) + 1));
     return;
 }
 
-/*	---------------------  setsizes  -----------------------   */
-/*	To use info in ctx.vset to set sizes of basic and stats
+/*    ---------------------  setsizes  -----------------------   */
+/*    To use info in ctx.vset to set sizes of basic and stats
 blocks for variable, and place in AVinst basicsize, statssize.
     */
 void setsizes(iv) int iv;
 {
 
-    avi = vlist + iv;
+    avi = CurAttrs + iv;
     vaux = (Vaux *)avi->vaux;
     states = vaux->states;
 
-    /*	Set sizes of CVinst (basic) and EVinst (stats) in AVinst  */
-    /*	Each inst has a number of vectors appended, of length 'states' */
-    avi->basicsize = sizeof(Basic) + (5 * states - 1) * sizeof(double);
-    avi->statssize = sizeof(Stats) + (5 * states - 1) * sizeof(double);
+    /*    Set sizes of CVinst (basic) and EVinst (stats) in AVinst  */
+    /*    Each inst has a number of vectors appended, of length 'states' */
+    avi->basic_size = sizeof(Basic) + (5 * states - 1) * sizeof(double);
+    avi->stats_size = sizeof(Stats) + (5 * states - 1) * sizeof(double);
     return;
 }
 
-/*	----------------------- setbestparam -----------------------  */
+/*    ----------------------- setbestparam -----------------------  */
 void setbestparam(iv) int iv;
 {
 
     setvar(iv);
 
-    if (cls->type == Dad) {
+    if (CurClass->type == Dad) {
         cvi->bap = nap;
         cvi->bapsprd = cvi->napsprd;
         evi->btcost = evi->ntcost;
         evi->bpcost = evi->npcost;
-    } else if ((cls->use == Fac) && cvi->infac) {
+    } else if ((CurClass->use == Fac) && cvi->infac) {
         cvi->bap = fap;
         cvi->bapsprd = cvi->fapsprd;
         evi->btcost = evi->ftcost;
@@ -336,10 +336,10 @@ void setbestparam(iv) int iv;
     return;
 }
 
-/*	--------------------  setprobs -------------------------------- */
-/*	Routine to set state probs for a item using fap, fbp, cvv */
-/*	Sets probs in pr[], -log probs in qr[].  */
-/*	Also calcs b1p, b2p, b3p, b1p2, gg  */
+/*    --------------------  setprobs -------------------------------- */
+/*    Routine to set state probs for a item using fap, fbp, cvv */
+/*    Sets probs in pr[], -log probs in qr[].  */
+/*    Also calcs b1p, b2p, b3p, b1p2, gg  */
 void setprobs() {
     double sum, tt, lsum;
     int k, ig;
@@ -348,7 +348,7 @@ void setprobs() {
     sum = 0.0;
     Fork {
         tt = fabs(cvv - fbp[k]);
-        /*	Do table interpolation in gausorg   */
+        /*    Do table interpolation in gausorg   */
         tt = tt * Gns;
         ig = tt;
         tt = tt - ig;
@@ -378,8 +378,8 @@ void setprobs() {
     return;
 }
 
-/*	---------------------------  clearstats  --------------------   */
-/*	Clears stats to accumulate in costvar, and derives useful functions
+/*    ---------------------------  clearstats  --------------------   */
+/*    Clears stats to accumulate in costvar, and derives useful functions
 of basic params   */
 void clearstats(iv) int iv;
 {
@@ -392,20 +392,20 @@ void clearstats(iv) int iv;
     evi->vsq = 0.0;
     Fork { scnt[k] = fapd1[k] = fbpd1[k] = 0.0; }
     evi->apd2 = evi->bpd2 = 0.0;
-    if (cls->age == 0) {
-        /*	Set nominal state costs in scst[]  */
+    if (CurClass->age == 0) {
+        /*    Set nominal state costs in scst[]  */
         sum = log((double)states) + 1.0;
         Fork scst[k] = sum;
         return;
     }
-    /*	Some useful functions  */
-    /*	Calc a maximum? for gg  */
+    /*    Some useful functions  */
+    /*    Calc a maximum? for gg  */
     sum = 0.0;
     Fork sum += fbp[k] * fbp[k];
     evi->mgg = 0.5 * sum * rstates;
 
-    /*	Set up non-fac case costs in scst[]  */
-    /*	This requires us to calculate probs and log probs of states.  */
+    /*    Set up non-fac case costs in scst[]  */
+    /*    This requires us to calculate probs and log probs of states.  */
     tt = sap[0];
     for (k = 1; k < states; k++) {
         if (sap[k] > tt)
@@ -422,11 +422,11 @@ void clearstats(iv) int iv;
         qr[k] = -log(pr[k] * sum + 0.0000001);
         tt -= qr[k];
     }
-    /*	Have log of prod of probs in tt. Add log K^2 to get log Fisher  */
+    /*    Have log of prod of probs in tt. Add log K^2 to get log Fisher  */
     tt += vaux->lstatessq;
     tt = exp(rstatesm * tt); /* 2nd deriv of cost wrt sap[] */
     tt = 0.5 * cvi->sapsprd * tt;
-    /*	Set state case costs  */
+    /*    Set state case costs  */
     Fork scst[k] = qr[k] + tt;
 
     /*jjj*/
@@ -440,14 +440,14 @@ void clearstats(iv) int iv;
     return;
 }
 
-/*	-------------------------  scorevar  ------------------------   */
-/*	To eval derivs of a case wrt score, scorespread. Adds to vvd1,vvd2.
+/*    -------------------------  scorevar  ------------------------   */
+/*    To eval derivs of a case wrt score, scorespread. Adds to vvd1,vvd2.
  */
 void scorevar(iv) int iv;
 {
     double t1d1, t2d1, t3d1;
     setvar(iv);
-    if (avi->idle)
+    if (avi->inactive)
         return;
     if (saux->missing)
         return;
@@ -459,15 +459,15 @@ void scorevar(iv) int iv;
 
     vvd1 += t1d1 + t3d1 + t2d1;
     vvd2 += gg;
-    /*xx	vvd2 += Mbeta * evi->mgg;  */
+    /*xx    vvd2 += Mbeta * evi->mgg;  */
     mvvd2 += (gg > evi->mgg) ? gg : evi->mgg;
-    /*	Since we don't know vsprd, just calc and accumulate deriv of 'gg' */
+    /*    Since we don't know vsprd, just calc and accumulate deriv of 'gg' */
     vvd3 += b3p - b1p * (3.0 * gg + b1p2);
     return;
 }
 
-/*	---------------------  costvar  ---------------------------  */
-/*	Accumulate item cost into scasecost, fcasecost  */
+/*    ---------------------  costvar  ---------------------------  */
+/*    Accumulate item cost into scasecost, fcasecost  */
 void costvar(iv, fac) int iv, fac;
 {
     double cost;
@@ -475,15 +475,15 @@ void costvar(iv, fac) int iv, fac;
     setvar(iv);
     if (saux->missing)
         return;
-    if (cls->age == 0) {
+    if (CurClass->age == 0) {
         evi->parkftcost = 0.0;
         return;
     }
-    /*	Do nofac costing first  */
+    /*    Do nofac costing first  */
     cost = scst[saux->xn];
     scasecost += cost;
 
-    /*	Only do faccost if fac  */
+    /*    Only do faccost if fac  */
     if (!fac)
         goto facdone;
     setprobs();
@@ -493,7 +493,7 @@ void costvar(iv, fac) int iv, fac;
     evi->parkb1p = b1p;
     evi->parkb2p = b2p;
     cost += evi->conff;
-    /*	In cost calculation, use gg as is without Mbeta mod  */
+    /*    In cost calculation, use gg as is without Mbeta mod  */
     cost += 0.5 * cvvsprd * gg;
 
 facdone:
@@ -502,8 +502,8 @@ facdone:
     return;
 }
 
-/*	------------------  derivvar  ------------------------------  */
-/*	Given item weight in cwt, calcs derivs of item cost wrt basic
+/*    ------------------  derivvar  ------------------------------  */
+/*    Given item weight in cwt, calcs derivs of item cost wrt basic
 params and accumulates in paramd1, paramd2  */
 void derivvar(iv, fac) int iv, fac;
 {
@@ -513,22 +513,22 @@ void derivvar(iv, fac) int iv, fac;
     setvar(iv);
     if (saux->missing)
         return;
-    /*	Do no-fac first  */
+    /*    Do no-fac first  */
     evi->cnt += cwt;
-    /*	For non-fac, I just accumulate counts in scnt[]  */
+    /*    For non-fac, I just accumulate counts in scnt[]  */
     scnt[saux->xn] += cwt;
-    /*	Accum. weighted item cost  */
+    /*    Accum. weighted item cost  */
     evi->stcost += cwt * scst[saux->xn];
     evi->ftcost += cwt * evi->parkftcost;
 
-    /*	Now for factor form  */
+    /*    Now for factor form  */
     evi->vsq += cwt * cvvsq;
     if (!fac)
         goto facdone;
     b1p = evi->parkb1p;
     b1p2 = b1p * b1p;
     b2p = evi->parkb2p;
-    /*	From 1st cost term:  */
+    /*    From 1st cost term:  */
     fapd1[saux->xn] -= cwt;
     fbpd1[saux->xn] -= cwt * cvv;
     Fork {
@@ -536,7 +536,7 @@ void derivvar(iv, fac) int iv, fac;
         fbpd1[k] += cwt * pr[k] * cvv;
     }
 
-    /*	Second cost term :  */
+    /*    Second cost term :  */
     cons1 = cwt * evi->conff * rstatesm;
     cons2 = states * cons1;
     Fork {
@@ -545,7 +545,7 @@ void derivvar(iv, fac) int iv, fac;
         fbpd1[k] += cvv * inc;
     }
 
-    /*	Third cost term:  */
+    /*    Third cost term:  */
     cons1 = 2.0 * b1p2 - b2p;
     cons2 = cwt * cvvsprd * Mbeta * rstates;
     Fork {
@@ -553,20 +553,20 @@ void derivvar(iv, fac) int iv, fac;
               (fbp[k] * fbp[k] - 2.0 * fbp[k] * b1p + cons1);
         fapd1[k] += inc;
         fbpd1[k] += cvv * inc;
-        /*	Terms I forgot :  */
+        /*    Terms I forgot :  */
         fbpd1[k] += cwt * cvvsprd * pr[k] * (fbp[k] - b1p);
         fbpd1[k] += cons2 * fbp[k];
     }
 
-    /*	Second derivs (i.e. derivs wrt fapsprd, bpsprd)  */
+    /*    Second derivs (i.e. derivs wrt fapsprd, bpsprd)  */
     evi->apd2 += cwt * evi->ff;
     evi->bpd2 += cwt * evi->ff * cvvsq;
 facdone:
     return;
 }
 
-/*	-------------------  adjust  ---------------------------    */
-/*	To adjust parameters of a multistate variable     */
+/*    -------------------  adjust  ---------------------------    */
+/*    To adjust parameters of a multistate variable     */
 void adjust(iv, fac) int iv, fac;
 {
 
@@ -576,18 +576,18 @@ void adjust(iv, fac) int iv, fac;
     setvar(iv);
     cnt = evi->cnt;
 
-    if (dad) { /* Not root */
-        dcvi = (Basic *)dad->basics[iv];
+    if (CurDad) { /* Not root */
+        dcvi = (Basic *)CurDad->basics[iv];
         dadnap = &(dcvi->origin);
         dapsprd = dcvi->napsprd;
     } else { /* Root */
         dcvi = 0;
-        dadnap = zerov;
+        dadnap = ZeroVec;
         dapsprd = 1.0;
     }
 
-    /*	If too few data, use dad's n-paras   */
-    if ((control & AdjPr) && (cnt < MinSize)) {
+    /*    If too few data, use dad's n-paras   */
+    if ((Control & AdjPr) && (cnt < MinSize)) {
         Fork {
             nap[k] = sap[k] = fap[k] = dadnap[k];
             fbp[k] = 0.0;
@@ -598,8 +598,8 @@ void adjust(iv, fac) int iv, fac;
         goto hasage;
     }
 
-    /*	If class age zero, make some preliminary estimates  */
-    if (cls->age)
+    /*    If class age zero, make some preliminary estimates  */
+    if (CurClass->age)
         goto hasage;
     evi->oldftcost = 0.0;
     evi->adj = 1.0;
@@ -609,7 +609,7 @@ void adjust(iv, fac) int iv, fac;
         qr[k] = -sap[k];
         sum += sap[k]; /* Gives sum of log probs */
     }
-    /*	Set sapsprd  */
+    /*    Set sapsprd  */
     apd2 = exp(rstatesm * (sum + vaux->lstatessq)) * cnt;
     apd2 += 1.0 / dapsprd;
     cvi->fapsprd = cvi->bpsprd = cvi->sapsprd = statesm / apd2;
@@ -620,27 +620,27 @@ void adjust(iv, fac) int iv, fac;
         fap[k] = sap[k];
         fbp[k] = 0.0;
     }
-    /*	Make a stab at item cost   */
+    /*    Make a stab at item cost   */
     sum = 0.0;
     Fork sum += scnt[k] * qr[k];
-    cls->cstcost -= sum + 0.5 * statesm;
-    cls->cftcost = cls->cstcost + 100.0 * cnt;
+    CurClass->cstcost -= sum + 0.5 * statesm;
+    CurClass->cftcost = CurClass->cstcost + 100.0 * cnt;
 
 hasage:
-    /*	Calculate spcost for non-fac params  */
+    /*    Calculate spcost for non-fac params  */
     vara = 0.0;
     Fork {
         del = sap[k] - dadnap[k];
         vara += del * del;
     }
     vara += cvi->sapsprd; /* Additional variance from roundoff */
-    /*	Now vara holds squared difference from sap[] to dad's nap[]. This
+    /*    Now vara holds squared difference from sap[] to dad's nap[]. This
     is a variance in (states-1) space with sum-sq spread dapsprd, Normal form */
     spcost = 0.5 * vara / dapsprd;          /* The squared deviations term */
     spcost += 0.5 * statesm * log(dapsprd); /* statesm * log sigma */
     spcost += statesm * (hlg2pi + lattice);
-    /*	This completes the prior density terms  */
-    /*	The vol of uncertainty is (sapsprd/statesm)^(statesm/2)  */
+    /*    This completes the prior density terms  */
+    /*    The vol of uncertainty is (sapsprd/statesm)^(statesm/2)  */
     spcost -= 0.5 * statesm * log(cvi->sapsprd / statesm);
 
     if (!fac) {
@@ -648,46 +648,46 @@ hasage:
         cvi->infac = 1;
         goto facdone1;
     }
-    /*	Get factor pcost  */
+    /*    Get factor pcost  */
     vara = 0.0;
     Fork {
         del = fap[k] - dadnap[k];
         vara += del * del;
     }
     vara += cvi->fapsprd; /* Additional variance from roundoff */
-    /*	Now vara holds squared difference from fap[] to dad's nap[]. This
+    /*    Now vara holds squared difference from fap[] to dad's nap[]. This
     is a variance in (states-1) space with sum-sq spread dapsprd, Normal form */
     fpcost = 0.5 * vara / dapsprd;          /* The squared deviations term */
     fpcost += 0.5 * statesm * log(dapsprd); /* statesm * log sigma */
     fpcost += statesm * (hlg2pi + lattice);
-    /*	The vol of uncertainty is (fapsprd/statesm)^(statesm/2)  */
+    /*    The vol of uncertainty is (fapsprd/statesm)^(statesm/2)  */
     fpcost -= 0.5 * statesm * log(cvi->fapsprd / statesm);
 
-    /*	And for fbp[]:  (N(0,1) prior)  */
+    /*    And for fbp[]:  (N(0,1) prior)  */
     vara = 0.0;
     Fork vara += fbp[k] * fbp[k];
     vara += cvi->bpsprd;  /* Additional variance from roundoff */
     fpcost += 0.5 * vara; /* The squared deviations term */
     fpcost += statesm * (hlg2pi + lattice);
-    /*	The vol of uncertainty is (bpsprd/statesm)^(statesm/2)  */
+    /*    The vol of uncertainty is (bpsprd/statesm)^(statesm/2)  */
     fpcost -= 0.5 * statesm * log(cvi->bpsprd / statesm);
 
 facdone1:
-    /*	Store param costs  */
+    /*    Store param costs  */
     evi->spcost = spcost;
     evi->fpcost = fpcost;
-    /*	Add to class param costs  */
-    cls->cspcost += spcost;
-    cls->cfpcost += fpcost;
-    if (!(control & AdjPr))
+    /*    Add to class param costs  */
+    CurClass->cspcost += spcost;
+    CurClass->cfpcost += fpcost;
+    if (!(Control & AdjPr))
         goto adjdone;
     if (cnt < MinSize)
         goto adjdone;
 
-    /*	Adjust non-fac params.  */
+    /*    Adjust non-fac params.  */
     n = 3;
 adjloop:
-    /*	Get pr[], sum log p[r] from sap[]  */
+    /*    Get pr[], sum log p[r] from sap[]  */
     tt = sap[0];
     for (k = 1; k < states; k++) {
         if (sap[k] > tt)
@@ -704,38 +704,38 @@ adjloop:
         pr[k] *= sum;
         tt += log(pr[k]);
     }
-    /*	Calc ff = (case Fisher)^(K-1)   */
+    /*    Calc ff = (case Fisher)^(K-1)   */
     tt += vaux->lstatessq;
     ff = exp(rstatesm * tt);
-    /*	The deriv of cost wrt sap[k] contains the term:
+    /*    The deriv of cost wrt sap[k] contains the term:
             0.5*cnt*sapsprd* (ff/(K-1)) * (1 - K*pr[k])  */
     tt = 0.5 * cnt * cvi->sapsprd * ff * rstatesm;
-    /*	Use dads's nap[], dapsprd for Normal prior.   */
-    /*	Reduce corrections by statesm/states  */
+    /*    Use dads's nap[], dapsprd for Normal prior.   */
+    /*    Reduce corrections by statesm/states  */
     adj = InitialAdj * statesm / states;
     Fork {
         del = (sap[k] - dadnap[k]) / dapsprd; /* 1st deriv from prior */
         del += pr[k] * cnt - scnt[k];         /* From data */
         del += 0.5 * pr[k];                   /*  Stabilization  */
         del += tt * (1.0 - states * pr[k]);   /* from roundoff */
-        /*	2nd deriv approx cnt*pr[k], plus 1/dapsprd from prior  */
+        /*    2nd deriv approx cnt*pr[k], plus 1/dapsprd from prior  */
         sap[k] -= del * adj / (1.0 + scnt[k] + 1.0 / dapsprd);
     }
     sum = 0.0;
     Fork sum += sap[k];
     sum = -sum / states;
     Fork sap[k] += sum;
-    /*	Compute sapsprd  */
+    /*    Compute sapsprd  */
     apd2 = (1.0 / dapsprd) + cnt * ff;
     cvi->sapsprd = statesm / apd2;
-    /*	Repeat the adjustment  */
+    /*    Repeat the adjustment  */
     if (--n)
         goto adjloop;
 
     if (!fac)
         goto facdone2;
 
-    /*	Adjust factor parameters.  We have fapd1[], fbpd1[] from the data,
+    /*    Adjust factor parameters.  We have fapd1[], fbpd1[] from the data,
         but must add derivatives of pcost terms.  */
     Fork {
         fapd1[k] += (fap[k] - dadnap[k]) / dapsprd;
@@ -743,14 +743,14 @@ adjloop:
     }
     evi->apd2 += 1.0 / dapsprd;
     evi->bpd2 += 1.0;
-    /*	Stabilization  */
+    /*    Stabilization  */
     cvv = 0.0;
     setprobs();
     Fork fapd1[k] += 0.5 * pr[k];
     evi->apd2 += 0.5 * states * ff;
-    /*	This section uses a slow but apparently safe adjustment of fa[[], fbp[]
+    /*    This section uses a slow but apparently safe adjustment of fa[[], fbp[]
      */
-    /*	In an attempt to speed things, fiddle adjustment multiple   */
+    /*    In an attempt to speed things, fiddle adjustment multiple   */
     sum = evi->ftcost / cnt;
     if (sum < evi->oldftcost)
         adj = evi->adj * 1.1;
@@ -760,7 +760,7 @@ adjloop:
         adj = MaxAdj;
     evi->adj = adj;
     evi->oldftcost = sum;
-    /*	To do the adjustments, divide 1st derivs by a 'max' value of 2nd
+    /*    To do the adjustments, divide 1st derivs by a 'max' value of 2nd
     derivs, held in vaux.  */
     adj = adj / (evi->cnt * vaux->mff);
     adj *= statesm / states;
@@ -777,13 +777,13 @@ adjloop:
     Fork sum += fbp[k];
     sum = -sum / states;
     Fork fbp[k] += sum;
-    /*	Set fapsprd, bpsprd.   */
+    /*    Set fapsprd, bpsprd.   */
     cvi->fapsprd = statesm / evi->apd2;
     cvi->bpsprd = statesm / evi->bpd2;
 
 facdone2:
-    /*	If no sons, set as-dad params from non-fac params  */
-    if (cls->nson < 2) {
+    /*    If no sons, set as-dad params from non-fac params  */
+    if (CurClass->num_sons < 2) {
         Fork nap[k] = sap[k];
         cvi->napsprd = cvi->sapsprd;
     }
@@ -793,8 +793,8 @@ adjdone:
     return;
 }
 
-/*	------------------------  prprint  -------------------  */
-/*	prints the exponential params in 'ap' converted to probs   */
+/*    ------------------------  prprint  -------------------  */
+/*    prints the exponential params in 'ap' converted to probs   */
 void prprint(ap) double *ap;
 {
     int k;
@@ -815,7 +815,7 @@ void prprint(ap) double *ap;
     return;
 }
 
-/*	------------------------  vprint  -----------------------   */
+/*    ------------------------  vprint  -----------------------   */
 void vprint(ccl, iv) Class *ccl;
 int iv;
 {
@@ -826,7 +826,7 @@ int iv;
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out", evi->adj);
 
-    if (cls->nson < 2)
+    if (CurClass->num_sons < 2)
         goto skipn;
     printf(" NR: ");
     prprint(nap);
@@ -835,7 +835,7 @@ skipn:
     printf(" PR: ");
     prprint(sap);
     printf("\n");
-    if (cls->use == Tiny)
+    if (CurClass->use == Tiny)
         goto skipf;
     printf(" FR: ");
     Fork printf("%7.3f", frate[k]);
@@ -846,7 +846,7 @@ skipf:;
     return;
 }
 
-/*	----------------------  ncostvar -----------------------------  */
+/*    ----------------------  ncostvar -----------------------------  */
 void ncostvar(iv) int iv;
 {
     Basic *soncvi;
@@ -857,11 +857,11 @@ void ncostvar(iv) int iv;
     int n, k, ison, nson, nints;
 
     setvar(iv);
-    if (avi->idle) {
+    if (avi->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
-    nson = cls->nson;
+    nson = CurClass->num_sons;
     if (nson < 2) { /* cannot define parameters */
         evi->npcost = evi->ntcost = 0.0;
         Fork nap[k] = sap[k];
@@ -875,13 +875,13 @@ void ncostvar(iv) int iv;
     tssn = 0.0;       /* Total internal sons' bapsprd  */
 
     apsprd = cvi->napsprd;
-    /*	The calculation is like that in reals.c (q.v.) but now we have
+    /*    The calculation is like that in reals.c (q.v.) but now we have
     states-1 parameter components for each son. Thus, 'nson' in the reals case
     sometimes becomes (statesm * nson) in this case. We use the static vector
     'pr[]' to accumulate the sum of the sons' bap[]s, in place of the 'tstn' of
     the reals code. */
-    for (ison = cls->ison; ison > 0; ison = son->isib) {
-        son = population->classes[ison];
+    for (ison = CurClass->son_id; ison > 0; ison = son->sib_id) {
+        son = CurPopln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         Fork {
             pr[k] += soncvi->bap[k];
@@ -890,7 +890,7 @@ void ncostvar(iv) int iv;
         if (son->type == Dad) { /* used as parent */
             nints++;
             tssn += soncvi->bapsprd;
-            tstvn += soncvi->bapsprd * statesm / son->nson;
+            tstvn += soncvi->bapsprd * statesm / son->num_sons;
         } else
             tstvn += soncvi->bapsprd * statesm;
     }
@@ -905,7 +905,7 @@ void ncostvar(iv) int iv;
         qr[k] = pr[k] / nson;
         tstvn -= pr[k] * qr[k];
     }
-    /*	tstvn now gives total variance about sons' mean in (states-1) space */
+    /*    tstvn now gives total variance about sons' mean in (states-1) space */
 
     /*      Iterate the adjustment of param, spread  */
     n = 5;
@@ -925,7 +925,7 @@ adjloop:
     n--;
     if (n)
         goto adjloop;
-    /*	Store new values  */
+    /*    Store new values  */
     cvi->napsprd = apsprd;
 
     /*      Calc cost  */
@@ -940,7 +940,7 @@ adjloop:
     pcost += 0.5 * log(0.5 * nson * statesm + nints) +
              0.5 * statesm * log((double)nson) -
              0.5 * (statesm + 2.0) * log(apsprd) + states * lattice;
-    /*	Add roundoff for states params  */
+    /*    Add roundoff for states params  */
     pcost += 0.5 * states;
     evi->npcost = pcost;
     return;

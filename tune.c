@@ -1,9 +1,9 @@
-/*	---------------- stuff to tune actions -------------------------- */
+/*    ---------------- stuff to tune actions -------------------------- */
 #define NOTGLOB 1
 #define TUNE
 #include "glob.h"
 
-/*	----------------  defaulttune -------------------------------- */
+/*    ----------------  defaulttune -------------------------------- */
 void defaulttune() {
     int i;
 
@@ -25,9 +25,9 @@ void defaulttune() {
     SigScoreChange = 5;
     Mbeta = 0.00;
 
-    /*	Set table of log factorials  */
-    faclog[0] = faclog[1] = 0.0;
-    for (i = 2; i <= MaxClasses; i++)
-        faclog[i] = faclog[i - 1] + log((double)i);
+    /*    Set table of log factorials  */
+    FacLog[0] = FacLog[1] = 0.0;
+    for (i = 2; i <= MAX_CLASSES; i++)
+        FacLog[i] = FacLog[i - 1] + log((double)i);
     return;
 }

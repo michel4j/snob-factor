@@ -1,4 +1,4 @@
-/*	---------------------  hark  --------------------------------  */
+/*    ---------------------  hark  --------------------------------  */
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -6,7 +6,7 @@
 #include "glob.h"
 
 #define LI 200
-/*	Listens for instruction via file "comms"    */
+/*    Listens for instruction via file "comms"    */
 static int seq = '0';
 
 int hark(char *lline) {
@@ -15,7 +15,7 @@ int hark(char *lline) {
     int rk1, rk2, rseq1, rseq2;
     int nnon;
 
-    /*	Format of message is:
+    /*    Format of message is:
         char sequence_number
         char action_code
         char [LI] string
@@ -23,7 +23,7 @@ int hark(char *lline) {
         char sequence_number
         CR/LF
         */
-    /*	Code values are:
+    /*    Code values are:
         'I': valid input line
         'A': acknowlege by hark
         */
@@ -49,7 +49,7 @@ open1:
     putc('\n', co);
     fclose(co);
 finish:
-    heard = k;
+    Heard = k;
     return (k);
 
 receive:
@@ -65,7 +65,7 @@ receive:
     rseq2 = fgetc(co);
     fclose(co);
 
-    /*	Check format	*/
+    /*    Check format    */
     if ((rseq1 == rseq2) && (rk1 == rk2) && (rseq2 >= '0') && (rseq2 <= '9'))
         goto formok;
     if (rseq1 == 'D')
@@ -77,14 +77,14 @@ receive:
     goto send;
 
 formok:
-    /*	Have valid format.  See if just our previous message  */
+    /*    Have valid format.  See if just our previous message  */
     if ((rseq1 == seq) && (rk1 == 'A')) {
         k = 0;
         goto finish;
     }
 
     if (rk1 == 'I') {
-        /*	See if a new message  */
+        /*    See if a new message  */
         if (rseq1 != seq) {
             seq = rseq1;
             k = 1;
@@ -93,7 +93,7 @@ formok:
     goto send;
 }
 
-/*	----------------------- testmain ---------------------------  */
+/*    ----------------------- testmain ---------------------------  */
 #ifdef TEST
 main() {
     int i, j, kk;

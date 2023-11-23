@@ -1,4 +1,4 @@
-/*	This file contains type definitions for generic and global structures,
+/*    This file contains type definitions for generic and global structures,
 and declarations of cetain global variables. The file is intended to be
 included in many other files, as well as being compiled and loaded itself.
     For variables, arrays etc defined herein, the instantiation is
@@ -14,7 +14,7 @@ files. The declarations herein then become converted to " declarations.
 #include <string.h>
 #include <unistd.h>
 
-/*	To assist in printing class serials  */
+/*    To assist in printing class serials  */
 char decsers[8];
 
 char *sers(Class *cll) {
@@ -46,13 +46,13 @@ done:
     return (decsers);
 }
 
-/*	A memory-to-memory copier replacing memcpy, which I can't use
+/*    A memory-to-memory copier replacing memcpy, which I can't use
 properly on all systems.   */
 void cmcpy(void *pt, void *pf, int ntm) {
     char *cpt, *cpf;
     cpt = (char *)pt;
     cpf = (char *)pf;
-/*	Copy ntm chars from pf to pt  */
+/*    Copy ntm chars from pf to pt  */
 next:
     *cpt = *cpf;
     cpt++;

@@ -5,9 +5,9 @@
 
 static int allocated = 0; /*  Total block space allocated  */
 #define SpUnit 16
-/*	------------------------  gtsp  ----------------------------  */
-/*	To allocate a block in a Popln chain  */
-/*	Provides a space of 'size' chars on a chain selected by 'gr'
+/*    ------------------------  gtsp  ----------------------------  */
+/*    To allocate a block in a Popln chain  */
+/*    Provides a space of 'size' chars on a chain selected by 'gr'
         gr = 3:  variable-set chain.
         gr = 0: sample chain. gr = 1: popln chain. gr = 2:  chain for
         (popln:sample) pair.  The actual space allocated is
@@ -27,53 +27,53 @@ void *gtsp(int gr, int size) {
 
     switch (gr) {
     case 0:
-        blk->nblock = ctx.sample->sblks;
-        ctx.sample->sblks = blk;
+        blk->next = CurCtx.sample->blocks;
+        CurCtx.sample->blocks = blk;
         break;
     case 1:
-        blk->nblock = ctx.popln->pblks;
-        ctx.popln->pblks = blk;
+        blk->next = CurCtx.popln->pblks;
+        CurCtx.popln->pblks = blk;
         break;
     case 2:
-        blk->nblock = ctx.popln->jblks;
-        ctx.popln->jblks = blk;
+        blk->next = CurCtx.popln->jblks;
+        CurCtx.popln->jblks = blk;
         break;
     case 3:
-        blk->nblock = ctx.vset->vblks;
-        ctx.vset->vblks = blk;
+        blk->next = CurCtx.vset->blocks;
+        CurCtx.vset->blocks = blk;
         break;
     } /* End of switch */
     return ((void *)(((char *)blk) + SpUnit));
 }
 
-/*	----------------------  freesp (gr)----------------- */
-/*	To free all blocks on chain 'gr' (0=sample, 1=popln,
-                        2 = popln:sample,  3 = variable-set)	*/
+/*    ----------------------  freesp (gr)----------------- */
+/*    To free all blocks on chain 'gr' (0=sample, 1=popln,
+    2 = popln:sample,  3 = variable-set)    */
 void freesp(int gr) {
     Block *blk, *nblk;
     switch (gr) {
     case 0:
-        blk = ctx.sample->sblks;
-        ctx.sample->sblks = 0;
+        blk = CurCtx.sample->blocks;
+        CurCtx.sample->blocks = 0;
         break;
     case 1:
-        blk = ctx.popln->pblks;
-        ctx.popln->pblks = 0;
+        blk = CurCtx.popln->pblks;
+        CurCtx.popln->pblks = 0;
         break;
     case 2:
-        blk = ctx.popln->jblks;
-        ctx.popln->jblks = 0;
+        blk = CurCtx.popln->jblks;
+        CurCtx.popln->jblks = 0;
         break;
     case 3:
-        blk = ctx.vset->vblks;
-        ctx.vset->vblks = 0;
+        blk = CurCtx.vset->blocks;
+        CurCtx.vset->blocks = 0;
         break;
     default:
         printf("False group value %d in freespace\n", gr);
         exit(10);
     }
     while (blk) {
-        nblk = blk->nblock;
+        nblk = blk->next;
         allocated -= blk->size;
         free(blk);
         blk = nblk;
@@ -81,10 +81,9 @@ void freesp(int gr) {
     return;
 }
 
-/*	------------------ repspace ---------------------------  */
-/*	To report allocated space  */
-int repspace(pp)
-int pp;
+/*    ------------------ repspace ---------------------------  */
+/*    To report allocated space  */
+int repspace(int pp)
 {
     if (pp)
         printf("Allocated space %8d chars\n", allocated);

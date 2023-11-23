@@ -3,18 +3,18 @@
 
 static char *movestr[] = {" ", "Insert", "Delete", "Move"};
 
-/*	---------------  clearbadm  --------------------------------  */
-/*	To clear the badmoves table  */
+/*    ---------------  clearbadm  --------------------------------  */
+/*    To clear the badmoves table  */
 void clearbadm() {
     for (int i = 0; i < BadSize; i++)
-        badkey[i] = 0;
+        BadKey[i] = 0;
     return;
 }
 
-/*	-----------------  testbadm  -----------------------------  */
-/*	To test a move for known recent fail  */
-/*	code 1 means insert ,code 2 means delete  */
-/*	code 3 means move */
+/*    -----------------  testbadm  -----------------------------  */
+/*    To test a move for known recent fail  */
+/*    code 1 means insert ,code 2 means delete  */
+/*    code 3 means move */
 int testbadm(int code, int w1, int w2) {
     int hi, key, bad, s1, s2;
 
@@ -33,7 +33,7 @@ int testbadm(int code, int w1, int w2) {
         hi = -1 - hi;
     hi = hi % BadSize;
     bad = 0;
-    if (badkey[hi] == key) {
+    if (BadKey[hi] == key) {
         flp();
         bad = 1;
         printf("Badmove rejects %s", movestr[code]);
@@ -46,8 +46,8 @@ int testbadm(int code, int w1, int w2) {
     return (bad);
 }
 
-/*	------------------  setbadm  -----------------------------   */
-/*	To log a bad move  */
+/*    ------------------  setbadm  -----------------------------   */
+/*    To log a bad move  */
 void setbadm(int code, int s1, int s2) {
     int hi, key;
 
@@ -64,6 +64,6 @@ void setbadm(int code, int s1, int s2) {
     if (hi < 0)
         hi = -1 - hi;
     hi = hi % BadSize;
-    badkey[hi] = key;
+    BadKey[hi] = key;
     return;
 }

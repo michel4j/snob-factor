@@ -1,4 +1,4 @@
-/*	A routine to initialize the Vtype list "types"
+/*    A routine to initialize the Vtype list "types"
     It must be added to for every new type added, by adding a call
 on XXXdefine() where XXX is the prefix of the fun XXXdefine in the file
 of functions for the new type.
@@ -15,10 +15,10 @@ void vonm_define(int typindx);
 void dotypes() {
     int i;
 
-    /*	Set the number of attribute types  */
+    /*    Set the number of attribute types  */
     Ntypes = 4;
 
-    /*	Set constants  */
+    /*    Set constants  */
     pi = 4.0 * atan(1.0);
     hlg2pi = 0.5 * log(2.0 * pi);
     twoonpi = 2.0 / pi;
@@ -27,11 +27,11 @@ void dotypes() {
     bit2 = 2.0 * bit;
     hlg2 = 0.5 * log(2.0);
     lattice = -0.5 * log(12.0);
-    for (i = 0; i < MaxZ; i++)
-        zerov[i] = 0.0;
+    for (i = 0; i < MAX_ZERO; i++)
+        ZeroVec[i] = 0.0;
 
-    /*	Make the 'types' vector  */
-    types = (Vtype *)malloc(Ntypes * sizeof(Vtype));
+    /*    Make the 'types' vector  */
+    Types = (Vtype *)malloc(Ntypes * sizeof(Vtype));
 
     reals_define(0);
     expmults_define(1);

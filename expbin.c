@@ -1,4 +1,4 @@
-/*	File of stuff for logistic binary variables  */
+/*    File of stuff for logistic binary variables  */
 
 #include "glob.h"
 
@@ -23,7 +23,7 @@ typedef struct Vauxst {
     double lstatessq; /*  log (states^2) */
     double mff;       /* a max value for ff */
 } Vaux;
-/*	The Vaux structure matches that of Multistate, although not all
+/*    The Vaux structure matches that of Multistate, although not all
     used for Binary  */
 
 typedef int Datum;
@@ -38,7 +38,7 @@ typedef struct Pauxst {
     int dummy;
 } Paux;
 
-/*	Common variable for holding a data value  */
+/*    Common variable for holding a data value  */
 
 typedef struct Basicst { /* Basic parameter info about var in class.
             The first few fields are standard and must
@@ -79,19 +79,19 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
     double bsq;
 } Stats;
 
-/*	Static variables useful for many types of variable    */
+/*    Static variables useful for many types of variable    */
 static Saux *saux;
 static Paux *paux;
 static Vaux *vaux;
 static Basic *cvi, *dcvi;
 static Stats *evi;
 
-/*	Static variables specific to this type   */
+/*    Static variables specific to this type   */
 static double dadnap;
 static double dapsprd; /* Dad's napsprd */
 
 /*--------------------------  define ------------------------------- */
-/*	This routine is used to set up a Vtype entry in the global "types"
+/*    This routine is used to set up a Vtype entry in the global "types"
 array.  It is the only function whose name needs to be altered for different
 types of variable, and this name must be copied into the file "dotypes.c"
 when installing a new type of variable. It is also necessary to change the
@@ -99,16 +99,16 @@ when installing a new type of variable. It is also necessary to change the
     */
 
 void expbinary_define(typindx) int typindx;
-/*	typindx is the index in types[] of this type   */
+/*    typindx is the index in types[] of this type   */
 {
-    vtp = types + typindx;
+    vtp = Types + typindx;
     vtp->id = typindx;
-    /* 	Set type name as string up to 59 chars  */
+    /*     Set type name as string up to 59 chars  */
     vtp->name = "ExpBinary";
     vtp->datsize = sizeof(Datum);
-    vtp->vauxsize = sizeof(Vaux);
-    vtp->pauxsize = sizeof(Paux);
-    vtp->sauxsize = sizeof(Saux);
+    vtp->attr_aux_size = sizeof(Vaux);
+    vtp->pop_aux_size = sizeof(Paux);
+    vtp->smpl_aux_size = sizeof(Saux);
     vtp->readvaux = &readvaux;
     vtp->readsaux = &readsaux;
     vtp->readdat = &readdat;
@@ -127,46 +127,46 @@ void expbinary_define(typindx) int typindx;
     return;
 }
 
-/*	----------------------- setvar --------------------------  */
+/*    ----------------------- setvar --------------------------  */
 void setvar(iv) int iv;
 {
-    avi = vlist + iv;
-    vtp = avi->vtp;
+    avi = CurAttrs + iv;
+    vtp = avi->vtype;
     pvi = pvars + iv;
     paux = (Paux *)pvi->paux;
     svi = svars + iv;
     vaux = (Vaux *)avi->vaux;
     saux = (Saux *)svi->saux;
-    cvi = (Basic *)cls->basics[iv];
-    evi = (Stats *)cls->stats[iv];
+    cvi = (Basic *)CurClass->basics[iv];
+    evi = (Stats *)CurClass->stats[iv];
     return;
 }
 
-/*	---------------------  readvaux ---------------------------   */
-/*	To read any auxiliary info about a variable of this type in some
+/*    ---------------------  readvaux ---------------------------   */
+/*    To read any auxiliary info about a variable of this type in some
 sample.
     */
 int readvaux(vax)
 Vaux *vax;
 { return (0); }
 
-/*	-------------------  readsaux ------------------------------  */
-/*	To read auxilliary info re sample for this attribute   */
+/*    -------------------  readsaux ------------------------------  */
+/*    To read auxilliary info re sample for this attribute   */
 int readsaux(sax)
 Saux *sax;
 {
-    /*	Multistate has no auxilliary info re sample  */
+    /*    Multistate has no auxilliary info re sample  */
     return (0);
 }
 
-/*	-------------------  readdat -------------------------------  */
-/*	To read a value for this variable type         */
+/*    -------------------  readdat -------------------------------  */
+/*    To read a value for this variable type         */
 int readdat(char *loc, int iv)
 {
     int i;
     Datum xn;
 
-    /*	Read datum into xn, return error.  */
+    /*    Read datum into xn, return error.  */
     i = readint(&xn, 1);
     if (i)
         return (i);
@@ -179,42 +179,42 @@ int readdat(char *loc, int iv)
     return (0);
 }
 
-/*	---------------------  printdat --------------------------  */
-/*	To print a Datum value   */
+/*    ---------------------  printdat --------------------------  */
+/*    To print a Datum value   */
 void printdat(Datum *loc)
 {
-    /*	Print datum from address loc   */
+    /*    Print datum from address loc   */
     printf("%3d", (*((Datum *)loc) + 1));
     return;
 }
 
-/*	---------------------  setsizes  -----------------------   */
-/*	To use info in ctx.vset to set sizes of basic and stats
+/*    ---------------------  setsizes  -----------------------   */
+/*    To use info in ctx.vset to set sizes of basic and stats
 blocks for variable, and place in AVinst basicsize, statssize.
     */
 void setsizes( int iv)
 {
 
-    avi = vlist + iv;
+    avi = CurAttrs + iv;
 
-    /*	Set sizes of CVinst (basic) and EVinst (stats) in AVinst  */
-    avi->basicsize = sizeof(Basic);
-    avi->statssize = sizeof(Stats);
+    /*    Set sizes of CVinst (basic) and EVinst (stats) in AVinst  */
+    avi->basic_size = sizeof(Basic);
+    avi->stats_size = sizeof(Stats);
     return;
 }
 
-/*	----------------------- setbestparam -----------------------  */
+/*    ----------------------- setbestparam -----------------------  */
 void setbestparam(int iv)
 {
 
     setvar(iv);
 
-    if (cls->type == Dad) {
+    if (CurClass->type == Dad) {
         cvi->bap = cvi->nap;
         cvi->bapsprd = cvi->napsprd;
         evi->btcost = evi->ntcost;
         evi->bpcost = evi->npcost;
-    } else if ((cls->use == Fac) && cvi->infac) {
+    } else if ((CurClass->use == Fac) && cvi->infac) {
         cvi->bap = cvi->fap;
         cvi->bapsprd = cvi->fapsprd;
         evi->btcost = evi->ftcost;
@@ -228,8 +228,8 @@ void setbestparam(int iv)
     return;
 }
 
-/*	---------------------------  clearstats  --------------------   */
-/*	Clears stats to accumulate in costvar, and derives useful functions
+/*    ---------------------------  clearstats  --------------------   */
+/*    Clears stats to accumulate in costvar, and derives useful functions
 of basic params   */
 void clearstats(int iv)
 {
@@ -242,11 +242,11 @@ void clearstats(int iv)
     evi->cnt1 = evi->fapd1 = evi->fbpd1 = 0.0;
     evi->apd2 = evi->bpd2 = 0.0;
     evi->tvsprd = 0.0;
-    if (cls->age == 0)
+    if (CurClass->age == 0)
         return;
-    /*	Some useful functions  */
-    /*	Set up non-fac case costs in scst[]  */
-    /*	This requires us to calculate probs and log probs of states.  */
+    /*    Some useful functions  */
+    /*    Set up non-fac case costs in scst[]  */
+    /*    This requires us to calculate probs and log probs of states.  */
     if (cvi->sap > 0.0) {
         pr1 = 1.0 / (1.0 + exp(-2.0 * cvi->sap));
         pr0 = 1.0 - pr1;
@@ -254,7 +254,7 @@ void clearstats(int iv)
         pr0 = 1.0 / (1.0 + exp(2.0 * cvi->sap));
         pr1 = 1.0 - pr0;
     }
-    /*	Fisher is 4.pr0.pr1  */
+    /*    Fisher is 4.pr0.pr1  */
     round = 2.0 * pr0 * pr1 * cvi->sapsprd;
     evi->scst[0] = round - log(pr0);
     evi->scst[1] = round - log(pr1);
@@ -263,18 +263,18 @@ void clearstats(int iv)
     return;
 }
 
-/*	-------------------------  scorevar  ------------------------   */
-/*	To eval derivs of a case wrt score, scorespread. Adds to vvd1,vvd2.
+/*    -------------------------  scorevar  ------------------------   */
+/*    To eval derivs of a case wrt score, scorespread. Adds to vvd1,vvd2.
  */
 void scorevar(int iv)
 {
     double cc, pr0, pr1, ff, ft, dbyv, hdffbydv, hdftbydv;
     setvar(iv);
-    if (avi->idle)
+    if (avi->inactive)
         return;
     if (saux->missing)
         return;
-    /*	Calc prob of val 1  */
+    /*    Calc prob of val 1  */
     cc = cvi->fap + cvv * cvi->fbp;
     if (cc > 0.0) {
         pr1 = exp(-2.0 * cc);
@@ -285,37 +285,37 @@ void scorevar(int iv)
         pr1 = pr0 / (1.0 + pr0);
         pr0 = 1.0 - pr1;
     }
-    /*	Approximate Fisher by 1/(1+cc^2)  (wrt cc)  */
-    /*	This approx is for getting vvd2.  Use true Fisher 4.p0.p1 for
+    /*    Approximate Fisher by 1/(1+cc^2)  (wrt cc)  */
+    /*    This approx is for getting vvd2.  Use true Fisher 4.p0.p1 for
         variation in ap, bp.  */
-    /*	Now, dffbydc = -2 * cc * ff * ff, and
+    /*    Now, dffbydc = -2 * cc * ff * ff, and
              dftbydc = 8 * p0 * p1 * (p0-p1) = 2 * ft * (p0-p1)   */
     ff = 1.0 / (1.0 + cc * cc);
     hdffbydv = -cc * cvi->fbp * ff * ff;
     ft = 4.0 * pr0 * pr1;
     hdftbydv = ft * (pr0 - pr1) * cvi->fbp;
-    /*	Apply Bbeta mix to the approximate Fish  */
+    /*    Apply Bbeta mix to the approximate Fish  */
     hdffbydv = Bbeta * hdffbydv + (1.0 - Bbeta) * hdftbydv;
     ff = Bbeta * ff + (1.0 - Bbeta) * ft;
-    /*	Now build deriv of cost wrt vv  */
+    /*    Now build deriv of cost wrt vv  */
     if (saux->xn == 1)
         dbyv = -2.0 * cvi->fbp * pr0;
     else
         dbyv = 2.0 * cvi->fbp * pr1;
-    /*	From cost term 0.5 * vvsq * bpsprd * ft: */
+    /*    From cost term 0.5 * vvsq * bpsprd * ft: */
     dbyv += cvv * cvi->bpsprd * ft;
-    /*	And via dftbydv, terms 0.5*(fapsprd * vvsq*bpsprd)*ft :   */
+    /*    And via dftbydv, terms 0.5*(fapsprd * vvsq*bpsprd)*ft :   */
     dbyv += (cvi->fapsprd + cvvsq * cvi->bpsprd) * hdftbydv;
     vvd1 += dbyv;
     vvd2 += evi->bsq * ff;
     mvvd2 += evi->bsq * ff;
-    /*	Don't yet know cvvsprd, so just accum bsq * dffbydv  */
+    /*    Don't yet know cvvsprd, so just accum bsq * dffbydv  */
     vvd3 += 2.0 * evi->bsq * hdffbydv;
     return;
 }
 
-/*	---------------------  costvar  ---------------------------  */
-/*	Accumulate item cost into scasecost, fcasecost  */
+/*    ---------------------  costvar  ---------------------------  */
+/*    Accumulate item cost into scasecost, fcasecost  */
 void costvar(int iv, int fac)
 {
     double cost;
@@ -324,15 +324,15 @@ void costvar(int iv, int fac)
     setvar(iv);
     if (saux->missing)
         return;
-    if (cls->age == 0) {
+    if (CurClass->age == 0) {
         evi->parkftcost = 0.0;
         return;
     }
-    /*	Do nofac costing first  */
+    /*    Do nofac costing first  */
     cost = evi->scst[saux->xn];
     scasecost += cost;
 
-    /*	Only do faccost if fac  */
+    /*    Only do faccost if fac  */
     if (!fac)
         goto facdone;
     cc = cvi->fap + cvv * cvi->fbp;
@@ -363,10 +363,10 @@ void costvar(int iv, int fac)
     hdffbydc = -cc * ff * ff;
     evi->parkft = ft = 4.0 * pr0 * pr1;
     hdftbydc = ft * (pr0 - pr1);
-    /*	Apply Bbeta mix to the approximate Fish  */
+    /*    Apply Bbeta mix to the approximate Fish  */
     hdffbydc = Bbeta * hdffbydc + (1.0 - Bbeta) * hdftbydc;
     ff = Bbeta * ff + (1.0 - Bbeta) * ft;
-    /*	In calculating the cost, use ft for all spreads, rather than using
+    /*    In calculating the cost, use ft for all spreads, rather than using
         ff for the v spread, but use ff in getting differentials  */
     cost += 0.5 * ((cvi->fapsprd + cvvsq * cvi->bpsprd) * ft +
                    evi->bsq * cvvsprd * ft);
@@ -380,8 +380,8 @@ facdone:
     return;
 }
 
-/*	------------------  derivvar  ------------------------------  */
-/*	Given item weight in cwt, calcs derivs of item cost wrt basic
+/*    ------------------  derivvar  ------------------------------  */
+/*    Given item weight in cwt, calcs derivs of item cost wrt basic
 params and accumulates in paramd1, paramd2  */
 void derivvar(int iv, int fac)
 {
@@ -389,30 +389,30 @@ void derivvar(int iv, int fac)
     setvar(iv);
     if (saux->missing)
         return;
-    /*	Do no-fac first  */
+    /*    Do no-fac first  */
     evi->cnt += cwt;
-    /*	For non-fac, just accum weight of 1s in cnt1  */
+    /*    For non-fac, just accum weight of 1s in cnt1  */
     if (saux->xn == 1)
         evi->cnt1 += cwt;
-    /*	Accum. weighted item cost  */
+    /*    Accum. weighted item cost  */
     evi->stcost += cwt * evi->scst[saux->xn];
     evi->ftcost += cwt * evi->parkftcost;
 
-    /*	Now for factor form  */
+    /*    Now for factor form  */
     if (!fac)
         goto facdone;
     evi->vsq += cwt * cvvsq;
     evi->fapd1 += cwt * evi->dbya;
     evi->fbpd1 += cwt * evi->dbyb;
-    /*	Accum actual 2nd derivs  */
+    /*    Accum actual 2nd derivs  */
     evi->apd2 += cwt * evi->parkft;
     evi->bpd2 += cwt * evi->parkft * cvvsq;
 facdone:
     return;
 }
 
-/*	-------------------  adjust  ---------------------------    */
-/*	To adjust parameters of a multistate variable     */
+/*    -------------------  adjust  ---------------------------    */
+/*    To adjust parameters of a multistate variable     */
 void adjust(int iv, int fac)
 {
 
@@ -423,8 +423,8 @@ void adjust(int iv, int fac)
     setvar(iv);
     cnt = evi->cnt;
 
-    if (dad) { /* Not root */
-        dcvi = (Basic *)dad->basics[iv];
+    if (CurDad) { /* Not root */
+        dcvi = (Basic *)CurDad->basics[iv];
         dadnap = dcvi->nap;
         dapsprd = dcvi->napsprd;
     } else { /* Root */
@@ -433,8 +433,8 @@ void adjust(int iv, int fac)
         dapsprd = 1.0;
     }
 
-    /*	If too few data, use dad's n-paras   */
-    if ((control & AdjPr) && (cnt < MinSize)) {
+    /*    If too few data, use dad's n-paras   */
+    if ((Control & AdjPr) && (cnt < MinSize)) {
         cvi->nap = cvi->sap = cvi->fap = dadnap;
         cvi->fbp = 0.0;
         cvi->napsprd = cvi->fapsprd = cvi->sapsprd = dapsprd;
@@ -442,8 +442,8 @@ void adjust(int iv, int fac)
         goto hasage;
     }
 
-    /*	If class age zero, make some preliminary estimates  */
-    if (cls->age)
+    /*    If class age zero, make some preliminary estimates  */
+    if (CurClass->age)
         goto hasage;
     evi->oldftcost = 0.0;
     evi->adj = 1.0;
@@ -451,26 +451,26 @@ void adjust(int iv, int fac)
     pr0 = 1.0 - pr1;
     cvi->fap = cvi->sap = 0.5 * log(pr1 / pr0);
     cvi->fbp = 0.0;
-    /*	Set sapsprd  */
+    /*    Set sapsprd  */
     apd2 = cnt + 1.0 / dapsprd;
     cvi->fapsprd = cvi->sapsprd = cvi->bpsprd = 1.0 / apd2;
-    /*	Make a stab at item cost   */
-    cls->cstcost -= evi->cnt1 * log(pr1) + (cnt - evi->cnt1) * log(pr0);
-    cls->cftcost = cls->cstcost + 100.0 * cnt;
+    /*    Make a stab at item cost   */
+    CurClass->cstcost -= evi->cnt1 * log(pr1) + (cnt - evi->cnt1) * log(pr0);
+    CurClass->cftcost = CurClass->cstcost + 100.0 * cnt;
 
 hasage:
-    /*	Calculate spcost for non-fac params  */
+    /*    Calculate spcost for non-fac params  */
     vara = 0.0;
     del = cvi->sap - dadnap;
     vara = del * del;
     vara += cvi->sapsprd; /* Additional variance from roundoff */
-    /*	Now vara holds squared difference from sap to dad's nap. This
+    /*    Now vara holds squared difference from sap to dad's nap. This
     is a variance with squared spread dapsprd, Normal form */
     spcost = 0.5 * vara / dapsprd; /* The squared deviations term */
     spcost += 0.5 * log(dapsprd);  /* log sigma */
     spcost += hlg2pi + lattice;
-    /*	This completes the prior density terms  */
-    /*	The vol of uncertainty is sqrt (sapsprd)  */
+    /*    This completes the prior density terms  */
+    /*    The vol of uncertainty is sqrt (sapsprd)  */
     spcost -= 0.5 * log(cvi->sapsprd);
 
     if (!fac) {
@@ -478,7 +478,7 @@ hasage:
         cvi->infac = 1;
         goto facdone1;
     }
-    /*	Get factor pcost  */
+    /*    Get factor pcost  */
     del = cvi->fap - dadnap;
     vara = del * del + cvi->fapsprd;
     fpcost = 0.5 * vara / dapsprd; /* The squared deviations term */
@@ -486,24 +486,24 @@ hasage:
     fpcost += (hlg2pi + lattice);
     fpcost -= 0.5 * log(cvi->fapsprd);
 
-    /*	And for fbp[]:  (N(0,1) prior)  */
+    /*    And for fbp[]:  (N(0,1) prior)  */
     vara = cvi->fbp * cvi->fbp + cvi->bpsprd;
     fpcost += 0.5 * vara; /* The squared deviations term */
     fpcost += hlg2pi + lattice - 0.5 * log(cvi->bpsprd);
 
 facdone1:
-    /*	Store param costs  */
+    /*    Store param costs  */
     evi->spcost = spcost;
     evi->fpcost = fpcost;
-    /*	Add to class param costs  */
-    cls->cspcost += spcost;
-    cls->cfpcost += fpcost;
-    if (!(control & AdjPr))
+    /*    Add to class param costs  */
+    CurClass->cspcost += spcost;
+    CurClass->cfpcost += fpcost;
+    if (!(Control & AdjPr))
         goto adjdone;
     if (cnt < MinSize)
         goto adjdone;
 
-    /*	Adjust non-fac params.  */
+    /*    Adjust non-fac params.  */
     n = 3;
 adjloop:
     cc = cvi->sap;
@@ -514,31 +514,31 @@ adjloop:
         pr0 = 1.0 / (1.0 + exp(2.0 * cc));
         pr1 = 1.0 - pr0;
     }
-    /*	Approximate Fisher by 1/(1+cc^2)  (wrt cc)  */
+    /*    Approximate Fisher by 1/(1+cc^2)  (wrt cc)  */
     apd2 = 1.0 / (1.0 + cc * cc);
-    /*	For a item in state 1, apd1 = -pr0.  If state 0, apd1 = pr1. */
+    /*    For a item in state 1, apd1 = -pr0.  If state 0, apd1 = pr1. */
     tt = (cnt - evi->cnt1) * pr1 - evi->cnt1 * pr0;
-    /*	Use dads's nap, dapsprd for Normal prior.   */
+    /*    Use dads's nap, dapsprd for Normal prior.   */
     tt += (cvi->sap - dadnap) / dapsprd;
-    /*	Fisher deriv wrt cc is -2cc * apd2 * apd2  */
+    /*    Fisher deriv wrt cc is -2cc * apd2 * apd2  */
     tt -= cnt * cc * apd2 * apd2 * cvi->sapsprd;
     apd2 = cnt * apd2 + 1.0 / dapsprd;
     cvi->sap -= tt / apd2;
     cvi->sapsprd = 1.0 / apd2;
-    /*	Repeat the adjustment  */
+    /*    Repeat the adjustment  */
     if (--n)
         goto adjloop;
 
     if (!fac)
         goto facdone2;
 
-    /*	Adjust factor parameters.  We have fapd1, fbpd1 from the data,
+    /*    Adjust factor parameters.  We have fapd1, fbpd1 from the data,
         but must add derivatives of pcost terms.  */
     evi->fapd1 += (cvi->fap - dadnap) / dapsprd;
     evi->fbpd1 += cvi->fbp;
     evi->apd2 += 1.0 / dapsprd;
     evi->bpd2 += 1.0;
-    /*	In an attempt to speed things, fiddle adjustment multiple   */
+    /*    In an attempt to speed things, fiddle adjustment multiple   */
     tt = evi->ftcost / cnt;
     if (tt < evi->oldftcost)
         adj = evi->adj * 1.1;
@@ -551,13 +551,13 @@ adjloop:
     cvi->fap -= adj * evi->fapd1 / evi->apd2;
     cvi->fbp -= adj * evi->fbpd1 / evi->bpd2;
 
-    /*	Set fapsprd, bpsprd.   */
+    /*    Set fapsprd, bpsprd.   */
     cvi->fapsprd = 1.0 / evi->apd2;
     cvi->bpsprd = 1.0 / evi->bpd2;
 
 facdone2:
-    /*	If no sons, set as-dad params from non-fac params  */
-    if (cls->nson < 2) {
+    /*    If no sons, set as-dad params from non-fac params  */
+    if (CurClass->num_sons < 2) {
         cvi->nap = cvi->sap;
         cvi->napsprd = cvi->sapsprd;
     }
@@ -567,7 +567,7 @@ adjdone:
     return;
 }
 
-/*	------------------------  vprint  -----------------------   */
+/*    ------------------------  vprint  -----------------------   */
 void vprint(Class* ccl, int iv){
 
     setclass1(ccl);
@@ -575,7 +575,7 @@ void vprint(Class* ccl, int iv){
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out", evi->adj);
 
-    if (cls->nson < 2)
+    if (CurClass->num_sons < 2)
         goto skipn;
     printf(" N: AP ");
     printf("%6.3f", cvi->nap);
@@ -591,7 +591,7 @@ skipn:
     return;
 }
 
-/*	----------------------  ncostvar -----------------------------  */
+/*    ----------------------  ncostvar -----------------------------  */
 void ncostvar(int iv) {
     Basic *soncvi;
     Class *son;
@@ -600,11 +600,11 @@ void ncostvar(int iv) {
     int n, ison, nson, nints;
 
     setvar(iv);
-    if (avi->idle) {
+    if (avi->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
-    nson = cls->nson;
+    nson = CurClass->num_sons;
     if (nson < 2) { /* cannot define parameters */
         evi->npcost = evi->ntcost = 0.0;
         cvi->nap = cvi->sap;
@@ -618,16 +618,16 @@ void ncostvar(int iv) {
     tssn = 0.0;  /* Total internal sons' bapsprd  */
 
     apsprd = cvi->napsprd;
-    /*	The calculation is like that in reals.c (q.v.)   */
-    for (ison = cls->ison; ison > 0; ison = son->isib) {
-        son = population->classes[ison];
+    /*    The calculation is like that in reals.c (q.v.)   */
+    for (ison = CurClass->son_id; ison > 0; ison = son->sib_id) {
+        son = CurPopln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         tap += soncvi->bap;
         tstvn += soncvi->bap * soncvi->bap;
         if (son->type == Dad) { /* used as parent */
             nints++;
             tssn += soncvi->bapsprd;
-            tstvn += soncvi->bapsprd / son->nson;
+            tstvn += soncvi->bapsprd / son->num_sons;
         } else
             tstvn += soncvi->bapsprd;
     }
@@ -640,7 +640,7 @@ void ncostvar(int iv) {
        correct the value of V. */
     map = tap / nson;
     tstvn -= map * tap;
-    /*	tstvn now gives total variance about sons' mean */
+    /*    tstvn now gives total variance about sons' mean */
 
     /*      Iterate the adjustment of param, spread  */
     n = 5;
@@ -656,7 +656,7 @@ adjloop:
     n--;
     if (n)
         goto adjloop;
-    /*	Store new values  */
+    /*    Store new values  */
     cvi->napsprd = apsprd;
 
     /*      Calc cost  */
@@ -667,7 +667,7 @@ adjloop:
     /*      Add hlog Fisher, lattice  */
     pcost += 0.5 * log(0.5 * nson + nints) + 0.5 * log((double)nson) -
              1.5 * log(apsprd) + 2.0 * lattice;
-    /*	Add roundoff for params  */
+    /*    Add roundoff for params  */
     pcost += 1.0;
     evi->npcost = pcost;
     return;

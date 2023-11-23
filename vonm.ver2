@@ -1,19 +1,19 @@
 /*     Von Mises - Fisher distribution for circular angle data  (2-d) */
-/*	Version 2. Like version 1, shift angle w is given by
-	w = arctan (ld * v), but in this version, the transformation of
-	F_mu to the (t = ld * v) scale is taken as F_mu * cos^2 (w) rather
-	than the (correct) F_mu * cos^4 (w).
-		The effect is to suppress a tendency to align factor with
-	one variable, with a slight increase in message length.
-	*/
+/*    Version 2. Like version 1, shift angle w is given by
+    w = arctan (ld * v), but in this version, the transformation of
+    F_mu to the (t = ld * v) scale is taken as F_mu * cos^2 (w) rather
+    than the (correct) F_mu * cos^4 (w).
+        The effect is to suppress a tendency to align factor with
+    one variable, with a slight increase in message length.
+    */
 
 #define VONM 1
 #define NOTGLOB 1
 #include "glob.c"
 
 typedef struct Vmpackst {
-	Sf kap;  Sf rkap;  Sf lgi0;  Sf aa; Sf daa;  Sf fh;  Sf dfh;
-		} Vmpack;
+    Sf kap;  Sf rkap;  Sf lgi0;  Sf aa; Sf daa;  Sf fh;  Sf dfh;
+        } Vmpack;
 
 void kapcode (Sf hx, Sf hy, Sf *vmst);
 
@@ -34,758 +34,758 @@ static void ncostvar();
 static void adjust();
 static void vprint();
 
-typedef struct Datumst	{
-	Sf xx;
-	Sf sinxx;
-	Sf cosxx;
-	} Datum;
+typedef struct Datumst    {
+    Sf xx;
+    Sf sinxx;
+    Sf cosxx;
+    } Datum;
 
 typedef struct Sauxst {
-	Sw missing;
-	Sf dummy;
-	Datum xn;
-	Sf parkfxx;	/* angle - vv*ld for thing n */
-	Sf eps;
-	Sf leps;  /* Log eps */
-	Sf epssq;	/*  eps^2 / 12  */
-	Sw unit;
-	} Saux;
+    Sw missing;
+    Sf dummy;
+    Datum xn;
+    Sf parkfxx;    /* angle - vv*ld for thing n */
+    Sf eps;
+    Sf leps;  /* Log eps */
+    Sf epssq;    /*  eps^2 / 12  */
+    Sw unit;
+    } Saux;
 
 typedef struct Pauxst {
-	Sw dummy;
-	} Paux;
+    Sw dummy;
+    } Paux;
 
 typedef struct Vauxst {
-	Sw dummy;
-	} Vaux;
+    Sw dummy;
+    } Vaux;
 
-/*	***************  All of Basic should be distributed  */
+/*    ***************  All of Basic should be distributed  */
 typedef struct Basicst {     /* Basic parameter info about var in class.
-				The first few fields are standard and hxst
-				appear in the order shown.  */
-	Sw id;	/* The variable number (index)  */
-	Sw signif;
-	Sw infac;	/* shows if affected by factor  */
-	/********************  Following fields vary according to need ***/
-	Sf bhx, bhy;	/* current mean, log hy */
-	Sf nhx, nhy;	/* when dad */
-	Sf shx, shy;	/* when sansfac */
-	Sf fhx, fhy;	/* when confac */
-	Sf bhsprd, nhsprd, shsprd, fhsprd;
-	Sf ld;		/* factor load */
-	Sf ldsprd;
-	Sf samplesize;  /* Size of sample on which estimates based */
-/*	Derived quantities calced in 'adjust'	*/
-/*	For Plain case:	*/
-	Sf skappa, rskappa;	/* Concentration param and reciprocal */
-	Sf slgi0;	/* Normalization constant */
-	Sf saa;		/* deriv of slgi0 wrt kappa */
-	Sf sdaa;	/* deriv of saa */
-	Sf sfh;		/* one-directional Fisher for hx, hy */
-	Sf sdfh;	/* deriv of sfh */
-/*	For Factor case:	*/
-/*	Note that fields fkappa ... fdfh match skappa ... sdfh  */
-	Sf fkappa, rfkappa;	/* Concentration param and reciprocal */
-	Sf flgi0;	/* Normalization constant */
-	Sf faa;		/* deriv of flgi0 wrt kappa */
-	Sf fdaa;	/* deriv of faa */
-	Sf ffh;		/* one-directional Fisher for hx, hy */
-	Sf fdfh;	/* deriv of ffh */
-	Sf fmufish;	/*	Fish wrt mu  */
-	Sf ldsq;	/* Square of load */
-	}   Basic;
+                The first few fields are standard and hxst
+                appear in the order shown.  */
+    Sw id;    /* The variable number (index)  */
+    Sw signif;
+    Sw infac;    /* shows if affected by factor  */
+    /********************  Following fields vary according to need ***/
+    Sf bhx, bhy;    /* current mean, log hy */
+    Sf nhx, nhy;    /* when dad */
+    Sf shx, shy;    /* when sansfac */
+    Sf fhx, fhy;    /* when confac */
+    Sf bhsprd, nhsprd, shsprd, fhsprd;
+    Sf ld;        /* factor load */
+    Sf ldsprd;
+    Sf samplesize;  /* Size of sample on which estimates based */
+/*    Derived quantities calced in 'adjust'    */
+/*    For Plain case:    */
+    Sf skappa, rskappa;    /* Concentration param and reciprocal */
+    Sf slgi0;    /* Normalization constant */
+    Sf saa;        /* deriv of slgi0 wrt kappa */
+    Sf sdaa;    /* deriv of saa */
+    Sf sfh;        /* one-directional Fisher for hx, hy */
+    Sf sdfh;    /* deriv of sfh */
+/*    For Factor case:    */
+/*    Note that fields fkappa ... fdfh match skappa ... sdfh  */
+    Sf fkappa, rfkappa;    /* Concentration param and reciprocal */
+    Sf flgi0;    /* Normalization constant */
+    Sf faa;        /* deriv of flgi0 wrt kappa */
+    Sf fdaa;    /* deriv of faa */
+    Sf ffh;        /* one-directional Fisher for hx, hy */
+    Sf fdfh;    /* deriv of ffh */
+    Sf fmufish;    /*    Fish wrt mu  */
+    Sf ldsq;    /* Square of load */
+    }   Basic;
 
-typedef struct Statsst  {	/* Stuff accumulated to revise Basic  */
-				/* First fields are standard  */
-	Sf cnt;		/* Weighted count  */
-	Sf btcost, ntcost, stcost, ftcost;
-	Sf bpcost, npcost, spcost, fpcost;
-	Sf vsq;		/*  weighted sum of squared scores for this var */
-	Sw id;		/* Variable number  */
-	/********************  Following fields vary according to need ***/
-	Sf parkstcost, parkftcost;  /* Unweighted thing costs of xn */
-	Sf oldftcost, adj;
-	Sf tssin, tscos;  /* Sum of sines and cosines (no factor) */
-	Sf tfsin, tfcos;  /* Sum of sines and cosines (with factor) */
-	Sf ldd1, ldd2;
-	Sf fwd2;	/* Total coeff of Fmu in thing costs */
-	}  Stats;
+typedef struct Statsst  {    /* Stuff accumulated to revise Basic  */
+                /* First fields are standard  */
+    Sf cnt;        /* Weighted count  */
+    Sf btcost, ntcost, stcost, ftcost;
+    Sf bpcost, npcost, spcost, fpcost;
+    Sf vsq;        /*  weighted sum of squared scores for this var */
+    Sw id;        /* Variable number  */
+    /********************  Following fields vary according to need ***/
+    Sf parkstcost, parkftcost;  /* Unweighted thing costs of xn */
+    Sf oldftcost, adj;
+    Sf tssin, tscos;  /* Sum of sines and cosines (no factor) */
+    Sf tfsin, tfcos;  /* Sum of sines and cosines (with factor) */
+    Sf ldd1, ldd2;
+    Sf fwd2;    /* Total coeff of Fmu in thing costs */
+    }  Stats;
 
 static Saux *saux;   static Paux *paux;   static Vaux *vaux;
 static Basic *cvi, *dcvi;
 static Stats *evi;
 
 #ifdef CHECK
-	Sf oldhx;
-	Sf oldtsx;
-	Sf oldld;
-	Sw oldivv[200];
+    Sf oldhx;
+    Sf oldtsx;
+    Sf oldld;
+    Sw oldivv[200];
 Sw junk;
 Sw check (k)
-	Sw k;
+    Sw k;
 {
-	Basic *cvi;  Stats *evi;
-	Sw ch, del, n, wn, adel, mdel, vold, vnew;
+    Basic *cvi;  Stats *evi;
+    Sw ch, del, n, wn, adel, mdel, vold, vnew;
 
-	if (rootcl->age < 380) return(0);
-	ch = 0;
-	cvi = (Basic*) rootcl->basics[0];
-	evi = (Stats*) rootcl->stats[0];
-	if (rootcl->age < 385) goto save;
-	mdel = 0;
-	for (n = 0; n < samp->nc; n++)	{
-		del = rootcl->vv[n] - oldivv[n];
-		adel = (del < 0) ? -del : del;
-		if (adel > mdel)	{
-			mdel = adel;  wn = n;  vold = oldivv[n];
-			vnew = rootcl->vv[n];
-			}
-		}
-	if (mdel > 2)	{
-	  printf("VV[%2d] from %6d to %6d\n", wn, vold, vnew);
-		ch = 3;
-		}
-	if (fabs( cvi->fhx - oldhx) > 0.0001)	{
-		printf("Hx from %12.4f to %12.4f\n", oldhx,cvi->fhx);
-		ch = 1;
-		}
-	if (fabs(evi->tfsin - oldtsx) > 0.01)	{
-		printf("Ts from %12.4f to %12.4f\n", oldtsx,evi->tfsin);
-		ch = 2;
-		}
-	if (fabs(cvi->ld - oldld) > 0.0001)	{
-		printf("Ld from %12.4f to %12.4f\n", oldld, cvi->ld);
-		}
+    if (rootcl->age < 380) return(0);
+    ch = 0;
+    cvi = (Basic*) rootcl->basics[0];
+    evi = (Stats*) rootcl->stats[0];
+    if (rootcl->age < 385) goto save;
+    mdel = 0;
+    for (n = 0; n < samp->nc; n++)    {
+        del = rootcl->vv[n] - oldivv[n];
+        adel = (del < 0) ? -del : del;
+        if (adel > mdel)    {
+            mdel = adel;  wn = n;  vold = oldivv[n];
+            vnew = rootcl->vv[n];
+            }
+        }
+    if (mdel > 2)    {
+      printf("VV[%2d] from %6d to %6d\n", wn, vold, vnew);
+        ch = 3;
+        }
+    if (fabs( cvi->fhx - oldhx) > 0.0001)    {
+        printf("Hx from %12.4f to %12.4f\n", oldhx,cvi->fhx);
+        ch = 1;
+        }
+    if (fabs(evi->tfsin - oldtsx) > 0.01)    {
+        printf("Ts from %12.4f to %12.4f\n", oldtsx,evi->tfsin);
+        ch = 2;
+        }
+    if (fabs(cvi->ld - oldld) > 0.0001)    {
+        printf("Ld from %12.4f to %12.4f\n", oldld, cvi->ld);
+        }
 
 save:
-	oldhx = cvi->fhx;
-	oldtsx = evi->tfsin;
-	oldld = cvi->ld;
-	for (n = 0; n < samp->nc; n++) oldivv[n] = rootcl->vv[n];
-	if (ch) printf ("  age %3d  K%2d\n", rootcl->age, k);
-	return(ch);
+    oldhx = cvi->fhx;
+    oldtsx = evi->tfsin;
+    oldld = cvi->ld;
+    for (n = 0; n < samp->nc; n++) oldivv[n] = rootcl->vv[n];
+    if (ch) printf ("  age %3d  K%2d\n", rootcl->age, k);
+    return(ch);
 }
 #endif
 
 /*--------------------------  define ------------------------------- */
-/*	This routine is used to set up a Vtype entry in the global "types"
+/*    This routine is used to set up a Vtype entry in the global "types"
 array.  It is the only function whose name needs to be altered for different
 types of variable, and this name hxst be copied into the file "definetypes.c"
 when installing a new type of variable. It is also necessary to change the
 "Ntypes" constant, and to decide on a type id (an integer) for the new type.
-	*/
+    */
 
 void vonm_define(typindx)
-	Sw typindx;
-/*	typindx is the index in types[] of this type   */
+    Sw typindx;
+/*    typindx is the index in types[] of this type   */
 {
-	Vtype *vtp;
+    Vtype *vtp;
 
-	vtp = types + typindx;
-	vtp->id = typindx;
-/* 	Set type name as string up to 59 chars  */
-	vtp->name = "Von Mises";
-	vtp->datsize = sizeof (Datum);
-	vtp->vauxsize = sizeof (Vaux);
-	vtp->pauxsize = sizeof (Paux);
-	vtp->sauxsize = sizeof (Saux);
-	vtp->readvaux = & readvaux;
-	vtp->readsaux = & readsaux;
-	vtp->readdat = & readdat;
-	vtp->printdat = & printdat;
-	vtp->setsizes = & setsizes;
-	vtp->setbestparam = & setbestparam;
-	vtp->clearstats = & clearstats;
-	vtp->scorevar = & scorevar;
-	vtp->costvar = & costvar;
-	vtp->derivvar = & derivvar;
-	vtp->ncostvar = & ncostvar;
-	vtp->adjust = & adjust;
-	vtp->vprint = & vprint;
-	vtp->setvar = & setvar;
+    vtp = types + typindx;
+    vtp->id = typindx;
+/*     Set type name as string up to 59 chars  */
+    vtp->name = "Von Mises";
+    vtp->datsize = sizeof (Datum);
+    vtp->vauxsize = sizeof (Vaux);
+    vtp->pauxsize = sizeof (Paux);
+    vtp->sauxsize = sizeof (Saux);
+    vtp->readvaux = & readvaux;
+    vtp->readsaux = & readsaux;
+    vtp->readdat = & readdat;
+    vtp->printdat = & printdat;
+    vtp->setsizes = & setsizes;
+    vtp->setbestparam = & setbestparam;
+    vtp->clearstats = & clearstats;
+    vtp->scorevar = & scorevar;
+    vtp->costvar = & costvar;
+    vtp->derivvar = & derivvar;
+    vtp->ncostvar = & ncostvar;
+    vtp->adjust = & adjust;
+    vtp->vprint = & vprint;
+    vtp->setvar = & setvar;
 }
 
 
-/*	-------------------  setvar -----------------------------  */
+/*    -------------------  setvar -----------------------------  */
 void setvar (iv)
-	Sw iv;
+    Sw iv;
 {
-	avi = vlist + iv;  vtp = avi->vtp;
-	pvi = pvars + iv;  paux = (Paux *) pvi->paux;
-	svi = svars + iv;
-	vaux = (Vaux *) avi->vaux;
-	saux = (Saux *) svi->saux;
-	cvi = (Basic*) cls->basics[iv];
-	evi = (Stats*) cls->stats[iv];
-	if (dad) dcvi = (Basic*) dad->basics[iv];  else dcvi = 0;
-	return;
+    avi = vlist + iv;  vtp = avi->vtp;
+    pvi = pvars + iv;  paux = (Paux *) pvi->paux;
+    svi = svars + iv;
+    vaux = (Vaux *) avi->vaux;
+    saux = (Saux *) svi->saux;
+    cvi = (Basic*) cls->basics[iv];
+    evi = (Stats*) cls->stats[iv];
+    if (dad) dcvi = (Basic*) dad->basics[iv];  else dcvi = 0;
+    return;
 }
 
 
-/*	--------------------  readvaux  ----------------------------  */
+/*    --------------------  readvaux  ----------------------------  */
 /*      Read in auxiliary info into vaux, return 0 if OK else 1  */
 Sw readvaux (vax)
-	Vaux *vax;
+    Vaux *vax;
 {
-	return (0);
+    return (0);
 }
 
 
-/*	---------------------  readsaux ---------------------------   */
-/*	To read any auxiliary info about a variable of this type in some
+/*    ---------------------  readsaux ---------------------------   */
+/*    To read any auxiliary info about a variable of this type in some
 sample.
-	*/
+    */
 Sw readsaux (sax)
-	Saux *sax;
+    Saux *sax;
 {
-	Sw i;
+    Sw i;
 
-/*	Read in auxiliary info into saux, return 0 if OK else 1  */
-	i = readint(&(sax->unit), 1);
-	if (i < 0) {sax->eps = sax->leps = 0.0;  return (1);  }
-	i = readdf (&(sax->eps), 1);
-	if (i < 0) {sax->eps = sax->leps = 0.0;  return (1);  }
-	if (sax->unit) sax->eps *= (pi / 180.0);
-	sax->epssq = sax->eps * sax->eps * (1.0/12.0);
-	sax->leps = log (sax->eps);   return (0);
+/*    Read in auxiliary info into saux, return 0 if OK else 1  */
+    i = readint(&(sax->unit), 1);
+    if (i < 0) {sax->eps = sax->leps = 0.0;  return (1);  }
+    i = readdf (&(sax->eps), 1);
+    if (i < 0) {sax->eps = sax->leps = 0.0;  return (1);  }
+    if (sax->unit) sax->eps *= (pi / 180.0);
+    sax->epssq = sax->eps * sax->eps * (1.0/12.0);
+    sax->leps = log (sax->eps);   return (0);
 }
 
 
-/*	-------------------  readdat -------------------------------  */
-/*	To read a value for this variable type	 */
+/*    -------------------  readdat -------------------------------  */
+/*    To read a value for this variable type     */
 Sw readdat (loc, iv)
-	char *loc;
-	Sw iv;
+    char *loc;
+    Sw iv;
 {
-	Sw i;
-	Sw unit;
-	Datum xn;
+    Sw i;
+    Sw unit;
+    Datum xn;
 
-/*	Read datum into xn.xx, return error.  */
-	i = readdf (&(xn.xx), 1);
-	if (! i) {
-	/*	Get the unit code from Saux   */
-		unit = ((Saux*) (svi->saux)) -> unit;
-		if (unit) xn.xx *= (pi / 180.0);
-		xn.sinxx = sin (xn.xx);  xn.cosxx = cos (xn.xx);
-		cmcpy (loc, &xn, sizeof (Datum));
-		}
-	return (i);
+/*    Read datum into xn.xx, return error.  */
+    i = readdf (&(xn.xx), 1);
+    if (! i) {
+    /*    Get the unit code from Saux   */
+        unit = ((Saux*) (svi->saux)) -> unit;
+        if (unit) xn.xx *= (pi / 180.0);
+        xn.sinxx = sin (xn.xx);  xn.cosxx = cos (xn.xx);
+        cmcpy (loc, &xn, sizeof (Datum));
+        }
+    return (i);
 }
 
 
-/*	---------------------  printdat --------------------------  */
-/*	To print a Datum value   */
+/*    ---------------------  printdat --------------------------  */
+/*    To print a Datum value   */
 void printdat (loc)
-	char *loc;
+    char *loc;
 {
-/*	Print datum from address loc   */
-	printf ("%9.2f", * ((Sf*) loc) );
-	return;
+/*    Print datum from address loc   */
+    printf ("%9.2f", * ((Sf*) loc) );
+    return;
 }
 
-/*	---------------------  setsizes  -----------------------   */
+/*    ---------------------  setsizes  -----------------------   */
 void setsizes (iv)
-	Sw iv;
+    Sw iv;
 {
-	avi = vlist + iv;
-	avi->basicsize = sizeof (Basic);
-	avi->statssize = sizeof (Stats);
-	return;
+    avi = vlist + iv;
+    avi->basicsize = sizeof (Basic);
+    avi->statssize = sizeof (Stats);
+    return;
 }
 
-/*	----------------------  setbestparam --------------------------  */
+/*    ----------------------  setbestparam --------------------------  */
 void setbestparam (iv)
-	Sw iv;
+    Sw iv;
 {
 
-	setvar (iv);
+    setvar (iv);
 
-	if (cls->type == Dad)    {
-		cvi->bhx = cvi->nhx;  cvi->bhy = cvi->nhy;
-		cvi->bhsprd = cvi->nhsprd;
-		evi->btcost = evi->ntcost;  evi->bpcost = evi->npcost;
-		}
-	else if ((cls->use == Fac) && cvi->infac) {
-		cvi->bhx = cvi->fhx;  cvi->bhy = cvi->fhy;
-		cvi->bhsprd = cvi->fhsprd;
-		evi->btcost = evi->ftcost;  evi->bpcost = evi->fpcost;
-		}
-	else    {
-		cvi->bhx = cvi->shx;  cvi->bhy = cvi->shy;
-		cvi->bhsprd = cvi->shsprd;
-		evi->btcost = evi->stcost;  evi->bpcost = evi->spcost;
-		}
-	return;
+    if (cls->type == Dad)    {
+        cvi->bhx = cvi->nhx;  cvi->bhy = cvi->nhy;
+        cvi->bhsprd = cvi->nhsprd;
+        evi->btcost = evi->ntcost;  evi->bpcost = evi->npcost;
+        }
+    else if ((cls->use == Fac) && cvi->infac) {
+        cvi->bhx = cvi->fhx;  cvi->bhy = cvi->fhy;
+        cvi->bhsprd = cvi->fhsprd;
+        evi->btcost = evi->ftcost;  evi->bpcost = evi->fpcost;
+        }
+    else    {
+        cvi->bhx = cvi->shx;  cvi->bhy = cvi->shy;
+        cvi->bhsprd = cvi->shsprd;
+        evi->btcost = evi->stcost;  evi->bpcost = evi->spcost;
+        }
+    return;
 }
 
 
-/*	------------------------  clearstats  ------------------------  */
-/*	Clears stats to accumulate in costvar, and derives useful functions
+/*    ------------------------  clearstats  ------------------------  */
+/*    Clears stats to accumulate in costvar, and derives useful functions
 of basic params  */
 void clearstats (iv)
-	Sw iv;
+    Sw iv;
 {
-	setvar (iv);
-	evi->cnt = 0.0;
-	evi->stcost = evi->ftcost = 0.0;
-	evi->vsq = 0.0;
-	evi->tssin = evi->tscos = 0.0;
-	evi->tfsin = evi->tfcos = 0.0;
-	evi->ldd2 = evi->ldd1 = evi->fwd2 = 0.0;
+    setvar (iv);
+    evi->cnt = 0.0;
+    evi->stcost = evi->ftcost = 0.0;
+    evi->vsq = 0.0;
+    evi->tssin = evi->tscos = 0.0;
+    evi->tfsin = evi->tfcos = 0.0;
+    evi->ldd2 = evi->ldd1 = evi->fwd2 = 0.0;
 
-	if (cls->age > 0) return;
+    if (cls->age > 0) return;
 
-/*	Set some plausible values for initial pass  */
-	if ((dad) && (cls->age == 0)) return;
-	cvi->shx = cvi->shy = cvi->fhx = cvi->fhy = 0.0;
-	cvi->shsprd = cvi->fhsprd = 1.0;
-	cvi->ld = cvi->fkappa = 0.0;
-	cvi->fmufish = cvi->ldsq = 0.0;
-	cvi->slgi0 = cvi->flgi0 = 1.8379;  /* about log 2 Pi */
-	cvi->ldsq = cvi->ld * cvi->ld;
-	return;
+/*    Set some plausible values for initial pass  */
+    if ((dad) && (cls->age == 0)) return;
+    cvi->shx = cvi->shy = cvi->fhx = cvi->fhy = 0.0;
+    cvi->shsprd = cvi->fhsprd = 1.0;
+    cvi->ld = cvi->fkappa = 0.0;
+    cvi->fmufish = cvi->ldsq = 0.0;
+    cvi->slgi0 = cvi->flgi0 = 1.8379;  /* about log 2 Pi */
+    cvi->ldsq = cvi->ld * cvi->ld;
+    return;
 }
 
 
-/*	-------------------------  scorevar  ------------------------   */
-/*	To eval derivs of a case cost wrt score, scorespread. Adds to
+/*    -------------------------  scorevar  ------------------------   */
+/*    To eval derivs of a case cost wrt score, scorespread. Adds to
 vvd1, vvd2.
-	The general form for VonMises message costs has the following
+    The general form for VonMises message costs has the following
 components:
-	Density cost:
+    Density cost:
 mc1 = -leps + lgi0 - kap * cos (mu + w - xx)
-	where kap^2 = hx^2 + hy^2
-		tan (mu) = hx / hy
-		t = tan (w) = vv * ld
+    where kap^2 = hx^2 + hy^2
+        tan (mu) = hx / hy
+        t = tan (w) = vv * ld
 
-	Round-off costs:
+    Round-off costs:
 mc2 = hsprd * Fh
 mc3 = 0.5 * Fmu * wsprd
-	where	wsprd = tsprd * cos^4 (w)
-BUT	in this version I pretend wsprd = tsprd * cos^2 (w).
-		tsprd = vvsq * ldsprd + ldsq * vvsprd
+    where    wsprd = tsprd * cos^4 (w)
+BUT    in this version I pretend wsprd = tsprd * cos^2 (w).
+        tsprd = vvsq * ldsprd + ldsq * vvsprd
 
-	Score prior cost are accounted in scorevarall.
-	*/
+    Score prior cost are accounted in scorevarall.
+    */
 void scorevar (iv)
-	Sw iv;
+    Sw iv;
 {
 
-	Sf cos2w, cosw, sinw, tt, wd1, mvd2;
-	Sf dcos2dw, dwdv;
+    Sf cos2w, cosw, sinw, tt, wd1, mvd2;
+    Sf dcos2dw, dwdv;
 
-	setvar (iv);
-	if (avi->idle)	return;
+    setvar (iv);
+    if (avi->idle)    return;
 
-	if (saux->missing) return;
+    if (saux->missing) return;
 
-/*	Get t  */
-	tt = cvi->ld * cvv;
-/*	Hence cos(w), sin(w)  */
-	cos2w = 1.0 / (1.0 + tt * tt);  cosw = sqrt (cos2w);
-	sinw = tt * cosw;
-	dcos2dw = -2.0 * cos2w * tt;  /* d_cos^2(w)/d_w */
-	dwdv = cos2w * cvi->ld;     /* d_w / d_v  */
+/*    Get t  */
+    tt = cvi->ld * cvv;
+/*    Hence cos(w), sin(w)  */
+    cos2w = 1.0 / (1.0 + tt * tt);  cosw = sqrt (cos2w);
+    sinw = tt * cosw;
+    dcos2dw = -2.0 * cos2w * tt;  /* d_cos^2(w)/d_w */
+    dwdv = cos2w * cvi->ld;     /* d_w / d_v  */
 
-/*	Now to get derivs wrt vv, I first get derivs wrt tt  */
-/*	The mc1 term -kap * cos (mu + w - xx) can be written using
-	kap*cosmu = hy, kap*sinmu = hx as:
-	mc1t = -{(hy.cx + hx.sx) cos(w) - (hx.cx - hy.sx) sin(w)}
-	with deriv wrt w given by:
-	wd1 = -{(hy.cx + hx.sx) (-sin(w)) - (hx.cx - hy.sx) cos (w)}
-	    =  {(hy.cx + hx.sx) sin (w) + (hx.cx - hy.sx) cos (w)}
-	*/
+/*    Now to get derivs wrt vv, I first get derivs wrt tt  */
+/*    The mc1 term -kap * cos (mu + w - xx) can be written using
+    kap*cosmu = hy, kap*sinmu = hx as:
+    mc1t = -{(hy.cx + hx.sx) cos(w) - (hx.cx - hy.sx) sin(w)}
+    with deriv wrt w given by:
+    wd1 = -{(hy.cx + hx.sx) (-sin(w)) - (hx.cx - hy.sx) cos (w)}
+        =  {(hy.cx + hx.sx) sin (w) + (hx.cx - hy.sx) cos (w)}
+    */
 
-	wd1 = ((cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * sinw
-	     + (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * cosw);
+    wd1 = ((cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * sinw
+         + (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * cosw);
 
-/*	The mc3 term 0.5 * Fmu * cos^2(w) * (vsq * ldsprd + ldsq * vsprd)
-	is treated in two parts, as we don't yet know vsprd. The part in
-	(vsq * ldsprd) gives a contibution to wd1 via the cos^2 factor:  */
-	wd1 += 0.5 * cvi->fmufish * cvvsq * cvi->ldsprd * dcos2dw;
+/*    The mc3 term 0.5 * Fmu * cos^2(w) * (vsq * ldsprd + ldsq * vsprd)
+    is treated in two parts, as we don't yet know vsprd. The part in
+    (vsq * ldsprd) gives a contibution to wd1 via the cos^2 factor:  */
+    wd1 += 0.5 * cvi->fmufish * cvvsq * cvi->ldsprd * dcos2dw;
 
-/*	This part also directly contributes to vvd1 via the vsq factor: */
-	vvd1 += cvi->fmufish * cos2w * cvv * cvi->ldsprd;
+/*    This part also directly contributes to vvd1 via the vsq factor: */
+    vvd1 += cvi->fmufish * cos2w * cvv * cvi->ldsprd;
 
-/*	This gives a term in mvvd2 :  */
-	mvvd2 += cvi->fmufish * cos2w * cvi->ldsprd;
+/*    This gives a term in mvvd2 :  */
+    mvvd2 += cvi->fmufish * cos2w * cvi->ldsprd;
 
-/*	The second part, involving vsprd, is treated by accumulating
-	in vvd3 the deriv wrt vv of the multiplier of vsprd.   */
-	vvd3 += cvi->fmufish * dcos2dw * dwdv * cvi->ldsq;
+/*    The second part, involving vsprd, is treated by accumulating
+    in vvd3 the deriv wrt vv of the multiplier of vsprd.   */
+    vvd3 += cvi->fmufish * dcos2dw * dwdv * cvi->ldsq;
 
-/*	The deriv wrt w leads to a deriv wrt t of wd1 * cos^2 (w)  */
-/*	and so to deriv wrt vv of: (ld * wd1 * cos^2 (w))  */
+/*    The deriv wrt w leads to a deriv wrt t of wd1 * cos^2 (w)  */
+/*    and so to deriv wrt vv of: (ld * wd1 * cos^2 (w))  */
 
-	vvd1 += wd1 * dwdv;
+    vvd1 += wd1 * dwdv;
 
-/*	Now for contribution to vvd2. This is 2 * the coeff of vsprd in
-	the thing cost.  */
-	mvd2 = cvi->fmufish * cvi->ldsq;
-	mvvd2 += mvd2;
-	vvd2 += mvd2 * cos2w;
-	return;
+/*    Now for contribution to vvd2. This is 2 * the coeff of vsprd in
+    the thing cost.  */
+    mvd2 = cvi->fmufish * cvi->ldsq;
+    mvvd2 += mvd2;
+    vvd2 += mvd2 * cos2w;
+    return;
 }
 
 
-/*	-----------------------  costvar  --------------------------   */
-/*	Accumulates thing cost into scasecost, fcasecost    */
+/*    -----------------------  costvar  --------------------------   */
+/*    Accumulates thing cost into scasecost, fcasecost    */
 void costvar (iv, fac)
-	Sw iv, fac;
+    Sw iv, fac;
 {
-	Sf del, cost, tt, tsprd, cosw, sinw, cos2w;
-	setvar (iv);
-	if (saux->missing) return;
-	if (cls->age == 0) { evi->parkftcost = evi->parkstcost = 0.0; return; }
-/*	Do no-fac cost first  */
-/*	Get cosine of angle between xn and field  */
-	del = saux->xn.cosxx * cvi->shy + saux->xn.sinxx * cvi->shx;
-/*	This is already multiplied by field strength kappa  */
-	cost = cvi->slgi0 - del - saux->leps;
-/*	slgi0 contains the roundoff costs from shsprd   */
-	evi->parkstcost = cost;
-	scasecost += cost;
+    Sf del, cost, tt, tsprd, cosw, sinw, cos2w;
+    setvar (iv);
+    if (saux->missing) return;
+    if (cls->age == 0) { evi->parkftcost = evi->parkstcost = 0.0; return; }
+/*    Do no-fac cost first  */
+/*    Get cosine of angle between xn and field  */
+    del = saux->xn.cosxx * cvi->shy + saux->xn.sinxx * cvi->shx;
+/*    This is already multiplied by field strength kappa  */
+    cost = cvi->slgi0 - del - saux->leps;
+/*    slgi0 contains the roundoff costs from shsprd   */
+    evi->parkstcost = cost;
+    scasecost += cost;
 
-/*	Only do faccost if fac  */
-	if (! fac) goto facdone;
-/*	From density term mc1:	*/
-	cost = cvi->flgi0 - saux->leps;
-/*	flgi0 already contains the mc2 term hsprd * Fh */
+/*    Only do faccost if fac  */
+    if (! fac) goto facdone;
+/*    From density term mc1:    */
+    cost = cvi->flgi0 - saux->leps;
+/*    flgi0 already contains the mc2 term hsprd * Fh */
 
-/*	And we need -kap * cos (mu + w - xx)   */
-	tt = cvi->ld * cvv;
-/*	Hence cos(w), sin(w)  */
-	cos2w = 1.0 / (1.0 + tt * tt);  cosw = sqrt (cos2w);
-	sinw = tt * cosw;
+/*    And we need -kap * cos (mu + w - xx)   */
+    tt = cvi->ld * cvv;
+/*    Hence cos(w), sin(w)  */
+    cos2w = 1.0 / (1.0 + tt * tt);  cosw = sqrt (cos2w);
+    sinw = tt * cosw;
 
-	cost -=
-		(cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * cosw
-	      - (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * sinw;
+    cost -=
+        (cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * cosw
+          - (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * sinw;
 
-/*	And cost term mc3, depending on tsprd:  */
-	tsprd = cvvsq * cvi->ldsprd + cvi->ldsq * cvvsprd;
-	cost += 0.5 * cvi->fmufish * tsprd * cos2w;
+/*    And cost term mc3, depending on tsprd:  */
+    tsprd = cvvsq * cvi->ldsprd + cvi->ldsq * cvvsprd;
+    cost += 0.5 * cvi->fmufish * tsprd * cos2w;
 
 facdone:
-	fcasecost += cost;
-	evi->parkftcost = cost;
+    fcasecost += cost;
+    evi->parkftcost = cost;
 
-	return;
+    return;
 }
 
 
-/*	--------------------  derivvar  --------------------------  */
-/*	Given the thing weight in cwt, calcs derivs of cost wrt basic
+/*    --------------------  derivvar  --------------------------  */
+/*    Given the thing weight in cwt, calcs derivs of cost wrt basic
 params and accumulates in paramd1, paramd2.
 Factor derivs done only if fac.  */
 void derivvar (iv, fac)
-	Sw iv, fac;
+    Sw iv, fac;
 {
-	Sf tt, tsprd, cos2w, cosw, sinw, wtcos2w, wd1;
-	Sf coser, siner;
-	setvar (iv);
-	if (saux->missing) return;
-/*	Do non-fac first  */
-	evi->cnt += cwt;
-/*	For non-fac, rather than getting derivatives I just collect
-	the sufficient statistics, sum of xn.sinxx, xn.cosxx  */
-	evi->tssin += cwt * saux->xn.sinxx;
-	evi->tscos += cwt * saux->xn.cosxx;
-/*	Accumulate weighted thing cost  */
-	evi->stcost += cwt * evi->parkstcost;
-	evi->ftcost += cwt * evi->parkftcost;
+    Sf tt, tsprd, cos2w, cosw, sinw, wtcos2w, wd1;
+    Sf coser, siner;
+    setvar (iv);
+    if (saux->missing) return;
+/*    Do non-fac first  */
+    evi->cnt += cwt;
+/*    For non-fac, rather than getting derivatives I just collect
+    the sufficient statistics, sum of xn.sinxx, xn.cosxx  */
+    evi->tssin += cwt * saux->xn.sinxx;
+    evi->tscos += cwt * saux->xn.cosxx;
+/*    Accumulate weighted thing cost  */
+    evi->stcost += cwt * evi->parkstcost;
+    evi->ftcost += cwt * evi->parkftcost;
 
-/*	Now for factor form  */
-	if (! fac) goto facdone;
-	tt = cvi->ld * cvv;
-/*	Hence cos(w), sin(w)  */
-	cos2w = 1.0 / (1.0 + tt * tt);  cosw = sqrt (cos2w);
-	sinw = tt * cosw;
+/*    Now for factor form  */
+    if (! fac) goto facdone;
+    tt = cvi->ld * cvv;
+/*    Hence cos(w), sin(w)  */
+    cos2w = 1.0 / (1.0 + tt * tt);  cosw = sqrt (cos2w);
+    sinw = tt * cosw;
 
-/*	First, we get the cos and sin of the "error" angle xx-w for
-	accumulation as tfcos, tssin  */
+/*    First, we get the cos and sin of the "error" angle xx-w for
+    accumulation as tfcos, tssin  */
 
-	coser = saux->xn.cosxx * cosw + saux->xn.sinxx * sinw;
-	evi->tfcos += cwt * coser;
-	siner = saux->xn.sinxx * cosw - saux->xn.cosxx * sinw;
-	evi->tfsin += cwt * siner;
+    coser = saux->xn.cosxx * cosw + saux->xn.sinxx * sinw;
+    evi->tfcos += cwt * coser;
+    siner = saux->xn.sinxx * cosw - saux->xn.cosxx * sinw;
+    evi->tfsin += cwt * siner;
 
-/*	These should be sufficient to get derivs of mc1 wrt hx, hy,
-	also derivs of mc2, but there remains mc3, and load. */
+/*    These should be sufficient to get derivs of mc1 wrt hx, hy,
+    also derivs of mc2, but there remains mc3, and load. */
 
-/*	Cost mc3 = 0.5 * Fmu * tsprd * cos^2 (w)  */
-	tsprd = cvvsq * cvi->ldsprd + cvi->ldsq * cvvsprd;
-	wtcos2w = cwt * cos2w;
-/*	Accumulate multiplier of Fmu  */
-	evi->fwd2 += tsprd * wtcos2w;
+/*    Cost mc3 = 0.5 * Fmu * tsprd * cos^2 (w)  */
+    tsprd = cvvsq * cvi->ldsprd + cvi->ldsq * cvvsprd;
+    wtcos2w = cwt * cos2w;
+/*    Accumulate multiplier of Fmu  */
+    evi->fwd2 += tsprd * wtcos2w;
 
-/*	To get deriv wrt ld, deriv of mc1 wrt w is:  */
-	wd1 = ((cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * sinw
-	     + (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * cosw);
+/*    To get deriv wrt ld, deriv of mc1 wrt w is:  */
+    wd1 = ((cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * sinw
+         + (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * cosw);
 
-/*	The mc3 term 0.5 * Fmu * wsprd = 0.5 * Fmu * tsprd * cos^2 (w)
-	gives a further deriv wrt w:	*/
-	wd1 -= cvi->fmufish * tsprd * cosw * sinw;
+/*    The mc3 term 0.5 * Fmu * wsprd = 0.5 * Fmu * tsprd * cos^2 (w)
+    gives a further deriv wrt w:    */
+    wd1 -= cvi->fmufish * tsprd * cosw * sinw;
 
-/*	The deriv wrt w leads to a deriv wrt t of wd1 * cos^2 (w)  */
-/*	and so to a deriv wrt ld of: (vv * wd1 * cos^2 (w))  */
-	evi->ldd1 += cwt * cvv * wd1 * cos2w;
+/*    The deriv wrt w leads to a deriv wrt t of wd1 * cos^2 (w)  */
+/*    and so to a deriv wrt ld of: (vv * wd1 * cos^2 (w))  */
+    evi->ldd1 += cwt * cvv * wd1 * cos2w;
 
-/*	There is also a deriv wrt ld via tsprd.  */
-	evi->ldd1 += cvi->fmufish * wtcos2w * cvi->ld * cvvsprd;
+/*    There is also a deriv wrt ld via tsprd.  */
+    evi->ldd1 += cvi->fmufish * wtcos2w * cvi->ld * cvvsprd;
 
-/*	Accum as ldd2 twice the multiplier of ldsprd in mc3  */
-	evi->ldd2 += wtcos2w * cvi->fmufish * cvvsq;
+/*    Accum as ldd2 twice the multiplier of ldsprd in mc3  */
+    evi->ldd2 += wtcos2w * cvi->fmufish * cvvsq;
 
 facdone:
-	return;
+    return;
 }
 
 
-/*	-------------------  adjust  ---------------------------    */
-/*	To adjust parameters of a vonmises variable     */
+/*    -------------------  adjust  ---------------------------    */
+/*    To adjust parameters of a vonmises variable     */
 void adjust (iv, fac)
-	Sw iv, fac;
+    Sw iv, fac;
 {
-	Sf adj, temp1, cnt, ldd2;
-	Sf del1, del2, spcost, fpcost;
-	Sf dadhx, dadhy, dhsprd;
-	Sf hxd1, hyd1, hkd1, hkd2;
+    Sf adj, temp1, cnt, ldd2;
+    Sf del1, del2, spcost, fpcost;
+    Sf dadhx, dadhy, dhsprd;
+    Sf hxd1, hyd1, hkd1, hkd2;
 
-	setvar (iv);
-	adj = InitialAdj;
-	cnt = evi->cnt;
+    setvar (iv);
+    adj = InitialAdj;
+    cnt = evi->cnt;
 
-/*	Get prior constants from dad, or if root, fake them  */
-	if ( ! dad)	{  /* Class is root */
-		dadhx = dadhy = 0.0;  dhsprd = NullSprd;
-		}
-	else	{
-		dadhx = dcvi->nhx;  dadhy = dcvi->nhy;
-		dhsprd = dcvi->nhsprd;
-		}
+/*    Get prior constants from dad, or if root, fake them  */
+    if ( ! dad)    {  /* Class is root */
+        dadhx = dadhy = 0.0;  dhsprd = NullSprd;
+        }
+    else    {
+        dadhx = dcvi->nhx;  dadhy = dcvi->nhy;
+        dhsprd = dcvi->nhsprd;
+        }
 
-/*	If too few data for this variable, use dad's n-paras  */
-	if ((control & AdjPr) && (cnt < MinSize))	{
-		cvi->nhx = cvi->shx = cvi->fhx = dadhx;
-		cvi->nhy = cvi->shy = cvi->fhy = dadhy;
-		cvi->ld = 0.0;
-		cvi->nhsprd = cvi->shsprd = cvi->fhsprd = dhsprd;
-		cvi->ldsprd = 1.0;
-		cvi->sfh = cvi->ffh = -1.0;
-		goto hasage;
-		}
-/*	If class age is zero, make some preliminary estimates  */
-	if (cls->age) goto hasage;
-	evi->oldftcost = 0.0;  evi->adj = 1.0;
-	cvi->shx = cvi->fhx = evi->tssin / cnt;
-	cvi->shy = cvi->fhy = evi->tscos / cnt;
-	cvi->shsprd = cvi->fhsprd = 1.0 / cnt;
-	cvi->ldsprd = 1.0 / cnt;
-	cvi->ld = 0.0;
-	cvi->sfh = cvi->ffh = -1.0;
-/*	Make a stab at class tcost  */
-	cls->cstcost += cnt * (2.0 * hlg2pi - saux->leps + cls->mlogab) + 1.0;
-	cls->cftcost = cls->cstcost + 100.0 * cnt;
+/*    If too few data for this variable, use dad's n-paras  */
+    if ((control & AdjPr) && (cnt < MinSize))    {
+        cvi->nhx = cvi->shx = cvi->fhx = dadhx;
+        cvi->nhy = cvi->shy = cvi->fhy = dadhy;
+        cvi->ld = 0.0;
+        cvi->nhsprd = cvi->shsprd = cvi->fhsprd = dhsprd;
+        cvi->ldsprd = 1.0;
+        cvi->sfh = cvi->ffh = -1.0;
+        goto hasage;
+        }
+/*    If class age is zero, make some preliminary estimates  */
+    if (cls->age) goto hasage;
+    evi->oldftcost = 0.0;  evi->adj = 1.0;
+    cvi->shx = cvi->fhx = evi->tssin / cnt;
+    cvi->shy = cvi->fhy = evi->tscos / cnt;
+    cvi->shsprd = cvi->fhsprd = 1.0 / cnt;
+    cvi->ldsprd = 1.0 / cnt;
+    cvi->ld = 0.0;
+    cvi->sfh = cvi->ffh = -1.0;
+/*    Make a stab at class tcost  */
+    cls->cstcost += cnt * (2.0 * hlg2pi - saux->leps + cls->mlogab) + 1.0;
+    cls->cftcost = cls->cstcost + 100.0 * cnt;
 
 hasage:
-	temp1 = 1.0 / dhsprd;
+    temp1 = 1.0 / dhsprd;
 
-/*	Compute parameter costs as they are  */
-	del1 = (dadhx - cvi->shx) * (dadhx - cvi->shx) +
-		(dadhy - cvi->shy) * (dadhy - cvi->shy);
-	spcost = 2.0 * hlg2pi + log (dhsprd) +
-		 0.5 * temp1 * (del1 + 2.0 * cvi->shsprd)
-		 - log (cvi->shsprd) + 2.0 * lattice;
+/*    Compute parameter costs as they are  */
+    del1 = (dadhx - cvi->shx) * (dadhx - cvi->shx) +
+        (dadhy - cvi->shy) * (dadhy - cvi->shy);
+    spcost = 2.0 * hlg2pi + log (dhsprd) +
+         0.5 * temp1 * (del1 + 2.0 * cvi->shsprd)
+         - log (cvi->shsprd) + 2.0 * lattice;
 
-	if (! fac){fpcost = spcost + 100.0;  cvi->infac = 1;  goto facdone1; }
-	del2 = (dadhx - cvi->fhx) * (dadhx - cvi->fhx) +
-		(dadhy - cvi->fhy) * (dadhy - cvi->fhy);
-	fpcost = 2.0 * hlg2pi + log (dhsprd) +
-		 0.5 * temp1 * (del2 + 2.0 * cvi->fhsprd)
-		 - log (cvi->fhsprd) + 2.0 * lattice;
+    if (! fac){fpcost = spcost + 100.0;  cvi->infac = 1;  goto facdone1; }
+    del2 = (dadhx - cvi->fhx) * (dadhx - cvi->fhx) +
+        (dadhy - cvi->fhy) * (dadhy - cvi->fhy);
+    fpcost = 2.0 * hlg2pi + log (dhsprd) +
+         0.5 * temp1 * (del2 + 2.0 * cvi->fhsprd)
+         - log (cvi->fhsprd) + 2.0 * lattice;
 /*    The prior for load ld is N (0, 1)  */
-	fpcost += hlg2pi + 0.5 * (cvi->ldsq + cvi->ldsprd);
-	fpcost -= 0.5 * log (cvi->ldsprd) + lattice;
+    fpcost += hlg2pi + 0.5 * (cvi->ldsq + cvi->ldsprd);
+    fpcost -= 0.5 * log (cvi->ldsprd) + lattice;
 
 facdone1:
 
-/*	Store param costs for this variable  */
-	evi->spcost = spcost;  evi->fpcost = fpcost;
-/*	Add to class param costs  */
-	cls->cspcost += spcost;  cls->cfpcost += fpcost;
-	if (! (control & AdjPr)) goto adjdone;
-	if (cnt < MinSize) goto adjdone;
+/*    Store param costs for this variable  */
+    evi->spcost = spcost;  evi->fpcost = fpcost;
+/*    Add to class param costs  */
+    cls->cspcost += spcost;  cls->cfpcost += fpcost;
+    if (! (control & AdjPr)) goto adjdone;
+    if (cnt < MinSize) goto adjdone;
 
-/*	Adjust non-fac parameters.   */
-	adj = 1.0;
-/*	From things,
-	cost = N * (-leps + LI0 + shsprd * Fh) - kap*Sum{cos(mu-x)}
+/*    Adjust non-fac parameters.   */
+    adj = 1.0;
+/*    From things,
+    cost = N * (-leps + LI0 + shsprd * Fh) - kap*Sum{cos(mu-x)}
 
-	Must get kap, Sum, LI0, Fh etc  */
-	if (cvi->sfh < 0.0) kapcode (cvi->shx, cvi->shy, &(cvi->skappa));
+    Must get kap, Sum, LI0, Fh etc  */
+    if (cvi->sfh < 0.0) kapcode (cvi->shx, cvi->shy, &(cvi->skappa));
 
-/*	From thing cost term - kap*Sum{cos(mu-x)} :  */
-	hxd1 = -evi->tssin;  hyd1 = -evi->tscos;
+/*    From thing cost term - kap*Sum{cos(mu-x)} :  */
+    hxd1 = -evi->tssin;  hyd1 = -evi->tscos;
 
-/*	From thing cost term N * LI0 : */
-/*	Deriv wrt kappa is : */
-	hkd1 = cnt * cvi->saa;
+/*    From thing cost term N * LI0 : */
+/*    Deriv wrt kappa is : */
+    hkd1 = cnt * cvi->saa;
 
-/*	From cost term cnt * hsprd * Fh:   */
-	hkd1 += cnt * cvi->shsprd * cvi->sdfh;
-	hkd2 = cnt * cvi->sfh;
+/*    From cost term cnt * hsprd * Fh:   */
+    hkd1 += cnt * cvi->shsprd * cvi->sdfh;
+    hkd2 = cnt * cvi->sfh;
 
-/*	Deriv of kappa wrt shx is shx / kappa, so  */
-	hxd1 += cvi->shx * hkd1 * cvi->rskappa;
-	hyd1 += cvi->shy * hkd1 * cvi->rskappa;
+/*    Deriv of kappa wrt shx is shx / kappa, so  */
+    hxd1 += cvi->shx * hkd1 * cvi->rskappa;
+    hyd1 += cvi->shy * hkd1 * cvi->rskappa;
 
-/*	From prior cost:  */
-	hxd1 += (cvi->shx - dadhx) * temp1;
-	hyd1 += (cvi->shy - dadhy) * temp1;
-	hkd2 += 2.0 * temp1;
+/*    From prior cost:  */
+    hxd1 += (cvi->shx - dadhx) * temp1;
+    hyd1 += (cvi->shy - dadhy) * temp1;
+    hkd2 += 2.0 * temp1;
 
-/*	Adjust shx, shy  */
-	cvi->shx -= adj * hxd1 / hkd2;
-	cvi->shy -= adj * hyd1 / hkd2;
-	cvi->shsprd = 1.0 / hkd2;
-/*	Recalc kappa and dependents   */
-	kapcode (cvi->shx, cvi->shy, &(cvi->skappa));
-/*	Store the constant part of cost (sli0 + shsprd*Fh) in cvi->slgi0 */
-	cvi->slgi0 += cvi->shsprd * cvi->sfh;
-	if (! fac)  {	/* Set factor params from plain  */
-		cvi->fhx = cvi->shx;  cvi->fhy = cvi->shy;
-		cvi->flgi0 = cvi->slgi0;
-		cvi->ld = cvi->ldsq = 0.0;
-		cvi->fmufish = cvi->skappa * cvi->saa;
-		cvi->fkappa = cvi->skappa;  cvi->fhsprd = cvi->shsprd;
-		cvi->ldsprd = 1.0 / cnt;
-		cvi->ffh = -1.0;
-		goto facdone2;
-		}
+/*    Adjust shx, shy  */
+    cvi->shx -= adj * hxd1 / hkd2;
+    cvi->shy -= adj * hyd1 / hkd2;
+    cvi->shsprd = 1.0 / hkd2;
+/*    Recalc kappa and dependents   */
+    kapcode (cvi->shx, cvi->shy, &(cvi->skappa));
+/*    Store the constant part of cost (sli0 + shsprd*Fh) in cvi->slgi0 */
+    cvi->slgi0 += cvi->shsprd * cvi->sfh;
+    if (! fac)  {    /* Set factor params from plain  */
+        cvi->fhx = cvi->shx;  cvi->fhy = cvi->shy;
+        cvi->flgi0 = cvi->slgi0;
+        cvi->ld = cvi->ldsq = 0.0;
+        cvi->fmufish = cvi->skappa * cvi->saa;
+        cvi->fkappa = cvi->skappa;  cvi->fhsprd = cvi->shsprd;
+        cvi->ldsprd = 1.0 / cnt;
+        cvi->ffh = -1.0;
+        goto facdone2;
+        }
 
-/*	Adjust factor parameters   */
-/*	From things,
-	cost = N * (-leps + LI0 - fhsprd * Fh) - kap*Sum{cos(mu-x)}
-		+ 0.5 * Fmu * Sum { wsprd }
-	where:
-		x = datum - atan (cvv * ld),  Fmu = kappa * aa
-		wsprd = (cvvsprd * ldsq + ldsprd * cvvsq) * cos^4 (w),
-		w = atan (cvv * ld),
-		Sum {wsprd} is in evi->fwd2
+/*    Adjust factor parameters   */
+/*    From things,
+    cost = N * (-leps + LI0 - fhsprd * Fh) - kap*Sum{cos(mu-x)}
+        + 0.5 * Fmu * Sum { wsprd }
+    where:
+        x = datum - atan (cvv * ld),  Fmu = kappa * aa
+        wsprd = (cvvsprd * ldsq + ldsprd * cvvsq) * cos^4 (w),
+        w = atan (cvv * ld),
+        Sum {wsprd} is in evi->fwd2
 
-	Must get kap, Sum, LI0, Fh etc  */
-	if (cvi->ffh < 0.0) kapcode (cvi->fhx, cvi->fhy, &(cvi->fkappa));
+    Must get kap, Sum, LI0, Fh etc  */
+    if (cvi->ffh < 0.0) kapcode (cvi->fhx, cvi->fhy, &(cvi->fkappa));
 
-/*	From thing cost term - kap*Sum{cos(mu-x)} :  */
-	hxd1 = -evi->tfsin;  hyd1 = -evi->tfcos;
+/*    From thing cost term - kap*Sum{cos(mu-x)} :  */
+    hxd1 = -evi->tfsin;  hyd1 = -evi->tfcos;
 
-/*	From thing cost term N * LI0 : */
-/*	Deriv wrt kappa is : */
-	hkd1 = cnt * cvi->faa;
+/*    From thing cost term N * LI0 : */
+/*    Deriv wrt kappa is : */
+    hkd1 = cnt * cvi->faa;
 
-/*	From cost term cnt * hsprd * Fh:   */
-	hkd1 += cnt * cvi->fhsprd * cvi->fdfh;
-	hkd2 = cnt * cvi->ffh;
+/*    From cost term cnt * hsprd * Fh:   */
+    hkd1 += cnt * cvi->fhsprd * cvi->fdfh;
+    hkd2 = cnt * cvi->ffh;
 
-/*	We have Sum {fwd2} in evi->fwd2, so cost term 0.5 * Fmu * fwd2 gives:
-	*/
-	hkd1 += 0.5 * (cvi->faa + cvi->fkappa * cvi->fdaa) * evi->fwd2;
+/*    We have Sum {fwd2} in evi->fwd2, so cost term 0.5 * Fmu * fwd2 gives:
+    */
+    hkd1 += 0.5 * (cvi->faa + cvi->fkappa * cvi->fdaa) * evi->fwd2;
 
-/*	Deriv of kappa wrt fhx is fhx / kappa, so  */
-	hxd1 += cvi->fhx * hkd1 * cvi->rfkappa;
-	hyd1 += cvi->fhy * hkd1 * cvi->rfkappa;
+/*    Deriv of kappa wrt fhx is fhx / kappa, so  */
+    hxd1 += cvi->fhx * hkd1 * cvi->rfkappa;
+    hyd1 += cvi->fhy * hkd1 * cvi->rfkappa;
 
-/*	Have evi->ldd1, evi->ldd2  */
-	ldd2 = evi->ldd2;
+/*    Have evi->ldd1, evi->ldd2  */
+    ldd2 = evi->ldd2;
 
-/*	From prior cost:  */
-	hxd1 += (cvi->fhx - dadhx) * temp1;
-	hyd1 += (cvi->fhy - dadhy) * temp1;
-	hkd2 += 2.0 * temp1;
-	evi->ldd1 += cvi->ld;  ldd2 += 1.0;
+/*    From prior cost:  */
+    hxd1 += (cvi->fhx - dadhx) * temp1;
+    hyd1 += (cvi->fhy - dadhy) * temp1;
+    hkd2 += 2.0 * temp1;
+    evi->ldd1 += cvi->ld;  ldd2 += 1.0;
 
 /*     Adjust fhx, fhy, ld  */
-	del1 = evi->ftcost / cnt;
-	adj = evi->adj * 1.1;  if (adj > 1.25) adj = 1.25;
-	if (del1 > evi->oldftcost) adj = 0.5 * adj;
-	if (adj < InitialAdj) adj = InitialAdj;
-	evi->adj = adj;  evi->oldftcost = del1;
-	cvi->fhx -= adj * hxd1 / hkd2;
-	cvi->fhy -= adj * hyd1 / hkd2;
-	cvi->ld -= adj * evi->ldd1 / ldd2;
-	cvi->ldsprd = 1.0 / ldd2;
-	cvi->fhsprd = 1.0 / hkd2;
+    del1 = evi->ftcost / cnt;
+    adj = evi->adj * 1.1;  if (adj > 1.25) adj = 1.25;
+    if (del1 > evi->oldftcost) adj = 0.5 * adj;
+    if (adj < InitialAdj) adj = InitialAdj;
+    evi->adj = adj;  evi->oldftcost = del1;
+    cvi->fhx -= adj * hxd1 / hkd2;
+    cvi->fhy -= adj * hyd1 / hkd2;
+    cvi->ld -= adj * evi->ldd1 / ldd2;
+    cvi->ldsprd = 1.0 / ldd2;
+    cvi->fhsprd = 1.0 / hkd2;
 
 facdone2:
-/*	Adjust derived quantities  */
-	kapcode (cvi->fhx, cvi->fhy, &(cvi->fkappa));
-	cvi->flgi0 += cvi->fhsprd * cvi->ffh;
-	cvi->fmufish = cvi->fkappa * cvi->faa;
-	cvi->ldsq = cvi->ld * cvi->ld;
+/*    Adjust derived quantities  */
+    kapcode (cvi->fhx, cvi->fhy, &(cvi->fkappa));
+    cvi->flgi0 += cvi->fhsprd * cvi->ffh;
+    cvi->fmufish = cvi->fkappa * cvi->faa;
+    cvi->ldsq = cvi->ld * cvi->ld;
 
-/*	Adjust as-dad params, but if no sons, set from nonfac params */
-	if (cls->nson < 2)	{
-		cvi->nhx = cvi->shx;  cvi->nhy = cvi->shy;
-		cvi->nhsprd = cvi->shsprd;
-		}
-	cvi->samplesize = evi->cnt;
+/*    Adjust as-dad params, but if no sons, set from nonfac params */
+    if (cls->nson < 2)    {
+        cvi->nhx = cvi->shx;  cvi->nhy = cvi->shy;
+        cvi->nhsprd = cvi->shsprd;
+        }
+    cvi->samplesize = evi->cnt;
 
 adjdone:
-	return;
+    return;
 }
 
 
-/*	------------------------  vprint  -----------------------   */
+/*    ------------------------  vprint  -----------------------   */
 void vprint (ccl, iv)
-	Class *ccl;
-	Sw iv;
+    Class *ccl;
+    Sw iv;
 {
-	Sf mu, kappa;
+    Sf mu, kappa;
 
-	setclass1 (ccl);  setvar(iv);
+    setclass1 (ccl);  setvar(iv);
 
-	printf("V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv+1, evi->cnt,
-		(cvi->infac) ? " In":"Out", evi->adj);
-	if (cls->nson < 2) goto skipn;
-	printf(" N: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n",
-		evi->npcost, cvi->nhx, cvi->nhy, sqrt(cvi->nhsprd));
+    printf("V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv+1, evi->cnt,
+        (cvi->infac) ? " In":"Out", evi->adj);
+    if (cls->nson < 2) goto skipn;
+    printf(" N: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n",
+        evi->npcost, cvi->nhx, cvi->nhy, sqrt(cvi->nhsprd));
 skipn:
-	printf(" S: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n",
-		evi->spcost+evi->stcost, cvi->shx, cvi->shy, sqrt(cvi->shsprd));
-	printf(" F: Cost%8.1f  Hx%8.3f  Hy%8.3f  Ld%8.3f +-%5.2f\n",
-		evi->fpcost+evi->ftcost, cvi->fhx, cvi->fhy, cvi->ld,
-		sqrt (cvi->ldsprd));
-	kappa = sqrt(cvi->bhx*cvi->bhx + cvi->bhy*cvi->bhy);
-	mu = atan2 (cvi->bhx, cvi->bhy);
-	printf(" B:  Mean ");
-	if (saux->unit)	printf("%6.1f deg", (180.0/pi)*mu);
-		else    printf("%6.3f rad", mu);
-	printf("  Kappa %8.2f\n", kappa);
-	return;
+    printf(" S: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n",
+        evi->spcost+evi->stcost, cvi->shx, cvi->shy, sqrt(cvi->shsprd));
+    printf(" F: Cost%8.1f  Hx%8.3f  Hy%8.3f  Ld%8.3f +-%5.2f\n",
+        evi->fpcost+evi->ftcost, cvi->fhx, cvi->fhy, cvi->ld,
+        sqrt (cvi->ldsprd));
+    kappa = sqrt(cvi->bhx*cvi->bhx + cvi->bhy*cvi->bhy);
+    mu = atan2 (cvi->bhx, cvi->bhy);
+    printf(" B:  Mean ");
+    if (saux->unit)    printf("%6.1f deg", (180.0/pi)*mu);
+        else    printf("%6.3f rad", mu);
+    printf("  Kappa %8.2f\n", kappa);
+    return;
 }
 
 
-/*	----------------------  ncostvar  ------------------------   */
-/*	To compute parameter cost for non-leaf (intrnl) class use   */
+/*    ----------------------  ncostvar  ------------------------   */
+/*    To compute parameter cost for non-leaf (intrnl) class use   */
 
-/*	The coding in an internal class of a simple scalar parameter such as
+/*    The coding in an internal class of a simple scalar parameter such as
 hx or hy is based on Normal priors. Let the parameter be "t". Every class
 will hold an estimate for t, and an assocoated "spread" value "s". In a
 leaf use of a class, "s" shows the expected squared roundoff in the estimate
 't'. In an internal use, 's' shows a measure of the variance among the 't'
 parameters of the class's sons (or subclasses). 's' also is a measure of the
 average value of the 's' values of the sons.
-	A class will normally carry 3 versions of each of t and s.
+    A class will normally carry 3 versions of each of t and s.
 'ft', 'fs' apply when the class is used as a leaf or sub class best described
 with a factor.
-	'st', 'ss' apply when the class is uses as a leaf- or sub-class best
+    'st', 'ss' apply when the class is uses as a leaf- or sub-class best
 described without a factor.
-	'nt', 'ns' apply when the class is used as the parent of N > 1 'sons'
+    'nt', 'ns' apply when the class is used as the parent of N > 1 'sons'
 or 2 subclasses. It is these which we are concerned with here.
 
-	We drop the prefix letter and use just 't', 's' as the values for the
+    We drop the prefix letter and use just 't', 's' as the values for the
 internal class. We use 'tp', 'sp' for the nt and ns values of its parent.
 We use 'tn' for the t-value of the n-th son. In fact, 'tn' may be the
 ft, st or nt value of the n-th son, depending on the current use of the son
@@ -794,199 +794,199 @@ class (internal or not, with or without factor).
 We use 'sn' for the spread value of the n-th son. Again, it may be any of
 the fs, ss or ns values of that son.
 
-	An internal class is used only to specify the priors for its sons,
+    An internal class is used only to specify the priors for its sons,
 and should appear in a classification if and only if there is a group of
 leaf classes with sufficiently similar t-estimates that it is worth the
 cost of an internal class to specify a 'tight' prior over the t-s.
 
-	Let our internal class, with estimate t and spread s, have N sons,
+    Let our internal class, with estimate t and spread s, have N sons,
 of which M are internal. The t and s specify a prior density over {tn: n=1..N}:
 
 Pr(tn) = 1/sqrt(2Pi * s) * exp (-0.5 * ((tn-t)^2 + deln) / s)
 
-	which is basically Normal(t,s) but which is modified to allow for
+    which is basically Normal(t,s) but which is modified to allow for
 the expected squared roundoff in tn, which we call deln.
 
-	's' also specifies a prior density over the sn values of the M
+    's' also specifies a prior density over the sn values of the M
 internal sons. This is taken to have negative-exponential form:
 
 Pr(sn) = (1/s) * exp (-sn / s).
 
-	Note that the sn values for leaf- and sub-class sons is not coded
+    Note that the sn values for leaf- and sub-class sons is not coded
 using a prior specified in the internal parent, since these sn are just the
 reciprocals of the Fishers for the corresponding tn, and their values are
 implied by the tn, or at least by the set of estimate values in the son.
 
 
-	With the above uses of t and s, the total cost of the densities of
+    With the above uses of t and s, the total cost of the densities of
 {tn, sn} is
 
 For {tn} :
-	N*hlg2pi + 0.5*N*log(s) + (1/2s)*Sum_n{(tn-t)^2 + deln}
+    N*hlg2pi + 0.5*N*log(s) + (1/2s)*Sum_n{(tn-t)^2 + deln}
 For {sm} :
-	M*log(s) + (1/s)*Sum_m{sm}    where we index the internal sons by m
-					rather than by n.
+    M*log(s) + (1/s)*Sum_m{sm}    where we index the internal sons by m
+                    rather than by n.
 
 Calling the sum of these L, the expected second differential of L wrt t
 is
-	F_t = N/s	 and the expected second differential of L wrt s
+    F_t = N/s     and the expected second differential of L wrt s
 is
-	F_s = (N/2 + M) / s^2.     The overall fisher is n((N/2 + M) / s^3.
+    F_s = (N/2 + M) / s^2.     The overall fisher is n((N/2 + M) / s^3.
 
-	A simplifying note:  if son n is internal, then deln = sn/n_n where
+    A simplifying note:  if son n is internal, then deln = sn/n_n where
 n_n is the number of sons of son n.
 
-	The joint prior density of (t,s) is
+    The joint prior density of (t,s) is
 
 1/sqrt (2Pi * sp) * exp (-0.5*((t-tp)^2) + del) / sp * (1/sp) * exp (-s/sp)
 
 where tp, sp are dad's values and del = squared roundoff in t = s/N.
 
-	The message length terms involving t, s are thus:
+    The message length terms involving t, s are thus:
 
 From Pr({tn,sm}) :
-	(N/2 + M) log(s) + 0.5 * V / s  +  S / s
+    (N/2 + M) log(s) + 0.5 * V / s  +  S / s
    where V = Sum_n {(tn-t)^2 + deln}   and S = Sum_m {sm}
 
 From prior(t,s) :
-	(1/2) log(sp) + (1/2*sp)*((t-tp)^2+del) + log(sp) + s/sp
-		with del = s/N
+    (1/2) log(sp) + (1/2*sp)*((t-tp)^2+del) + log(sp) + s/sp
+        with del = s/N
 
 From (1/2) log (F_t*F_s):
-	-(3/2) log (s)
+    -(3/2) log (s)
 
-	Differentiating wrt t gives an explicit optihxm
+    Differentiating wrt t gives an explicit optihxm
 
-	t = (sp*Sum_n{tn} + s * tp) / (N*sp + s)     !!!!!!!!!!!!
+    t = (sp*Sum_n{tn} + s * tp) / (N*sp + s)     !!!!!!!!!!!!
 
-	Differentiating wrt t gives the equation for optihxm s:
+    Differentiating wrt t gives the equation for optihxm s:
 
-	(1 + 0.5/N)/sp + (N/2 + M - 3/2)/s - (V/2 + S)/s^2  = 0
-   or	s^2*(1 + 0.5/N)/sp  +  s*(N/2 + M - 3/2)  -  (V/2 + S) = 0
-		which is quadratic in s.
+    (1 + 0.5/N)/sp + (N/2 + M - 3/2)/s - (V/2 + S)/s^2  = 0
+   or    s^2*(1 + 0.5/N)/sp  +  s*(N/2 + M - 3/2)  -  (V/2 + S) = 0
+        which is quadratic in s.
 
 Writing the quadratic as    a*s^2 + b*s -c = 0,   we want the root
 
-	s = 2*c / { b + sqrt (b^2 + 4ac) }.  This is the form used in code.
+    s = 2*c / { b + sqrt (b^2 + 4ac) }.  This is the form used in code.
 
-	*/
+    */
 
 void ncostvar (iv, vald)
-	Sw iv, vald;
+    Sw iv, vald;
 {
-	Basic *soncvi;
-	Class *son;
-	Sf pcost;
-	Sf nhx, nhy, nhsprd, dadhx, dadhy, dadhsprd;
-	Sf del, co0, co1, co2, meanx, meany;
-	Sf tsxn, tsyn, tsvn, tssn, sbhx, sbhy, sbhsprd;
-	Sw nints, nson, ison, n;
+    Basic *soncvi;
+    Class *son;
+    Sf pcost;
+    Sf nhx, nhy, nhsprd, dadhx, dadhy, dadhsprd;
+    Sf del, co0, co1, co2, meanx, meany;
+    Sf tsxn, tsyn, tsvn, tssn, sbhx, sbhy, sbhsprd;
+    Sw nints, nson, ison, n;
 
-	setvar (iv);
-	if (! vald)	{  /* Cannot define as-dad params, so fake it */
-		evi->npcost = 0.0;
-		cvi->nhx = cvi->shx;  cvi->nhy = cvi->shy;
-		cvi->nhsprd = cvi->shsprd * evi->cnt;
-		return;
-		}
-	if (avi->idle)	{
-		evi->npcost = evi->ntcost = 0.0;
-		return;
-		}
-	nson = cls->nson;
+    setvar (iv);
+    if (! vald)    {  /* Cannot define as-dad params, so fake it */
+        evi->npcost = 0.0;
+        cvi->nhx = cvi->shx;  cvi->nhy = cvi->shy;
+        cvi->nhsprd = cvi->shsprd * evi->cnt;
+        return;
+        }
+    if (avi->idle)    {
+        evi->npcost = evi->ntcost = 0.0;
+        return;
+        }
+    nson = cls->nson;
 
-/*	There are two independent parameters, nhx and nhy, to fiddle.
-	However, for vonmises variables, we use a single spread value
-	for both, in both internal and leaf or sub classes.  */
+/*    There are two independent parameters, nhx and nhy, to fiddle.
+    However, for vonmises variables, we use a single spread value
+    for both, in both internal and leaf or sub classes.  */
 
-/*	Get prior constants from dad, or if root, fake them  */
-	if (! dad)	{  /* Class is root */
-		dadhx = dadhy = 0.0;  dadhsprd = NullSprd;
-		}
-	else	{
-		dadhx = dcvi->nhx;  dadhy = dcvi->nhy;
-		dadhsprd = dcvi->nhsprd;
-		}
-	nhx = cvi->nhx;  nhy = cvi->nhy;  nhsprd = cvi->nhsprd;
+/*    Get prior constants from dad, or if root, fake them  */
+    if (! dad)    {  /* Class is root */
+        dadhx = dadhy = 0.0;  dadhsprd = NullSprd;
+        }
+    else    {
+        dadhx = dcvi->nhx;  dadhy = dcvi->nhy;
+        dadhsprd = dcvi->nhsprd;
+        }
+    nhx = cvi->nhx;  nhy = cvi->nhy;  nhsprd = cvi->nhsprd;
 
-/*	We need to accumulate things over sons. We need:   */
-	nints = 0;   /* Number of internal sons (M) */
-	tsxn = 0.0;   /* Total sons' hx */
-	tsyn = 0.0;   /* Total sons' hy */
-	tsvn = 0.0;   /* Total sum of sons' (hx_n^2 + hy_n^2 + del_n) */
-	tssn = 0.0;   /* Total sons' s_n */
+/*    We need to accumulate things over sons. We need:   */
+    nints = 0;   /* Number of internal sons (M) */
+    tsxn = 0.0;   /* Total sons' hx */
+    tsyn = 0.0;   /* Total sons' hy */
+    tsvn = 0.0;   /* Total sum of sons' (hx_n^2 + hy_n^2 + del_n) */
+    tssn = 0.0;   /* Total sons' s_n */
 
-	for (ison = cls->ison; ison > 0;  ison = son->isib)	{
-		son = pop->classes[ison];
-		soncvi = (Basic*) son->basics[iv];
-		sbhx = soncvi->bhx;  sbhy = soncvi->bhy;
-		sbhsprd = soncvi->bhsprd;
-		tsxn += sbhx;  tsyn += sbhy;
-		tsvn += sbhx * sbhx  +  sbhy * sbhy;
-		if (son->type == Dad)	{  /* used as parent */
-			nints++;
-			tssn += sbhsprd;
-			tsvn += sbhsprd / son->nson;
-			}
-		else	tsvn += sbhsprd;
-		}
-/*	Calc coeffs for quadratic c_2 * s^2 + c_1 * s - c_0  */
-	co2 = (1.0 + 0.5 / nson) / dadhsprd;
-	co1 = nints + nson - 2;
-/*	Can now compute V in the above comments.  tssn = S of the comments */
-/*	First we get the V around the sons' mean, then update nhx, nhy
-	and correct the value of V  */
-	meanx = tsxn / nson;  meany = tsyn / nson;
-/*	Means of sons' params.  */
-	tsvn -= meanx * tsxn + meany * tsyn;
+    for (ison = cls->ison; ison > 0;  ison = son->isib)    {
+        son = pop->classes[ison];
+        soncvi = (Basic*) son->basics[iv];
+        sbhx = soncvi->bhx;  sbhy = soncvi->bhy;
+        sbhsprd = soncvi->bhsprd;
+        tsxn += sbhx;  tsyn += sbhy;
+        tsvn += sbhx * sbhx  +  sbhy * sbhy;
+        if (son->type == Dad)    {  /* used as parent */
+            nints++;
+            tssn += sbhsprd;
+            tsvn += sbhsprd / son->nson;
+            }
+        else    tsvn += sbhsprd;
+        }
+/*    Calc coeffs for quadratic c_2 * s^2 + c_1 * s - c_0  */
+    co2 = (1.0 + 0.5 / nson) / dadhsprd;
+    co1 = nints + nson - 2;
+/*    Can now compute V in the above comments.  tssn = S of the comments */
+/*    First we get the V around the sons' mean, then update nhx, nhy
+    and correct the value of V  */
+    meanx = tsxn / nson;  meany = tsyn / nson;
+/*    Means of sons' params.  */
+    tsvn -= meanx * tsxn + meany * tsyn;
 /*      Variance around mean  */
-	if (! (control & AdjPr)) goto adjdone;
+    if (! (control & AdjPr)) goto adjdone;
 
-/*	Iterate the adjustment of params, spread  */
-	n = 5;
+/*    Iterate the adjustment of params, spread  */
+    n = 5;
 adjloop:
-/*	Update params  */
-	nhx = (dadhsprd * tsxn + nhsprd * dadhx) /
-			( nson * dadhsprd + nhsprd );
-	nhy = (dadhsprd * tsyn + nhsprd * dadhy) /
-			( nson * dadhsprd + nhsprd );
-	del = (meanx-nhx)*(meanx-nhx) + (meany-nhy)*(meany-nhy);
-/*	The V of comments is tsvn + nson * del */
-	co0 = 0.5 * (tsvn + nson * del) + tssn;
-/*	Solve for new spread  */
-	nhsprd = 2.0 * co0 / (co1 + sqrt (co1*co1 + 4.0*co0*co2));
-	n--;  if (n) goto adjloop;
-	cvi->nhx = nhx;  cvi->nhy = nhy;  cvi->nhsprd = nhsprd;
+/*    Update params  */
+    nhx = (dadhsprd * tsxn + nhsprd * dadhx) /
+            ( nson * dadhsprd + nhsprd );
+    nhy = (dadhsprd * tsyn + nhsprd * dadhy) /
+            ( nson * dadhsprd + nhsprd );
+    del = (meanx-nhx)*(meanx-nhx) + (meany-nhy)*(meany-nhy);
+/*    The V of comments is tsvn + nson * del */
+    co0 = 0.5 * (tsvn + nson * del) + tssn;
+/*    Solve for new spread  */
+    nhsprd = 2.0 * co0 / (co1 + sqrt (co1*co1 + 4.0*co0*co2));
+    n--;  if (n) goto adjloop;
+    cvi->nhx = nhx;  cvi->nhy = nhy;  cvi->nhsprd = nhsprd;
 
-adjdone:	/*	Calc cost  */
-	del = (nhx-dadhx)*(nhx-dadhx) + (nhy-dadhy)*(nhy-dadhy);
-	pcost = 2.0*hlg2pi + 2.0 * log (dadhsprd) +
-		(0.5 * del + nhsprd/nson) / dadhsprd +
-		nhsprd / dadhsprd;
-/*	Add hlog Fisher, lattice  */
-	pcost += 0.5 * log (nson*nson * (nson+nints)) - 2.0 * log (nhsprd)
-		+ 3.0 * lattice;
+adjdone:    /*    Calc cost  */
+    del = (nhx-dadhx)*(nhx-dadhx) + (nhy-dadhy)*(nhy-dadhy);
+    pcost = 2.0*hlg2pi + 2.0 * log (dadhsprd) +
+        (0.5 * del + nhsprd/nson) / dadhsprd +
+        nhsprd / dadhsprd;
+/*    Add hlog Fisher, lattice  */
+    pcost += 0.5 * log (nson*nson * (nson+nints)) - 2.0 * log (nhsprd)
+        + 3.0 * lattice;
 
-/*	Add roundoff for 3 params (nhx, nhy, nhsprd)  */
-	pcost += 1.5;
+/*    Add roundoff for 3 params (nhx, nhy, nhsprd)  */
+    pcost += 1.5;
 
-	evi->npcost = pcost;
+    evi->npcost = pcost;
 
-	return;
+    return;
 }
 
 
-/*	-------------- tables and kapcode ------------------ */
+/*    -------------- tables and kapcode ------------------ */
 
-/*	Table of log of the integral from -Pi to Pi of
+/*    Table of log of the integral from -Pi to Pi of
 
-	  exp (kappa * cos theta) . dtheta
+      exp (kappa * cos theta) . dtheta
 
-	There are 2501 values tabulated, for kappa from 0 to 50 in
+    There are 2501 values tabulated, for kappa from 0 to 50 in
 steps of 0.02   */
-/*	The following define the tabulation interval and highest
-	value of kappa for this table (lgi0) and the following table
-	(atab)  */
+/*    The following define the tabulation interval and highest
+    value of kappa for this table (lgi0) and the following table
+    (atab)  */
 
 #define kapstep ((double) 0.02)
 #define kscale  ((double) 50.0)  /* Must be reciprocal of kapstep */
@@ -3501,11 +3501,11 @@ static double lgi0 [] = {
 0 };
 
 
-/*	Table of the differential of lgi0 (kappa) wrt kappa. This
+/*    Table of the differential of lgi0 (kappa) wrt kappa. This
 function is also known as A() in the techical report. It is the
 expected value of cos(theta) when theta has a VonMises2 density with
 zero mean and concentration theta.
-	There are 2501 values tabulated for kappa from 0 to 50 in steps
+    There are 2501 values tabulated for kappa from 0 to 50 in steps
 of 0.02  */
 
 static double atab [] = {
@@ -6015,109 +6015,109 @@ static double atab [] = {
 
 
 
-/*	------------------  kapcode  --------------------------   */
-/*	This routine takes values of params hx, hy, and calculates
+/*    ------------------  kapcode  --------------------------   */
+/*    This routine takes values of params hx, hy, and calculates
 various derived quantities which are place in Basic, as either the
 Plain or the Factor quantites. The input param 'vmp' must be set to
 either the Plain or the Factor blocks for the derived quantities in some
 Basic structure.
-	Normally it uses an interpolation between tabulated values which
-	is cubically correct for lgi0 and quadratic for aa and strictly
-	continuous for both.
-	It returns a linear approx to derivative of aa in daa.
-	For values of kap greater than hikap it uses an asymtotic
-	approximation based on a Gaussian with sigmasq = 1/kap, with
-	a small correction quadratic in (1/kap).
-		The values returned are:
-	kap		sqrt (hx^2 + hy^2)
-	rkap		recip of kap of 10e6 if kap very small
-	logi0		log of normalization const for VonMises density
-	aa		deriv of logi0 wrt kap
-	daa		deriv of aa wrt kap
-	fh		sqrt of the Fisher
-	dfh		deriv of fh wrt kap
-	*/
+    Normally it uses an interpolation between tabulated values which
+    is cubically correct for lgi0 and quadratic for aa and strictly
+    continuous for both.
+    It returns a linear approx to derivative of aa in daa.
+    For values of kap greater than hikap it uses an asymtotic
+    approximation based on a Gaussian with sigmasq = 1/kap, with
+    a small correction quadratic in (1/kap).
+        The values returned are:
+    kap        sqrt (hx^2 + hy^2)
+    rkap        recip of kap of 10e6 if kap very small
+    logi0        log of normalization const for VonMises density
+    aa        deriv of logi0 wrt kap
+    daa        deriv of aa wrt kap
+    fh        sqrt of the Fisher
+    dfh        deriv of fh wrt kap
+    */
 
 void kapcode (hx, hy, vmst)
-	Sf hx, hy;
-	Sf *vmst;
+    Sf hx, hy;
+    Sf *vmst;
 {
-	double del, skap, c2, c3;
-	double va, vb, da, db;
-	Sf kap;
-	int ik;
-	Vmpack *vmp;
+    double del, skap, c2, c3;
+    double va, vb, da, db;
+    Sf kap;
+    int ik;
+    Vmpack *vmp;
 
-	vmp = (Vmpack *) vmst;
-	vmp->kap = kap = sqrt (hx*hx + hy*hy);
-	if (kap > 1.0e-6) vmp->rkap = 1.0 / kap;  else vmp->rkap = 1.0e6;
-	skap = kap * kscale;
-	ik = (int) skap;  del = skap - ik;
-	if (ik >= maxik) goto asymp;
+    vmp = (Vmpack *) vmst;
+    vmp->kap = kap = sqrt (hx*hx + hy*hy);
+    if (kap > 1.0e-6) vmp->rkap = 1.0 / kap;  else vmp->rkap = 1.0e6;
+    skap = kap * kscale;
+    ik = (int) skap;  del = skap - ik;
+    if (ik >= maxik) goto asymp;
 
-/*	Interpolate   */
-	va = lgi0 [ik];  da = atab [ik] * kapstep;  ik++;
-	vb = lgi0 [ik];  db = atab [ik] * kapstep;
+/*    Interpolate   */
+    va = lgi0 [ik];  da = atab [ik] * kapstep;  ik++;
+    vb = lgi0 [ik];  db = atab [ik] * kapstep;
 
-/*	Calculate coeffs of cubic in del  */
-/*	Const term is va, linear co-eff is da
-	Quadratic coeff is (-3va + 3vb - 2da - db)
-	Cubic coeff is (2va - 2vb + da + db).
-	Note we only use vb via the difference (vb-va)  */
+/*    Calculate coeffs of cubic in del  */
+/*    Const term is va, linear co-eff is da
+    Quadratic coeff is (-3va + 3vb - 2da - db)
+    Cubic coeff is (2va - 2vb + da + db).
+    Note we only use vb via the difference (vb-va)  */
 
-	vb -= va;
+    vb -= va;
 
-	c2 = 3.0*vb - 2.0*da - db;
-	c3 = -2.0*vb + da + db;
+    c2 = 3.0*vb - 2.0*da - db;
+    c3 = -2.0*vb + da + db;
 
-	vmp->lgi0 = ((c3 * del + c2) * del + da) * del + va;
+    vmp->lgi0 = ((c3 * del + c2) * del + da) * del + va;
 
-/*	We get aa as derivative of the cubic interpolation,
-	times kscale  */
+/*    We get aa as derivative of the cubic interpolation,
+    times kscale  */
 
-	vmp->aa = ((3.0*c3*del + 2.0*c2) * del + da) * kscale;
+    vmp->aa = ((3.0*c3*del + 2.0*c2) * del + da) * kscale;
 
-	vmp->daa  = (6.0*c3*del + 2.0*c2) * (kscale*kscale);
-	goto derivsdone;
+    vmp->daa  = (6.0*c3*del + 2.0*c2) * (kscale*kscale);
+    goto derivsdone;
 
 asymp:
-/*	For large kap, logi0 asymptotes to:
-		kap + 0.5 log (2Pi / kap)
-	*/
+/*    For large kap, logi0 asymptotes to:
+        kap + 0.5 log (2Pi / kap)
+    */
 
-	del = 1.0 / kap;
+    del = 1.0 / kap;
 
-	vmp->lgi0 = kap + 0.5 * log (twopi * del)
-		+ ((0.067*del + 0.0625) * del + 0.125) * del;
-	vmp->aa = 1.0 - 0.5 * del
-		-del*del *(0.125 + del*(0.125 + del*0.201));
-	vmp->daa = del*del *(0.5 + del*(0.25 + del*(0.375 + del*0.804)));
+    vmp->lgi0 = kap + 0.5 * log (twopi * del)
+        + ((0.067*del + 0.0625) * del + 0.125) * del;
+    vmp->aa = 1.0 - 0.5 * del
+        -del*del *(0.125 + del*(0.125 + del*0.201));
+    vmp->daa = del*del *(0.5 + del*(0.25 + del*(0.375 + del*0.804)));
 
 derivsdone:
 #ifdef ACC
-/*	Now, Fh is the square root of a/k - a^2/k^2 - a^3/k
-		where a = aa, k = kappa,
-	so the deriv of Fh wrt kappa is:
-	(1/2Fh) {-a/k^2 +2a^2/k^3 + a^3/k^2
-		  + da * (1/k - 2a/k^2 -3a^2/k) }
-	where da = d_aa/d_kappa.
-	so from cost term N * Fh * fhsprd :  */
-	aonk = aa * rkappa;
-	*fsh = fh = sqrt ( aonk * (1.0 - aonk - aa * aa));
-	dfh = - aonk * rkappa + 2.0 * aonk * aonk * rkappa
-		+ aonk * aonk * aa
-		+ da * rkappa * (1.0 - 2.0 * aonk - 3.0 * aa * aa);
-/*	This gives deriv of Fh^2 wrt kappa  */
-	*dfsh = dfh * (0.5 / fh);
+/*    Now, Fh is the square root of a/k - a^2/k^2 - a^3/k
+        where a = aa, k = kappa,
+    so the deriv of Fh wrt kappa is:
+    (1/2Fh) {-a/k^2 +2a^2/k^3 + a^3/k^2
+          + da * (1/k - 2a/k^2 -3a^2/k) }
+    where da = d_aa/d_kappa.
+    so from cost term N * Fh * fhsprd :  */
+    aonk = aa * rkappa;
+    *fsh = fh = sqrt ( aonk * (1.0 - aonk - aa * aa));
+    dfh = - aonk * rkappa + 2.0 * aonk * aonk * rkappa
+        + aonk * aonk * aa
+        + da * rkappa * (1.0 - 2.0 * aonk - 3.0 * aa * aa);
+/*    This gives deriv of Fh^2 wrt kappa  */
+    *dfsh = dfh * (0.5 / fh);
 #endif
 
 
 #ifndef ACC
-/*	Approximate Fh by 0.5 * (1 - aa*aa)  */
-	vmp->fh = 0.5 * (1.0 - vmp->aa * vmp->aa);
-	vmp->dfh = - vmp->aa * vmp->daa;
+/*    Approximate Fh by 0.5 * (1 - aa*aa)  */
+    vmp->fh = 0.5 * (1.0 - vmp->aa * vmp->aa);
+    vmp->dfh = - vmp->aa * vmp->daa;
 #endif
-	return;
+    return;
 
 }
 

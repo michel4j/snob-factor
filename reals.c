@@ -1,5 +1,5 @@
-/*	A prototypical file for a variable type      */
-/*	actually for plain Gaussians   */
+/*    A prototypical file for a variable type      */
+/*    actually for plain Gaussians   */
 
 #define NOTGLOB 1
 #include "glob.h"
@@ -38,7 +38,7 @@ typedef struct Vauxst {
     int dummy;
 } Vaux;
 
-/*	***************  All of Basic should be distributed  */
+/*    ***************  All of Basic should be distributed  */
 typedef struct Basicst { /* Basic parameter info about var in class.
             The first few fields are standard and must
             appear in the order shown.  */
@@ -61,7 +61,7 @@ typedef struct Basicst { /* Basic parameter info about var in class.
 
 typedef struct Statsst { /* Stuff accumulated to revise Basic  */
                          /* First fields are standard  */
-    /*	These fields are accumulated, need not be distributed,
+    /*    These fields are accumulated, need not be distributed,
             must be returned  *********************   */
     double cnt; /* Weighted count  */
     double btcost, ntcost, stcost, ftcost;
@@ -73,15 +73,15 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
     double tx, txx; /* Sum of vals and squared vals (no factor) */
     double fsdld1, fmud1, ldd1;
     double fsdld2, fmud2, ldd2;
-    /*	This ends the fields to accumulate and return****************** */
-    /*	Following fields are computed by clearstats(), not accumulated.
+    /*    This ends the fields to accumulate and return****************** */
+    /*    Following fields are computed by clearstats(), not accumulated.
         They could be computed locally by a copy of clearstats in each
         machine, or computed centrally and distributed  */
     /***************  some useful quanties derived from basics  */
     double ssig, srsds; /* No-fac sigma and 1/sigsq */
     double fsig, frsds; /* Factor sigma and 1/sigsq */
     double ldsq;
-    /*	Following fields set and used locally for each case************** */
+    /*    Following fields set and used locally for each case************** */
     double parkstcost, parkftcost; /* Unweighted item costs of xn */
     double var;
 } Stats;
@@ -93,7 +93,7 @@ static Basic *cvi, *dcvi;
 static Stats *evi;
 
 /*--------------------------  define ------------------------------- */
-/*	This routine is used to set up a Vtype entry in the global "types"
+/*    This routine is used to set up a Vtype entry in the global "types"
 array.  It is the only function whose name needs to be altered for different
 types of variable, and this name must be copied into the file "definetypes.c"
 when installing a new type of variable. It is also necessary to change the
@@ -101,18 +101,18 @@ when installing a new type of variable. It is also necessary to change the
     */
 
 void reals_define(typindx) int typindx;
-/*	typindx is the index in types[] of this type   */
+/*    typindx is the index in types[] of this type   */
 {
     Vtype *vtp;
 
-    vtp = types + typindx;
+    vtp = Types + typindx;
     vtp->id = typindx;
-    /* 	Set type name as string up to 59 chars  */
+    /*     Set type name as string up to 59 chars  */
     vtp->name = "Standard Gaussian";
     vtp->datsize = sizeof(Datum);
-    vtp->vauxsize = sizeof(Vaux);
-    vtp->pauxsize = sizeof(Paux);
-    vtp->sauxsize = sizeof(Saux);
+    vtp->attr_aux_size = sizeof(Vaux);
+    vtp->pop_aux_size = sizeof(Paux);
+    vtp->smpl_aux_size = sizeof(Saux);
     vtp->readvaux = &readvaux;
     vtp->readsaux = &readsaux;
     vtp->readdat = &readdat;
@@ -129,33 +129,33 @@ void reals_define(typindx) int typindx;
     vtp->setvar = &setvar;
 }
 
-/*	-------------------  setvar -----------------------------  */
+/*    -------------------  setvar -----------------------------  */
 void setvar(iv) int iv;
 {
-    avi = vlist + iv;
-    vtp = avi->vtp;
+    avi = CurAttrs + iv;
+    vtp = avi->vtype;
     pvi = pvars + iv;
     paux = (Paux *)pvi->paux;
     svi = svars + iv;
     vaux = (Vaux *)avi->vaux;
     saux = (Saux *)svi->saux;
-    cvi = (Basic *)cls->basics[iv];
-    evi = (Stats *)cls->stats[iv];
-    if (dad)
-        dcvi = (Basic *)dad->basics[iv];
+    cvi = (Basic *)CurClass->basics[iv];
+    evi = (Stats *)CurClass->stats[iv];
+    if (CurDad)
+        dcvi = (Basic *)CurDad->basics[iv];
     else
         dcvi = 0;
     return;
 }
 
-/*	--------------------  readvaux  ----------------------------  */
+/*    --------------------  readvaux  ----------------------------  */
 /*      Read in auxiliary info into vaux, return 0 if OK else 1  */
 int readvaux(vax)
 Vaux *vax;
 { return (0); }
 
-/*	---------------------  readsaux ---------------------------   */
-/*	To read any auxiliary info about a variable of this type in some
+/*    ---------------------  readsaux ---------------------------   */
+/*    To read any auxiliary info about a variable of this type in some
 sample.
     */
 int readsaux(sax)
@@ -163,7 +163,7 @@ Saux *sax;
 {
     int i;
 
-    /*	Read in auxiliary info into saux, return 0 if OK else 1  */
+    /*    Read in auxiliary info into saux, return 0 if OK else 1  */
     i = readdf(&(sax->eps), 1);
     if (i < 0) {
         sax->eps = sax->leps = 0.0;
@@ -174,50 +174,50 @@ Saux *sax;
     return (0);
 }
 
-/*	-------------------  readdat -------------------------------  */
-/*	To read a value for this variable type	 */
+/*    -------------------  readdat -------------------------------  */
+/*    To read a value for this variable type     */
 int readdat(char *loc, int iv) {
     int i;
     Datum xn;
 
-    /*	Read datum into xn, return error.  */
+    /*    Read datum into xn, return error.  */
     i = readdf(&xn, 1);
     if (!i)
         cmcpy(loc, &xn, sizeof(Datum));
     return (i);
 }
 
-/*	---------------------  printdat --------------------------  */
-/*	To print a Datum value   */
+/*    ---------------------  printdat --------------------------  */
+/*    To print a Datum value   */
 void printdat(char *loc) {
-    /*	Print datum from address loc   */
+    /*    Print datum from address loc   */
     printf("%9.2f", *((double *)loc));
     return;
 }
 
-/*	---------------------  setsizes  -----------------------   */
+/*    ---------------------  setsizes  -----------------------   */
 void setsizes(iv) int iv;
 {
-    avi = vlist + iv;
-    avi->basicsize = sizeof(Basic);
-    avi->statssize = sizeof(Stats);
+    avi = CurAttrs + iv;
+    avi->basic_size = sizeof(Basic);
+    avi->stats_size = sizeof(Stats);
     return;
 }
 
-/*	----------------------  setbestparam --------------------------  */
+/*    ----------------------  setbestparam --------------------------  */
 void setbestparam(iv) int iv;
 {
 
     setvar(iv);
 
-    if (cls->type == Dad) {
+    if (CurClass->type == Dad) {
         cvi->bmu = cvi->nmu;
         cvi->bmusprd = cvi->nmusprd;
         cvi->bsdl = cvi->nsdl;
         cvi->bsdlsprd = cvi->nsdlsprd;
         evi->btcost = evi->ntcost;
         evi->bpcost = evi->npcost;
-    } else if ((cls->use == Fac) && cvi->infac) {
+    } else if ((CurClass->use == Fac) && cvi->infac) {
         cvi->bmu = cvi->fmu;
         cvi->bmusprd = cvi->fmusprd;
         cvi->bsdl = cvi->fsdl;
@@ -235,8 +235,8 @@ void setbestparam(iv) int iv;
     return;
 }
 
-/*	------------------------  clearstats  ------------------------  */
-/*	Clears stats to accumulate in costvar, and derives useful functions
+/*    ------------------------  clearstats  ------------------------  */
+/*    Clears stats to accumulate in costvar, and derives useful functions
 of basic params  */
 void clearstats(iv) int iv;
 {
@@ -249,7 +249,7 @@ void clearstats(iv) int iv;
     evi->fsdld1 = evi->fmud1 = evi->ldd1 = 0.0;
     evi->fsdld2 = evi->fmud2 = evi->ldd2 = 0.0;
 
-    if (cls->age == 0)
+    if (CurClass->age == 0)
         return;
     evi->ssig = exp(cvi->ssdl);
     tmp = 1.0 / evi->ssig;
@@ -261,8 +261,8 @@ void clearstats(iv) int iv;
     return;
 }
 
-/*	-------------------------  scorevar  ------------------------   */
-/*	To eval derivs of a case cost wrt score, scorespread. Adds to
+/*    -------------------------  scorevar  ------------------------   */
+/*    To eval derivs of a case cost wrt score, scorespread. Adds to
 vvd1, vvd2.
     */
 void scorevar(iv) int iv;
@@ -271,7 +271,7 @@ void scorevar(iv) int iv;
     double del, md2;
 
     setvar(iv);
-    if (avi->idle)
+    if (avi->inactive)
         return;
 
     if (saux->missing)
@@ -284,19 +284,19 @@ void scorevar(iv) int iv;
     return;
 }
 
-/*	-----------------------  costvar  --------------------------   */
-/*	Accumulates item cost into scasecost, fcasecost    */
+/*    -----------------------  costvar  --------------------------   */
+/*    Accumulates item cost into scasecost, fcasecost    */
 void costvar(iv, fac) int iv, fac;
 {
     double del, var, cost;
     setvar(iv);
     if (saux->missing)
         return;
-    if (cls->age == 0) {
+    if (CurClass->age == 0) {
         evi->parkftcost = evi->parkstcost = 0.0;
         return;
     }
-    /*	Do no-fac cost first  */
+    /*    Do no-fac cost first  */
     del = cvi->smu - saux->xn;
     var = del * del + cvi->smusprd + saux->epssq;
     cost = 0.5 * var * evi->srsds + cvi->ssdlsprd + hlg2pi + cvi->ssdl -
@@ -304,7 +304,7 @@ void costvar(iv, fac) int iv, fac;
     evi->parkstcost = cost;
     scasecost += cost;
 
-    /*	Only do faccost if fac  */
+    /*    Only do faccost if fac  */
     if (!fac)
         goto facdone;
     del += cvv * cvi->ld;
@@ -321,8 +321,8 @@ facdone:
     return;
 }
 
-/*	--------------------  derivvar  --------------------------  */
-/*	Given the item weight in cwt, calcs derivs of cost wrt basic
+/*    --------------------  derivvar  --------------------------  */
+/*    Given the item weight in cwt, calcs derivs of cost wrt basic
 params and accumulates in paramd1, paramd2.
 Factor derivs done only if fac.  */
 void derivvar(iv, fac) int iv, fac;
@@ -331,27 +331,27 @@ void derivvar(iv, fac) int iv, fac;
     setvar(iv);
     if (saux->missing)
         return;
-    /*	Do non-fac first  */
+    /*    Do non-fac first  */
     evi->cnt += cwt;
-    /*	For non-fac, rather than getting derivatives I just collect
+    /*    For non-fac, rather than getting derivatives I just collect
         the sufficient statistics, sum of xn, sum of xn^2  */
     evi->tx += cwt * saux->xn;
     evi->txx += cwt * (saux->xn * saux->xn + saux->epssq);
-    /*	Accumulate weighted item cost  */
+    /*    Accumulate weighted item cost  */
     evi->stcost += cwt * evi->parkstcost;
     evi->ftcost += cwt * evi->parkftcost;
 
-    /*	Now for factor form  */
+    /*    Now for factor form  */
     if (!fac)
         goto facdone;
     frsds = evi->frsds;
     del = cvi->fmu + cvv * cvi->ld - saux->xn;
-    /*	From costvar, we have:
+    /*    From costvar, we have:
         cost = 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd*2.0 + consts
             where var is given by:
           del^2 + musprd + cvvsq*ldsprd + cvvsprd*ldsq + epssq
         var has been kept in stats.  */
-    /*	Add to derivatives:  */
+    /*    Add to derivatives:  */
     var = evi->var;
     evi->fsdld1 += cwt * (1.0 - frsds * var);
     evi->fsdld2 += 2.0 * cwt;
@@ -363,8 +363,8 @@ facdone:
     return;
 }
 
-/*	-------------------  adjust  ---------------------------    */
-/*	To adjust parameters of a real variable     */
+/*    -------------------  adjust  ---------------------------    */
+/*    To adjust parameters of a real variable     */
 void adjust(iv, fac) int iv, fac;
 {
     double adj, srsds, frsds, temp1, temp2, cnt;
@@ -377,9 +377,9 @@ void adjust(iv, fac) int iv, fac;
     adj = InitialAdj;
     cnt = evi->cnt;
 
-    /*	Get prior constants from dad, or if root, fake them  */
-    if (!dad) { /* Class is root */
-        if (cls->age > 0) {
+    /*    Get prior constants from dad, or if root, fake them  */
+    if (!CurDad) { /* Class is root */
+        if (CurClass->age > 0) {
             dadmu = cvi->smu;
             dadsdl = cvi->ssdl;
             dmusprd = exp(2.0 * dadsdl);
@@ -395,8 +395,8 @@ void adjust(iv, fac) int iv, fac;
         dsdlsprd = dcvi->nsdlsprd;
     }
 
-    /*	If too few data for this variable, use dad's n-paras  */
-    if ((control & AdjPr) && (cnt < MinSize)) {
+    /*    If too few data for this variable, use dad's n-paras  */
+    if ((Control & AdjPr) && (cnt < MinSize)) {
         cvi->nmu = cvi->smu = cvi->fmu = dadmu;
         cvi->nsdl = cvi->ssdl = cvi->fsdl = dadsdl;
         cvi->ld = 0.0;
@@ -405,8 +405,8 @@ void adjust(iv, fac) int iv, fac;
         cvi->ldsprd = 1.0;
         goto hasage;
     }
-    /*	If class age is zero, make some preliminary estimates  */
-    if (cls->age)
+    /*    If class age is zero, make some preliminary estimates  */
+    if (CurClass->age)
         goto hasage;
     cvi->smu = cvi->fmu = evi->tx / cnt;
     var = evi->txx / cnt - cvi->smu * cvi->smu;
@@ -417,16 +417,16 @@ void adjust(iv, fac) int iv, fac;
     cvi->ldsprd = var / cnt;
     cvi->ld = 0.0;
     cvi->ssdlsprd = cvi->fsdlsprd = 1.0 / cnt;
-    if (!dad) { /*  First stab at root  */
+    if (!CurDad) { /*  First stab at root  */
         dadmu = cvi->smu;
         dadsdl = cvi->ssdl;
         dmusprd = exp(2.0 * dadsdl);
         dsdlsprd = 1.0;
     }
-    /*	Make a stab at class tcost  */
-    cls->cstcost +=
-        cnt * (hlg2pi + cvi->ssdl - saux->leps + 0.5 + cls->mlogab) + 1.0;
-    cls->cftcost = cls->cstcost + 100.0 * cnt;
+    /*    Make a stab at class tcost  */
+    CurClass->cstcost +=
+        cnt * (hlg2pi + cvi->ssdl - saux->leps + 0.5 + CurClass->mlogab) + 1.0;
+    CurClass->cftcost = CurClass->cstcost + 100.0 * cnt;
 
 hasage:
     temp1 = 1.0 / dmusprd;
@@ -434,7 +434,7 @@ hasage:
     srsds = evi->srsds;
     frsds = evi->frsds;
 
-    /*	Compute parameter costs as they are  */
+    /*    Compute parameter costs as they are  */
     del1 = dadmu - cvi->smu;
     spcost =
         hlg2pi + 0.5 * (log(dmusprd) + temp1 * (del1 * del1 + cvi->smusprd));
@@ -462,36 +462,36 @@ hasage:
 
 facdone1:
 
-    /*	Store param costs for this variable  */
+    /*    Store param costs for this variable  */
     evi->spcost = spcost;
     evi->fpcost = fpcost;
-    /*	Add to class param costs  */
-    cls->cspcost += spcost;
-    cls->cfpcost += fpcost;
+    /*    Add to class param costs  */
+    CurClass->cspcost += spcost;
+    CurClass->cfpcost += fpcost;
     if (cnt < MinSize)
         goto adjdone;
-    if (!(control & AdjPr))
+    if (!(Control & AdjPr))
         goto tweaks;
-    /*	Adjust non-fac parameters.   */
-    /*	From things, smud1 = (tx - cnt*mu) * srsds, from prior,
+    /*    Adjust non-fac parameters.   */
+    /*    From things, smud1 = (tx - cnt*mu) * srsds, from prior,
         smud1 = (dadmu - mu) / dmusprd.
         From things, smud2 = cnt * srsds, from prior = 1/dmusprd.
         Explicit optimum:  */
     cvi->smusprd = 1.0 / (cnt * srsds + temp1);
     cvi->smu = (evi->tx * srsds + dadmu * temp1) * cvi->smusprd;
-    /*	Calculate variance about new mean, adding variance from musprd   */
+    /*    Calculate variance about new mean, adding variance from musprd   */
     av = evi->tx / cnt;
     del = cvi->smu - av;
     var = evi->txx + cnt * (del * del - av * av + cvi->smusprd);
-    /*	The deriv sdld1 from data is (cnt - rsds * var)  */
+    /*    The deriv sdld1 from data is (cnt - rsds * var)  */
     sdld1 = cnt - srsds * var;
-    /*	The deriv from prior is (sdl-dadsdl) / dsdlsprd  */
+    /*    The deriv from prior is (sdl-dadsdl) / dsdlsprd  */
     sdld1 += (cvi->ssdl - dadsdl) * temp2;
-    /*	The 2nd deriv sdld2 from data is just cnt  */
-    /*	From prior, get 1/dsdlsprd  */
+    /*    The 2nd deriv sdld2 from data is just cnt  */
+    /*    From prior, get 1/dsdlsprd  */
     cvi->ssdlsprd = 1.0 / (cnt + temp2);
-    /*	sdlsprd is just 1 / sdld2  */
-    /*	Adjust, but not too much  */
+    /*    sdlsprd is just 1 / sdld2  */
+    /*    Adjust, but not too much  */
     del = sdld1 * cvi->ssdlsprd;
     if (del > 0.2)
         del = 0.2;
@@ -503,7 +503,7 @@ facdone1:
     if (!fac)
         goto facdone2;
 
-    /*	Now for factor adjust.
+    /*    Now for factor adjust.
         We have derivatives fmud1, fsdld1, ldd1 etc in stats. Add terms
         from priors
         */
@@ -513,13 +513,13 @@ facdone1:
     evi->fsdld2 += temp2;
     evi->ldd1 += cvi->ld * frsds;
     evi->fsdld2 += frsds;
-    /*	The dependence of the load prior on frsds, and thus on fsdl,
+    /*    The dependence of the load prior on frsds, and thus on fsdl,
         will give additional terms to sdld1, sdld2.
         */
-    /*	The additional terms from the load prior :  */
+    /*    The additional terms from the load prior :  */
     evi->fsdld1 += 1.0 - frsds * (evi->ldsq + cvi->ldsprd);
     evi->fsdld2 += 1.0;
-    /*	Adjust sdl, but not too much.  */
+    /*    Adjust sdl, but not too much.  */
     cvi->fsdlsprd = 1.0 / evi->fsdld2;
     del = evi->fsdld1 * cvi->fsdlsprd;
     if (del > 0.2)
@@ -540,26 +540,26 @@ facdone2:
     goto adjdone;
 
 tweaks: /* Come here if no adjustments made */
-    /*	Deal only with sub-less leaves  */
-    if ((cls->type != Leaf) || (cls->nson < 2))
+    /*    Deal only with sub-less leaves  */
+    if ((CurClass->type != Leaf) || (CurClass->num_sons < 2))
         goto adjdone;
 
-    /*	If Noprior, guess no-prior params, sprds and store instead of
+    /*    If Noprior, guess no-prior params, sprds and store instead of
         as-dad values. Actually store in nparsprd the val 1/bparsprd,
         and in npar the val bpar / bparsprd   */
-    if (control & Noprior) {
+    if (Control & Noprior) {
         cvi->nmusprd = (1.0 / cvi->bmusprd) - (1.0 / dmusprd);
         cvi->nmu = cvi->bmu / cvi->bmusprd - dadmu / dmusprd;
         cvi->nsdlsprd = (1.0 / cvi->bsdlsprd) - (1.0 / dsdlsprd);
         cvi->nsdl = cvi->bsdl / cvi->bsdlsprd - dadsdl / dsdlsprd;
-    } else if (control & Tweak) {
-        /*	Adjust "best" params by applying effect of dad prior to
+    } else if (Control & Tweak) {
+        /*    Adjust "best" params by applying effect of dad prior to
             the no-prior values  */
         cvi->bmusprd = 1.0 / (cvi->nmusprd + (1.0 / dmusprd));
         cvi->bmu = (cvi->nmu + dadmu / dmusprd) * cvi->bmusprd;
         cvi->bsdlsprd = 1.0 / (cvi->nsdlsprd + (1.0 / dsdlsprd));
         cvi->bsdl = (cvi->nsdl + dadsdl / dsdlsprd) * cvi->bsdlsprd;
-        if (cls->use == Fac) {
+        if (CurClass->use == Fac) {
             cvi->fmu = cvi->bmu;
             cvi->fmusprd = cvi->nmusprd;
         } else {
@@ -567,7 +567,7 @@ tweaks: /* Come here if no adjustments made */
             cvi->smusprd = cvi->nmusprd;
         }
     } else {
-        /*	Copy non-fac params to as-dad   */
+        /*    Copy non-fac params to as-dad   */
         cvi->nmu = cvi->smu;
         cvi->nmusprd = cvi->smusprd;
         cvi->nsdl = cvi->ssdl;
@@ -578,7 +578,7 @@ adjdone:
     return;
 }
 
-/*	------------------------  vprint  -----------------------   */
+/*    ------------------------  vprint  -----------------------   */
 void vprint(ccl, iv) Class *ccl;
 int iv;
 {
@@ -588,7 +588,7 @@ int iv;
 
     printf("V%3d  Cnt%6.1f  %s\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out");
-    if (cls->nson < 2)
+    if (CurClass->num_sons < 2)
         goto skipn;
     printf(" N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", evi->npcost,
            cvi->nmu, sqrt(cvi->nmusprd), exp(cvi->nsdl),
@@ -601,10 +601,10 @@ skipn:
     return;
 }
 
-/*	----------------------  ncostvar  ------------------------   */
-/*	To compute parameter cost for non-leaf (intrnl) class use   */
+/*    ----------------------  ncostvar  ------------------------   */
+/*    To compute parameter cost for non-leaf (intrnl) class use   */
 
-/*	The coding in an internal class of a simple scalar parameter such as
+/*    The coding in an internal class of a simple scalar parameter such as
 mu or sdl is based on Normal priors. Let the parameter be "t". Every class
 will hold an estimate for t, and an assocoated "spread" value "s". In a
 leaf use of a class, "s" shows the expected squared roundoff in the estimate
@@ -663,7 +663,7 @@ For {sm} :
 
 Calling the sum of these L, the expected second differential of L wrt t
 is
-    F_t = N/s	 and the expected second differential of L wrt s
+    F_t = N/s     and the expected second differential of L wrt s
 is
     F_s = (N/2 + M) / s^2.     The overall fisher is n((N/2 + M) / s^3.
 
@@ -696,7 +696,7 @@ From (1/2) log (F_t*F_s):
     Differentiating wrt t gives the equation for optimum s:
 
     (1 + 0.5/N)/sp + (N/2 + M - 3/2)/s - (V/2 + S)/s^2  = 0
-   or	s^2*(1 + 0.5/N)/sp  +  s*(N/2 + M - 3/2)  -  (V/2 + S) = 0
+   or    s^2*(1 + 0.5/N)/sp  +  s*(N/2 + M - 3/2)  -  (V/2 + S) = 0
         which is quadratic in s.
 
 Writing the quadratic as    a*s^2 + b*s -c = 0,   we want the root
@@ -725,22 +725,22 @@ void ncostvar(iv, vald) int iv, vald;
         cvi->nsdlsprd = cvi->ssdlsprd * evi->cnt;
         return;
     }
-    if (avi->idle) {
+    if (avi->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
-    nson = cls->nson;
+    nson = CurClass->num_sons;
     pcost = tcost = 0.0;
 
-    /*	There are two independent parameters, nmu and nsdl, to fiddle.
+    /*    There are two independent parameters, nmu and nsdl, to fiddle.
         As the info for these is stored in consecutive Sf words in Basic,
     we can do the two params in a two-count loop. We use p... to mean mu... and
     sdl... in the two times round the loop  */
 
     k = 0;
 ploop:
-    /*	Get prior constants from dad, or if root, fake them  */
-    if (!dad) { /* Class is root */
+    /*    Get prior constants from dad, or if root, fake them  */
+    if (!CurDad) { /* Class is root */
         dadpp = *(&cvi->smu + k);
         dppsprd = *(&cvi->smusprd + k) * evi->cnt;
     } else {
@@ -750,14 +750,14 @@ ploop:
     pp = *(&cvi->nmu + k);
     ppsprd = *(&cvi->nmusprd + k);
 
-    /*	We need to accumlate things over sons. We need:   */
+    /*    We need to accumlate things over sons. We need:   */
     nints = 0;   /* Number of internal sons (M) */
     tstn = 0.0;  /* Total sons' t_n */
     tstvn = 0.0; /* Total sum of sons' (t_n^2 + del_n)  */
     tssn = 0.0;  /* Total sons' s_n */
 
-    for (ison = cls->ison; ison > 0; ison = son->isib) {
-        son = population->classes[ison];
+    for (ison = CurClass->son_id; ison > 0; ison = son->sib_id) {
+        son = CurPopln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         spp = *(&soncvi->bmu + k);
         sppsprd = *(&soncvi->bmusprd + k);
@@ -766,30 +766,30 @@ ploop:
         if (son->type == Dad) { /* used as parent */
             nints++;
             tssn += sppsprd;
-            tstvn += sppsprd / son->nson;
+            tstvn += sppsprd / son->num_sons;
         } else
             tstvn += sppsprd;
     }
-    /*	Calc coeffs for quadratic c_2 * s^2 + c_1 * s - c_0  */
+    /*    Calc coeffs for quadratic c_2 * s^2 + c_1 * s - c_0  */
     co2 = (1.0 + 0.5 / nson) / dppsprd;
     co1 = nints + 0.5 * (nson - 3.0);
-    /*	Can now compute V in the above comments.  tssn = S of the comments */
-    /*	First we get the V around the sons' mean, then update pp and correct
+    /*    Can now compute V in the above comments.  tssn = S of the comments */
+    /*    First we get the V around the sons' mean, then update pp and correct
         the value of V  */
     mean = tstn / nson;   /* Mean of sons' param  */
-    tstvn -= mean * tstn; /*	Variance around mean  */
-    if (!(control & AdjPr))
+    tstvn -= mean * tstn; /*    Variance around mean  */
+    if (!(Control & AdjPr))
         goto adjdone;
 
-    /*	Iterate the adjustment of param, spread  */
+    /*    Iterate the adjustment of param, spread  */
     n = 5;
 adjloop:
-    /*	Update param  */
+    /*    Update param  */
     pp = (dppsprd * tstn + ppsprd * dadpp) / (nson * dppsprd + ppsprd);
     del = pp - mean;
-    /*	The V of comments is tstvn + nson * del * del */
+    /*    The V of comments is tstvn + nson * del * del */
     co0 = 0.5 * (tstvn + nson * del * del) + tssn;
-    /*	Solve for new spread  */
+    /*    Solve for new spread  */
     ppsprd = 2.0 * co0 / (co1 + sqrt(co1 * co1 + 4.0 * co0 * co2));
     n--;
     if (n)
@@ -797,17 +797,17 @@ adjloop:
     *(&cvi->nmu + k) = pp;
     *(&cvi->nmusprd + k) = ppsprd;
 
-adjdone: /*	Calc cost  */
+adjdone: /*    Calc cost  */
     del = pp - dadpp;
     pcost += hlg2pi + 1.5 * log(dppsprd) +
              0.5 * (del * del + ppsprd / nson) / dppsprd + ppsprd / dppsprd;
-    /*	Add hlog Fisher, lattice  */
+    /*    Add hlog Fisher, lattice  */
     pcost += 0.5 * log(nson * (0.5 * nson + nints)) - 1.5 * log(ppsprd) +
              2.0 * lattice;
 
-    /*	Add roundoff for 2 params  (pp, ppsprd)  */
+    /*    Add roundoff for 2 params  (pp, ppsprd)  */
     pcost += 1.0;
-    /*	This completes the shenanigans for one param. See if another */
+    /*    This completes the shenanigans for one param. See if another */
     k++;
     if (k < 2)
         goto ploop;

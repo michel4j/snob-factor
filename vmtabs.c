@@ -1,11 +1,11 @@
 #define CHECK 1
-/*	Table of log of the integral from -Pi to Pi of
+/*    Table of log of the integral from -Pi to Pi of
 
       exp (kappa * cos theta) . dtheta
 
     There are 2501 values tabulated, for kappa from 0 to 50 in
 steps of 0.02   */
-/*	The following define the tabulation interval and highest
+/*    The following define the tabulation interval and highest
     value of kappa for this table (lgi0) and the following table
     (atab)  */
 
@@ -2523,7 +2523,7 @@ static double lgi0[] = {
     48.965452568283, /*  50.00 */
     0};
 
-/*	Table of the differential of lgi0 (kappa) wrt kappa. This
+/*    Table of the differential of lgi0 (kappa) wrt kappa. This
 function is also known as A() in the techical report. It is the
 expected value of cos(theta) when theta has a VonMises2 density with
 zero mean and concentration theta.
@@ -5035,8 +5035,8 @@ static double atab[] = {
     0.989948967378, /*  50.00 */
     0};
 
-/*	------------------  kapcode  --------------------------   */
-/*	This routine calculates lgi0 (kap) and aa (kap) given kap.
+/*    ------------------  kapcode  --------------------------   */
+/*    This routine calculates lgi0 (kap) and aa (kap) given kap.
     Normally it uses an interpolation between tabulated values which
     is cubically correct for lgi0 and quadratic for aa and strictly
     continuous for both.
@@ -5058,15 +5058,15 @@ void kapcode(kap, logi0, aaa, daa) double kap, *logi0, *aaa, *daa;
     if (ik >= maxik)
         goto asymp;
 
-    /*	Interpolate   */
+    /*    Interpolate   */
     va = lgi0[ik];
     da = atab[ik] * kapstep;
     ik++;
     vb = lgi0[ik];
     db = atab[ik] * kapstep;
 
-    /*	Calculate coeffs of cubic in del  */
-    /*	Const term is va, linear co-eff is da
+    /*    Calculate coeffs of cubic in del  */
+    /*    Const term is va, linear co-eff is da
         Quadratic coeff is (-3va + 3vb - 2da - db)
         Cubic coeff is (2va - 2vb + da + db).
         Note we only use vb via the difference (vb-va)  */
@@ -5078,7 +5078,7 @@ void kapcode(kap, logi0, aaa, daa) double kap, *logi0, *aaa, *daa;
 
     *logi0 = ((c3 * del + c2) * del + da) * del + va;
 
-    /*	We get aaa as derivative of the cubic interpolation,
+    /*    We get aaa as derivative of the cubic interpolation,
         times kscale  */
 
     *aaa = ((3.0 * c3 * del + 2.0 * c2) * del + da) * kscale;
@@ -5087,7 +5087,7 @@ void kapcode(kap, logi0, aaa, daa) double kap, *logi0, *aaa, *daa;
     return;
 
 asymp:
-    /*	For large kap, logi0 asymptotes to:
+    /*    For large kap, logi0 asymptotes to:
 
         kap + 0.5 log (2Pi / kap)
 
@@ -5105,11 +5105,11 @@ asymp:
 }
 
 #ifdef CHECK
-/*	----------------  check  --------------------------------  */
-/*	Code for doing spot checks on kapcode  */
+/*    ----------------  check  --------------------------------  */
+/*    Code for doing spot checks on kapcode  */
 
 #include <stdio.h>
-/*	To generate tabels of the function:
+/*    To generate tabels of the function:
 
     LI0 = log 2*Int_{0..PI} {exp (kappa * cos (x)) dx}
 
@@ -5123,7 +5123,7 @@ asymp:
 
 double pi;
 
-/*	----------------  calc (ka, *li0, *aa, ni) -------------  */
+/*    ----------------  calc (ka, *li0, *aa, ni) -------------  */
 void calc(ka, li0, aa, ni) double ka, *li0, *aa;
 int ni;
 {
@@ -5142,13 +5142,13 @@ int ni;
     }
     sum1 = sum1 * 2.0 * hh;
     sum2 = sum2 * 2.0 * hh;
-    /*	This gives us (exp (-ka)) * I0  */
+    /*    This gives us (exp (-ka)) * I0  */
     *li0 = log(sum1) + ka;
     *aa = 1.0 - sum2 / sum1;
     return;
 }
 
-/*	---------------  main  ----------------------- */
+/*    ---------------  main  ----------------------- */
 int main() {
     double kap;
     double lap, llap, rkap;

@@ -1,4 +1,4 @@
-/*	---------------------  MAIN FILE -----------------  */
+/*    ---------------------  MAIN FILE -----------------  */
 #include "glob.h"
 
 FILE *yxw;
@@ -12,8 +12,8 @@ int intparam;
 void showpoplnnames();
 void showsamplenames();
 
-/*	---------------------  menu  ---------------------------  */
-/*	To read a command word and return an integer code for it  */
+/*    ---------------------  menu  ---------------------------  */
+/*    To read a command word and return an integer code for it  */
 
 #define MNkey 50
 static char *keyw[MNkey] = {
@@ -133,7 +133,7 @@ item which are partially assigned to both classes.",
     "item <N> finds the sample item with identifier N.",
 
     "trep <F> writes a item report on file F. Assigns each item to smallest class\n\
-	in which item has weight > 0.5,  and to most likely leaf.",
+    in which item has weight > 0.5,  and to most likely leaf.",
 
     "select <S> first copies the current work model to an unattached model called\
  OldWork, replaces the current sample by sample <S> where S is either name or\
@@ -178,7 +178,7 @@ int menu(int cnl) {
     if (nposs <= 0) {
         return (-1);
     } else if (nposs > 1) {
-        /*	Could have an exact match  */
+        /*    Could have an exact match  */
         for (k = 0; k < nvkey; k++) {
             if (poss[k] && (!keyw[k][j])) {
                 skk = k;
@@ -222,15 +222,15 @@ int readserial(int prm) {
 
     // Advance buffer if needed
     if (terminator == 'a' || terminator == 'b') {
-        ctx.buffer->nch++;
+        CurCtx.buffer->nch++;
     }
 
     return s2id(nn);
 }
 
 
-/*	----------------------  readanint -----------------------------  */
-/*	To read an integer action parameter. Returns -1 if error  */
+/*    ----------------------  readanint -----------------------------  */
+/*    To read an integer action parameter. Returns -1 if error  */
 int readanint(int kk) {
     int n, nn;
 
@@ -244,8 +244,8 @@ int readanint(int kk) {
     return (nn);
 }
 
-/*	-------------------- readareal ----------------------------  */
-/*	To read a real action parameter. Returns -1 if error, else 0  */
+/*    -------------------- readareal ----------------------------  */
+/*    To read a real action parameter. Returns -1 if error, else 0  */
 int readareal(int kk, double *rea) {
     double newv;
     int n;
@@ -261,8 +261,8 @@ int readareal(int kk, double *rea) {
     return (0);
 }
 
-/*	------------------- readsparam ---------------------------  */
-/*	To read a string parameter. -1 if error  */
+/*    ------------------- readsparam ---------------------------  */
+/*    To read a string parameter. -1 if error  */
 int readsparam(int kk) {
     int n;
     n = readalf(sparam, 0);
@@ -331,22 +331,22 @@ int readintname(int kk, int jj) {
 }
 
 
-/*	--------------------  showpoplnnames  ---------------------  */
+/*    --------------------  showpoplnnames  ---------------------  */
 void showpoplnnames() {
     int i;
     printf("The defined models are:\n");
-    for (i = 0; i < Maxpoplns; i++) {
+    for (i = 0; i < MAX_POPULATIONS; i++) {
         if (poplns[i]) {
             printf("%2d %s", i + 1, poplns[i]->name);
-            if (poplns[i]->nc)
-                printf(" Sample %s", poplns[i]->samplename);
+            if (poplns[i]->sample_size)
+                printf(" Sample %s", poplns[i]->sample_name);
             else
                 printf(" (unattached)");
             printf("\n");
         }
     }
     printf("Also, the pseudonym \"BST_\" can be used for the best\n");
-	printf("model for the current sample\n");
+    printf("model for the current sample\n");
     return;
 }
 
@@ -354,7 +354,7 @@ void showpoplnnames() {
 void showsamplenames() {
     int k;
     printf("Loaded samples:\n");
-    for (k = 0; k < Maxsamples; k++) {
+    for (k = 0; k < MAX_SAMPLES; k++) {
         if (samples[k]) {
             printf("%2d:  %s\n", k + 1, samples[k]->name);
         }
@@ -372,7 +372,7 @@ int readpopid(int kk) {
 
     if (intparam >= 0) {
         nn = intparam - 1;
-        if (nn >= 0 && nn < Maxpoplns && poplns[nn] && poplns[nn]->id == nn) {
+        if (nn >= 0 && nn < MAX_POPULATIONS && poplns[nn] && poplns[nn]->id == nn) {
             return nn;
         }
         printf("%d is not a valid popln index\n", intparam);
@@ -397,7 +397,7 @@ int readsampid(int kk) {
 
     if (intparam >= 0) {
         nn = intparam - 1;
-        if (nn >= 0 && nn < Maxsamples && samples[nn] && samples[nn]->id == nn) {
+        if (nn >= 0 && nn < MAX_SAMPLES && samples[nn] && samples[nn]->id == nn) {
             return nn;
         }
         printf("%d is not a valid sample index\n", intparam);
@@ -412,21 +412,21 @@ int readsampid(int kk) {
 }
 
 
-/*	---------------------  main  ---------------------------  */
+/*    ---------------------  main  ---------------------------  */
 extern char *malloc_options;
 int main() {
     int k, kk, k1, k2;
-    int i, j, n, nn, cspace;
+    int i, j, n, nn, cspace = 0;
     double drop;
     char *chp;
     Context oldctx;
 
-    rseed = 1234567;
+    RSeed = 1234567;
     defaulttune();
 
-    /*	A section to sort the keywords into alphabetic order, and set
+    /*    A section to sort the keywords into alphabetic order, and set
     actk[] to hold their original order indexes   */
-    /*	First, fill out keyw[] with z-strings   */
+    /*    First, fill out keyw[] with z-strings   */
     for (i = 0; strcmp(keyw[i], "zzzzzzzzzzzz"); i++) {
         actk[i] = i;
     }
@@ -435,7 +435,7 @@ int main() {
         keyw[i] = "zzzzzzzzzzzz";
         actk[i] = 999;
     }
-    /*	Now bubble-sort the first nkey entries   */
+    /*    Now bubble-sort the first nkey entries   */
     for (i = (nkey - 1); i > 0; i--) {
         for (j = 0; j < i; j++) {
             if (strcmp(keyw[j], keyw[j + 1]) > 0) {
@@ -448,37 +448,37 @@ int main() {
             }
         }
     }
-    /*	Count valid ones (not 10 z-s)	*/
+    /*    Count valid ones (not 10 z-s)    */
     nvkey = 0;
     for (i = 0; i < nkey; i++) {
         if (strcmp(keyw[i], "zzzzzzzzzz"))
             nvkey++;
     }
 
-    fix = dfix = Partial;
-    dcontrol = control = AdjAll;
-    /*	Clear vectors of pointers to Poplns, Samples  */
-    for (k = 0; k < Maxpoplns; k++)
+    Fix = DFix = Partial;
+    DControl = Control = AdjAll;
+    /*    Clear vectors of pointers to Poplns, Samples  */
+    for (k = 0; k < MAX_POPULATIONS; k++)
         poplns[k] = 0;
-    for (k = 0; k < Maxsamples; k++)
+    for (k = 0; k < MAX_SAMPLES; k++)
         samples[k] = 0;
-    for (k = 0; k < Maxvsets; k++)
+    for (k = 0; k < MAX_VSETS; k++)
         vsets[k] = 0;
     dotypes();
 
-    /*	Set source to commsbuf and initialize  */
-    source = &commsbuf;
-    ctx.buffer = source;
-    source->cfile = 0;
-    source->nch = 0;
-    source->inl[0] = '\n';
-    heard = usestdin = 0;
+    /*    Set source to commsbuf and initialize  */
+    CurSource = &commsbuf;
+    CurCtx.buffer = CurSource;
+    CurSource->cfile = 0;
+    CurSource->nch = 0;
+    CurSource->inl[0] = '\n';
+    Heard = UseStdIn = 0;
 
     /*ddd
     printf("Enter var and state to watch (kiv, kz)\n");
     ddd*/
 
-    /*	Open a log file   */
+    /*    Open a log file   */
     yxw = fopen("run.log", "w");
 
     kk = readvset();
@@ -486,9 +486,9 @@ int main() {
     if (kk < 0)
         exit(2);
     else
-        vst = ctx.vset = vsets[kk];
+        CurVSet = CurCtx.vset = vsets[kk];
 
-    seeall = 2;
+    SeeAll = 2;
     printf("Enter sample file name:\n");
     if (readalf(sparam, 1) < 0) {
         printf("Cannot read sample file name\n");
@@ -510,11 +510,11 @@ int main() {
     if (trapkk >= 0)
         scanf("%d", &trapage);
 #endif
-    printclass(root, 0);
+    printclass(CurRoot, 0);
 error:
-    printf("??? line %6d\n", source->line);
+    printf("??? line %6d\n", CurSource->line);
     newline();
-    if (source->cfile)
+    if (CurSource->cfile)
         revert(0);
 loop:
     k = pname2id("TrialPop");
@@ -524,46 +524,46 @@ loop:
     kk = repspace(0);
     if (kk != cspace)
         cspace = repspace(1);
-    if (heard) {
+    if (Heard) {
         revert(1);
-        heard = 0;
+        Heard = 0;
     }
-    if (nosubs || (control != AdjAll)) {
-        if (nosubs)
+    if (NoSubs || (Control != AdjAll)) {
+        if (NoSubs)
             printf("NOSUBS  ");
-        if (control != AdjAll) {
+        if (Control != AdjAll) {
             printf("FREEZE");
-            if (!(control & AdjPr))
+            if (!(Control & AdjPr))
                 printf(" PARAMS");
-            if (!(control & AdjSc))
+            if (!(Control & AdjSc))
                 printf(" SCORES");
-            if (!(control & AdjTr))
+            if (!(Control & AdjTr))
                 printf(" TREE");
         }
-        printf("  Cost%8.1f\n", rootcl->cbcost);
+        printf("  Cost%8.1f\n", CurRootClass->cbcost);
     }
-    if (!ctx.popln) {
+    if (!CurCtx.popln) {
         kk = 13;
         goto pickapop;
     }
     setpop();
-    fix = dfix;
-    control = dcontrol;
+    Fix = DFix;
+    Control = DControl;
     tidy(1);
     trackbest(1);
-    if (!source->cfile) {
+    if (!CurSource->cfile) {
         flp();
-        population = ctx.popln;
-        cls = population->classes[population->root];
-        printf("P%1d  %4d classes, %4d leaves,  Pcost%8.1f", population->id + 1,
-               population->ncl, population->nleaf, cls->cbpcost);
-        if (population->nc)
-            printf("  Tcost%10.1f,  Cost%10.1f", cls->cbtcost, cls->cbcost);
+        CurPopln = CurCtx.popln;
+        CurClass = CurPopln->classes[CurPopln->root];
+        printf("P%1d  %4d classes, %4d leaves,  Pcost%8.1f", CurPopln->id + 1,
+               CurPopln->num_classes, CurPopln->num_leaves, CurClass->cbpcost);
+        if (CurPopln->sample_size)
+            printf("  Tcost%10.1f,  Cost%10.1f", CurClass->cbtcost, CurClass->cbcost);
         printf("\n");
-        printf("Sample %2d %s\n", (ctx.sample) ? ctx.sample->id + 1 : 0,
-               (ctx.sample) ? ctx.sample->name : "NULL");
+        printf("Sample %2d %s\n", (CurCtx.sample) ? CurCtx.sample->id + 1 : 0,
+               (CurCtx.sample) ? CurCtx.sample->name : "NULL");
     }
-    if ((source->nch) || (source->inl[0] == '\n')) {
+    if ((CurSource->nch) || (CurSource->inl[0] == '\n')) {
         if (newline())
             goto error;
     }
@@ -597,20 +597,20 @@ loop:
         goto loop;
     case 3: /* killclass */
         k = readserial(kk);
-        if (k == root) {
+        if (k == CurRoot) {
             printf("Won't kill Root\n");
             goto loop;
         }
         if (k < 0)
             goto error;
-        Log "%s", sers(population->classes[k]) EL population->classes[k]->cnt = 0.0;
+        Log "%s", sers(CurPopln->classes[k]) EL CurPopln->classes[k]->cnt = 0.0;
         goto loop;
     case 4: /* killsons */
         k = readserial(kk);
         if (k < 0)
             goto error;
-        Log "%s", sers(population->classes[k]) EL killsons(k);
-        population->classes[k]->holdtype = HoldTime;
+        Log "%s", sers(CurPopln->classes[k]) EL killsons(k);
+        CurPopln->classes[k]->holdtype = HoldTime;
         goto loop;
     case 5: /* prclass */
         k = readserial(kk);
@@ -619,9 +619,9 @@ loop:
         i = readanint(kk);
         if (i < 0)
             goto error;
-        Log "%s  %d", sers(population->classes[k]), i EL printclass(k, i);
+        Log "%s  %d", sers(CurPopln->classes[k]), i EL printclass(k, i);
         goto loop;
-    case 6: /*	adjust  */
+    case 6: /*    adjust  */
         k = readsparam(kk);
         if (k < 0)
             goto error;
@@ -660,21 +660,21 @@ loop:
         goto error;
     adjflagsin:
         Log "%s", sparam EL nn = AdjAll - nn;
-        control = dcontrol = (dcontrol & nn) | n;
+        Control = DControl = (DControl & nn) | n;
         goto loop;
     case 7: /*  assign  */
         k = readachar(kk);
         switch (k) {
         case 'p':
-            dfix = Partial;
+            DFix = Partial;
             goto assignok;
             ;
         case 'r':
-            dfix = Random;
+            DFix = Random;
             goto assignok;
             ;
         case 'm':
-            dfix = Most_likely;
+            DFix = Most_likely;
             goto assignok;
             ;
         }
@@ -685,18 +685,18 @@ loop:
         k = readserial(kk);
         if (k < 0)
             goto error;
-        if (population->classes[k]->type != Leaf) {
-            printf("Class %s is not a leaf\n", sers(population->classes[k]));
+        if (CurPopln->classes[k]->type != Leaf) {
+            printf("Class %s is not a leaf\n", sers(CurPopln->classes[k]));
             goto loop;
         }
-        Log "%s", sers(population->classes[k]) EL if (splitleaf(k))
-                      printf("Cannot split class%s\n", sers(population->classes[k]));
+        Log "%s", sers(CurPopln->classes[k]) EL if (splitleaf(k))
+                      printf("Cannot split class%s\n", sers(CurPopln->classes[k]));
         goto loop;
     case 9: /* deldad */
         k = readserial(kk);
         if (k < 0)
             goto error;
-        Log "%s", sers(population->classes[k]) EL k = population->classes[k]->serial;
+        Log "%s", sers(CurPopln->classes[k]) EL k = CurPopln->classes[k]->serial;
         drop = deldad(k);
         goto dropprint;
 
@@ -710,8 +710,8 @@ loop:
         goto loop;
 
     listall:
-        /*	This bit lists all the command words, 5 per line	*/
-        /*	Keywords of 10 z-s are omitted, so first I count valid ones  */
+        /*    This bit lists all the command words, 5 per line    */
+        /*    Keywords of 10 z-s are omitted, so first I count valid ones  */
         n = (nvkey + 4) / 5;
         for (k = 0; k < n; k++) {
             for (j = 0; j < 5; j++) {
@@ -742,12 +742,12 @@ loop:
         printf("Please donot use a popln name beginning BST_\n");
         goto error;
     ok11:
-        Log "%d %s", i, sparam EL i = copypop(population->id, i, sparam);
+        Log "%d %s", i, sparam EL i = copypop(CurPopln->id, i, sparam);
         if (i < 0)
             goto error;
         printf("Index%3d = popln %s\n", i + 1, sparam);
-        control = dcontrol;
-        fix = dfix;
+        Control = DControl;
+        Fix = DFix;
         goto loop;
     case 12: /*  killpop */
         k = readpopid(kk);
@@ -767,11 +767,11 @@ loop:
         k = readsparam(kk);
         if (k < 0)
             goto error;
-        if (source->cfile)
+        if (CurSource->cfile)
             bufclose();
         strcpy(cfilebuf.cname, sparam);
-        source = &cfilebuf;
-        ctx.buffer = source;
+        CurSource = &cfilebuf;
+        CurCtx.buffer = CurSource;
         if (bufopen()) {
             printf("Cant open file %s\n", sparam);
             goto error;
@@ -780,9 +780,9 @@ loop:
     case 17: /* readsamp  */
         if (readsparam(kk) < 0)
             goto error;
-        cmcpy(&oldctx, &ctx, sizeof(Context));
+        cmcpy(&oldctx, &CurCtx, sizeof(Context));
         k = readsample(sparam);
-        cmcpy(&ctx, &oldctx, sizeof(Context));
+        cmcpy(&CurCtx, &oldctx, sizeof(Context));
         if (k < 0)
             goto error;
         printf("Sample %s index%2d from file %s\n", samples[k]->name, k + 1,
@@ -810,13 +810,13 @@ loop:
         k2 = readserial(kk);
         if (k2 < 0)
             goto error;
-        k1 = population->classes[k1]->serial;
-        k2 = population->classes[k2]->serial;
-        Log "%s %s", sers(population->classes[k1]),
-            sers(population->classes[k2]) EL drop = insdad(k1, k2, &k);
+        k1 = CurPopln->classes[k1]->serial;
+        k2 = CurPopln->classes[k2]->serial;
+        Log "%s %s", sers(CurPopln->classes[k1]),
+            sers(CurPopln->classes[k2]) EL drop = insdad(k1, k2, &k);
         flp();
         if (k >= 0)
-            printf("New Dad's serial%s\n", sers(population->classes[k]));
+            printf("New Dad's serial%s\n", sers(CurPopln->classes[k]));
     dropprint:
         if (drop < -1000000.0) {
             printf("Cannot be done\n");
@@ -899,10 +899,10 @@ loop:
         if (nn < 0)
             goto error;
         if (nn)
-            nosubs = 1;
+            NoSubs = 1;
         else
-            nosubs = 0;
-        Log "%d", nosubs EL goto loop;
+            NoSubs = 0;
+        Log "%d", NoSubs EL goto loop;
 
     case 30: /* binhier */
         nn = readanint(kk);
@@ -918,10 +918,10 @@ loop:
         k2 = readserial(kk);
         if (k2 < 0)
             goto error;
-        k1 = population->classes[k1]->serial;
-        k2 = population->classes[k2]->serial;
-        Log "%s %s", sers(population->classes[k1]),
-            sers(population->classes[k2]) EL drop = moveclass(k1, k2);
+        k1 = CurPopln->classes[k1]->serial;
+        k2 = CurPopln->classes[k2]->serial;
+        Log "%s %s", sers(CurPopln->classes[k1]),
+            sers(CurPopln->classes[k2]) EL drop = moveclass(k1, k2);
         printf("Move changes cost by %12.1f\n", -drop);
         goto loop;
 
@@ -967,15 +967,15 @@ loop:
         if (k < 0)
             goto error;
         printf("Selecting sample %s\n", samples[k]->name);
-        Log "%s", samples[k]->name EL i = copypop(population->id, 0, "OldWork");
+        Log "%s", samples[k]->name EL i = copypop(CurPopln->id, 0, "OldWork");
         if (i < 0) {
             printf("Can't make OldWork copy of work\n");
             goto error;
         }
-        if (ctx.popln)
-            killpop(ctx.popln->id);
-        population = ctx.popln = 0;
-        samp = ctx.sample = samples[k];
+        if (CurCtx.popln)
+            killpop(CurCtx.popln->id);
+        CurPopln = CurCtx.popln = 0;
+        CurSample = CurCtx.sample = samples[k];
         i = firstpop();
         if (i < 0) {
             printf("Cannot make first population for sample\n");
@@ -989,7 +989,7 @@ pickapop:
     if (i < 0)
         goto error;
     if (!strcmp(poplns[i]->name, "work")) {
-        if (ctx.popln && (ctx.popln->id == i))
+        if (CurCtx.popln && (CurCtx.popln->id == i))
             printf("Work already picked\n");
         else
             printf("Switching context to existing 'work'");
@@ -998,7 +998,7 @@ pickapop:
     }
     k = loadpop(i);
 picked:
-    ctx.popln = population = poplns[k];
+    CurCtx.popln = CurPopln = poplns[k];
     Log "%s", poplns[i]->name EL goto loop;
 #ifdef ZZ
 #endif

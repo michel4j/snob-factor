@@ -7,7 +7,7 @@ int rk1, rk2, rseq1, rseq2;
 char sline[LL], rline[LL];
 char *stopp = "stop\n";
 
-/*	Format of message is:
+/*    Format of message is:
     char sequence_number
     char action_code
     char [LL] string
@@ -15,7 +15,7 @@ char *stopp = "stop\n";
     char sequence_number
     CR/LF
     */
-/*	Code values are:
+/*    Code values are:
     'I': valid input line
     'A': acknowlege by hark
     */
@@ -61,7 +61,7 @@ open2:
     rseq2 = fgetc(co);
     fclose(co);
 
-    /*	Check format	*/
+    /*    Check format    */
     if ((rseq1 == rseq2) && (rk1 == rk2) && (rseq2 >= '0') && (rseq2 <= '9'))
         goto formok;
     m = 1;
@@ -71,21 +71,21 @@ open2:
     goto send;
 
 formok:
-    /*	Have valid format.  See if just our previous message  */
+    /*    Have valid format.  See if just our previous message  */
     if ((rseq1 == seq) && (rk1 == 'I')) {
         m = 1;
         goto receive;
     }
 
-    /*	See if an acknowlegement of our previous message  */
+    /*    See if an acknowlegement of our previous message  */
     if ((rseq1 == seq) && (rk1 == 'A'))
         goto next;
-    /*	Cant make sense of it  */
+    /*    Cant make sense of it  */
     m = 1;
     goto send;
 
 next:
-    /*	If last line was 'stop', stop  */
+    /*    If last line was 'stop', stop  */
     for (j = 0; j < 4; j++)
         if (rline[j] != stopp[j])
             goto firstch;
