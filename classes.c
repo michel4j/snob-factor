@@ -200,7 +200,7 @@ void print1class(Class *clp, int full) {
         return;
     for (i = 0; i < CurVSet->num_vars; i++) {
         CurVType = CurAttrList[i].vtype;
-        (*CurVType->vprint)(clp, i);
+        (*CurVType->show)(clp, i);
     }
     return;
 }
@@ -230,7 +230,7 @@ void print_class(int kk, int full) {
 
 /*    -------------------------  cleartcosts  ------  */
 /*    Clears tcosts (cntcost, cftcost, cstcost). Also clears newcnt,
-newvsq, and calls clearstats for all variables   */
+newvsq, and calls clear_stats for all variables   */
 void cleartcosts(Class *ccl) {
     int i;
 
@@ -246,7 +246,7 @@ void cleartcosts(Class *ccl) {
         CurClass->scancnt = 0;
     for (i = 0; i < CurVSet->num_vars; i++) {
         CurVType = CurAttrList[i].vtype;
-        (*CurVType->clearstats)(i);
+        (*CurVType->clear_stats)(i);
     }
     return;
 }
@@ -272,7 +272,7 @@ void setbestparall(Class *ccl) {
     }
     for (i = 0; i < CurVSet->num_vars; i++) {
         CurVType = CurAttrList[i].vtype;
-        (*CurVType->setbestparam)(i);
+        (*CurVType->set_best_pars)(i);
     }
     return;
 }
@@ -297,7 +297,7 @@ void score_all_vars(Class *ccl) {
             CurClass->boost_count = 0;
             cvvsprd = 0.1 / NumVars;
             oldicvv = igbit = 0;
-            cvv = (sran() < 0) ? 1.0 : -1.0;
+            cvv = (rand_sign() < 0) ? 1.0 : -1.0;
         } else {
             // Get current score
             oldicvv = icvv;
@@ -323,8 +323,8 @@ void score_all_vars(Class *ccl) {
             CurAttr = CurAttrList + i;
             if (!CurAttr->inactive) {
                 CurVType = CurAttr->vtype;
-                (*CurVType->scorevar)(i);
-                // scorevar should add to vvd1, vvd2, vvd3, mvvd2.
+                (*CurVType->score_var)(i);
+                // score_var should add to vvd1, vvd2, vvd3, mvvd2.
             }
         }
 
@@ -344,7 +344,7 @@ void score_all_vars(Class *ccl) {
     del = cvv * HScoreScale;
     if (del < 0.0)
         del -= 1.0;
-    icvv = del + fran();
+    icvv = del + rand_float();
     icvv <<= 1; // Round to nearest even times ScoreScale
     icvv |= igbit; // Restore original ignore bit
 
@@ -365,7 +365,7 @@ void score_all_vars(Class *ccl) {
 
 
 /*    ----------------------  costvarall  --------------------------  */
-/*    Does costvar on all vars of class for the current item, setting
+/*    Does cost_var on all vars of class for the current item, setting
 cls->casecost according to use of class  */
 void costvarall(Class *ccl) {
     int fac;
@@ -384,7 +384,7 @@ void costvarall(Class *ccl) {
         if (CurAttr->inactive)
             goto vdone;
         CurVType = CurAttr->vtype;
-        (*CurVType->costvar)(iv, fac);
+        (*CurVType->cost_var)(iv, fac);
     /*    will add to scasecost, fcasecost  */
     vdone:;
     }
@@ -437,7 +437,7 @@ void derivvarall(Class *ccl) {
         CurAttr = CurAttrList + iv;
         if (!(CurAttr->inactive)){
             CurVType = CurAttr->vtype;
-            (*CurVType->derivvar)(iv, fac);
+            (*CurVType->deriv_var)(iv, fac);
         }
     }
 
@@ -634,7 +634,7 @@ void ncostvarall(Class *ccl, int valid) {
     for (i = 0; i < CurVSet->num_vars; i++) {
         CurAttr = CurAttrList + i;
         CurVType = CurAttr->vtype;
-        (*CurVType->ncostvar)(i, valid);
+        (*CurVType->cost_var_nonleaf)(i, valid);
         evi = (EVinst *)CurClass->stats[i];
         if (!CurAttr->inactive) {
             abcost += evi->npcost;

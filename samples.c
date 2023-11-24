@@ -25,7 +25,7 @@ void printdatum(int i, int n) {
         return;
     }
     CurField += 1;
-    (*vtp->printdat)(CurField);
+    (*vtp->print_datum)(CurField);
     return;
 }
 /*    ------------------------ readvset ------------------------------ */
@@ -143,13 +143,13 @@ gotit:
         CurAttr->vaux = vaux;
 
         /*    Read auxilliary information   */
-        if ((*CurVType->readvaux)(vaux)) {
+        if ((*CurVType->read_aux_attr)(vaux)) {
             printf("Error in reading auxilliary info var %d\n", i + 1);
             i = -7;
             goto error;
         }
         /*    Set sizes of stats and basic blocks for var in classes */
-        (*CurVType->setsizes)(i);
+        (*CurVType->set_sizes)(i);
     } /* End of variables loop */
     i = indx;
 
@@ -267,7 +267,7 @@ gotit:
         CurVar->saux = saux;
 
         /*    Read auxilliary information   */
-        if ((*CurVType->readsaux)(saux)) {
+        if ((*CurVType->read_aux_smpl)(saux)) {
             printf("Error in reading auxilliary info var %d\n", i + 1);
             i = -7;
             goto error;
@@ -323,7 +323,7 @@ gotit:
             CurVar = CurVarList + i;
             CurAttr = CurAttrList + i;
             CurVType = CurAttr->vtype;
-            kread = (*CurVType->readdat)(CurField + 1, i);
+            kread = (*CurVType->read_datum)(CurField + 1, i);
             if (kread < 0) {
                 printf("Data error case %d var %d\n", n + 1, i + 1);
                 swallow();
@@ -448,7 +448,7 @@ again:
 
 recurse:
     /*    Pick a random central value  */
-    nt = nn * fran();
+    nt = nn * rand_float();
     if (nt == nn)
         nt = nn / 2;
     cen = bot + nt * len;

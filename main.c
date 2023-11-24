@@ -1,5 +1,6 @@
 /*    ---------------------  MAIN FILE -----------------  */
 #include "glob.h"
+#include <time.h>
 
 FILE *yxw;
 #define Log                                                                    \
@@ -9,8 +10,8 @@ FILE *yxw;
     fflush(yxw);
 char sparam[80];
 int intparam;
-void showpoplnnames();
-void showsamplenames();
+void show_pop_names();
+void show_smpl_names();
 
 /*    ---------------------  menu  ---------------------------  */
 /*    To read a command word and return an integer code for it  */
@@ -305,8 +306,8 @@ int readintname(int kk, int jj) {
     if (n == 2) {
         printf("%s\n Enter name string or integer index\n", prmt[kk]);
         switch (jj) {
-            case 1: showpoplnnames(); break;
-            case 2: showsamplenames(); break;
+            case 1: show_pop_names(); break;
+            case 2: show_smpl_names(); break;
         }
         n = readalf(sparam, 1);
     }
@@ -331,8 +332,8 @@ int readintname(int kk, int jj) {
 }
 
 
-/*    --------------------  showpoplnnames  ---------------------  */
-void showpoplnnames() {
+/*    --------------------  show_pop_names  ---------------------  */
+void show_pop_names() {
     int i;
     printf("The defined models are:\n");
     for (i = 0; i < MAX_POPULATIONS; i++) {
@@ -350,8 +351,8 @@ void showpoplnnames() {
     return;
 }
 
-/*      ----------------------  showsamplenames  -----------------  */
-void showsamplenames() {
+/*      ----------------------  show_smpl_names  -----------------  */
+void show_smpl_names() {
     int k;
     printf("Loaded samples:\n");
     for (k = 0; k < MAX_SAMPLES; k++) {
@@ -421,7 +422,10 @@ int main() {
     char *chp;
     Context oldctx;
 
+    // initialize random number generator
     RSeed = 1234567;
+    srand(1234567);
+    
     defaulttune();
 
     /*    A section to sort the keywords into alphabetic order, and set
@@ -800,7 +804,7 @@ loop:
         goto loop;
 
     case 20: /*  samps  */
-        showsamplenames();
+        show_smpl_names();
         goto loop;
 
     case 21: /* insdad */
@@ -931,7 +935,7 @@ loop:
         goto loop;
 
     case 33: /*  pops  */
-        showpoplnnames();
+        show_pop_names();
         goto loop;
 
     case 34: /*  crosstab  */

@@ -73,20 +73,20 @@ typedef struct VtypeStruct {
     int smpl_aux_size; /* size of aux block for vartype in sample */
     int pop_aux_size;  /* size of aux block for vartype in popln */
     char *name;
-    int (*readvaux)();      /* Fun to read aux attribute info */
-    int (*readsaux)();      /* Fun to read aux sample info */
-    int (*readdat)();       /* Fun to read a datum */
-    void (*printdat)();     /* Fun to print datum value */
-    void (*setsizes)();     /* To set basicsize, statssize */
-    void (*setbestparam)(); /* To set current best use params */
-    void (*clearstats)();   /* To clear stats prior to re-estimation */
-    void (*scorevar)();
-    void (*derivvar)();
-    void (*costvar)();
-    void (*ncostvar)();
+    int (*read_aux_attr)();  /* Fun to read aux attribute info */
+    int (*read_aux_smpl)();  /* Fun to read aux sample info */
+    int (*read_datum)();     /* Fun to read a datum */
+    void (*print_datum)();   /* Fun to print datum value */
+    void (*set_sizes)();     /* To set basicsize, statssize */
+    void (*set_best_pars)(); /* To set current best use params */
+    void (*clear_stats)();   /* To clear stats prior to re-estimation */
+    void (*score_var)();
+    void (*deriv_var)();
+    void (*cost_var)();
+    void (*cost_var_nonleaf)();
     void (*adjust)();
-    void (*vprint)();
-    void (*setvar)();
+    void (*show)();
+    void (*set_var)();
 } Vtype;
 
 /*    -------------------  Files ----------------------------------  */
@@ -345,9 +345,8 @@ void find_all(int typ);
 int do_dads(int ncy);
 int do_good(int ncy, double target);
 void tidy(int hit);
-int uran();
-int sran();
-double fran();
+int rand_sign();
+double rand_float();
 void do_case(int cse, int all, int derivs);
 /*        end doall.c        */
 

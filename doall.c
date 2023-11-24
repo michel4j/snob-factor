@@ -2,27 +2,19 @@
 #define DOALL 1
 #include "glob.h"
 
-/*    -------------------- sran, fran, uran -------------------------- */
+/*    -------------------- rand_sign, rand_float, -------------------------- */
+static const short SIGN[2] = {-1, 1};
 static double rcons = (1.0 / (2048.0 * 1024.0 * 1024.0));
+
 #define M32 0xFFFFFFFF
 #define B32 0x80000000
-int sran() {
-    int js;
-    RSeed = 69069 * RSeed + 103322787;
-    js = RSeed & M32;
-    return (js);
+
+
+int rand_sign() {
+    return SIGN[rand() % 2];
 }
 
-int uran() {
-    int js;
-    RSeed = 69069 * RSeed + 103322787;
-    js = RSeed & M32;
-    if (js & B32)
-        js = M32 - js;
-    return (js & M32);
-}
-
-double fran() {
+double rand_float() {
     int js;
     RSeed = 69069 * RSeed + 103322787;
     js = RSeed & M32;
@@ -671,7 +663,7 @@ void do_case(int cse, int all, int derivs) {
             }
             clc++;
             if (Fix == Random) {
-                w1 = 2.0 * fran();
+                w1 = 2.0 * rand_float();
                 CurClass->total_case_cost += w1;
                 CurClass->fac_case_cost += w1;
                 CurClass->nofac_case_cost += w1;
@@ -794,9 +786,11 @@ void do_case(int cse, int all, int derivs) {
             /*    Assign randomly if sub age 0, or to-best if sub age < MinAge */
             if (sub1->age < MinAge) {
                 if (sub1->age == 0) {
-                    w1 = (sran() < 0) ? 1.0 : 0.0;
+                    //w1 = (rand_sign() < 0) ? 1.0 : 0.0;
+                    w1 = (rand_sign() < 0);
                 } else {
-                    w1 = (diff < 0) ? 1.0 : 0.0;
+                    //w1 = (diff < 0) ? 1.0 : 0.0;
+                    w1 = (diff < 0);
                 }
                 w2 = 1.0 - w1;
             }
