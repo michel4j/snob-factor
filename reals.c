@@ -130,8 +130,7 @@ void reals_define(typindx) int typindx;
 }
 
 /*    -------------------  setvar -----------------------------  */
-void setvar(iv) int iv;
-{
+void setvar(int iv) {
     CurAttr = CurAttrList + iv;
     CurVType = CurAttr->vtype;
     pvi = pvars + iv;
@@ -150,17 +149,13 @@ void setvar(iv) int iv;
 
 /*    --------------------  readvaux  ----------------------------  */
 /*      Read in auxiliary info into vaux, return 0 if OK else 1  */
-int readvaux(vax)
-Vaux *vax;
-{ return (0); }
+int readvaux(Vaux *vax) { return (0); }
 
 /*    ---------------------  readsaux ---------------------------   */
 /*    To read any auxiliary info about a variable of this type in some
 sample.
     */
-int readsaux(sax)
-Saux *sax;
-{
+int readsaux(Saux *sax) {
     int i;
 
     /*    Read in auxiliary info into saux, return 0 if OK else 1  */
@@ -196,8 +191,7 @@ void printdat(char *loc) {
 }
 
 /*    ---------------------  setsizes  -----------------------   */
-void setsizes(iv) int iv;
-{
+void setsizes(int iv) {
     CurAttr = CurAttrList + iv;
     CurAttr->basic_size = sizeof(Basic);
     CurAttr->stats_size = sizeof(Stats);
@@ -205,8 +199,7 @@ void setsizes(iv) int iv;
 }
 
 /*    ----------------------  setbestparam --------------------------  */
-void setbestparam(iv) int iv;
-{
+void setbestparam(int iv) {
 
     setvar(iv);
 
@@ -238,8 +231,7 @@ void setbestparam(iv) int iv;
 /*    ------------------------  clearstats  ------------------------  */
 /*    Clears stats to accumulate in costvar, and derives useful functions
 of basic params  */
-void clearstats(iv) int iv;
-{
+void clearstats(int iv) {
     double tmp;
     setvar(iv);
     evi->cnt = 0.0;
@@ -265,8 +257,7 @@ void clearstats(iv) int iv;
 /*    To eval derivs of a case cost wrt score, scorespread. Adds to
 vvd1, vvd2.
     */
-void scorevar(iv) int iv;
-{
+void scorevar(int iv) {
 
     double del, md2;
 
@@ -286,8 +277,7 @@ void scorevar(iv) int iv;
 
 /*    -----------------------  costvar  --------------------------   */
 /*    Accumulates item cost into scasecost, fcasecost    */
-void costvar(iv, fac) int iv, fac;
-{
+void costvar(int iv, int fac) {
     double del, var, cost;
     setvar(iv);
     if (saux->missing)
@@ -299,8 +289,7 @@ void costvar(iv, fac) int iv, fac;
     /*    Do no-fac cost first  */
     del = cvi->smu - saux->xn;
     var = del * del + cvi->smusprd + saux->epssq;
-    cost = 0.5 * var * evi->srsds + cvi->ssdlsprd + hlg2pi + cvi->ssdl -
-           saux->leps;
+    cost = 0.5 * var * evi->srsds + cvi->ssdlsprd + hlg2pi + cvi->ssdl - saux->leps;
     evi->parkstcost = cost;
     scasecost += cost;
 
@@ -308,11 +297,9 @@ void costvar(iv, fac) int iv, fac;
     if (!fac)
         goto facdone;
     del += cvv * cvi->ld;
-    var = del * del + cvi->fmusprd + saux->epssq + cvvsq * cvi->ldsprd +
-          cvvsprd * evi->ldsq;
+    var = del * del + cvi->fmusprd + saux->epssq + cvvsq * cvi->ldsprd + cvvsprd * evi->ldsq;
     evi->var = var;
-    cost = hlg2pi + 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd * 2.0 -
-           saux->leps;
+    cost = hlg2pi + 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd * 2.0 - saux->leps;
 
 facdone:
     fcasecost += cost;
@@ -325,8 +312,7 @@ facdone:
 /*    Given the item weight in cwt, calcs derivs of cost wrt basic
 params and accumulates in paramd1, paramd2.
 Factor derivs done only if fac.  */
-void derivvar(iv, fac) int iv, fac;
-{
+void derivvar(int iv, int fac) {
     double del, var, frsds;
     setvar(iv);
     if (saux->missing)
@@ -365,8 +351,7 @@ facdone:
 
 /*    -------------------  adjust  ---------------------------    */
 /*    To adjust parameters of a real variable     */
-void adjust(iv, fac) int iv, fac;
-{
+void adjust(int iv, int fac) {
     double adj, srsds, frsds, temp1, temp2, cnt;
     double del1, del2, del3, del4, spcost, fpcost;
     double dadmu, dadsdl, dmusprd, dsdlsprd;
@@ -424,8 +409,7 @@ void adjust(iv, fac) int iv, fac;
         dsdlsprd = 1.0;
     }
     /*    Make a stab at class tcost  */
-    CurClass->cstcost +=
-        cnt * (hlg2pi + cvi->ssdl - saux->leps + 0.5 + CurClass->mlogab) + 1.0;
+    CurClass->cstcost += cnt * (hlg2pi + cvi->ssdl - saux->leps + 0.5 + CurClass->mlogab) + 1.0;
     CurClass->cftcost = CurClass->cstcost + 100.0 * cnt;
 
 hasage:
@@ -436,11 +420,9 @@ hasage:
 
     /*    Compute parameter costs as they are  */
     del1 = dadmu - cvi->smu;
-    spcost =
-        hlg2pi + 0.5 * (log(dmusprd) + temp1 * (del1 * del1 + cvi->smusprd));
+    spcost = hlg2pi + 0.5 * (log(dmusprd) + temp1 * (del1 * del1 + cvi->smusprd));
     del2 = dadsdl - cvi->ssdl;
-    spcost +=
-        hlg2pi + 0.5 * (log(dsdlsprd) + temp2 * (del2 * del2 + cvi->ssdlsprd));
+    spcost += hlg2pi + 0.5 * (log(dsdlsprd) + temp2 * (del2 * del2 + cvi->ssdlsprd));
     spcost -= 0.5 * log(cvi->smusprd * cvi->ssdlsprd);
     spcost += 2.0 * lattice;
 
@@ -450,11 +432,9 @@ hasage:
         goto facdone1;
     }
     del3 = cvi->fmu - dadmu;
-    fpcost =
-        hlg2pi + 0.5 * (log(dmusprd) + temp1 * (del3 * del3 + cvi->fmusprd));
+    fpcost = hlg2pi + 0.5 * (log(dmusprd) + temp1 * (del3 * del3 + cvi->fmusprd));
     del4 = cvi->fsdl - dadsdl;
-    fpcost +=
-        hlg2pi + 0.5 * (log(dsdlsprd) + temp2 * (del4 * del4 + cvi->fsdlsprd));
+    fpcost += hlg2pi + 0.5 * (log(dsdlsprd) + temp2 * (del4 * del4 + cvi->fsdlsprd));
     /*    The prior for load ld id N (0, sigsq)  */
     fpcost += hlg2pi + 0.5 * (evi->ldsq + cvi->ldsprd) * frsds + cvi->fsdl;
     fpcost -= 0.5 * log(cvi->fmusprd * cvi->fsdlsprd * cvi->ldsprd);
@@ -579,25 +559,18 @@ adjdone:
 }
 
 /*    ------------------------  vprint  -----------------------   */
-void vprint(ccl, iv) Class *ccl;
-int iv;
-{
+void vprint(Class *ccl, int iv) {
 
     set_class(ccl);
     setvar(iv);
 
-    printf("V%3d  Cnt%6.1f  %s\n", iv + 1, evi->cnt,
-           (cvi->infac) ? " In" : "Out");
+    printf("V%3d  Cnt%6.1f  %s\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out");
     if (CurClass->num_sons < 2)
         goto skipn;
-    printf(" N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", evi->npcost,
-           cvi->nmu, sqrt(cvi->nmusprd), exp(cvi->nsdl),
-           exp(cvi->nsdl) * sqrt(cvi->nsdlsprd));
+    printf(" N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", evi->npcost, cvi->nmu, sqrt(cvi->nmusprd), exp(cvi->nsdl), exp(cvi->nsdl) * sqrt(cvi->nsdlsprd));
 skipn:
-    printf(" S: Cost%8.1f  Mu%8.3f  SD%8.3f\n", evi->spcost + evi->stcost,
-           cvi->smu, exp(cvi->ssdl));
-    printf(" F: Cost%8.1f  Mu%8.3f  SD%8.3f  Ld%8.3f\n",
-           evi->fpcost + evi->ftcost, cvi->fmu, exp(cvi->fsdl), cvi->ld);
+    printf(" S: Cost%8.1f  Mu%8.3f  SD%8.3f\n", evi->spcost + evi->stcost, cvi->smu, exp(cvi->ssdl));
+    printf(" F: Cost%8.1f  Mu%8.3f  SD%8.3f  Ld%8.3f\n", evi->fpcost + evi->ftcost, cvi->fmu, exp(cvi->fsdl), cvi->ld);
     return;
 }
 
@@ -705,8 +678,7 @@ Writing the quadratic as    a*s^2 + b*s -c = 0,   we want the root
 
     */
 
-void ncostvar(iv, vald) int iv, vald;
-{
+void ncostvar(int iv, int vald) {
     Basic *soncvi;
     Class *son;
     double pcost, tcost; /* Item, param and total item costs */
@@ -799,11 +771,9 @@ adjloop:
 
 adjdone: /*    Calc cost  */
     del = pp - dadpp;
-    pcost += hlg2pi + 1.5 * log(dppsprd) +
-             0.5 * (del * del + ppsprd / nson) / dppsprd + ppsprd / dppsprd;
+    pcost += hlg2pi + 1.5 * log(dppsprd) + 0.5 * (del * del + ppsprd / nson) / dppsprd + ppsprd / dppsprd;
     /*    Add hlog Fisher, lattice  */
-    pcost += 0.5 * log(nson * (0.5 * nson + nints)) - 1.5 * log(ppsprd) +
-             2.0 * lattice;
+    pcost += 0.5 * log(nson * (0.5 * nson + nints)) - 1.5 * log(ppsprd) + 2.0 * lattice;
 
     /*    Add roundoff for 2 params  (pp, ppsprd)  */
     pcost += 1.0;
