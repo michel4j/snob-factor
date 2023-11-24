@@ -592,10 +592,10 @@ nextcl1:
         goto treeloop;
     fprintf(tlst, "0 0\n");
 
-    findall(Dad + Leaf);
+    find_all(Dad + Leaf);
 
     for (nn = 0; nn < CurSample->num_cases; nn++) {
-        docase(nn, Leaf + Dad, 0);
+        do_case(nn, Leaf + Dad, 0);
         bl = bc = -1;
         bw = 0.0;
         bs = CurSample->num_cases + 1;

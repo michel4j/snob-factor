@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 #define LL 200
 FILE *co;
 int i, j, k, m, seq, num;
@@ -19,7 +22,7 @@ char *stopp = "stop\n";
     'I': valid input line
     'A': acknowlege by hark
     */
-main() {
+int main() {
     int nnon;
 
     seq = '1';

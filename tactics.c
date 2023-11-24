@@ -41,9 +41,9 @@ void flatten() {
     tidy(0);
     CurRootClass->type = Dad;
     CurRootClass->hold_type = Forever;
-    doall(1, 1);
-    dodads(3);
-    doall(3, 0);
+    do_all(1, 1);
+    do_dads(3);
+    do_all(3, 0);
     if (Heard)
         printf("Flatten ends prematurely\n");
     if (NoSubs > 0)
@@ -142,7 +142,7 @@ configok:
 
     /*    Fix linkages  */
     tidy(0);
-    dodads(20);
+    do_dads(20);
     newcost = CurRootClass->best_par_cost;
     drop = origcost - newcost;
     *dadid = newid;
@@ -178,7 +178,7 @@ int bestinsdad(int force)
     population->hicl    */
     NoSubs++;
     /*    Do one pass over population to set costs   */
-    doall(1, 1);
+    do_all(1, 1);
     bestdrop = -1.0e20;
     bser1 = bser2 = -1;
     newser = 0;
@@ -265,7 +265,7 @@ alldone:
     /*    But check it is not killed off   */
     newser = CurPopln->classes[newid]->serial;
     Control = 0;
-    doall(1, 1);
+    do_all(1, 1);
     Control = AdjAll;
     if (Heard) {
         printf("BestInsDad ends prematurely\n");
@@ -352,7 +352,7 @@ double deldad(int ser)
     CurPopln->num_classes--;
     /*    Fix linkages  */
     tidy(0);
-    dodads(20);
+    do_dads(20);
     newcost = CurRootClass->best_par_cost;
     drop = origcost - newcost;
 finish:
@@ -375,7 +375,7 @@ int bestdeldad() {
     bser = -1;
     set_population();
     /*    Do one pass of doall to set costs  */
-    doall(1, 1);
+    do_all(1, 1);
     origcost = CurRootClass->best_cost;
     hiid = CurPopln->hi_class;
     memcpy(&oldctx, &CurCtx, sizeof(Context));
@@ -425,7 +425,7 @@ i1done:
     printf("TRYING DELETE %6d\n", bser >> 2);
     res = deldad(bser);
     Control = 0;
-    doall(1, 1);
+    do_all(1, 1);
     Control = AdjAll;
     if (Heard) {
         printf("BestDelDad ends prematurely\n");
@@ -544,7 +544,7 @@ void ranclass(int nn)
 again:
     if (n >= nn)
         goto windup;
-    findall(Leaf);
+    find_all(Leaf);
     /*    Locate biggest leaf with subs aged at least MinAge  */
     ib = -1;
     bs = 0.0;
@@ -563,7 +563,7 @@ again:
     }
 
     if (ib < 0) {
-        doall(1, 1);
+        do_all(1, 1);
         goto again;
     }
     /*    Split sons[ib]  */
@@ -577,10 +577,10 @@ again:
 
 windup:
     NoSubs = 1;
-    doall(5, 1);
+    do_all(5, 1);
     flatten();
-    doall(6, 0);
-    doall(4, 1);
+    do_all(6, 0);
+    do_all(4, 1);
     printtree();
     CurRootClass->hold_type = 0;
 
@@ -628,13 +628,13 @@ double moveclass(int ser1, int ser2)
     cls1->dad_id = k2;
     /*    Fix linkages  */
     tidy(0);
-    dodads(30);
+    do_dads(30);
     if (CurPopln->sample_size) {
-        doall(4, 0);
+        do_all(4, 0);
         if (Heard)
             goto kicked;
         /*     To collect weights, counts */
-        doall(4, 1);
+        do_all(4, 1);
         if (Heard)
             goto kicked;
     }
@@ -686,7 +686,7 @@ int bestmoveclass(int force)
     bestdrop = -1.0e20;
     bser1 = bser2 = -1;
     set_population();
-    doall(1, 1); /* To set costs */
+    do_all(1, 1); /* To set costs */
     origcost = CurRootClass->best_cost;
     hiid = CurPopln->hi_class;
     if (CurPopln->num_classes < 4) {
@@ -770,7 +770,7 @@ alldone:
     printf("TRYING MOVE CLASS %6d TO DAD %6d\n", bser1 >> 2, bser2 >> 2);
     res = moveclass(bser1, bser2);
     Control = 0;
-    doall(1, 1);
+    do_all(1, 1);
     Control = AdjAll;
     if (Heard)
         printf("BestMoveClass ends prematurely\n");
@@ -819,7 +819,7 @@ void trymoves(int ntry){
     int nfail, succ;
 
     NoSubs++;
-    doall(1, 1);
+    do_all(1, 1);
     clear_bad_move();
     nfail = 0;
 

@@ -172,7 +172,7 @@ int init_population() {
 
     set_population();
     /*    Run doall on the root alone  */
-    doall(5, 0);
+    do_all(5, 0);
 
 finish:
     return (ipop);
@@ -623,7 +623,7 @@ void trackbest(int verify) {
     if (verify) {
         kk = Control;
         Control = 0;
-        doall(1, 1);
+        do_all(1, 1);
         Control = kk;
         if (CurPopln->classes[CurRoot]->best_cost >= (bstcst))
             return;
@@ -1019,7 +1019,7 @@ int loadpop(int pp){
     Control = AdjSc;
 fixscores:
     SeeAll = 16;
-    doall(15, 0);
+    do_all(15, 0);
     /*    doall should leave a count of score changes in global  */
     flp();
     printf("%8d  score changes\n", ScoreChanges);
@@ -1083,9 +1083,9 @@ void correlpops(int xid){
     Control = AdjSc;
     SeeAll = 4;
     NoSubs++;
-    doall(3, 1);
+    do_all(3, 1);
     wpop = CurPopln;
-    findall(Leaf);
+    find_all(Leaf);
     wnl = NumSon;
     for (wic = 0; wic < wnl; wic++)
         wsons[wic] = Sons[wic];
@@ -1093,9 +1093,9 @@ void correlpops(int xid){
     CurCtx.popln = xpop;
     set_population();
     SeeAll = 4;
-    doall(3, 1);
+    do_all(3, 1);
     /*    Find all leaves of xpop  */
-    findall(Leaf);
+    find_all(Leaf);
     xnl = NumSon;
     if ((wnl < 2) || (xnl < 2)) {
         printf("Need at least 2 classes in each model.\n");
@@ -1117,12 +1117,12 @@ void correlpops(int xid){
         CurRecord = CurRecords + n * CurRecLen;
         if (!*CurRecord)
             goto ndone;
-        findall(Leaf);
-        docase(n, Leaf, 0);
+        find_all(Leaf);
+        do_case(n, Leaf, 0);
         CurCtx.popln = xpop;
         set_population();
-        findall(Leaf);
-        docase(n, Leaf, 0);
+        find_all(Leaf);
+        do_case(n, Leaf, 0);
         /*    Should now have caseweights set in leaves of both poplns  */
         for (wic = 0; wic < wnl; wic++) {
             wwt = wsons[wic]->case_weight;

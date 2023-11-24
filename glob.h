@@ -340,15 +340,15 @@ int next_leaf(Population *cpop, int iss);
 /*        end classes.c        */
 
 /*    In DOALL.c    */
-int doall(int ncy, int all);
-void findall(int typ);
-int dodads(int ncy);
-int dogood(int ncy, double target);
+int do_all(int ncy, int all);
+void find_all(int typ);
+int do_dads(int ncy);
+int do_good(int ncy, double target);
 void tidy(int hit);
 int uran();
 int sran();
 double fran();
-void docase(int cse, int all, int derivs);
+void do_case(int cse, int all, int derivs);
 /*        end doall.c        */
 
 /*    In TUNE.c    */

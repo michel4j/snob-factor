@@ -31,12 +31,12 @@ double fran() {
     return (rcons * js);
 }
 
-/*    -------------------  findall  ---------------------------------  */
+/*    -------------------  find_all  ---------------------------------  */
 /*    Finds all classes of type(s) shown in bits of 'class_type'.
     (Dad = 1, Leaf = 2, Sub = 4), so if typ = 7, will find all classes.*/
 /*    Sets the classes in 'sons[]'  */
 /*    Puts count of classes found in numson */
-void findall(int class_type) {
+void find_all(int class_type) {
     int i, j;
     Class *cls;
 
@@ -73,10 +73,10 @@ void findall(int class_type) {
     }
 }
 
-/*    -------------------  sortsons  -----------------------------  */
+/*    -------------------  sort_sons  -----------------------------  */
 /*    To re-arrange the sons in the son chain of class kk in order of
 increasing serial number  */
-void sortsons(int kk) {
+void sort_sons(int kk) {
     Class *cls, *cls1, *cls2;
     int js, *prev, nsw;
 
@@ -106,7 +106,7 @@ void sortsons(int kk) {
     } while (nsw);
     /*    Now sort sons  */
     for (js = cls->son_id; js >= 0; js = CurPopln->classes[js]->sib_id) {
-        sortsons(js);
+        sort_sons(js);
     }
 }
 
@@ -246,11 +246,11 @@ void tidy(int hit) {
     }
     CurPopln->hi_class = newhicl;
     CurPopln->next_serial = (kkd >> 2) + 1;
-    sortsons(CurPopln->root);
+    sort_sons(CurPopln->root);
     return;
 }
 
-/*    ------------------------  doall  --------------------------   */
+/*    ------------------------  do_all  --------------------------   */
 /*    To do a complete cost-assign-adjust cycle on all things.
     If 'all', does it for all classes, else just leaves  */
 /*    Leaves in scorechanges a count of significant score changes in Leaf
@@ -288,15 +288,15 @@ int find_and_estimate(int *all, int niter, int ncycles) {
     if (niter >= (ncycles - 1)) {
         *all = (Dad + Leaf + Sub);
     }
-    findall(*all);
+    find_all(*all);
 
     for (int k = 0; k < NumSon; k++) {
         cleartcosts(Sons[k]);
     }
 
     for (int j = 0; j < CurSample->num_cases; j++) {
-        docase(j, *all, 1);
-        // docase ignores classes with ignore bit in cls->vv[] for the
+        do_case(j, *all, 1);
+        // do_case ignores classes with ignore bit in cls->vv[] for the
         // case unless seeall is on.
     }
 
@@ -400,7 +400,7 @@ int count_score_changes() {
     return scorechanges;
 }
 
-int doall(int ncycles, int all) {
+int do_all(int ncycles, int all) {
     int niter, nfail, k, ncydone, ncyask;
     double oldcost, oldleafsum;
     int repeat;
@@ -411,7 +411,7 @@ int doall(int ncycles, int all) {
     oldcost = CurRootClass->best_cost;
     /*    Get sum of class costs, meaningful only if 'all' = Leaf  */
     oldleafsum = 0.0;
-    findall(Leaf);
+    find_all(Leaf);
     for (k = 0; k < NumSon; k++) {
         oldleafsum += Sons[k]->best_cost;
     }
@@ -433,7 +433,7 @@ int doall(int ncycles, int all) {
             if (all != Leaf)
                 break;
             /*    But if we were doing just leaves, wind up with a couple of
-                'doall' cycles  */
+                'do_all' cycles  */
             all = Dad + Leaf + Sub;
             ncycles = 2;
             niter = nfail = 0;
@@ -464,14 +464,14 @@ int doall(int ncycles, int all) {
     return (ncydone);
 }
 
-/*    ----------------------  dodads  -----------------------------  */
+/*    ----------------------  do_dads  -----------------------------  */
 /*    Runs adjust_class on all leaves without adjustment.
     This leaves class cb*costs set up. Adjustclass is told not to
     consider a leaf as a potential dad.
     Then runs ncostvarall on all dads, with param adjustment. The
     result is to recost and readjust the tree hierarchy.
     */
-int dodads(int ncy) {
+int do_dads(int ncy) {
     Class *dad;
     double oldcost;
     int nn, nfail;
@@ -480,7 +480,7 @@ int dodads(int ncy) {
         ncy = 1;
 
     /*    Capture no-prior params for subless leaves  */
-    findall(Leaf);
+    find_all(Leaf);
     nfail = Control;
     Control = Noprior;
     for (nn = 0; nn < NumSon; nn++) {
@@ -547,23 +547,23 @@ int dodads(int ncy) {
     return (-1);
 }
 
-/*    -----------------  dogood  -----------------------------  */
+/*    -----------------  do_good  -----------------------------  */
 /*    Does cycles combining doall, doleaves, dodads   */
 
 /*    Uses this table of old costs to see if useful change in last 5 cycles */
 double olddogcosts[6];
 
-int dogood(int ncy, double target) {
+int do_good(int ncy, double target) {
     int j, nn, nfail;
     double oldcost;
 
-    doall(1, 1);
+    do_all(1, 1);
     for (nn = 0; nn < 6; nn++)
         olddogcosts[nn] = CurRootClass->best_cost + 10000.0;
     nfail = 0;
     for (nn = 0; nn < ncy; nn++) {
         oldcost = CurRootClass->best_cost;
-        doall(2, 0);
+        do_all(2, 0);
         if (CurRootClass->best_cost < (oldcost - MinGain))
             nfail = 0;
         else
@@ -597,10 +597,10 @@ done:
     return (nn);
 }
 
-/*    -----------------------  docase  -----------------------------   */
+/*    -----------------------  do_case  -----------------------------   */
 /*    It is assumed that all classes have parameter info set up, and
     that all cases have scores in all classes.
-    Assumes findall() has been used to find classes and set up
+    Assumes find_all() has been used to find classes and set up
 sons[], numson
     If 'derivs', calcs derivatives. Otherwize not.
     */
@@ -612,7 +612,7 @@ typedef struct PSauxst {
     double xn;
 } PSaux;
 
-void docase(int cse, int all, int derivs) {
+void do_case(int cse, int all, int derivs) {
     double mincost, sum, rootcost, low, diff, w1, w2;
     Class *sub1, *sub2;
     PSaux *psaux;

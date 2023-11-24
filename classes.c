@@ -432,13 +432,11 @@ finish:
 /*    ----------------------  derivvarall  ---------------------    */
 /*    To collect derivative statistics for all vars of a class   */
 void derivvarall(Class *ccl) {
-    int fac;
+    int fac = 0;
 
     set_class_with_scores(ccl);
     CurClass->newcnt += CurCaseWeight;
-    if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny))
-        fac = 0;
-    else {
+    if ((CurClass->age >= MinFacAge) && (CurClass->use != Tiny)) {
         fac = 1;
         cvv = CurClass->cvv;
         cvvsq = CurClass->cvvsq;
@@ -449,11 +447,10 @@ void derivvarall(Class *ccl) {
     }
     for (int iv = 0; iv < NumVars; iv++) {
         CurAttr = CurAttrList + iv;
-        if (CurAttr->inactive)
-            goto vdone;
-        CurVType = CurAttr->vtype;
-        (*CurVType->derivvar)(iv, fac);
-    vdone:;
+        if (!(CurAttr->inactive)){
+            CurVType = CurAttr->vtype;
+            (*CurVType->derivvar)(iv, fac);
+        }
     }
 
     /*    Collect case item costs   */
@@ -461,8 +458,6 @@ void derivvarall(Class *ccl) {
     CurClass->cftcost += CurCaseWeight * CurClass->fac_case_cost;
     CurClass->cntcost += CurCaseWeight * CurClass->dad_case_cost;
     CurClass->cfvcost += CurCaseWeight * CurClass->coding_case_cost;
-
-    return;
 }
 
 /*    --------------------  adjust_class  -----------------------   */
@@ -510,7 +505,7 @@ void adjust_class(Class *ccl, int dod) {
     if (CurClass->type == Dad)
         npars = 1;
 
-    /*    cls->cnpcost was zeroed in doall, and has accumulated the cbpcosts
+    /*    cls->cnpcost was zeroed in do_all, and has accumulated the cbpcosts
     of cls's sons, so we don't zero it here. 'ncostvarall' will add to it.  */
     CurClass->nofac_par_cost = CurClass->fac_par_cost = 0.0;
     for (iv = 0; iv < CurVSet->num_vars; iv++) {

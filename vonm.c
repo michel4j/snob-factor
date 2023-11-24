@@ -458,53 +458,51 @@ void derivvar(int iv, int fac) {
     evi->ftcost += CurCaseWeight * evi->parkftcost;
 
     /*    Now for factor form  */
-    if (!fac)
-        goto facdone;
-    tt = cvi->ld * cvv;
-    /*    Hence cos(w), sin(w)  */
-    r2 = 1.0 / (1.0 + tt * tt);
-    cosw = (1.0 - tt * tt) * r2; /* (1-t^2) / (1+t^2) */
-    dwdt = 2.0 * r2;
-    sinw = tt * dwdt;           /*   2t / (1+t^2)  */
-    r2 = dwdt * dwdt;           /* Square of (d_w / d_t) */
-    dr2dw = -2.0 * dwdt * sinw; /* deriv wrt w of r2 */
+    if (fac) {
 
-    /*    First, we get the cos and sin of the "error" angle xx-w for
-        accumulation as tfcos, tssin  */
+        tt = cvi->ld * cvv;
+        /*    Hence cos(w), sin(w)  */
+        r2 = 1.0 / (1.0 + tt * tt);
+        cosw = (1.0 - tt * tt) * r2; /* (1-t^2) / (1+t^2) */
+        dwdt = 2.0 * r2;
+        sinw = tt * dwdt;           /*   2t / (1+t^2)  */
+        r2 = dwdt * dwdt;           /* Square of (d_w / d_t) */
+        dr2dw = -2.0 * dwdt * sinw; /* deriv wrt w of r2 */
 
-    coser = saux->xn.cosxx * cosw + saux->xn.sinxx * sinw;
-    evi->tfcos += CurCaseWeight * coser;
-    siner = saux->xn.sinxx * cosw - saux->xn.cosxx * sinw;
-    evi->tfsin += CurCaseWeight * siner;
+        /*    First, we get the cos and sin of the "error" angle xx-w for
+            accumulation as tfcos, tssin  */
 
-    /*    These should be sufficient to get derivs of mc1 wrt hx, hy,
-        also derivs of mc2, but there remains mc3, and load. */
+        coser = saux->xn.cosxx * cosw + saux->xn.sinxx * sinw;
+        evi->tfcos += CurCaseWeight * coser;
+        siner = saux->xn.sinxx * cosw - saux->xn.cosxx * sinw;
+        evi->tfsin += CurCaseWeight * siner;
 
-    /*    Cost mc3 = 0.5 * Fmu * tsprd * r2  */
-    tsprd = cvvsq * cvi->ldsprd + cvi->ldsq * cvvsprd;
-    wtr2 = CurCaseWeight * r2;
-    /*    Accumulate wsprd = tsprd * r2  */
-    evi->fwd2 += tsprd * wtr2;
+        /*    These should be sufficient to get derivs of mc1 wrt hx, hy,
+            also derivs of mc2, but there remains mc3, and load. */
 
-    /*    To get deriv wrt ld, deriv of mc1 wrt w is:  */
-    wd1 = ((cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * sinw + (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * cosw);
+        /*    Cost mc3 = 0.5 * Fmu * tsprd * r2  */
+        tsprd = cvvsq * cvi->ldsprd + cvi->ldsq * cvvsprd;
+        wtr2 = CurCaseWeight * r2;
+        /*    Accumulate wsprd = tsprd * r2  */
+        evi->fwd2 += tsprd * wtr2;
 
-    /*    The mc3 term 0.5 * Fmu * wsprd = 0.5 * Fmu * tsprd * r2
-        gives a further deriv wrt w:    */
-    wd1 += 0.5 * cvi->fmufish * tsprd * dr2dw;
+        /*    To get deriv wrt ld, deriv of mc1 wrt w is:  */
+        wd1 = ((cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * sinw + (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * cosw);
 
-    /*    The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
-    /*    and so to a deriv wrt ld of: (vv * wd1 * dwdt)  */
-    evi->ldd1 += CurCaseWeight * cvv * wd1 * dwdt;
+        /*    The mc3 term 0.5 * Fmu * wsprd = 0.5 * Fmu * tsprd * r2
+            gives a further deriv wrt w:    */
+        wd1 += 0.5 * cvi->fmufish * tsprd * dr2dw;
 
-    /*    There is also a deriv wrt ld via tsprd.  */
-    evi->ldd1 += cvi->fmufish * wtr2 * cvi->ld * cvvsprd;
+        /*    The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
+        /*    and so to a deriv wrt ld of: (vv * wd1 * dwdt)  */
+        evi->ldd1 += CurCaseWeight * cvv * wd1 * dwdt;
 
-    /*    Accum as ldd2 twice the multiplier of ldsprd in mc3  */
-    evi->ldd2 += 0.5 * cvi->fmufish * r2 * cvvsq;
+        /*    There is also a deriv wrt ld via tsprd.  */
+        evi->ldd1 += cvi->fmufish * wtr2 * cvi->ld * cvvsprd;
 
-facdone:
-    return;
+        /*    Accum as ldd2 twice the multiplier of ldsprd in mc3  */
+        evi->ldd2 += 0.5 * cvi->fmufish * r2 * cvvsq;
+    }
 }
 
 /*    -------------------  adjust  ---------------------------    */

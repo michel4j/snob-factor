@@ -579,7 +579,7 @@ loop:
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL k = doall(nn, 1);
+        Log "%d", nn EL k = do_all(nn, 1);
         if (k >= 0) {
             flp();
             printf("Doall ends after %d cycles\n", k);
@@ -589,7 +589,7 @@ loop:
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL k = doall(nn, 0);
+        Log "%d", nn EL k = do_all(nn, 0);
         if (k >= 0) {
             flp();
             printf("Doleaves ends after %d cycles\n", k);
@@ -796,7 +796,7 @@ loop:
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL dodads(nn);
+        Log "%d", nn EL do_dads(nn);
         goto loop;
 
     case 20: /*  samps  */
@@ -830,7 +830,7 @@ loop:
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL k = dogood(nn, ((double)0.0));
+        Log "%d", nn EL k = do_good(nn, ((double)0.0));
         if (k >= 0) {
             flp();
             printf("Dogood ends after %d cycles\n", k);
