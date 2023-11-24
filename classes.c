@@ -277,13 +277,13 @@ void setbestparall(Class *ccl) {
     return;
 }
 
-/*    --------------------  scorevarall  --------------------    */
+/*    --------------------  score_all_vars  --------------------    */
 /*    To evaluate derivs of cost wrt score in all vars of a class.
     Does one item, number case  */
 /*    Leaves data values set in stats, but does no scoring if class too
 young. If class age = MinFacAge, will guess scores but not cost them */
 /*    If control & AdjSc, will adjust score  */
-void scorevarall(Class *ccl) {
+void score_all_vars(Class *ccl) {
     int i, igbit, oldicvv;
     double del;
 
@@ -291,76 +291,63 @@ void scorevarall(Class *ccl) {
     if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny)) {
         cvv = CurClass->avvv = CurClass->sum_score_sq = 0.0;
         icvv = 0;
-        goto done;
-    }
-    if (CurClass->sum_score_sq > 0.0)
-        goto started;
-    /*    Generate a fake score to get started.   */
-    CurClass->boost_count = 0;
-    cvvsprd = 0.1 / NumVars;
-    oldicvv = igbit = 0;
-    cvv = (sran() < 0) ? 1.0 : -1.0;
-    goto fake;
+    } else {
+        if (CurClass->sum_score_sq <= 0.0) {
+            // Generate a fake score to get started.
+            CurClass->boost_count = 0;
+            cvvsprd = 0.1 / NumVars;
+            oldicvv = igbit = 0;
+            cvv = (sran() < 0) ? 1.0 : -1.0;
+        } else {
+            // Get current score
+            oldicvv = icvv;
+            igbit = icvv & 1;
+            cvv = icvv * ScoreRscale;
+            // Additional logic if CurClass has boost_count and AdjSP is set
+            if (CurClass->boost_count && ((Control & AdjSP) == AdjSP)) {
+                cvv *= CurClass->score_boost;
+                cvv = fmax(fmin(cvv, Maxv), -Maxv);
+                del = cvv * HScoreScale;
+                if (del < 0.0)
+                    del -= 1.0;
+                icvv = del + 0.5;
+                icvv <<= 1; // Round to nearest even times ScoreScale
+                igbit = 0;
+                cvv = icvv * ScoreRscale;
+            }
+        }
 
-started:
-    /*    Get current score  */
-    oldicvv = icvv;
-    igbit = icvv & 1;
-    cvv = icvv * ScoreRscale;
-    /*    Subtract average from last pass  */
-    /*xx
-        cvv -= cls->avvv;
-    */
-    if (CurClass->boost_count && ((Control & AdjSP) == AdjSP)) {
-        cvv *= CurClass->score_boost;
-        if (cvv > Maxv)
-            cvv = Maxv;
-        else if (cvv < -Maxv)
-            cvv = -Maxv;
-        del = cvv * HScoreScale;
-        if (del < 0.0)
-            del -= 1.0;
-        icvv = del + 0.5;
-        icvv = icvv << 1; /* Round to nearest even times ScoreScale */
-        igbit = 0;
-        cvv = icvv * ScoreRscale;
+        cvvsq = cvv * cvv;
+        vvd1 = vvd2 = mvvd2 = vvd3 = 0.0;
+        for (i = 0; i < CurVSet->num_vars; i++) {
+            CurAttr = CurAttrList + i;
+            if (!CurAttr->inactive) {
+                CurVType = CurAttr->vtype;
+                (*CurVType->scorevar)(i);
+                // scorevar should add to vvd1, vvd2, vvd3, mvvd2.
+            }
+        }
+
+        vvd1 += cvv;
+        vvd2 += 1.0;
+        mvvd2 += 1.0; // From prior
+        cvvsprd = 1.0 / vvd2;
+        vvd1 += 0.5 * cvvsprd * vvd3;
+        del = vvd1 / mvvd2;
+        if (Control & AdjSc) {
+            cvv -= del;
+        }
     }
 
-    cvvsq = cvv * cvv;
-    vvd1 = vvd2 = mvvd2 = vvd3 = 0.0;
-    for (i = 0; i < CurVSet->num_vars; i++) {
-        CurAttr = CurAttrList + i;
-        if (CurAttr->inactive)
-            goto vdone;
-        CurVType = CurAttr->vtype;
-        (*CurVType->scorevar)(i);
-    /*    scorevar should add to vvd1, vvd2, vvd3, mvvd2.  */
-    vdone:;
-    }
-    vvd1 += cvv;
-    vvd2 += 1.0;
-    mvvd2 += 1.0; /*  From prior  */
-    /*    There is a cost term 0.5 * cvvsprd from the prior (whence the additional
-        1 in vvd2).  */
-    cvvsprd = 1.0 / vvd2;
-    /*    Also, overall cost includes 0.5*cvvsprd*vvd2, so there is a derivative
-    term wrt cvv of 0.5*cvvsprd*vvd3  */
-    vvd1 += 0.5 * cvvsprd * vvd3;
-    del = vvd1 / mvvd2;
-    if (Control & AdjSc) {
-        cvv -= del;
-    }
-fake:
-    if (cvv > Maxv)
-        cvv = Maxv;
-    else if (cvv < -Maxv)
-        cvv = -Maxv;
+    // Code from the 'fake' label
+    cvv = fmax(fmin(cvv, Maxv), -Maxv);
     del = cvv * HScoreScale;
     if (del < 0.0)
         del -= 1.0;
     icvv = del + fran();
-    icvv = icvv << 1; /* Round to nearest even times ScoreScale */
-    icvv |= igbit;    /* Restore original ignore bit */
+    icvv <<= 1; // Round to nearest even times ScoreScale
+    icvv |= igbit; // Restore original ignore bit
+
     if (!igbit) {
         oldicvv -= icvv;
         if (oldicvv < 0)
@@ -368,13 +355,14 @@ fake:
         if (oldicvv > SigScoreChange)
             CurClass->score_change_count++;
     }
-    CurClass->cvv = cvv = icvv * ScoreRscale;
-    CurClass->cvvsq = cvvsq = cvv * cvv;
+
+    CurClass->cvv = cvv;
+    CurClass->cvvsq = cvvsq;
     CurClass->cvvsprd = cvvsprd;
-done:
+
     vv[CurItem] = CurClass->case_score = icvv;
-    return;
 }
+
 
 /*    ----------------------  costvarall  --------------------------  */
 /*    Does costvar on all vars of class for the current item, setting

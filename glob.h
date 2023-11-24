@@ -325,7 +325,7 @@ int serial_to_id(int ss);
 int make_class();
 void cleartcosts(Class *ccl);
 void setbestparall(Class *ccl);
-void scorevarall(Class *ccl);
+void score_all_vars(Class *ccl);
 void costvarall(Class *ccl);
 void derivvarall(Class *ccl);
 void ncostvarall(Class *ccl, int valid);

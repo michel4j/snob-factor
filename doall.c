@@ -648,7 +648,7 @@ void do_case(int cse, int all, int derivs) {
         } else if (!SeeAll)
             CurClass->scancnt++;
         /*    Score and cost the class  */
-        scorevarall(CurClass);
+        score_all_vars(CurClass);
         costvarall(CurClass);
         clc++;
     }

@@ -324,7 +324,7 @@ mc3 = 0.5 * Fmu * wsprd
         r2 = dwdt^2
         dwdt (= d_w / d_t) = 2.0 / (1 + t^2)
 
-    Score prior cost are accounted in scorevarall.
+    Score prior cost are accounted in score_all_vars.
     */
 void scorevar(int iv) {
 
