@@ -48,11 +48,11 @@ void flatten() {
         printf("Flatten ends prematurely\n");
     if (NoSubs > 0)
         NoSubs--;
-    printtree();
+    print_tree();
     return;
 }
 
-/*    ------------------------  insdad  ------------------------------  */
+/*    ------------------------  insert_dad  ------------------------------  */
 /*    Given 2 class serials, calcs reduction in tree pcost coming from
 inserting a new dad with the given classes as sons. If either class is
 a sub, or it they have different dads, returns a huge negative benefit  */
@@ -60,7 +60,7 @@ a sub, or it they have different dads, returns a huge negative benefit  */
 of the other, provided neither is the root  */
 /*    The change, if possible, is made to ctx.popln.
     dadid is set to the id of the new dad, if any.  */
-double insdad(int ser1, int ser2, int *dadid)
+double insert_dad(int ser1, int ser2, int *dadid)
 {
     Class *cls1, *cls2, *ndad, *odad;
     EVinst *evi, *fevi;
@@ -155,10 +155,10 @@ done:
     return (drop);
 }
 
-/*    ----------------------  bestinsdad ---------------------   */
+/*    ----------------------  best_insert_dad ---------------------   */
 /*    Returns serial of new dad, or 0 if best no good, or -1 if none
 to try  */
-int bestinsdad(int force)
+int best_insert_dad(int force)
 {
     Context oldctx;
     Class *cls1, *cls2;
@@ -168,8 +168,8 @@ int bestinsdad(int force)
 
     /*    We look for all pairs of non-Sub serials except root.
         For each pair, we copy the population to TrialPop, switch context to
-    TrialPop, and do an insdad on the pair. We note the pair giving the largest
-    insdad, again copy to TrialPop, repeat the insdad, and relax with
+    TrialPop, and do an insert_dad on the pair. We note the pair giving the largest
+    insert_dad, again copy to TrialPop, repeat the insert_dad, and relax with
     doall, .
         */
 
@@ -219,12 +219,12 @@ inner:
         goto i2done;
 
     /*    Copy population to TrialPop, unfilled  */
-    newp = copypop(CurPopln->id, 0, "TrialPop");
+    newp = copy_population(CurPopln->id, 0, "TrialPop");
     if (newp < 0)
         goto popfails;
     CurCtx.popln = Populations[newp];
     set_population();
-    res = insdad(ser1, ser2, &newid);
+    res = insert_dad(ser1, ser2, &newid);
     if (newid < 0) {
         goto i2done;
     }
@@ -254,14 +254,14 @@ alldone:
         goto finish;
     }
     /*    Copy population to TrialPop, filled  */
-    newp = copypop(CurPopln->id, 1, "TrialPop");
+    newp = copy_population(CurPopln->id, 1, "TrialPop");
     if (newp < 0)
         goto popfails;
     CurCtx.popln = Populations[newp];
     set_population();
     flp();
     printf("TRYING INSERT %6d,%6d\n", bser1 >> 2, bser2 >> 2);
-    res = insdad(bser1, bser2, &newid);
+    res = insert_dad(bser1, bser2, &newid);
     /*    But check it is not killed off   */
     newser = CurPopln->classes[newid]->serial;
     Control = 0;
@@ -297,13 +297,13 @@ popfails:
 winner:
     flp();
     printf("%s\n", (succ) ? "ACCEPTED !!!" : "FORCED");
-    printtree();
+    print_tree();
     clear_bad_move();
     /*    Reverse roles of 'work' and TrialPop  */
     strcpy(oldctx.popln->name, "TrialPop");
     strcpy(CurPopln->name, "work");
     if (succ)
-        trackbest(1);
+        track_best(1);
 
 finish:
     if (NoSubs > 0)
@@ -319,11 +319,11 @@ void rebuild() {
     return;
 }
 
-/*    ------------------  deldad  -------------------------  */
+/*    ------------------  splice_dad  -------------------------  */
 /*    If class ser is Dad (not root), it is removed, and its sons become
 sons of its dad.
     */
-double deldad(int ser)
+double splice_dad(int ser)
 {
     Class *son;
     int kk, kkd, kks;
@@ -359,11 +359,11 @@ finish:
     return (drop);
 }
 
-/*    ------------------  bestdeldad -------------------------   */
+/*    ------------------  best_remove_dad -------------------------   */
 /*    Tries all feasible deldads, does dogood on best and installs
 as work if an improvement.  */
 /*    Returns 1 if accepted, 0 if tried and no good, -1 if none to try */
-int bestdeldad() {
+int best_remove_dad() {
     Context oldctx;
     Class *cls;
     int i1, hiid, newp;
@@ -391,12 +391,12 @@ loop:
     ser = cls->serial;
     if (check_bad_move(2, 0, ser))
         goto i1done;
-    newp = copypop(CurPopln->id, 0, "TrialPop");
+    newp = copy_population(CurPopln->id, 0, "TrialPop");
     if (newp < 0)
         goto popfails;
     CurCtx.popln = Populations[newp];
     set_population();
-    res = deldad(ser);
+    res = splice_dad(ser);
     if (res < -1000000.0) {
         goto i1done;
     }
@@ -416,14 +416,14 @@ i1done:
         printf("No possible dad deletions\n");
         goto finish;
     }
-    newp = copypop(CurPopln->id, 1, "TrialPop");
+    newp = copy_population(CurPopln->id, 1, "TrialPop");
     if (newp < 0)
         goto popfails;
     CurCtx.popln = Populations[newp];
     set_population();
     flp();
     printf("TRYING DELETE %6d\n", bser >> 2);
-    res = deldad(bser);
+    res = splice_dad(bser);
     Control = 0;
     do_all(1, 1);
     Control = AdjAll;
@@ -451,10 +451,10 @@ winner:
     flp();
     clear_bad_move();
     printf("ACCEPTED !!!\n");
-    printtree();
+    print_tree();
     strcpy(oldctx.popln->name, "TrialPop");
     strcpy(CurPopln->name, "work");
-    trackbest(1);
+    track_best(1);
 
 finish:
     if (NoSubs > 0)
@@ -462,10 +462,10 @@ finish:
     return (bser);
 }
 
-/*    ---------------  binhier  --------------------------------  */
+/*    ---------------  binary_hierarchy  --------------------------------  */
 /*    If flat, flattens population. Then inserts dads to make a binary hierarchy.
     Then deletes dads as appropriate  */
-void binhier(int flat)
+void binary_hierarchy(int flat)
 {
     int nn;
 
@@ -477,36 +477,36 @@ void binhier(int flat)
         goto kicked;
     clear_bad_move();
 insloop:
-    nn = bestinsdad(1);
+    nn = best_insert_dad(1);
     if (Heard)
         goto kicked;
     if (nn > 0)
         goto insloop;
 
-    trymoves(2);
+    try_moves(2);
     if (Heard)
         goto kicked;
 
 delloop:
-    nn = bestdeldad();
+    nn = best_remove_dad();
     if (Heard)
         goto kicked;
     if (nn > 0)
         goto delloop;
 
-    trymoves(2);
+    try_moves(2);
     if (Heard)
         goto kicked;
 
 finish:
-    printtree();
+    print_tree();
     if (NoSubs > 0)
         NoSubs--;
     clear_bad_move();
     return;
 
 kicked:
-    nn = pname2id("work");
+    nn = find_population("work");
     CurCtx.popln = Populations[nn];
     set_population();
     printf("BinHier ends prematurely\n");
@@ -536,7 +536,7 @@ void ranclass(int nn)
     }
 
     NoSubs = 0;
-    deleteallclasses();
+    delete_all_classes();
     n = 1;
     if (nn < 2)
         goto finish;
@@ -581,16 +581,16 @@ windup:
     flatten();
     do_all(6, 0);
     do_all(4, 1);
-    printtree();
+    print_tree();
     CurRootClass->hold_type = 0;
 
 finish:
     return;
 }
 
-/*    ---------------  moveclass  --------------------------------  */
+/*    ---------------  move_class  --------------------------------  */
 /*    To move class ser1 to be a child of class ser2  */
-double moveclass(int ser1, int ser2)
+double move_class(int ser1, int ser2)
 {
     Class *cls1, *cls2, *odad;
     int k1, k2, od2;
@@ -659,11 +659,11 @@ void trial( int param)
     correlpops(param);
 }
 
-/*    ----------------------  bestmoveclass ---------------------   */
-/*    Lokks for the best moveclass. If force, or if an improvement,
+/*    ----------------------  best_move_class ---------------------   */
+/*    Lokks for the best move_class. If force, or if an improvement,
 does it. Returns 1 if an improvement, 0 if best no improvement, -1 if none
 possible.    */
-int bestmoveclass(int force)
+int best_move_class(int force)
 {
     Context oldctx;
     Class *cls1, *cls2, *odad;
@@ -675,8 +675,8 @@ int bestmoveclass(int force)
     ser2 is a dad, ser1 is not an ancestor of ser2, ser1 is non-sub, and
     ser1 is not a son of ser2.
         For each pair, we copy the pop to TrialPop, switch context to
-    TrialPop, and do a moveclass on the pair. We note the pair giving the
-    largest moveclass, again copy to TrialPop, repeat the moveclass, and relax
+    TrialPop, and do a move_class on the pair. We note the pair giving the
+    largest move_class, again copy to TrialPop, repeat the move_class, and relax
     with doall, .
         */
 
@@ -729,12 +729,12 @@ inner:
         goto i2done;
 
     /*    Copy pop to TrialPop, unfilled  */
-    newp = copypop(CurPopln->id, 0, "TrialPop");
+    newp = copy_population(CurPopln->id, 0, "TrialPop");
     if (newp < 0)
         goto popfails;
     CurCtx.popln = Populations[newp];
     set_population();
-    res = moveclass(ser1, ser2);
+    res = move_class(ser1, ser2);
     if (res > bestdrop) {
         bestdrop = res;
         bser1 = ser1;
@@ -761,14 +761,14 @@ alldone:
         goto finish;
     }
     /*    Copy pop to TrialPop, filled  */
-    newp = copypop(CurPopln->id, 1, "TrialPop");
+    newp = copy_population(CurPopln->id, 1, "TrialPop");
     if (newp < 0)
         goto popfails;
     CurCtx.popln = Populations[newp];
     set_population();
     flp();
     printf("TRYING MOVE CLASS %6d TO DAD %6d\n", bser1 >> 2, bser2 >> 2);
-    res = moveclass(bser1, bser2);
+    res = move_class(bser1, bser2);
     Control = 0;
     do_all(1, 1);
     Control = AdjAll;
@@ -798,13 +798,13 @@ popfails:
 winner:
     flp();
     printf("%s\n", (succ) ? "ACCEPTED !!!" : "FORCED");
-    printtree();
+    print_tree();
     clear_bad_move();
     /*    Reverse roles of 'work' and TrialPop  */
     strcpy(oldctx.popln->name, "TrialPop");
     strcpy(CurPopln->name, "work");
     if (succ)
-        trackbest(1);
+        track_best(1);
 
 finish:
     if (NoSubs > 0)
@@ -812,10 +812,10 @@ finish:
     return (succ);
 }
 
-/*    --------------------  trymoves  ----------------------------   */
-/*    Tries moving classes using bestmoveclass until ntry attempts in
+/*    --------------------  try_moves  ----------------------------   */
+/*    Tries moving classes using best_move_class until ntry attempts in
 succession have failed, or until all possible moves have been tried   */
-void trymoves(int ntry){
+void try_moves(int ntry){
     int nfail, succ;
 
     NoSubs++;
@@ -824,7 +824,7 @@ void trymoves(int ntry){
     nfail = 0;
 
     while (nfail < ntry) {
-        succ = bestmoveclass(0);
+        succ = best_move_class(0);
         if (succ < 0)
             goto finish;
         nfail++;

@@ -5,7 +5,7 @@
 
 static int allocated = 0; /*  Total block space allocated  */
 #define SpUnit 16
-/*    ------------------------  gtsp  ----------------------------  */
+/*    ------------------------  alloc_blocks  ----------------------------  */
 /*    To allocate a block in a Popln chain  */
 /*    Provides a space of 'size' chars on a chain selected by 'gr'
         gr = 3:  variable-set chain.
@@ -14,7 +14,7 @@ static int allocated = 0; /*  Total block space allocated  */
         size + SpUnit, where SpUnit must be the smallest power of 2
         required for item alignment, or some larger power of 2.
         */
-void *gtsp(int gr, int size) {
+void *alloc_blocks(int gr, int size) {
     Block *blk;
 
     blk = (Block *)malloc(size + SpUnit);
@@ -46,10 +46,10 @@ void *gtsp(int gr, int size) {
     return ((void *)(((char *)blk) + SpUnit));
 }
 
-/*    ----------------------  freesp (gr)----------------- */
+/*    ----------------------  free_blocks (gr)----------------- */
 /*    To free all blocks on chain 'gr' (0=sample, 1=popln,
     2 = popln:sample,  3 = variable-set)    */
-void freesp(int gr) {
+void free_blocks(int gr) {
     Block *blk, *nblk;
     switch (gr) {
     case 0:
@@ -78,12 +78,11 @@ void freesp(int gr) {
         free(blk);
         blk = nblk;
     }
-    return;
 }
 
-/*    ------------------ repspace ---------------------------  */
+/*    ------------------ report_space ---------------------------  */
 /*    To report allocated space  */
-int repspace(int pp)
+int report_space(int pp)
 {
     if (pp)
         printf("Allocated space %8d chars\n", allocated);

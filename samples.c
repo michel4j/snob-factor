@@ -2,11 +2,11 @@
 #define SAMPLES 1
 #include "glob.h"
 
-int qssamp();
+int sort_sample();
 
-/*    ----------------------  printdatum  -------------------------  */
+/*    ----------------------  print_var_datum  -------------------------  */
 /*    To print datum for variable i, case n, in sample     */
-void printdatum(int i, int n) {
+void print_var_datum(int i, int n) {
     Sample *samp;
     AVinst *avi;
     SVinst *svi;
@@ -28,10 +28,10 @@ void printdatum(int i, int n) {
     (*vtp->print_datum)(CurField);
     return;
 }
-/*    ------------------------ readvset ------------------------------ */
+/*    ------------------------ load_vset ------------------------------ */
 /*    To read in a vset from a file. Returns index of vset  */
 /*    Returns negative if fail*/
-int readvset() {
+int load_vset() {
 
     int i, itype, indx;
     int kread;
@@ -57,26 +57,26 @@ gotit:
     CurVSet->attrs = 0;
     CurVSet->blocks = 0;
     printf("Enter variable-set file name:\n");
-    kread = readalf(CurVSet->filename, 1);
+    kread = read_str(CurVSet->filename, 1);
     strcpy(buf->cname, CurVSet->filename);
     CurCtx.buffer = buf;
-    if (bufopen()) {
+    if (open_buffer()) {
         printf("Cant open variable-set file %s\n", CurVSet->filename);
         i = -2;
         goto error;
     }
 
     /*    Begin to read variable-set file. First entry is its name   */
-    newline();
-    kread = readalf(CurVSet->name, 1);
+    new_line();
+    kread = read_str(CurVSet->name, 1);
     if (kread < 0) {
         printf("Error in name of variable-set\n");
         i = -9;
         goto error;
     }
     /*    Num of variables   */
-    newline();
-    kread = readint(&NumVars, 1);
+    new_line();
+    kread = read_int(&NumVars, 1);
     if (kread) {
         printf("Cant read number of variables\n");
         i = -4;
@@ -86,7 +86,7 @@ gotit:
     CurVSet->num_active = CurVSet->num_vars;
 
     /*    Make a vec of nv AVinst blocks  */
-    CurAttrList = (AVinst *)gtsp(3, NumVars * sizeof(AVinst));
+    CurAttrList = (AVinst *)alloc_blocks(3, NumVars * sizeof(AVinst));
     if (!CurAttrList) {
         printf("Cannot allocate memory for variables blocks\n");
         i = -3;
@@ -104,8 +104,8 @@ gotit:
         CurAttr->id = i;
 
         /*    Read name  */
-        newline();
-        kread = readalf(CurAttr->name, 1);
+        new_line();
+        kread = read_str(CurAttr->name, 1);
         if (kread < 0) {
             printf("Error in name of variable %d\n", i + 1);
             i = -10;
@@ -113,7 +113,7 @@ gotit:
         }
 
         /*    Read type code. Negative means idle.   */
-        kread = readint(&itype, 1);
+        kread = read_int(&itype, 1);
         if (kread) {
             printf("Cant read type code for var %d\n", i + 1);
             i = -5;
@@ -134,7 +134,7 @@ gotit:
         CurAttr->type = itype;
 
         /*    Make the vaux block  */
-        vaux = (char *)gtsp(3, CurVType->attr_aux_size);
+        vaux = (char *)alloc_blocks(3, CurVType->attr_aux_size);
         if (!vaux) {
             printf("Cant make auxilliary var block\n");
             i = -6;
@@ -154,15 +154,15 @@ gotit:
     i = indx;
 
 error:
-    bufclose();
+    close_buffer();
     CurCtx.buffer = CurSource;
     return (i);
 }
 
-/*    ---------------------  readsample -------------------------  */
+/*    ---------------------  load_sample -------------------------  */
 /*    To open a sample file and read in all about the sample.
     Returns index of new sample in samples array   */
-int readsample(char *fname) {
+int load_sample(char *fname) {
 
     int i, n;
     int kread;
@@ -175,36 +175,36 @@ int readsample(char *fname) {
     buf = &bufst;
     strcpy(buf->cname, fname);
     CurCtx.buffer = buf;
-    if (bufopen()) {
+    if (open_buffer()) {
         printf("Cannot open sample file %s\n", buf->cname);
         i = -2;
         goto error;
     }
 
     /*    Begin to read sample file. First entry is its name   */
-    newline();
-    kread = readalf(sampname, 1);
+    new_line();
+    kread = read_str(sampname, 1);
     if (kread < 0) {
         printf("Error in name of sample\n");
         i = -9;
         goto error;
     }
     /*    See if sample already loaded  */
-    if (sname2id(sampname, 0) >= 0) {
+    if (find_sample(sampname, 0) >= 0) {
         printf("Sample %s already present\n", sampname);
         i = -8;
         goto error;
     }
     /*    Next line should be the vset name  */
-    newline();
-    kread = readalf(vstnam, 1);
+    new_line();
+    kread = read_str(vstnam, 1);
     if (kread < 0) {
         printf("Error in name of variableset\n");
         i = -9;
         goto error;
     }
     /*    Check vset known  */
-    kread = vname2id(vstnam);
+    kread = find_vset(vstnam);
     if (kread < 0) {
         printf("Variableset %s unknown\n", vstnam);
         i = -8;
@@ -235,7 +235,7 @@ gotit:
     CurAttrList = CurVSet->attrs;
 
     /*    Make a vec of nv SVinst blocks  */
-    CurVarList = (SVinst *)gtsp(0, NumVars * sizeof(SVinst));
+    CurVarList = (SVinst *)alloc_blocks(0, NumVars * sizeof(SVinst));
     if (!CurVarList) {
         printf("Cannot allocate memory for variables blocks\n");
         i = -3;
@@ -258,7 +258,7 @@ gotit:
         CurVType = CurAttr->vtype;
 
         /*    Make the saux block  */
-        saux = (char *)gtsp(0, CurVType->smpl_aux_size);
+        saux = (char *)alloc_blocks(0, CurVType->smpl_aux_size);
         if (!saux) {
             printf("Cant make auxilliary var block\n");
             i = -6;
@@ -279,8 +279,8 @@ gotit:
     }                                 /* End of variables loop */
 
     /*    Now attempt to read in the data. The first item is the number of cases*/
-    newline();
-    kread = readint(&NumCases, 1);
+    new_line();
+    kread = read_int(&NumCases, 1);
     if (kread) {
         printf("Cant read number of cases\n");
         i = -11;
@@ -289,7 +289,7 @@ gotit:
     CurSample->num_cases = NumCases;
     CurSample->num_active = 0;
     /*    Make a vector of nc records each of size reclen  */
-    CurRecords = CurSample->records = CurField = (char *)gtsp(0, NumCases * CurRecLen);
+    CurRecords = CurSample->records = CurField = (char *)alloc_blocks(0, NumCases * CurRecLen);
     if (!CurField) {
         printf("No space for data\n");
         i = -8;
@@ -299,8 +299,8 @@ gotit:
 
     /*    Read in the data cases, each preceded by an active flag and ident   */
     for (n = 0; n < NumCases; n++) {
-        newline();
-        kread = readint(&caseid, 1);
+        new_line();
+        kread = read_int(&caseid, 1);
         if (kread) {
             printf("Cant read ident, case %d\n", n + 1);
             i = -12;
@@ -338,9 +338,9 @@ gotit:
         }
     }
     printf("Number of active cases = %d\n", CurSample->num_active);
-    bufclose();
+    close_buffer();
     CurCtx.buffer = CurSource;
-    if (qssamp(CurSample)) {
+    if (sort_sample(CurSample)) {
         printf("Sort failure on sample\n");
         return (-1);
     }
@@ -350,15 +350,15 @@ nospace:
     printf("No space for another sample\n");
     i = -1;
 error:
-    bufclose();
+    close_buffer();
     memcpy(&CurCtx, &oldctx, sizeof(Context));
     return (i);
 }
 
-/*    -----------------------  sname2id  ------------------------  */
+/*    -----------------------  find_sample  ------------------------  */
 /*    To find sample id given its name. Returns -1 if unknown  */
 /*    'expect' shows if sample expected to be present  */
-int sname2id(char *nam, int expect)
+int find_sample(char *nam, int expect)
 {
     int i;
 
@@ -378,9 +378,9 @@ searched:
     return (i);
 }
 
-/*    -----------------------  vname2id  ------------------------  */
+/*    -----------------------  find_vset  ------------------------  */
 /*    To find vset id given its name. Returns -1 if unknown  */
-int vname2id(char *nam)
+int find_vset(char *nam)
 {
     int i, ii;
 
@@ -396,11 +396,8 @@ int vname2id(char *nam)
     return (ii);
 }
 
-/*    ------------------  qssamp  ----------------------------  */
-/*    To quicksort a sample into increasing ident order   */
-
 /*    Record swapper  */
-void swaprec(char *p1, char *p2, int ll)
+void swap_records(char *p1, char *p2, int ll)
 {
     int tt;
     if (p1 == p2)
@@ -416,8 +413,9 @@ void swaprec(char *p1, char *p2, int ll)
     return;
 }
 
+
 /*    Recursive quicksort  */
-void qssamp1(char *bot, int nn, int len)
+void quick_sort_sample(char *bot, int nn, int len)
 {
     char *top, *rp1, *rp2, *cen;
     int av, bv, cv, nb, nt;
@@ -441,7 +439,7 @@ again:
             }
         }
         if (cen != rp1)
-            swaprec(cen, rp1, len);
+            swap_records(cen, rp1, len);
         rp1 += len;
     }
     return;
@@ -478,7 +476,7 @@ loop2:
             goto done;
     }
     /*    Have av < cv, bv >= cv  */
-    swaprec(rp1, rp2, len);
+    swap_records(rp1, rp2, len);
     nt++;
     rp2 -= len;
     nb++;
@@ -491,37 +489,39 @@ done:
     if (nb)
         goto doboth;
     /*    Nothing was less than cv, the value at cen, so swap it to bot */
-    swaprec(cen, bot, len);
+    swap_records(cen, bot, len);
     nn--;
     bot += len;
     goto again;
 
 doboth:
-    qssamp1(bot, nb, len);
-    qssamp1(bot + nb * len, nt, len);
+    quick_sort_sample(bot, nb, len);
+    quick_sort_sample(bot + nb * len, nt, len);
     return;
 }
 
-int qssamp(Sample *smpl)
+/*    ------------------  sort_sample  ----------------------------  */
+/*    To quicksort a sample into increasing ident order   */
+int sort_sample(Sample *smpl)
 {
     int nc, len;
 
     nc = smpl->num_cases;
     printf("Begin sort of %d cases\n", nc);
     if (nc < 1) {
-        printf("From qssamp: sample unattached.\n");
+        printf("From sort_sample: sample unattached.\n");
         return (-1);
     }
     len = smpl->record_length;
 
-    qssamp1(smpl->records, nc, len);
+    quick_sort_sample(smpl->records, nc, len);
     printf("Finished sort\n");
     return (0);
 }
 
-/*    --------------------  id2ind  ------------------------------  */
+/*    --------------------  find_sample_index  ------------------------------  */
 /*    Given a item ident, returns index in sample, or -1 if not found  */
-int id2ind(int id)
+int find_sample_index(int id)
 {
     int iu, il, ic, cid, len;
     char *recs;
@@ -551,10 +551,10 @@ chopped:
     return ((cid == id) ? ic : -1);
 }
 
-/*    ------------------------  thinglist  -------------------   */
-/*    Records best class and score for all things in a sample.
+/*    ------------------------  item_list  -------------------   */
+/*    Records best class and score for all items in a sample.
  */
-int thinglist(char *tlstname)
+int item_list(char *tlstname)
 {
     FILE *tlst;
     int nn, dadser, i, bc, tid, bl;

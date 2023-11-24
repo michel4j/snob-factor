@@ -207,7 +207,7 @@ typedef struct ClassStruct {
     /*    ******************* Items above this line must be distributed to
                 all remotes before each pass through the data.
             The items in the next group are accumulated and must be
-            returned to central.  They are cleared to zero by cleartcosts.
+            returned to central.  They are cleared to zero by clear_costs.
             */
     double newcnt;                    /*  Accumulates weights for cnt  */
     double newvsq;                    /*  Accumulates squared scores for vsq  */
@@ -289,14 +289,14 @@ extern int terminator;
 extern Buf cfilebuf, commsbuf;
 #endif
 
-int bufopen();
-int newline();
-int readint(int *x, int cnl);
-int readdf(double *x, int cnl);
-int readalf(char *str, int cnl);
-int readch(int cnl);
+int open_buffer();
+int new_line();
+int read_int(int *x, int cnl);
+int read_double(double *x, int cnl);
+int read_str(char *str, int cnl);
+int read_char(int cnl);
 void swallow();
-void bufclose();
+void close_buffer();
 void revert(int flag);
 void rep(int ch);
 void flp();
@@ -308,34 +308,34 @@ int make_population(int fill);
 int init_population();
 void make_subclasses(int kk);
 void set_population();
-void killpop(int px);
-int copypop(int p1, int fill, char *newname);
-int savepop(int p1, int fill, char *newname);
-int restorepop(char *nam);
-int loadpop(int pp);
-void printtree();
-int bestpopid();
-void trackbest(int verify);
-int pname2id(char *nam);
+void destroy_population(int px);
+int copy_population(int p1, int fill, char *newname);
+int save_population(int p1, int fill, char *newname);
+int load_population(char *nam);
+int set_work_population(int pp);
+void print_tree();
+int get_best_pop();
+void track_best(int verify);
+int find_population(char *nam);
 void correlpops(int xid);
 /*        end poplns.c        */
 
 /*    In CLASSES.c    */
 int serial_to_id(int ss);
 int make_class();
-void cleartcosts(Class *ccl);
-void setbestparall(Class *ccl);
+void clear_costs(Class *ccl);
+void set_best_costs(Class *ccl);
 void score_all_vars(Class *ccl);
-void costvarall(Class *ccl);
-void derivvarall(Class *ccl);
-void ncostvarall(Class *ccl, int valid);
+void cost_all_vars(Class *ccl);
+void deriv_all_vars(Class *ccl);
+void parent_cost_all_vars(Class *ccl, int valid);
 void adjust_class(Class *ccl, int dod);
-void killsons(int kk);
+void delete_sons(int kk);
 void print_class(int kk, int full);
 void set_class(Class *ccl);
 void set_class_with_scores(Class *ccl);
 int split_leaf(int kk);
-void deleteallclasses();
+void delete_all_classes();
 int next_leaf(Population *cpop, int iss);
 /*        end classes.c        */
 
@@ -356,16 +356,16 @@ void defaulttune();
 
 /*    In TACTICS.c    */
 void flatten();
-double insdad(int ser1, int ser2, int *dadid);
-int bestinsdad(int force);
-double deldad(int ser);
-int bestdeldad();
+double insert_dad(int ser1, int ser2, int *dadid);
+int best_insert_dad(int force);
+int best_remove_dad();
+double splice_dad(int ser);
 void rebuild();
 void ranclass(int nn);
-void binhier(int flat);
-double moveclass(int ser1, int ser2);
-int bestmoveclass(int force);
-void trymoves(int ntry);
+void binary_hierarchy(int flat);
+double move_class(int ser1, int ser2);
+int best_move_class(int force);
+void try_moves(int ntry);
 void trial(int param);
 /*    end tactics.c        */
 
@@ -377,9 +377,9 @@ void set_bad_move(int code, int s1, int s2);
 /* end badmoves.c        */
 
 /*    In BLOCK.c    */
-void *gtsp(int gr, int size);
-void freesp(int gr);
-int repspace(int pp);
+void *alloc_blocks(int gr, int size);
+void free_blocks(int gr);
+int report_space(int pp);
 /*  end block.c        */
 
 /*    In DOTYPES.c    */
@@ -387,14 +387,14 @@ void dotypes();
 /*        end dotypes.c        */
 
 /*    In SAMPLES.c    */
-void printdatum(int i, int n);
-int readvset();
-int readsample(char *fname);
-int sname2id(char *nam, int expect);
-int vname2id(char *nam);
-int qssamp(Sample *samp);
-int id2ind(int id);
-int thinglist(char *tlstname);
+void print_var_datum(int i, int n);
+int load_vset();
+int load_sample(char *fname);
+int find_sample(char *nam, int expect);
+int find_vset(char *nam);
+int sort_sample(Sample *samp);
+int find_sample_index(int id);
+int item_list(char *tlstname);
 /*        end samples.c        */
 
 /*    In GLOB.c    */

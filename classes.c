@@ -59,7 +59,7 @@ int make_class() {
     NumCases = CurCtx.popln->sample_size;
     /*    If nc, check that popln has an attached sample  */
     if (NumCases) {
-        i = sname2id(CurPopln->sample_name, 1);
+        i = find_sample(CurPopln->sample_name, 1);
         if (i < 0)
             return (-2);
         CurCtx.sample = CurSample = Samples[i];
@@ -79,7 +79,7 @@ int make_class() {
     goto nospace;
 
 gotit:
-    CurClass = (Class *)gtsp(1, sizeof(Class));
+    CurClass = (Class *)alloc_blocks(1, sizeof(Class));
     if (!CurClass)
         goto nospace;
     CurPopln->classes[kk] = CurClass;
@@ -87,7 +87,7 @@ gotit:
     CurClass->id = kk;
 
     /*    Make vector of ptrs to CVinsts   */
-    cvars = CurClass->basics = (CVinst **)gtsp(1, NumVars * sizeof(CVinst *));
+    cvars = CurClass->basics = (CVinst **)alloc_blocks(1, NumVars * sizeof(CVinst *));
     if (!cvars)
         goto nospace;
 
@@ -95,7 +95,7 @@ gotit:
     for (i = 0; i < NumVars; i++) {
         pvi = pvars + i;
         CurAttr = CurAttrList + i;
-        cvi = cvars[i] = (CVinst *)gtsp(1, CurAttr->basic_size);
+        cvi = cvars[i] = (CVinst *)alloc_blocks(1, CurAttr->basic_size);
         if (!cvi)
             goto nospace;
         /*    Fill in standard stuff  */
@@ -103,14 +103,14 @@ gotit:
     }
 
     /*    Make EVinst blocks and vector of pointers  */
-    evars = CurClass->stats = (EVinst **)gtsp(1, NumVars * sizeof(EVinst *));
+    evars = CurClass->stats = (EVinst **)alloc_blocks(1, NumVars * sizeof(EVinst *));
     if (!evars)
         goto nospace;
 
     for (i = 0; i < NumVars; i++) {
         pvi = pvars + i;
         CurAttr = CurAttrList + i;
-        evi = evars[i] = (EVinst *)gtsp(1, CurAttr->stats_size);
+        evi = evars[i] = (EVinst *)alloc_blocks(1, CurAttr->stats_size);
         if (!evi)
             goto nospace;
         evi->id = pvi->id;
@@ -145,7 +145,7 @@ donebasic:
     /*    If nc = 0, this completes the make.  */
     if (NumCases == 0)
         goto finish;
-    CurClass->vv = (short *)gtsp(2, NumCases * sizeof(short));
+    CurClass->vv = (short *)alloc_blocks(2, NumCases * sizeof(short));
     goto expanded;
 
 vacant2:
@@ -228,10 +228,10 @@ void print_class(int kk, int full) {
     return;
 }
 
-/*    -------------------------  cleartcosts  ------  */
+/*    -------------------------  clear_costs  ------  */
 /*    Clears tcosts (cntcost, cftcost, cstcost). Also clears newcnt,
 newvsq, and calls clear_stats for all variables   */
-void cleartcosts(Class *ccl) {
+void clear_costs(Class *ccl) {
     int i;
 
     set_class(ccl);
@@ -251,9 +251,9 @@ void cleartcosts(Class *ccl) {
     return;
 }
 
-/*    -------------------  setbestparall  ------------------------   */
+/*    -------------------  set_best_costs  ------------------------   */
 /*    To set 'b' params, costs to reflect current use   */
-void setbestparall(Class *ccl) {
+void set_best_costs(Class *ccl) {
     int i;
 
     set_class(ccl);
@@ -323,8 +323,8 @@ void score_all_vars(Class *ccl) {
             CurAttr = CurAttrList + i;
             if (!CurAttr->inactive) {
                 CurVType = CurAttr->vtype;
-                (*CurVType->score_var)(i);
-                // score_var should add to vvd1, vvd2, vvd3, mvvd2.
+                (*CurVType->score_var)(i); // score_var should add to vvd1, vvd2, vvd3, mvvd2.
+                
             }
         }
 
@@ -364,10 +364,10 @@ void score_all_vars(Class *ccl) {
 }
 
 
-/*    ----------------------  costvarall  --------------------------  */
+/*    ----------------------  cost_all_vars  --------------------------  */
 /*    Does cost_var on all vars of class for the current item, setting
 cls->casecost according to use of class  */
-void costvarall(Class *ccl) {
+void cost_all_vars(Class *ccl) {
     int fac;
     double tmp;
 
@@ -417,9 +417,9 @@ finish:
     return;
 }
 
-/*    ----------------------  derivvarall  ---------------------    */
+/*    ----------------------  deriv_all_vars  ---------------------    */
 /*    To collect derivative statistics for all vars of a class   */
-void derivvarall(Class *ccl) {
+void deriv_all_vars(Class *ccl) {
     int fac = 0;
 
     set_class_with_scores(ccl);
@@ -494,7 +494,7 @@ void adjust_class(Class *ccl, int dod) {
         npars = 1;
 
     /*    cls->cnpcost was zeroed in do_all, and has accumulated the cbpcosts
-    of cls's sons, so we don't zero it here. 'ncostvarall' will add to it.  */
+    of cls's sons, so we don't zero it here. 'parent_cost_all_vars' will add to it.  */
     CurClass->nofac_par_cost = CurClass->fac_par_cost = 0.0;
     for (iv = 0; iv < CurVSet->num_vars; iv++) {
         CurAttr = CurAttrList + iv;
@@ -519,7 +519,7 @@ void adjust_class(Class *ccl, int dod) {
     CurClass->avvv = CurClass->totvv / CurClass->weights_sum;
 
     if (dod)
-        ncostvarall(ccl, npars);
+        parent_cost_all_vars(ccl, npars);
 
     CurClass->nofac_cost = CurClass->nofac_par_cost + CurClass->cstcost;
     /*    The 'lattice' effect on the cost of coding scores is approx
@@ -594,7 +594,7 @@ usechecked:
         printf("Changing type of class%s from Dad to Leaf\n", sers(CurClass));
         SeeAll = 4;
         /*    Kill all sons  */
-        killsons(CurClass->id); /* which changes type to leaf */
+        delete_sons(CurClass->id); /* which changes type to leaf */
     } else if (npars && (leafcost > CurClass->dad_cost) && (CurClass->type == Leaf)) {
         flp();
         printf("Changing type of class%s from Leaf to Dad\n", sers(CurClass));
@@ -614,16 +614,16 @@ usechecked:
     }
 
 typechecked:
-    setbestparall(CurClass);
+    set_best_costs(CurClass);
     if (Control & AdjPr)
         CurClass->age++;
     return;
 }
 
-/*    ----------------  ncostvarall  ------------------------------   */
+/*    ----------------  parent_cost_all_vars  ------------------------------   */
 /*    To do parent costing on all vars of a class        */
 /*    If not 'valid', don't cost, and fake params  */
-void ncostvarall(Class *ccl, int valid) {
+void parent_cost_all_vars(Class *ccl, int valid) {
     Class *son;
     EVinst *evi;
     int i, ison, nson;
@@ -670,9 +670,9 @@ void ncostvarall(Class *ccl, int valid) {
     return;
 }
 
-/*    --------------------  killsons ------------------------------- */
+/*    --------------------  delete_sons ------------------------------- */
 /*    To delete the sons of a class  */
-void killsons(int kk) {
+void delete_sons(int kk) {
     Class *clp, *son;
     int kks;
 
@@ -686,7 +686,7 @@ void killsons(int kk) {
         son = CurPopln->classes[kks];
         son->type = Vacant;
         son->dad_id = Deadkilled;
-        killsons(kks);
+        delete_sons(kks);
     }
     clp->num_sons = 0;
     clp->son_id = -1;
@@ -718,9 +718,9 @@ int split_leaf(int kk) {
     return (0);
 }
 
-/*    ---------------  deleteallclasses  ------------ */
+/*    ---------------  delete_all_classes  ------------ */
 /*    To remove all classes of a popln except its root  */
-void deleteallclasses() {
+void delete_all_classes() {
     int k;
     CurPopln = CurCtx.popln;
     CurRoot = CurPopln->root;

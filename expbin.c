@@ -167,7 +167,7 @@ int read_datum(char *loc, int iv)
     Datum xn;
 
     /*    Read datum into xn, return error.  */
-    i = readint(&xn, 1);
+    i = read_int(&xn, 1);
     if (i)
         return (i);
     if (!xn)

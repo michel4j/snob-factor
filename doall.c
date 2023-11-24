@@ -9,7 +9,6 @@ static double rcons = (1.0 / (2048.0 * 1024.0 * 1024.0));
 #define M32 0xFFFFFFFF
 #define B32 0x80000000
 
-
 int rand_sign() {
     return SIGN[rand() % 2];
 }
@@ -266,7 +265,7 @@ void update_seeall_newsubs(int niter, int ncycles) {
 
     // Track best if conditions are met
     if (niter > NewSubsTime && SeeAll == 1) {
-        trackbest(0);
+        track_best(0);
     }
 }
 
@@ -283,7 +282,7 @@ int find_and_estimate(int *all, int niter, int ncycles) {
     find_all(*all);
 
     for (int k = 0; k < NumSon; k++) {
-        cleartcosts(Sons[k]);
+        clear_costs(Sons[k]);
     }
 
     for (int j = 0; j < CurSample->num_cases; j++) {
@@ -460,7 +459,7 @@ int do_all(int ncycles, int all) {
 /*    Runs adjust_class on all leaves without adjustment.
     This leaves class cb*costs set up. Adjustclass is told not to
     consider a leaf as a potential dad.
-    Then runs ncostvarall on all dads, with param adjustment. The
+    Then runs parent_cost_all_vars on all dads, with param adjustment. The
     result is to recost and readjust the tree hierarchy.
     */
 int do_dads(int ncy) {
@@ -499,13 +498,13 @@ int do_dads(int ncy) {
         goto newdad;
 
     complete:
-        /*    If a leaf, use adjust_class, else use ncostvarall  */
+        /*    If a leaf, use adjust_class, else use parent_cost_all_vars  */
         if (CurClass->type == Leaf) {
             Control = Tweak;
             adjust_class(CurClass, 0);
         } else {
             Control = AdjPr;
-            ncostvarall(CurClass, 1);
+            parent_cost_all_vars(CurClass, 1);
             CurClass->best_par_cost = CurClass->dad_par_cost;
         }
         if (CurClass->dad_id < 0)
@@ -641,7 +640,7 @@ void do_case(int cse, int all, int derivs) {
             CurClass->scancnt++;
         /*    Score and cost the class  */
         score_all_vars(CurClass);
-        costvarall(CurClass);
+        cost_all_vars(CurClass);
         clc++;
     }
     /*    Now have casescost, casefcost and casecost set in all classes for
@@ -834,7 +833,7 @@ void do_case(int cse, int all, int derivs) {
     for (clc = 0; clc < NumSon; clc++) {
         CurClass = Sons[clc];
         if (CurClass->case_weight > 0.0) {
-            derivvarall(CurClass);
+            deriv_all_vars(CurClass);
         }
     }
 }

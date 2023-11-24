@@ -224,7 +224,7 @@ Vaux *vax;
     double lstates;
 
     /*    Read in auxiliary info into vaux, return 0 if OK else 1  */
-    i = readint(&(vax->states), 1);
+    i = read_int(&(vax->states), 1);
     if (i < 0) {
         vax->states = 0;
         return (1);
@@ -272,7 +272,7 @@ int read_datum(char *loc, int iv) {
     vaux = (Vaux *)(CurAttrList[iv].vaux);
     states = vaux->states;
     /*    Read datum into xn, return error.  */
-    i = readint(&xn, 1);
+    i = read_int(&xn, 1);
     if (i)
         return (i);
     if (!xn)

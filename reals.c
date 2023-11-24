@@ -159,7 +159,7 @@ int read_aux_smpl(Saux *sax) {
     int i;
 
     /*    Read in auxiliary info into saux, return 0 if OK else 1  */
-    i = readdf(&(sax->eps), 1);
+    i = read_double(&(sax->eps), 1);
     if (i < 0) {
         sax->eps = sax->leps = 0.0;
         return (1);
@@ -176,7 +176,7 @@ int read_datum(char *loc, int iv) {
     Datum xn;
 
     /*    Read datum into xn, return error.  */
-    i = readdf(&xn, 1);
+    i = read_double(&xn, 1);
     if (!i)
         memcpy(loc, &xn, sizeof(Datum));
     return (i);
