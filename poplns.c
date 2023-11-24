@@ -29,28 +29,24 @@ void set_population() {
 /*    -----------------------  next_class  ---------------------  */
 /*    given a ptr to a ptr to a class in pop, changes the Class* to point
 to the next class in a depth-first traversal, or 0 if there is none  */
-void next_class(Class **ptr)
-{
+void next_class(Class **ptr) {
     Class *clp;
 
     clp = *ptr;
     if (clp->son_id >= 0) {
         *ptr = CurPopln->classes[clp->son_id];
-        goto done;
+    } else {
+        while (1) {
+            if (clp->sib_id >= 0) {
+                *ptr = CurPopln->classes[clp->sib_id];
+                break;
+            } else if (clp->dad_id < 0) {
+                *ptr = 0;
+                break;
+            }
+            clp = CurPopln->classes[clp->dad_id];
+        }
     }
-loop:
-    if (clp->sib_id >= 0) {
-        *ptr = CurPopln->classes[clp->sib_id];
-        goto done;
-    }
-    if (clp->dad_id < 0) {
-        *ptr = 0;
-        goto done;
-    }
-    clp = CurPopln->classes[clp->dad_id];
-    goto loop;
-
-done:
     return;
 }
 
@@ -62,7 +58,7 @@ done:
 or score vectors, and the popln is not connected to the current sample.
 OTHERWIZE, the root class is fully configured for the current sample.
     */
-int make_population(int fill){
+int make_population(int fill) {
     PVinst *pvars;
     Class *cls;
 
@@ -180,7 +176,7 @@ finish:
 /*    ----------------------  make_subclasses -----------------------    */
 /*    Given a class index kk, makes two subclasses  */
 
-void make_subclasses(int kk){
+void make_subclasses(int kk) {
     Class *clp, *clsa, *clsb;
     CVinst *cvi, *scvi;
     double cntk;
@@ -267,7 +263,7 @@ finish:
 
 /*    -------------------- destroy_population --------------------  */
 /*    To destroy popln index px    */
-void destroy_population(int px){
+void destroy_population(int px) {
     int prev;
     if (CurCtx.popln)
         prev = CurCtx.popln->id;
@@ -306,7 +302,7 @@ sample shown in ctx, if compatible, and given small, silly factor scores.
     If newname is "work", the context ctx is left addressing the new
 popln, but otherwise is not disturbed.
     */
-int copy_population(int p1, int fill, char *newname){
+int copy_population(int p1, int fill, char *newname) {
     Population *fpop;
     Context oldctx;
     Class *cls, *fcls;
@@ -485,9 +481,9 @@ finish:
     return (indx);
 }
 
-/*    ----------------------  printsubtree  ----------------------   */
+/*    ----------------------  print_subtree  ----------------------   */
 static int pdeep;
-void printsubtree(int kk){
+void print_subtree(int kk) {
     Class *son, *clp;
     int kks;
 
@@ -517,7 +513,7 @@ void printsubtree(int kk){
     pdeep++;
     for (kks = clp->son_id; kks >= 0; kks = son->sib_id) {
         son = CurPopln->classes[kks];
-        printsubtree(kks);
+        print_subtree(kks);
     }
     pdeep--;
     return;
@@ -532,8 +528,7 @@ void print_tree() {
         return;
     }
     set_population();
-    printf("Popln%3d on sample%3d,%4d classes,%6d things", CurPopln->id + 1,
-           CurSample->id + 1, CurPopln->num_classes, CurSample->num_cases);
+    printf("Popln%3d on sample%3d,%4d classes,%6d things", CurPopln->id + 1, CurSample->id + 1, CurPopln->num_classes, CurSample->num_cases);
     printf("  Cost %10.2f\n", CurPopln->classes[CurPopln->root]->best_cost);
     printf("\n  Assign mode ");
     if (Fix == Partial)
@@ -551,7 +546,7 @@ void print_tree() {
         printf(" Tree");
     printf("\n");
     pdeep = 0;
-    printsubtree(CurRoot);
+    print_subtree(CurRoot);
     return;
 }
 
@@ -639,8 +634,7 @@ void track_best(int verify) {
 
 /*    ------------------  find_population  -----------------------------   */
 /*    To find a popln with given name and return its id, or -1 if fail */
-int find_population(char *nam)
-{
+int find_population(char *nam) {
     int i;
     char lname[80];
 
@@ -662,19 +656,18 @@ int find_population(char *nam)
 
 /**
  * Writes a sequence of characters to a file.
- * 
+ *
  * @param fll A pointer to the file to write to.
  * @param from A pointer to the sequence of characters to be written.
  * @param nn The number of characters to write.
  */
 void save_to_file(FILE *fll, void *from, int nn) {
-    char *buffer = (char*) from;
+    char *buffer = (char *)from;
 
     for (int i = 0; i < nn; i++) {
         fputc(buffer[i], fll);
     }
 }
-
 
 /*    ------------------- save_population ---------------------  */
 /*    Copies poplns[p1] into a file called <newname>.
@@ -685,7 +678,7 @@ Basics and Stats. If fill but pop->nc = 0, behaves as for fill = 0.
 
 char *saveheading = "Scnob-Model-Save-File";
 
-int save_population(int p1, int fill, char *newname){
+int save_population(int p1, int fill, char *newname) {
     FILE *fl;
     char oldname[80], *jp;
     Context oldctx;
@@ -808,8 +801,7 @@ classdone:
 
 finish:
     fclose(fl);
-    printf("\nModel %s  Cost %10.2f  saved in file %s\n", oldname,
-           CurPopln->classes[0]->best_cost, newname);
+    printf("\nModel %s  Cost %10.2f  saved in file %s\n", oldname, CurPopln->classes[0]->best_cost, newname);
     memcpy(&CurCtx, &oldctx, sizeof(Context));
     set_population();
     return (leng);
@@ -817,7 +809,7 @@ finish:
 
 /*    -----------------  load_population  -------------------------------  */
 /*    To read a model saved by save_population  */
-int load_population(char *nam){
+int load_population(char *nam) {
     char pname[80], name[80], *jp;
     Context oldctx;
     int i, j, k, indx, fncl, fnc, nch, iv;
@@ -971,7 +963,7 @@ finish:
 /*    ----------------------  set_work_population  -----------------------------  */
 /*    To load popln pp into work, attaching sample as needed.
     Returns index of work, and sets ctx, or returns neg if fail  */
-int set_work_population(int pp){
+int set_work_population(int pp) {
     int j, windx, fpopnc;
     Context oldctx;
     Population *fpop;
@@ -1052,7 +1044,7 @@ leaves of the chosen popln, which must be attached to the current sample.
 Table entries show the weight assigned to both one leaf of 'work' and one
 leaf of the other popln, as a permillage of active things.
     */
-void correlpops(int xid){
+void correlpops(int xid) {
     float table[MAX_CLASSES][MAX_CLASSES];
     Class *wsons[MAX_CLASSES], *xsons[MAX_CLASSES];
     Population *xpop, *wpop;

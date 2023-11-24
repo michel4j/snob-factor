@@ -1,5 +1,5 @@
-#CC = gcc -pg -Wall -O3 -flto -march=native
-CC = gcc -pg -Wall -fopenmp
+CC = gcc -g -Wall -O3 -flto -march=native
+#CC = gcc -pg -Wall -fopenmp
 
 SRC = main.c dotypes.c glob.c reals.c samples.c inputs.c poplns.c \
 	classes.c expmults.c doall.c tune.c block.c listen.c \

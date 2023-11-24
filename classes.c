@@ -324,7 +324,6 @@ void score_all_vars(Class *ccl) {
             if (!CurAttr->inactive) {
                 CurVType = CurAttr->vtype;
                 (*CurVType->score_var)(i); // score_var should add to vvd1, vvd2, vvd3, mvvd2.
-                
             }
         }
 
@@ -345,7 +344,7 @@ void score_all_vars(Class *ccl) {
     if (del < 0.0)
         del -= 1.0;
     icvv = del + rand_float();
-    icvv <<= 1; // Round to nearest even times ScoreScale
+    icvv <<= 1;    // Round to nearest even times ScoreScale
     icvv |= igbit; // Restore original ignore bit
 
     if (!igbit) {
@@ -363,30 +362,25 @@ void score_all_vars(Class *ccl) {
     vv[CurItem] = CurClass->case_score = icvv;
 }
 
-
 /*    ----------------------  cost_all_vars  --------------------------  */
 /*    Does cost_var on all vars of class for the current item, setting
 cls->casecost according to use of class  */
 void cost_all_vars(Class *ccl) {
-    int fac;
+    int fac =0;
     double tmp;
 
     set_class_with_scores(ccl);
-    if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny))
-        fac = 0;
-    else {
+    if ((CurClass->age >= MinFacAge) && (CurClass->use != Tiny)){
         fac = 1;
         cvvsq = cvv * cvv;
     }
     ncasecost = scasecost = fcasecost = CurClass->mlogab; /* Abundance cost */
     for (int iv = 0; iv < CurVSet->num_vars; iv++) {
         CurAttr = CurAttrList + iv;
-        if (CurAttr->inactive)
-            goto vdone;
-        CurVType = CurAttr->vtype;
-        (*CurVType->cost_var)(iv, fac);
-    /*    will add to scasecost, fcasecost  */
-    vdone:;
+        if (!(CurAttr->inactive)) {
+            CurVType = CurAttr->vtype;
+            (*CurVType->cost_var)(iv, fac); /*    will add to scasecost, fcasecost  */
+        }
     }
 
     CurClass->total_case_cost = CurClass->nofac_case_cost = scasecost;
@@ -394,27 +388,26 @@ void cost_all_vars(Class *ccl) {
     if (CurClass->num_sons < 2)
         CurClass->dad_case_cost = 0.0;
     CurClass->coding_case_cost = 0.0;
-    if (!fac)
-        goto finish;
-    /*    Now we add the cost of coding the score, and its roundoff */
-    /*    The simple form for costing a score is :
-        tmp = hlg2pi + 0.5 * (cvvsq + cvvsprd - log (cvvsprd)) + lattice;
-    However, we appeal to the large number of score parameters, which gives a
-    more negative 'lattice' ((log 12)/2 for one parameter) approaching -(1/2)
-    log (2 Pi e) which results in the reduced cost :  */
-    CurClass->clvsprd = log(cvvsprd);
-    tmp = 0.5 * (cvvsq + cvvsprd - CurClass->clvsprd - 1.0);
-    /*    Over all scores for the class, the lattice effect will add approx
-            ( log (2 Pi cnt)) / 2  + 1
-        to the class cost. This is added later, once cnt is known.
-        */
-    fcasecost += tmp;
-    CurClass->fac_case_cost = fcasecost;
-    CurClass->coding_case_cost = tmp;
-    if (CurClass->use == Fac)
-        CurClass->total_case_cost = fcasecost;
-finish:
-    return;
+    if (fac) {
+
+        /*    Now we add the cost of coding the score, and its roundoff */
+        /*    The simple form for costing a score is :
+            tmp = hlg2pi + 0.5 * (cvvsq + cvvsprd - log (cvvsprd)) + lattice;
+        However, we appeal to the large number of score parameters, which gives a
+        more negative 'lattice' ((log 12)/2 for one parameter) approaching -(1/2)
+        log (2 Pi e) which results in the reduced cost :  */
+        CurClass->clvsprd = log(cvvsprd);
+        tmp = 0.5 * (cvvsq + cvvsprd - CurClass->clvsprd - 1.0);
+        /*    Over all scores for the class, the lattice effect will add approx
+                ( log (2 Pi cnt)) / 2  + 1
+            to the class cost. This is added later, once cnt is known.
+            */
+        fcasecost += tmp;
+        CurClass->fac_case_cost = fcasecost;
+        CurClass->coding_case_cost = tmp;
+        if (CurClass->use == Fac)
+            CurClass->total_case_cost = fcasecost;
+    }
 }
 
 /*    ----------------------  deriv_all_vars  ---------------------    */
@@ -435,7 +428,7 @@ void deriv_all_vars(Class *ccl) {
     }
     for (int iv = 0; iv < NumVars; iv++) {
         CurAttr = CurAttrList + iv;
-        if (!(CurAttr->inactive)){
+        if (!(CurAttr->inactive)) {
             CurVType = CurAttr->vtype;
             (*CurVType->deriv_var)(iv, fac);
         }
@@ -579,13 +572,7 @@ void adjust_class(Class *ccl, int dod) {
         }
     }
 usechecked:
-    if (!dod)
-        goto typechecked;
-    if (CurClass->hold_type)
-        goto typechecked;
-    if (!(Control & AdjTr))
-        goto typechecked;
-    if (CurClass->num_sons < 2)
+    if ((!dod) || (CurClass->hold_type) || (!(Control & AdjTr)) || (CurClass->num_sons < 2))
         goto typechecked;
     leafcost = (CurClass->use == Fac) ? CurClass->fac_cost : CurClass->nofac_cost;
 
