@@ -50,18 +50,24 @@ ptrs to CVinsts and CVinsts filled in also EVinsts and ptrs.
     score vector.
     Returns index of class, or negative if no good  */
 
+int error_and_message(const char *message) {
+    printf("Error: %s\n", message);
+    return -1;
+}
+
 int make_class() {
     PVinst *pvars;
     CVinst **cvars, *cvi;
     EVinst **evars, *evi;
-    int i, kk;
+    int i, kk, found = 0, vacant = 0;
 
     NumCases = CurCtx.popln->sample_size;
     /*    If nc, check that popln has an attached sample  */
     if (NumCases) {
         i = find_sample(CurPopln->sample_name, 1);
-        if (i < 0)
+        if (i < 0) {
             return (-2);
+        }
         CurCtx.sample = CurSample = Samples[i];
     }
 
@@ -69,100 +75,107 @@ int make_class() {
     pvars = CurPopln->pvars;
     /*    Find a vacant slot in the popln's classes vec   */
     for (kk = 0; kk < CurPopln->cls_vec_len; kk++) {
-        if (!CurPopln->classes[kk])
-            goto gotit;
+        if (!CurPopln->classes[kk]) {
+            found = 1;
+            break;
+        }
         /*    Also test for a vacated class   */
-        if (CurPopln->classes[kk]->type == Vacant)
-            goto vacant1;
+        if (CurPopln->classes[kk]->type == Vacant) {
+            vacant = 1;
+            break;
+        }
     }
-    printf("Popln full of classes\n");
-    goto nospace;
+    if (!(found || vacant)) {
+        return error_and_message("Popln full of classes\n");
+    } else if (found) {
 
-gotit:
-    CurClass = (Class *)alloc_blocks(1, sizeof(Class));
-    if (!CurClass)
-        goto nospace;
-    CurPopln->classes[kk] = CurClass;
-    CurPopln->hi_class = kk; /* Highest used index in population->classes */
-    CurClass->id = kk;
+        CurClass = (Class *)alloc_blocks(1, sizeof(Class));
+        if (!CurClass) {
+            return error_and_message("No space for new class\n");
+        }
 
-    /*    Make vector of ptrs to CVinsts   */
-    cvars = CurClass->basics = (CVinst **)alloc_blocks(1, NumVars * sizeof(CVinst *));
-    if (!cvars)
-        goto nospace;
+        CurPopln->classes[kk] = CurClass;
+        CurPopln->hi_class = kk; /* Highest used index in population->classes */
+        CurClass->id = kk;
 
-    /*    Now make the CVinst blocks, which are of varying size   */
-    for (i = 0; i < NumVars; i++) {
-        pvi = pvars + i;
-        CurAttr = CurAttrList + i;
-        cvi = cvars[i] = (CVinst *)alloc_blocks(1, CurAttr->basic_size);
-        if (!cvi)
-            goto nospace;
-        /*    Fill in standard stuff  */
-        cvi->id = CurAttr->id;
+        /*    Make vector of ptrs to CVinsts   */
+        cvars = CurClass->basics = (CVinst **)alloc_blocks(1, NumVars * sizeof(CVinst *));
+        if (!cvars) {
+            return error_and_message("No space for new class\n");
+        }
+
+        /*    Now make the CVinst blocks, which are of varying size   */
+        for (i = 0; i < NumVars; i++) {
+            pvi = pvars + i;
+            CurAttr = CurAttrList + i;
+            cvi = cvars[i] = (CVinst *)alloc_blocks(1, CurAttr->basic_size);
+            if (!cvi) {
+                return error_and_message("No space for new class\n");
+            }
+            /*    Fill in standard stuff  */
+            cvi->id = CurAttr->id;
+        }
+
+        /*    Make EVinst blocks and vector of pointers  */
+        evars = CurClass->stats = (EVinst **)alloc_blocks(1, NumVars * sizeof(EVinst *));
+        if (!evars) {
+            return error_and_message("No space for new class\n");
+        }
+        for (i = 0; i < NumVars; i++) {
+            pvi = pvars + i;
+            CurAttr = CurAttrList + i;
+            evi = evars[i] = (EVinst *)alloc_blocks(1, CurAttr->stats_size);
+            if (!evi) {
+                return error_and_message("No space for new class\n");
+            }
+            evi->id = pvi->id;
+        }
+
+        /*    Stomp on ptrs as yet undefined  */
+        CurClass->vv = 0;
+        CurClass->type = 0;
+
+    } else if (vacant) { /* Vacant type shows structure set up but vacated.
+          Use, but set new (Vacant) type,  */
+        CurClass = CurPopln->classes[kk];
+        cvars = CurClass->basics;
+        evars = CurClass->stats;
+        CurClass->type = Vacant;
     }
 
-    /*    Make EVinst blocks and vector of pointers  */
-    evars = CurClass->stats = (EVinst **)alloc_blocks(1, NumVars * sizeof(EVinst *));
-    if (!evars)
-        goto nospace;
-
-    for (i = 0; i < NumVars; i++) {
-        pvi = pvars + i;
-        CurAttr = CurAttrList + i;
-        evi = evars[i] = (EVinst *)alloc_blocks(1, CurAttr->stats_size);
-        if (!evi)
-            goto nospace;
-        evi->id = pvi->id;
-    }
-
-    /*    Stomp on ptrs as yet undefined  */
-    CurClass->vv = 0;
-    CurClass->type = 0;
-    goto donebasic;
-
-vacant1: /* Vacant type shows structure set up but vacated.
-     Use, but set new (Vacant) type,  */
-    CurClass = CurPopln->classes[kk];
-    cvars = CurClass->basics;
-    evars = CurClass->stats;
-    CurClass->type = Vacant;
-
-donebasic:
     CurClass->best_cost = CurClass->nofac_cost = CurClass->fac_cost = 0.0;
     CurClass->weights_sum = 0.0;
     /*    Invalidate hierarchy links  */
     CurClass->dad_id = CurClass->sib_id = CurClass->son_id = -1;
     CurClass->num_sons = 0;
-    for (i = 0; i < NumVars; i++)
+    for (i = 0; i < NumVars; i++) {
         cvars[i]->signif = 1;
+    }
     CurPopln->num_classes++;
-    if (kk > CurPopln->hi_class)
+    if (kk > CurPopln->hi_class) {
         CurPopln->hi_class = kk;
-    if (CurClass->type == Vacant)
-        goto vacant2;
+    }
+    if (CurClass->type != Vacant) {
+        /* If nc = 0, this completes the make. */
+        if (NumCases != 0) {
+            CurClass->vv = (short *)alloc_blocks(2, NumCases * sizeof(short));
 
-    /*    If nc = 0, this completes the make.  */
-    if (NumCases == 0)
-        goto finish;
-    CurClass->vv = (short *)alloc_blocks(2, NumCases * sizeof(short));
-    goto expanded;
+            for (int i = 0; i < NumVars; i++) {
+                evars[i]->num_values = 0.0;
+            }
+        }
+    } else {
+        CurClass->type = 0;
 
-vacant2:
-    CurClass->type = 0;
+        for (int i = 0; i < NumVars; i++) {
+            evars[i]->num_values = 0.0;
+        }
+    }
 
-expanded:
-    for (i = 0; i < NumVars; i++)
-        evars[i]->num_values = 0.0;
-finish:
     CurClass->age = 0;
     CurClass->hold_type = CurClass->hold_use = 0;
     CurClass->weights_sum = 0.0;
     return (kk);
-
-nospace:
-    printf("No space for new class\n");
-    return (-1);
 }
 
 /*    -----------------------  print_class  -----------------------  */
@@ -170,7 +183,7 @@ nospace:
 /*    If kk = -1, prints all non-subs. If kk = -2, prints all  */
 char *typstr[] = {"typ?", " DAD", "LEAF", "typ?", " Sub"};
 char *usestr[] = {"Tny", "Pln", "Fac"};
-void print1class(Class *clp, int full) {
+void print_one_class(Class *clp, int full) {
     int i;
     double vrms;
 
@@ -209,23 +222,19 @@ void print_class(int kk, int full) {
     Class *clp;
     if (kk >= 0) {
         clp = CurPopln->classes[kk];
-        print1class(clp, full);
-        return;
-    }
-    if (kk < -2) {
+        print_one_class(clp, full);
+    } else if (kk < -2) {
         printf("%d passed to print_class\n", kk);
-        return;
+    } else {
+        set_population();
+        clp = CurRootClass;
+
+        do {
+            if ((kk == -2) || (clp->type != Sub))
+                print_one_class(clp, full);
+            next_class(&clp);
+        } while (clp);
     }
-    set_population();
-    clp = CurRootClass;
-
-    do {
-        if ((kk == -2) || (clp->type != Sub))
-            print1class(clp, full);
-        next_class(&clp);
-    } while (clp);
-
-    return;
 }
 
 /*    -------------------------  clear_costs  ------  */
@@ -248,7 +257,6 @@ void clear_costs(Class *ccl) {
         CurVType = CurAttrList[i].vtype;
         (*CurVType->clear_stats)(i);
     }
-    return;
 }
 
 /*    -------------------  set_best_costs  ------------------------   */
@@ -274,7 +282,6 @@ void set_best_costs(Class *ccl) {
         CurVType = CurAttrList[i].vtype;
         (*CurVType->set_best_pars)(i);
     }
-    return;
 }
 
 /*    --------------------  score_all_vars  --------------------    */
@@ -284,8 +291,8 @@ void set_best_costs(Class *ccl) {
 young. If class age = MinFacAge, will guess scores but not cost them */
 /*    If control & AdjSc, will adjust score  */
 void score_all_vars(Class *ccl) {
-    int i, igbit, oldicvv;
-    double del;
+    double del, cvvTimesHScoreScale, oneOverVvd2;
+    int icvv, oldicvv, igbit;
 
     set_class_with_scores(ccl);
     if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny)) {
@@ -293,72 +300,60 @@ void score_all_vars(Class *ccl) {
         icvv = 0;
     } else {
         if (CurClass->sum_score_sq <= 0.0) {
-            // Generate a fake score to get started.
+            //    Generate a fake score to get started.
             CurClass->boost_count = 0;
             cvvsprd = 0.1 / NumVars;
             oldicvv = igbit = 0;
-            cvv = (rand_sign() < 0) ? 1.0 : -1.0;
+            cvv = (rand_int() < 0) ? 1.0 : -1.0;
         } else {
-            // Get current score
+            //    Get current score
             oldicvv = icvv;
             igbit = icvv & 1;
             cvv = icvv * ScoreRscale;
-            // Additional logic if CurClass has boost_count and AdjSP is set
             if (CurClass->boost_count && ((Control & AdjSP) == AdjSP)) {
                 cvv *= CurClass->score_boost;
-                cvv = fmax(fmin(cvv, Maxv), -Maxv);
-                del = cvv * HScoreScale;
-                if (del < 0.0)
-                    del -= 1.0;
-                icvv = del + 0.5;
-                icvv <<= 1; // Round to nearest even times ScoreScale
-                igbit = 0;
+                cvv = fmin(fmax(cvv, -Maxv), Maxv); // Clamp cvv to [-Maxv, Maxv]
+                cvvTimesHScoreScale = cvv * HScoreScale;
+                del = cvvTimesHScoreScale - (cvvTimesHScoreScale < 0.0 ? 1.0 : 0.0);
+                icvv = (int)(del + 0.5) << 1; // Round to nearest even times ScoreScale
                 cvv = icvv * ScoreRscale;
             }
-        }
 
-        cvvsq = cvv * cvv;
-        vvd1 = vvd2 = mvvd2 = vvd3 = 0.0;
-        for (i = 0; i < CurVSet->num_vars; i++) {
-            CurAttr = CurAttrList + i;
-            if (!CurAttr->inactive) {
-                CurVType = CurAttr->vtype;
-                (*CurVType->score_var)(i); // score_var should add to vvd1, vvd2, vvd3, mvvd2.
+            cvvsq = cvv * cvv;
+            vvd1 = vvd2 = mvvd2 = vvd3 = 0.0;
+            for (int i = 0; i < CurVSet->num_vars; i++) {
+                CurAttr = CurAttrList + i;
+                if (!CurAttr->inactive) {
+                    CurVType = CurAttr->vtype;
+                    (*CurVType->score_var)(i); // score_var should add to vvd1, vvd2, vvd3, mvvd2.
+                }
+            }
+            vvd1 += cvv;
+            vvd2 += 1.0;
+            mvvd2 += 1.0;             //  From prior  There is a cost term 0.5 * cvvsprd from the prior (whence the additional 1 in vvd2).
+            oneOverVvd2 = 1.0 / vvd2; // Also, overall cost includes 0.5*cvvsprd*vvd2, so there is a derivative term wrt cvv of 0.5*cvvsprd*vvd3
+            cvvsprd = oneOverVvd2;
+            vvd1 += 0.5 * cvvsprd * vvd3;
+            del = vvd1 / mvvd2;
+            if (Control & AdjSc) {
+                cvv -= del;
             }
         }
 
-        vvd1 += cvv;
-        vvd2 += 1.0;
-        mvvd2 += 1.0; // From prior
-        cvvsprd = 1.0 / vvd2;
-        vvd1 += 0.5 * cvvsprd * vvd3;
-        del = vvd1 / mvvd2;
-        if (Control & AdjSc) {
-            cvv -= del;
+        cvv = fmin(fmax(cvv, -Maxv), Maxv); // Clamp cvv to [-Maxv, Maxv]
+        del = cvv * HScoreScale - (cvv * HScoreScale < 0.0 ? 1.0 : 0.0);
+        icvv = ((int)(del + rand_float())) << 1; // Round to nearest even times ScoreScale
+        icvv |= igbit;                           // Restore original ignore bit
+        if (!igbit) {
+            oldicvv -= icvv;
+            oldicvv = abs(oldicvv);
+            if (oldicvv > SigScoreChange)
+                CurClass->score_change_count++;
         }
+        CurClass->cvv = cvv = icvv * ScoreRscale;
+        CurClass->cvvsq = cvvsq = cvv * cvv;
+        CurClass->cvvsprd = cvvsprd;
     }
-
-    // Code from the 'fake' label
-    cvv = fmax(fmin(cvv, Maxv), -Maxv);
-    del = cvv * HScoreScale;
-    if (del < 0.0)
-        del -= 1.0;
-    icvv = del + rand_float();
-    icvv <<= 1;    // Round to nearest even times ScoreScale
-    icvv |= igbit; // Restore original ignore bit
-
-    if (!igbit) {
-        oldicvv -= icvv;
-        if (oldicvv < 0)
-            oldicvv = -oldicvv;
-        if (oldicvv > SigScoreChange)
-            CurClass->score_change_count++;
-    }
-
-    CurClass->cvv = cvv;
-    CurClass->cvvsq = cvvsq;
-    CurClass->cvvsprd = cvvsprd;
-
     vv[CurItem] = CurClass->case_score = icvv;
 }
 
@@ -366,11 +361,11 @@ void score_all_vars(Class *ccl) {
 /*    Does cost_var on all vars of class for the current item, setting
 cls->casecost according to use of class  */
 void cost_all_vars(Class *ccl) {
-    int fac =0;
+    int fac = 0;
     double tmp;
 
     set_class_with_scores(ccl);
-    if ((CurClass->age >= MinFacAge) && (CurClass->use != Tiny)){
+    if ((CurClass->age >= MinFacAge) && (CurClass->use != Tiny)) {
         fac = 1;
         cvvsq = cvv * cvv;
     }
@@ -389,7 +384,6 @@ void cost_all_vars(Class *ccl) {
         CurClass->dad_case_cost = 0.0;
     CurClass->coding_case_cost = 0.0;
     if (fac) {
-
         /*    Now we add the cost of coding the score, and its roundoff */
         /*    The simple form for costing a score is :
             tmp = hlg2pi + 0.5 * (cvvsq + cvvsprd - log (cvvsprd)) + lattice;
@@ -398,10 +392,11 @@ void cost_all_vars(Class *ccl) {
         log (2 Pi e) which results in the reduced cost :  */
         CurClass->clvsprd = log(cvvsprd);
         tmp = 0.5 * (cvvsq + cvvsprd - CurClass->clvsprd - 1.0);
-        /*    Over all scores for the class, the lattice effect will add approx
+        /*
+            Over all scores for the class, the lattice effect will add approx
                 ( log (2 Pi cnt)) / 2  + 1
             to the class cost. This is added later, once cnt is known.
-            */
+        */
         fcasecost += tmp;
         CurClass->fac_case_cost = fcasecost;
         CurClass->coding_case_cost = tmp;
@@ -491,11 +486,10 @@ void adjust_class(Class *ccl, int dod) {
     CurClass->nofac_par_cost = CurClass->fac_par_cost = 0.0;
     for (iv = 0; iv < CurVSet->num_vars; iv++) {
         CurAttr = CurAttrList + iv;
-        if (CurAttr->inactive)
-            goto vdone;
-        CurVType = CurAttr->vtype;
-        (*CurVType->adjust)(iv, fac);
-    vdone:;
+        if (!(CurAttr->inactive)) {
+            CurVType = CurAttr->vtype;
+            (*CurVType->adjust)(iv, fac);
+        }
     }
 
     /*    If vsq less than 0.3, set vboost to inflate  */
@@ -525,86 +519,70 @@ void adjust_class(Class *ccl, int dod) {
         CurClass->dad_cost = CurClass->dad_par_cost = CurClass->cntcost = 0.0;
 
     /*    Contemplate changes to class use and type   */
-    if (CurClass->hold_use || (!(Control & AdjPr)))
-        goto usechecked;
-    /*    If scores boosted too many times, make Tiny and hold   */
-    if (CurClass->boost_count > 20) {
-        CurClass->use = Tiny;
-        CurClass->hold_use = 10;
-        goto usechecked;
-    }
-    /*    Check if size too small to support a factor  */
-    /*    Add up the number of data values  */
-    small = 0;
-    leafcost = 0.0; /* Used to add up evi->cnts */
-    for (iv = 0; iv < NumVars; iv++) {
-        if (CurAttrList[iv].inactive)
-            goto vidle;
-        small++;
-        leafcost += CurClass->stats[iv]->num_values;
-    vidle:;
-    }
-    /*    I want at least 1.5 data vals per param  */
-    small = (leafcost < (9 * small + 1.5 * CurClass->weights_sum + 1)) ? 1 : 0;
-    if (small) {
-        if (CurClass->use != Tiny) {
+    if ((!CurClass->hold_use) && (Control & AdjPr)) {
+        /*    If scores boosted too many times, make Tiny and hold   */
+        if (CurClass->boost_count > 20) {
             CurClass->use = Tiny;
+            CurClass->hold_use = 10;
+        } else {
+            /*    Check if size too small to support a factor  */
+            /*    Add up the number of data values  */
+            small = 0;
+            leafcost = 0.0; /* Used to add up evi->cnts */
+            for (iv = 0; iv < NumVars; iv++) {
+                if (!(CurAttrList[iv].inactive)) {
+                    small++;
+                    leafcost += CurClass->stats[iv]->num_values;
+                }
+            }
+            /*    I want at least 1.5 data vals per param  */
+            small = (leafcost < (9 * small + 1.5 * CurClass->weights_sum + 1)) ? 1 : 0;
+            if (small) {
+                if (CurClass->use != Tiny) {
+                    CurClass->use = Tiny;
+                }
+            } else if (CurClass->use == Tiny) {
+                CurClass->use = Plain;
+                CurClass->sum_score_sq = 0.0;
+            } else if (CurClass->age >= MinFacAge) {
+                if ((CurClass->use == Plain && CurClass->fac_cost < CurClass->nofac_cost) ||
+                    (CurClass->use != Plain && CurClass->nofac_cost < CurClass->fac_cost)) {
+                    CurClass->use = (CurClass->use == Plain) ? Fac : Plain;
+                    if (CurClass->use == Fac) {
+                        CurClass->boost_count = 0;
+                        CurClass->score_boost = 1.0;
+                    }
+                }
+            }
         }
-        goto usechecked;
-    } else {
-        if (CurClass->use == Tiny) {
-            CurClass->use = Plain;
-            CurClass->sum_score_sq = 0.0;
-            goto usechecked;
-        }
-    }
-    if (CurClass->age < MinFacAge)
-        goto usechecked;
-    if (CurClass->use == Plain) {
-        if (CurClass->fac_cost < CurClass->nofac_cost) {
-            CurClass->use = Fac;
-            CurClass->boost_count = 0;
-            CurClass->score_boost = 1.0;
-        }
-    } else {
-        if (CurClass->nofac_cost < CurClass->fac_cost) {
-            CurClass->use = Plain;
-        }
-    }
-usechecked:
-    if ((!dod) || (CurClass->hold_type) || (!(Control & AdjTr)) || (CurClass->num_sons < 2))
-        goto typechecked;
-    leafcost = (CurClass->use == Fac) ? CurClass->fac_cost : CurClass->nofac_cost;
-
-    if ((CurClass->type == Dad) && (leafcost < CurClass->dad_cost) && (Fix != Random)) {
-        flp();
-        printf("Changing type of class%s from Dad to Leaf\n", sers(CurClass));
-        SeeAll = 4;
-        /*    Kill all sons  */
-        delete_sons(CurClass->id); /* which changes type to leaf */
-    } else if (npars && (leafcost > CurClass->dad_cost) && (CurClass->type == Leaf)) {
-        flp();
-        printf("Changing type of class%s from Leaf to Dad\n", sers(CurClass));
-        SeeAll = 4;
-        CurClass->type = Dad;
-        if (CurDad)
-            CurDad->hold_type += 3;
-        /*    Make subs into leafs  */
-        son = CurPopln->classes[CurClass->son_id];
-        son->type = Leaf;
-        son->serial = 4 * CurPopln->next_serial;
-        CurPopln->next_serial++;
-        son = CurPopln->classes[son->sib_id];
-        son->type = Leaf;
-        son->serial = 4 * CurPopln->next_serial;
-        CurPopln->next_serial++;
     }
 
-typechecked:
+    if (dod && !(CurClass->hold_type) && (Control & AdjTr) && (CurClass->num_sons >= 2)) {
+        leafcost = (CurClass->use == Fac) ? CurClass->fac_cost : CurClass->nofac_cost;
+
+        if ((CurClass->type == Dad) && (leafcost < CurClass->dad_cost) && (Fix != Random)) {
+            flp();
+            printf("Changing type of class%s from Dad to Leaf\n", sers(CurClass));
+            SeeAll = 4;
+            delete_sons(CurClass->id); // Changes type to leaf
+        } else if (npars && (leafcost > CurClass->dad_cost) && (CurClass->type == Leaf)) {
+            flp();
+            printf("Changing type of class%s from Leaf to Dad\n", sers(CurClass));
+            SeeAll = 4;
+            CurClass->type = Dad;
+            if (CurDad)
+                CurDad->hold_type += 3;
+
+            for (int i = 0; i < 2; i++) {
+                son = CurPopln->classes[i == 0 ? CurClass->son_id : son->sib_id];
+                son->type = Leaf;
+                son->serial = 4 * CurPopln->next_serial++;
+            }
+        }
+    }
     set_best_costs(CurClass);
     if (Control & AdjPr)
         CurClass->age++;
-    return;
 }
 
 /*    ----------------  parent_cost_all_vars  ------------------------------   */
@@ -613,12 +591,12 @@ typechecked:
 void parent_cost_all_vars(Class *ccl, int valid) {
     Class *son;
     EVinst *evi;
-    int i, ison, nson;
+    int ison, nson;
     double abcost, rrelab;
 
     set_class(ccl);
     abcost = 0.0;
-    for (i = 0; i < CurVSet->num_vars; i++) {
+    for (int i = 0; i < CurVSet->num_vars; i++) {
         CurAttr = CurAttrList + i;
         CurVType = CurAttr->vtype;
         (*CurVType->cost_var_nonleaf)(i, valid);
@@ -630,79 +608,77 @@ void parent_cost_all_vars(Class *ccl, int valid) {
 
     if (!valid) {
         CurClass->dad_par_cost = CurClass->dad_cost = 0.0;
-        return;
+    } else {
+        nson = CurClass->num_sons;
+        /*    The sons of a dad may be listed in any order, so the param cost
+        of the dad can be reduced by log (nson !)  */
+        /*    The cost of saying 'dad' and number of sons is set at nson bits. */
+        abcost += nson * bit - FacLog[nson];
+
+        /*    Now add cost of specifying the relabs of the sons.  */
+        /*    Their relabs are absolute, but we specify them as fractions of this
+        dad's relab. The cost includes -0.5 * Sum_sons { log (sonab / dadab) }
+            */
+        rrelab = 1.0 / CurClass->relab;
+        for (ison = CurClass->son_id; ison >= 0; ison = son->sib_id) {
+            son = CurPopln->classes[ison];
+            abcost -= 0.5 * log(son->relab * rrelab);
+        }
+        /*    Add other terms from Fisher  */
+        /*    And from prior:  */
+        abcost += (nson - 1) * (log(CurClass->weights_sum) + lattice) - FacLog[nson - 1];
+
+        /*    The sons will have been processed by 'adjust_class' already, and
+        this will have caused their best pcosts to be added into cls->cnpcost  */
+        CurClass->dad_par_cost += abcost;
     }
-    nson = CurClass->num_sons;
-    /*    The sons of a dad may be listed in any order, so the param cost
-    of the dad can be reduced by log (nson !)  */
-    abcost -= FacLog[nson];
-    /*    The cost of saying 'dad' and number of sons is set at nson bits. */
-    abcost += nson * bit;
-    /*    Now add cost of specifying the relabs of the sons.  */
-    /*    Their relabs are absolute, but we specify them as fractions of this
-    dad's relab. The cost includes -0.5 * Sum_sons { log (sonab / dadab) }
-        */
-    rrelab = 1.0 / CurClass->relab;
-    for (ison = CurClass->son_id; ison >= 0; ison = son->sib_id) {
-        son = CurPopln->classes[ison];
-        abcost -= 0.5 * log(son->relab * rrelab);
-    }
-    /*    Add other terms from Fisher  */
-    abcost += (nson - 1) * (log(CurClass->weights_sum) + lattice);
-    /*    And from prior:  */
-    abcost -= FacLog[nson - 1];
-    /*    The sons will have been processed by 'adjust_class' already, and
-    this will have caused their best pcosts to be added into cls->cnpcost  */
-    CurClass->dad_par_cost += abcost;
-    return;
 }
 
 /*    --------------------  delete_sons ------------------------------- */
 /*    To delete the sons of a class  */
-void delete_sons(int kk) {
+void delete_sons(int index) {
     Class *clp, *son;
-    int kks;
 
-    if (!(Control & AdjTr))
-        return;
-    clp = CurPopln->classes[kk];
-    if (clp->num_sons <= 0)
-        return;
-    SeeAll = 4;
-    for (kks = clp->son_id; kks > 0; kks = son->sib_id) {
-        son = CurPopln->classes[kks];
-        son->type = Vacant;
-        son->dad_id = Deadkilled;
-        delete_sons(kks);
+    if (Control & AdjTr) {
+        clp = CurPopln->classes[index];
+        if (clp->num_sons > 0) {
+            SeeAll = 4;
+            for (int k = clp->son_id; k > 0; k = son->sib_id) {
+                son = CurPopln->classes[k];
+                son->type = Vacant;
+                son->dad_id = Deadkilled;
+                delete_sons(k);
+            }
+            clp->num_sons = 0;
+            clp->son_id = -1;
+            if (clp->type == Dad)
+                clp->type = Leaf;
+            clp->hold_type = 0;
+        }
     }
-    clp->num_sons = 0;
-    clp->son_id = -1;
-    if (clp->type == Dad)
-        clp->type = Leaf;
-    clp->hold_type = 0;
-    return;
 }
 
 /*    --------------------  split_leaf ------------------------   */
-/*    If kk is a leaf and has subs, turns it into a dad and makes
+/*    If index is a leaf and has subs, turns it into a dad and makes
 its subs into leaves.  Returns 0 if successful.  */
-int split_leaf(int kk) {
+int split_leaf(int index) {
     Class *son;
-    int kks;
-    CurClass = CurPopln->classes[kk];
-    if ((CurClass->type != Leaf) || (CurClass->num_sons < 2) || CurClass->hold_type) {
+
+    CurClass = CurPopln->classes[index];
+    if ((CurClass->type == Leaf) && (CurClass->num_sons > 1) && !CurClass->hold_type) {
+        CurClass->type = Dad;
+        CurClass->hold_type = HoldTime;
+        for (int k = CurClass->son_id; k >= 0; k = son->sib_id) {
+            son = CurPopln->classes[k];
+            son->type = Leaf;
+            son->serial = 4 * CurPopln->next_serial;
+            CurPopln->next_serial++;
+        }
+        SeeAll = 4;
+        return (0);
+    } else {
         return (1);
     }
-    CurClass->type = Dad;
-    CurClass->hold_type = HoldTime;
-    for (kks = CurClass->son_id; kks >= 0; kks = son->sib_id) {
-        son = CurPopln->classes[kks];
-        son->type = Leaf;
-        son->serial = 4 * CurPopln->next_serial;
-        CurPopln->next_serial++;
-    }
-    SeeAll = 4;
-    return (0);
 }
 
 /*    ---------------  delete_all_classes  ------------ */
@@ -740,25 +716,19 @@ void delete_all_classes() {
 /*    given a ptr cpop to a popln and an integer iss, returns the index
 of the next leaf in the popln with serial > iss, or -1 if there is none */
 /*    Intended for scanning the leaves of a popln in serial order  */
+
 int next_leaf(Population *cpop, int iss) {
     Class *clp;
-    int i, j, k, n;
+    int n = -1;
+    int minSerial = 10000000;
 
-    n = -1;
-    k = 10000000;
-    for (i = 0; i <= cpop->hi_class; i++) {
+    for (int i = 0; i <= cpop->hi_class; i++) {
         clp = cpop->classes[i];
-        if (clp->type != Leaf)
-            goto idone;
-        j = clp->serial;
-        if (j <= iss)
-            goto idone;
-        if (j < k) {
-            k = j;
+        if (clp->type == Leaf && clp->serial > iss && clp->serial < minSerial) {
+            minSerial = clp->serial;
             n = i;
         }
-    idone:;
     }
-    return (n);
+    return n;
 }
 /*zzzz*/

@@ -345,7 +345,7 @@ void find_all(int typ);
 int do_dads(int ncy);
 int do_good(int ncy, double target);
 void tidy(int hit);
-int rand_sign();
+int rand_int();
 double rand_float();
 void do_case(int cse, int all, int derivs);
 /*        end doall.c        */

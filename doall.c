@@ -2,16 +2,11 @@
 #define DOALL 1
 #include "glob.h"
 
-/*    -------------------- rand_sign, rand_float, -------------------------- */
-static const short SIGN[2] = {-1, 1};
+/*    -------------------- rand_int, rand_float, -------------------------- */
 static double rcons = (1.0 / (2048.0 * 1024.0 * 1024.0));
 
 #define M32 0xFFFFFFFF
 #define B32 0x80000000
-
-int rand_sign() {
-    return SIGN[rand() % 2];
-}
 
 double rand_float() {
     int js;
@@ -21,6 +16,14 @@ double rand_float() {
         js = M32 - js;
     return (rcons * js);
 }
+
+int rand_int() {
+    int js;
+    RSeed = 69069 * RSeed + 103322787;
+    js = RSeed & M32;
+    return (js);
+}
+
 
 /*    -------------------  find_all  ---------------------------------  */
 /*    Finds all classes of type(s) shown in bits of 'class_type'.
@@ -785,8 +788,8 @@ void do_case(int cse, int all, int derivs) {
             /*    Assign randomly if sub age 0, or to-best if sub age < MinAge */
             if (sub1->age < MinAge) {
                 if (sub1->age == 0) {
-                    //w1 = (rand_sign() < 0) ? 1.0 : 0.0;
-                    w1 = (rand_sign() < 0);
+                    //w1 = (rand_int() < 0) ? 1.0 : 0.0;
+                    w1 = (rand_int() < 0);
                 } else {
                     //w1 = (diff < 0) ? 1.0 : 0.0;
                     w1 = (diff < 0);

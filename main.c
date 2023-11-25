@@ -424,7 +424,6 @@ int main() {
 
     // initialize random number generator
     RSeed = 1234567;
-    srand(1234567);
     
     defaulttune();
 
