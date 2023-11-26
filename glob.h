@@ -427,7 +427,6 @@ EXT int NSamples;
 EXT Buf *CurSource; /* Ptr to command source buffer */
 
 /*    re Sample records  */
-EXT char *CurField;   /*  Common ptr to a data field  */
 EXT int CurRecLen;    /*  reclen of current sample  */
 EXT char *CurRecords; /*  Common ptr to data records block of a sample */
 
@@ -461,7 +460,6 @@ EXT SVinst *CurVarList;
 
 /*    re Classes  */
 EXT Class *CurClass, *CurDad;
-EXT short *vv;
 EXT double CurCaseWeight; /*  weight of case in class  */
 EXT double cvv, cvvsq, cvvsprd;
 EXT double ctv, ctvsq, ctvd1, ctvd1sq, ctvd1cu, ctvsprd, ctd1d2;

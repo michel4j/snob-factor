@@ -1,6 +1,7 @@
 /*    Stuff dealing with classes as members of polpns     */
 #define CLASSES 1
 #include "glob.h"
+#include <omp.h>
 
 /*    -----------------------  serial_to_id  ---------------------------   */
 /*    Finds class index (id) from serial, or -3 if error    */
@@ -28,17 +29,13 @@ int serial_to_id(int ss) {
 void set_class(Class *cls) {
     CurClass = cls;
     CurDadID = CurClass->dad_id;
-    if (CurDadID >= 0)
-        CurDad = CurPopln->classes[CurDadID];
-    else
-        CurDad = 0;
+    CurDad = (CurDadID >= 0) ? CurPopln->classes[CurDadID] : 0;
 }
 
 /*    ---------------------  set_class_with_scores --------------------------   */
 void set_class_with_scores(Class *cls, int item) {
     set_class(cls);
-    vv = CurClass->vv;
-    CurClass->case_score = icvv = vv[item];
+    CurClass->case_score = icvv = CurClass->vv[item];
     CurCaseWeight = CurClass->case_weight;
 }
 
@@ -240,10 +237,10 @@ void print_class(int kk, int full) {
 /*    -------------------------  clear_costs  ------  */
 /*    Clears tcosts (cntcost, cftcost, cstcost). Also clears newcnt,
 newvsq, and calls clear_stats for all variables   */
-void clear_costs(Class *ccl) {
+void clear_costs(Class *cls) {
     int i;
 
-    set_class(ccl);
+    set_class(cls);
     CurClass->mlogab = -log(CurClass->relab);
     CurClass->cstcost = CurClass->cftcost = CurClass->cntcost = 0.0;
     CurClass->cfvcost = 0.0;
@@ -261,10 +258,10 @@ void clear_costs(Class *ccl) {
 
 /*    -------------------  set_best_costs  ------------------------   */
 /*    To set 'b' params, costs to reflect current use   */
-void set_best_costs(Class *ccl) {
+void set_best_costs(Class *cls) {
     int i;
 
-    set_class(ccl);
+    set_class(cls);
     if (CurClass->type == Dad) {
         CurClass->best_cost = CurClass->dad_cost;
         CurClass->best_par_cost = CurClass->dad_par_cost;
@@ -354,7 +351,7 @@ void score_all_vars(Class *ccl, int item) {
         CurClass->cvvsq = cvvsq = cvv * cvv;
         CurClass->cvvsprd = cvvsprd;
     }
-    vv[item] = CurClass->case_score = icvv;
+    CurClass->vv[item] = CurClass->case_score = icvv;
 }
 
 /*    ----------------------  cost_all_vars  --------------------------  */
@@ -409,6 +406,7 @@ void cost_all_vars(Class *ccl, int item) {
 /*    To collect derivative statistics for all vars of a class   */
 void deriv_all_vars(Class *ccl, int item) {
     int fac = 0;
+    AVinst *attr;
 
     set_class_with_scores(ccl, item);
     CurClass->newcnt += CurCaseWeight;
@@ -421,11 +419,11 @@ void deriv_all_vars(Class *ccl, int item) {
         CurClass->vav += CurCaseWeight * CurClass->clvsprd;
         CurClass->totvv += cvv * CurCaseWeight;
     }
+    
     for (int iv = 0; iv < NumVars; iv++) {
-        CurAttr = CurAttrList + iv;
-        if (!(CurAttr->inactive)) {
-            CurVType = CurAttr->vtype;
-            (*CurVType->deriv_var)(iv, fac);
+        attr = CurAttrList + iv;
+        if (!(attr->inactive)) {
+            (*attr->vtype->deriv_var)(iv, fac);
         }
     }
 

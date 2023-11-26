@@ -1,6 +1,7 @@
 
 #define DOALL 1
 #include "glob.h"
+#include <omp.h>
 
 /*    -------------------- rand_int, rand_float, -------------------------- */
 static double rcons = (1.0 / (2048.0 * 1024.0 * 1024.0));
@@ -23,7 +24,6 @@ int rand_int() {
     js = RSeed & M32;
     return (js);
 }
-
 
 /*    -------------------  find_all  ---------------------------------  */
 /*    Finds all classes of type(s) shown in bits of 'class_type'.
@@ -48,9 +48,9 @@ void find_all(int class_type) {
     NumSon = j;
 
     // Set indices in nextic[] for non-descendant classes
+    #pragma omp parallel for
     for (i = 0; i < NumSon; i++) {
         int idi = Sons[i]->id;
-
         for (j = i + 1; j < NumSon; j++) {
             cls = Sons[j];
             while (cls->id != idi) {
@@ -241,7 +241,6 @@ void tidy(int hit) {
     CurPopln->hi_class = newhicl;
     CurPopln->next_serial = (kkd >> 2) + 1;
     sort_sons(CurPopln->root);
-    return;
 }
 
 /*    ------------------------  do_all  --------------------------   */
@@ -552,8 +551,11 @@ int do_good(int ncy, double target) {
     double oldcost;
 
     do_all(1, 1);
+    
+
     for (nn = 0; nn < 6; nn++)
         olddogcosts[nn] = CurRootClass->best_cost + 10000.0;
+    
     nfail = 0;
     for (nn = 0; nn < ncy; nn++) {
         oldcost = CurRootClass->best_cost;
@@ -610,24 +612,25 @@ void do_case(int item, int all, int derivs) {
     double mincost, sum, rootcost, low, diff, w1, w2;
     Class *sub1, *sub2;
     PSaux *psaux;
-    char * record;
+    char *record, *field;
     int clc, i;
 
-    record = CurRecords + item * CurRecLen; /*  Set ptr to case record  */
-    if (!*record) { // Inactive item
+    record = CurRecords + item * CurRecLen; //  Set ptr to case record  
+    if (!*record) {                         // Inactive item
         return;
     }
 
     /*    Unpack data into 'xn' fields of the Saux for each variable. The
     'xn' field is at the beginning of the Saux. Also the "missing" flag. */
+
     for (i = 0; i < NumVars; i++) {
-        CurField = record + CurVarList[i].offset;
+        field = record + CurVarList[i].offset;
         psaux = (PSaux *)CurVarList[i].saux;
-        if (*CurField == 1) {
+        if (*field == 1) {
             psaux->missing = 1;
         } else {
             psaux->missing = 0;
-            memcpy(&(psaux->xn), CurField + 1, CurAttrList[i].vtype->data_size);
+            memcpy(&(psaux->xn), field + 1, CurAttrList[i].vtype->data_size);
         }
     }
 
@@ -652,7 +655,7 @@ void do_case(int item, int all, int derivs) {
     /*    The whole item is irrelevant if just starting on root  */
     if (NumSon != 1) { /*  Not Just doing root  */
         /*    Clear all casewts   */
-
+        
         for (clc = 0; clc < NumSon; clc++)
             Sons[clc]->case_weight = 0.0;
 
@@ -790,10 +793,10 @@ void do_case(int item, int all, int derivs) {
             /*    Assign randomly if sub age 0, or to-best if sub age < MinAge */
             if (sub1->age < MinAge) {
                 if (sub1->age == 0) {
-                    //w1 = (rand_int() < 0) ? 1.0 : 0.0;
+                    // w1 = (rand_int() < 0) ? 1.0 : 0.0;
                     w1 = (rand_int() < 0);
                 } else {
-                    //w1 = (diff < 0) ? 1.0 : 0.0;
+                    // w1 = (diff < 0) ? 1.0 : 0.0;
                     w1 = (diff < 0);
                 }
                 w2 = 1.0 - w1;

@@ -1,4 +1,4 @@
-CC = gcc -g -Wall -O3 -flto=2 -march=native
+CC = gcc -g -Wall -O3 -fopenmp -flto=2 -march=native 
 #CC = gcc -pg -Wall -fopenmp
 
 SRC = main.c dotypes.c glob.c reals.c samples.c inputs.c poplns.c \

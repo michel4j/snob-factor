@@ -1,6 +1,7 @@
 /*    ---------------------  MAIN FILE -----------------  */
 #include "glob.h"
 #include <time.h>
+#include <omp.h>
 
 FILE *yxw;
 #define Log                                                                    \
@@ -426,6 +427,8 @@ int main() {
     char *chp;
     Context oldctx;
 
+    printf("SNOB-Factor: Using %d Threads\n\n", omp_get_max_threads());
+
     // initialize random number generator
     RSeed = 1234567;
     
@@ -489,6 +492,8 @@ int main() {
     yxw = fopen("run.log", "w");
 
     kk = load_vset();
+
+
     printf("Readvset returns %d\n", kk);
     if (kk < 0)
         exit(2);

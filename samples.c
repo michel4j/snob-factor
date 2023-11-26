@@ -11,21 +11,22 @@ void print_var_datum(int i, int n) {
     AVinst *avi;
     SVinst *svi;
     VarType *var_t;
+    char * field;
 
     smpl = CurCtx.sample;
     svi = smpl->variables + i;
     avi = CurAttrList + i;
     var_t = avi->vtype;
-    CurField = (char *)smpl->records;
-    CurField += n * smpl->record_length;
-    CurField += svi->offset;
+    field = (char *)smpl->records;
+    field += n * smpl->record_length;
+    field += svi->offset;
     /*    Test for missing  */
-    if (*CurField == 1) {
+    if (*field == 1) {
         printf("    =====");
         return;
     }
-    CurField += 1;
-    (*var_t->print_datum)(CurField);
+    field += 1;
+    (*var_t->print_datum)(field);
     return;
 }
 /*    ------------------------ load_vset ------------------------------ */
@@ -169,7 +170,7 @@ int load_sample(char *fname) {
     int caseid;
     Buf bufst, *buf;
     Context oldctx;
-    char *saux, vstnam[80], sampname[80];
+    char *saux, *field, vstnam[80], sampname[80];
 
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     buf = &bufst;
@@ -289,8 +290,8 @@ gotit:
     CurSample->num_cases = NumCases;
     CurSample->num_active = 0;
     /*    Make a vector of nc records each of size reclen  */
-    CurRecords = CurSample->records = CurField = (char *)alloc_blocks(0, NumCases * CurRecLen);
-    if (!CurField) {
+    CurRecords = CurSample->records = field = (char *)alloc_blocks(0, NumCases * CurRecLen);
+    if (!field) {
         printf("No space for data\n");
         i = -8;
         goto error;
@@ -309,32 +310,32 @@ gotit:
         /*    If ident negative, so clear active */
         if (caseid < 0) {
             caseid = -caseid;
-            *CurField = 0;
+            *field = 0;
         } else {
-            *CurField = 1;
+            *field = 1;
             CurSample->num_active++;
         }
-        CurField++;
-        memcpy(CurField, &caseid, sizeof(int));
-        CurField += sizeof(int);
+        field++;
+        memcpy(field, &caseid, sizeof(int));
+        field += sizeof(int);
         /*    Posn now points to where the (missing, val) pair for the
         attribute should start.  */
         for (i = 0; i < NumVars; i++) {
             CurVar = CurVarList + i;
             CurAttr = CurAttrList + i;
             CurVType = CurAttr->vtype;
-            kread = (*CurVType->read_datum)(CurField + 1, i);
+            kread = (*CurVType->read_datum)(field + 1, i);
             if (kread < 0) {
                 printf("Data error case %d var %d\n", n + 1, i + 1);
                 swallow();
             }
             if (kread)
-                *CurField = 1; /* Data missing */
+                *field = 1; /* Data missing */
             else {
-                *CurField = 0;
+                *field = 0;
                 CurVar->nval++;
             }
-            CurField += (CurVType->data_size + 1);
+            field += (CurVType->data_size + 1);
         }
     }
     printf("Number of active cases = %d\n", CurSample->num_active);
