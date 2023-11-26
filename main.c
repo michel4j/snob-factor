@@ -1,128 +1,121 @@
 /*    ---------------------  MAIN FILE -----------------  */
 #include "glob.h"
-#include <time.h>
 #include <omp.h>
+#include <stdarg.h>
+#include <time.h>
 
-FILE *yxw;
-#define Log                                                                    \
-    fprintf(yxw, "%s ", keyw[skk]);fprintf(yxw,
-#define EL );                                                                  \
-    fprintf(yxw, "\n");                                                        \
-    fflush(yxw);
+FILE *logfile;
+
 char sparam[80];
 int intparam;
 void show_pop_names();
 void show_smpl_names();
+void log_cmd(const char *format, ...) __attribute__ ((format (printf, 1, 2)));
 
 /*    ---------------------  menu  ---------------------------  */
 /*    To read a command word and return an integer code for it  */
 
-#define MNkey 50
-static char *keyw[MNkey] = {
-    "stop",     "doall",     "doleaves",      "killclass",  "killsons",
-    "prclass",  "adjust",    "assign",        "splitleaf",  "deldad",
-    "help",     "copypop",   "killpop",       "pickpop",    "tree",
-    "sto",      "file",      "readsamp",      "flatten",    "dodads",
-    "samps",    "insdad",    "dogood",        "bestinsdad", "bestdeldad",
-    "rebuild",  "ranclass",  "savepop",       "restorepop", "nosubs",
-    "binhier",  "moveclass", "bestmoveclass", "pops",       "crosstab",
-    "trymoves", "thing",     "trep",          "select",     "zzzzzzzzzzzz"};
+#define NUM_COMMANDS 50
+static char *commands[NUM_COMMANDS] = {"stop",          "doall",    "doleaves", "killclass", "killsons",   "prclass", "adjust",  "assign",
+                                       "splitleaf",     "deldad",   "help",     "copypop",   "killpop",    "pickpop", "tree",    "sto",
+                                       "file",          "readsamp", "flatten",  "dodads",    "samps",      "insdad",  "dogood",  "bestinsdad",
+                                       "bestdeldad",    "rebuild",  "ranclass", "savepop",   "restorepop", "nosubs",  "binhier", "moveclass",
+                                       "bestmoveclass", "pops",     "crosstab", "trymoves",  "thing",      "trep",    "select",  "zzzzzzzzzzzz"};
 
-int actk[MNkey], nkey, skk, nvkey;
+int cmd_index[NUM_COMMANDS], nkey, skk, nvkey;
 char *spaces = "               ";
 
-char *prmt[] = {
-    "stop stops both sprompt and cnob",
-    "doall <N> does N steps of top-down re-estimation and assignment",
-    "doleaves <N> does N steps of re-estimation and assignment to leaf classes\n\
+char *prmt[] = {"stop stops both sprompt and cnob",
+                "doall <N> does N steps of top-down re-estimation and assignment",
+                "doleaves <N> does N steps of re-estimation and assignment to leaf classes\n\
 subclasses and tree structure usually unaffected. Bottom-up reassignment of\n\
 weights to dad classes. Doleaves gives faster refinement than Doall, but no\n\
 tree adjustment. Always followed by one Doall step.",
 
-    "killclass <S> kills class serial S.  Descendants also die.",
+                "killclass <S> kills class serial S.  Descendants also die.",
 
-    "killsons <S> kills all sons, grandsons etc. of class serial S. S becomes "
-    "leaf",
+                "killsons <S> kills all sons, grandsons etc. of class serial S. S becomes "
+                "leaf",
 
-    "prclass <S, N> prints properties of class S. If N > 0, prints parameters\n\
+                "prclass <S, N> prints properties of class S. If N > 0, prints parameters\n\
   If S = -1, prints all dads and leaves. If S = -2, includes subs.",
 
-    "adjust controls which aspects of a population model will be changed.\n\
+                "adjust controls which aspects of a population model will be changed.\n\
 Follow it with one or more characters from:\n\
    'a'll, 's'cores, 't'ree, 'p'arams, each followed by '+' or '-'\n\
 to turn adjustment on or off. Thus \"adjust t-p+\" disables tree structure\n\
 adjustment and enables class parameter adjustment. 'p' does not include scores.",
 
-    "assign <c> controls how things are assigned to classes. The character c\n\
+                "assign <c> controls how things are assigned to classes. The character c\n\
 should be one of 'p'artial, 'm'ost_likely or 'r'andom. Default is 'p'.",
 
-    "splitleaf <S>, if class S is a leaf, makes S a dad and its subclasses "
-    "leaves",
+                "splitleaf <S>, if class S is a leaf, makes S a dad and its subclasses "
+                "leaves",
 
-    "deldad <S> replaces dad class S by its sons",
+                "deldad <S> replaces dad class S by its sons",
 
-    "help <command> gives some details of the command. help <\"help\"> lists "
-    "all",
+                "help <command> gives some details of the command. help <\"help\"> lists "
+                "all",
 
-    "copypop <N, P> copies the \"work\" model to a new model. N selects the\n\
+                "copypop <N, P> copies the \"work\" model to a new model. N selects the\n\
 level of detail: N=0 copies no item weights or scores, leaving the new popln\n\
 unattached to a sample. P is the new popln name.",
 
-    "killpop <P> destroys a popln model. P must be the popln index or FULL "
-    "name",
+                "killpop <P> destroys a popln model. P must be the popln index or FULL "
+                "name",
 
-    "pickpop <P> copies popln P to \"work\".  P = popln index or FULL name",
+                "pickpop <P> copies popln P to \"work\".  P = popln index or FULL name",
 
-    "tree  prints a summary of control settings and the hierarchic tree",
+                "tree  prints a summary of control settings and the hierarchic tree",
 
-    "To stop, please use the full word \"stop\".",
+                "To stop, please use the full word \"stop\".",
 
-    "file <F> switches command input to file name F. Command input will return\n\
+                "file <F> switches command input to file name F. Command input will return\n\
 to keyboard at end of F or error, unless F contains a \"file\" command.\n\
 F may contain a file command with its own name, returning to the start of F.",
 
-    "readsamp <F> reads in a new sample from file F. Sample must use a VarSet\n\
+                "readsamp <F> reads in a new sample from file F. Sample must use a VarSet\n\
   already loaded.",
 
-    "flatten makes all twigs (non-root classes with no sons) immediate leaves",
+                "flatten makes all twigs (non-root classes with no sons) immediate leaves",
 
-    "dodads <N> iterates adjustment of parameter costs and dad parameters\n\
+                "dodads <N> iterates adjustment of parameter costs and dad parameters\n\
    till stability or for N cycles",
 
-    "samps lists the known samples.",
+                "samps lists the known samples.",
 
-    "insdad <S1, S2> where classes S1,S2 are sibs inserts a new Dad with S1,S2\n\
+                "insdad <S1, S2> where classes S1,S2 are sibs inserts a new Dad with S1,S2\n\
 as childen. The new Dad is son of original Dad od S1, S2.",
 
-    "dogood <N> does N cycles of doleaves(3) and dodads(2) or until stable.",
+                "dogood <N> does N cycles of doleaves(3) and dodads(2) or until stable.",
 
-    "bestinsdad makes a guess at the most profitable insdad and tries it.",
+                "bestinsdad makes a guess at the most profitable insdad and tries it.",
 
-    "bestdeldad guesses the most profitable dad to delete and tries it.",
+                "bestdeldad guesses the most profitable dad to delete and tries it.",
 
-    "rebuild flattens the tree, then greedily rebuilds it.",
+                "rebuild flattens the tree, then greedily rebuilds it.",
 
-    "ranclass <N> destroys the current model and inserts N random leaves",
+                "ranclass <N> destroys the current model and inserts N random leaves",
 
-    "savepop <P, N, F> records model P on file named F, unattached if N=0",
+                "savepop <P, N, F> records model P on file named F, unattached if N=0",
 
-    "restorepop <F> reads a model from file named F, as saved by 'savepop'.\n\
+                "restorepop <F> reads a model from file named F, as saved by 'savepop'.\n\
   If model unattached, or attached to an unknown sample, it is attached to\
   the current sample if any.",
 
-    "nosubs <N> kills and prevents birth of subclasses if N > 0",
+                "nosubs <N> kills and prevents birth of subclasses if N > 0",
 
-    "binhier <N> inserts dads to convert tree to a binary hierarchy, then\n\
+                "binhier <N> inserts dads to convert tree to a binary hierarchy, then\n\
   deletes dads to improve. If N > 0, first flattens tree.",
 
-    "moveclass <S1 S2> moves class S1 (and any dependent subtree) to be a son of\n\
+                "moveclass <S1 S2> moves class S1 (and any dependent subtree) to be a son of\n\
   class S2, which must be a dad. S1 may not be an ancestor of S2.",
 
-    "bestmoveclass guesses the most profitable moveclass and tries it.",
+                "bestmoveclass guesses the most profitable moveclass and tries it.",
 
-    "pops lists the defined models.",
+                "pops lists the defined models.",
 
-    "crosstab <P> shows the overlap between the leaves of work and the leaves of\n\
+                "crosstab <P> shows the overlap between the leaves of work and the leaves of\n\
 model P (which must be attached to the current sample.) The overlap is shown\n\
 as a permillage of the number of active things, in a cross-tabulation table.\n\
 A table entry for leaf serial int of work and leaf serial Sp of P shows the\n\
@@ -130,21 +123,21 @@ permillage of all active things which are in both leaves. Crosstab <work> is\n\
 also meaningful. Here, an entry for leaves S1, S2 shows the permillage of\n\
 item which are partially assigned to both classes.",
 
-    "trymoves <N> attempts moveclasses until N successive failures.",
+                "trymoves <N> attempts moveclasses until N successive failures.",
 
-    "item <N> finds the sample item with identifier N.",
+                "item <N> finds the sample item with identifier N.",
 
-    "trep <F> writes a item report on file F. Assigns each item to smallest class\n\
+                "trep <F> writes a item report on file F. Assigns each item to smallest class\n\
     in which item has weight > 0.5,  and to most likely leaf.",
 
-    "select <S> first copies the current work model to an unattached model called\
+                "select <S> first copies the current work model to an unattached model called\
  OldWork, replaces the current sample by sample <S> where S is either name or\
  index, then picks OldWork to model it, getting item weights and scores.\
  The 'adjust' state is left as adjusting only scores, not params or tree.",
 
-    " "};
+                " "};
 
-int poss[MNkey];
+int poss[NUM_COMMANDS];
 
 int menu(int cnl) {
     char inp[80];
@@ -159,7 +152,7 @@ int menu(int cnl) {
         return (-1);
 
     // Initialize possibility array
-    int poss[MNkey] = {0};
+    int poss[NUM_COMMANDS] = {0};
     for (i = 0; i < nvkey; i++) {
         poss[i] = 1;
     }
@@ -169,7 +162,7 @@ int menu(int cnl) {
     // Identify possible keywords
     for (j = 0; inp[j]; j++) {
         for (i = 0; i < nvkey; i++) {
-            if (poss[i] && (strlen(keyw[i]) <= j || inp[j] != keyw[i][j])) {
+            if (poss[i] && (strlen(commands[i]) <= j || inp[j] != commands[i][j])) {
                 poss[i] = 0;
             } else {
                 k = i; // Last matching keyword index
@@ -182,24 +175,33 @@ int menu(int cnl) {
     } else if (nposs > 1) {
         /*    Could have an exact match  */
         for (k = 0; k < nvkey; k++) {
-            if (poss[k] && (!keyw[k][j])) {
+            if (poss[k] && (!commands[k][j])) {
                 skk = k;
-                return (actk[k]);
+                return (cmd_index[k]);
             };
         }
         printf("Ambiguous command\n");
         for (i = 0; i < nvkey; i++) {
             if (poss[i])
-                printf(" %s?", keyw[i]);
+                printf(" %s?", commands[i]);
         }
         printf("\n");
         return (-1);
     }
 
     skk = k;
-    return (actk[k]);
+    return (cmd_index[k]);
 }
 
+// write to logfile and flush buffers
+void log_cmd(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    vfprintf(logfile, format, args);
+    fprintf(logfile, "\n");
+    va_end(args);    
+    fflush(logfile);
+}
 /* ----------------- readserial ------------------------- */
 /* To get a class serial parameter for an action */
 /* Returns the class ID or -3 for failure. Prints string if needed */
@@ -215,12 +217,16 @@ int readserial(int prm) {
         n = read_int(&nn, 1);
     }
 
-    if (n) return -3;
-    if (nn == -1 || nn == -2) return nn;
+    if (n)
+        return -3;
+    if (nn == -1 || nn == -2)
+        return nn;
 
     nn *= 4;
-    if (terminator == 'a') nn += 1;
-    else if (terminator == 'b') nn += 2;
+    if (terminator == 'a')
+        nn += 1;
+    else if (terminator == 'b')
+        nn += 2;
 
     // Advance buffer if needed
     if (terminator == 'a' || terminator == 'b') {
@@ -229,7 +235,6 @@ int readserial(int prm) {
 
     return serial_to_id(nn);
 }
-
 
 /*    ----------------------  readanint -----------------------------  */
 /*    To read an integer action parameter. Returns -1 if error  */
@@ -280,24 +285,23 @@ int readsparam(int kk) {
 /* ------------------ readachar ------------------------ */
 /* To read one non-blank character */
 int readachar(int kk) {
-    int ch, nl=0;
+    int ch, nl = 0;
 
     while (1) {
         ch = read_char(nl);
         if (ch != ' ' && ch != '\t') {
             if (ch == 2) {
                 printf("%s\n Enter character:\n", prmt[kk]);
-                continue;  // Read next character
+                continue; // Read next character
             }
-            break;  // Non-blank character found
+            break; // Non-blank character found
         }
     }
     return ch;
 }
 
-
 /* -------------------- readintname ----------------------- */
-/* Reads a pos integer to intparam or name to sparam. Returns -1 if error. 
+/* Reads a pos integer to intparam or name to sparam. Returns -1 if error.
    Leaves sparam = 0 if integer found */
 int readintname(int kk, int jj) {
     int n, i, nn = 0;
@@ -307,13 +311,18 @@ int readintname(int kk, int jj) {
     if (n == 2) {
         printf("%s\n Enter name string or integer index\n", prmt[kk]);
         switch (jj) {
-            case 1: show_pop_names(); break;
-            case 2: show_smpl_names(); break;
+        case 1:
+            show_pop_names();
+            break;
+        case 2:
+            show_smpl_names();
+            break;
         }
         n = read_str(sparam, 1);
     }
 
-    if (n) return -1;
+    if (n)
+        return -1;
 
     // Scan sparam for an integer
     for (i = 0; sparam[i]; i++) {
@@ -322,16 +331,15 @@ int readintname(int kk, int jj) {
         } else if (sparam[i] == ' ' || sparam[i] == '\t' || sparam[i] == '\0') {
             sparam[0] = 0;
             intparam = nn;
-            return 0;  // Number found
+            return 0; // Number found
         } else {
-            break;  // Not a number
+            break; // Not a number
         }
     }
 
     // If no number is found, return 0
     return 0;
 }
-
 
 /*    --------------------  show_pop_names  ---------------------  */
 void show_pop_names() {
@@ -370,7 +378,8 @@ int readpopid(int kk) {
     int n, nn;
 
     n = readintname(kk, 1);
-    if (n) return n;
+    if (n)
+        return n;
 
     if (intparam >= 0) {
         nn = intparam - 1;
@@ -413,67 +422,73 @@ int readsampid(int kk) {
     }
 }
 
-
 /*    ---------------------  main  ---------------------------  */
 
 void initialize() {
-    
-}
-extern char *malloc_options;
-int main() {
-    int k, kk, k1, k2;
-    int i, j, n, nn, cspace = 0;
-    double drop;
+    int i, j, n;
     char *chp;
-    Context oldctx;
 
-    printf("SNOB-Factor: Using %d Threads\n\n", omp_get_max_threads());
-
-    // initialize random number generator
     RSeed = 1234567;
-    
     defaulttune();
+    printf("SNOB-Factor: %d Threads Available\n\n", omp_get_max_threads());
 
     /*    A section to sort the keywords into alphabetic order, and set
-    actk[] to hold their original order indexes   */
+    cmd_index[] to hold their original order indexes   */
 
-    for (i = 0; strcmp(keyw[i], "zzzzzzzzzzzz"); i++) {
-        actk[i] = i;
+    for (i = 0; strcmp(commands[i], "zzzzzzzzzzzz"); i++) {
+        cmd_index[i] = i;
     }
-    /*    fill out keyw[] with z-strings   */
+    /*    fill out commands[] with z-strings   */
     nkey = i;
-    for (; i < MNkey; i++) {
-        keyw[i] = "zzzzzzzzzzzz";
-        actk[i] = 999;
+    for (; i < NUM_COMMANDS; i++) {
+        commands[i] = "zzzzzzzzzzzz";
+        cmd_index[i] = 999;
     }
     /*    Now bubble-sort the first nkey entries   */
     for (i = (nkey - 1); i > 0; i--) {
         for (j = 0; j < i; j++) {
-            if (strcmp(keyw[j], keyw[j + 1]) > 0) {
-                chp = keyw[j];
-                keyw[j] = keyw[j + 1];
-                keyw[j + 1] = chp;
-                n = actk[j];
-                actk[j] = actk[j + 1];
-                actk[j + 1] = n;
+            if (strcmp(commands[j], commands[j + 1]) > 0) {
+                chp = commands[j];
+                commands[j] = commands[j + 1];
+                commands[j + 1] = chp;
+                n = cmd_index[j];
+                cmd_index[j] = cmd_index[j + 1];
+                cmd_index[j + 1] = n;
             }
         }
     }
     /*    Count valid ones (not 10 z-s)    */
     nvkey = 0;
     for (i = 0; i < nkey; i++) {
-        if (strcmp(keyw[i], "zzzzzzzzzz")) nvkey++;
+        if (strcmp(commands[i], "zzzzzzzzzz"))
+            nvkey++;
     }
+}
 
-    Fix = DFix = Partial;
-    DControl = Control = AdjAll;
-    /*    Clear vectors of pointers to Poplns, Samples  */
+/*    Clear vectors of pointers to Poplns, Samples  */
+void clear_vectors() {
+    int k;
+
     for (k = 0; k < MAX_POPULATIONS; k++)
         Populations[k] = 0;
     for (k = 0; k < MAX_SAMPLES; k++)
         Samples[k] = 0;
     for (k = 0; k < MAX_VSETS; k++)
         VarSets[k] = 0;
+}
+
+extern char *malloc_options;
+int main() {
+    int k, kk, k1, k2;
+    int i, j, n, nn, cspace = 0;
+    double drop;
+    Context oldctx;
+
+    Fix = DFix = Partial;
+    DControl = Control = AdjAll;
+
+    initialize();    // initialize menu
+    clear_vectors(); //    Clear vectors of pointers to Poplns, Samples
     do_types();
 
     /*    Set source to commsbuf and initialize  */
@@ -489,10 +504,9 @@ int main() {
     ddd*/
 
     /*    Open a log file   */
-    yxw = fopen("run.log", "w");
+    logfile = fopen("run.log", "w");
 
     kk = load_vset();
-
 
     printf("Readvset returns %d\n", kk);
     if (kk < 0)
@@ -506,6 +520,7 @@ int main() {
         printf("Cannot read sample file name\n");
         goto error;
     }
+
     k = load_sample(sparam);
     printf("Readsample returns %d\n", k);
     cspace = report_space(1);
@@ -567,31 +582,31 @@ loop:
         flp();
         CurPopln = CurCtx.popln;
         CurClass = CurPopln->classes[CurPopln->root];
-        printf("P%1d  %4d classes, %4d leaves,  Pcost%8.1f", CurPopln->id + 1,
-               CurPopln->num_classes, CurPopln->num_leaves, CurClass->best_par_cost);
+        printf("P%1d  %4d classes, %4d leaves,  Pcost%8.1f", CurPopln->id + 1, CurPopln->num_classes, CurPopln->num_leaves, CurClass->best_par_cost);
         if (CurPopln->sample_size)
             printf("  Tcost%10.1f,  Cost%10.1f", CurClass->best_case_cost, CurClass->best_cost);
         printf("\n");
-        printf("Sample %2d %s\n", (CurCtx.sample) ? CurCtx.sample->id + 1 : 0,
-               (CurCtx.sample) ? CurCtx.sample->name : "NULL");
+        printf("Sample %2d %s\n", (CurCtx.sample) ? CurCtx.sample->id + 1 : 0, (CurCtx.sample) ? CurCtx.sample->name : "NULL");
     }
     if ((CurSource->nch) || (CurSource->inl[0] == '\n')) {
         if (new_line())
             goto error;
     }
+
     kk = menu(1);
     if (kk < 0)
         goto error;
     switch (kk) {
     case 0:
-        fprintf(yxw, "\n");
-        fclose(yxw);
+        fprintf(logfile, "\n");
+        fclose(logfile);
         exit(2);
     case 1: /* doall */
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL k = do_all(nn, 1);
+        log_cmd("%s %d", commands[skk], nn);
+        k = do_all(nn, 1);
         if (k >= 0) {
             flp();
             printf("Doall ends after %d cycles\n", k);
@@ -601,7 +616,8 @@ loop:
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL k = do_all(nn, 0);
+        log_cmd("%s %d", commands[skk], nn);
+        k = do_all(nn, 0);
         if (k >= 0) {
             flp();
             printf("Doleaves ends after %d cycles\n", k);
@@ -615,13 +631,15 @@ loop:
         }
         if (k < 0)
             goto error;
-        Log "%s", sers(CurPopln->classes[k]) EL CurPopln->classes[k]->weights_sum = 0.0;
+        log_cmd("%s %s", commands[skk], sers(CurPopln->classes[k]));
+        CurPopln->classes[k]->weights_sum = 0.0;
         goto loop;
     case 4: /* delete_sons */
         k = readserial(kk);
         if (k < 0)
             goto error;
-        Log "%s", sers(CurPopln->classes[k]) EL delete_sons(k);
+        log_cmd("%s %s", commands[skk], sers(CurPopln->classes[k]));
+        delete_sons(k);
         CurPopln->classes[k]->hold_type = HoldTime;
         goto loop;
     case 5: /* prclass */
@@ -631,7 +649,8 @@ loop:
         i = readanint(kk);
         if (i < 0)
             goto error;
-        Log "%s  %d", sers(CurPopln->classes[k]), i EL print_class(k, i);
+        log_cmd("%s %s %d", commands[skk], sers(CurPopln->classes[k]), i);
+        print_class(k, i);
         goto loop;
     case 6: /*    adjust  */
         k = readsparam(kk);
@@ -671,7 +690,8 @@ loop:
         }
         goto error;
     adjflagsin:
-        Log "%s", sparam EL nn = AdjAll - nn;
+        log_cmd("%s %s", commands[skk], sparam);
+        nn = AdjAll - nn;
         Control = DControl = (DControl & nn) | n;
         goto loop;
     case 7: /*  assign  */
@@ -692,7 +712,8 @@ loop:
         }
         goto error;
     assignok:
-        Log "%c", k EL goto loop;
+        log_cmd("%s %c", commands[skk], k);
+        goto loop;
     case 8: /* splitleaf */
         k = readserial(kk);
         if (k < 0)
@@ -701,14 +722,17 @@ loop:
             printf("Class %s is not a leaf\n", sers(CurPopln->classes[k]));
             goto loop;
         }
-        Log "%s", sers(CurPopln->classes[k]) EL if (split_leaf(k))
-                      printf("Cannot split class%s\n", sers(CurPopln->classes[k]));
+
+        log_cmd("%s %s", commands[skk], sers(CurPopln->classes[k]));
+        if (split_leaf(k))
+            printf("Cannot split class%s\n", sers(CurPopln->classes[k]));
         goto loop;
     case 9: /* splice_dad */
         k = readserial(kk);
         if (k < 0)
             goto error;
-        Log "%s", sers(CurPopln->classes[k]) EL k = CurPopln->classes[k]->serial;
+        log_cmd("%s %s", commands[skk], sers(CurPopln->classes[k]));
+        k = CurPopln->classes[k]->serial;
         drop = splice_dad(k);
         goto dropprint;
 
@@ -730,7 +754,7 @@ loop:
                 i = j * n + k;
                 if (i >= nvkey)
                     goto endof5;
-                printf("%s%s", keyw[i], spaces + strlen(keyw[i]));
+                printf("%s%s", commands[i], spaces + strlen(commands[i]));
             endof5:;
             }
             printf("\n");
@@ -754,7 +778,8 @@ loop:
         printf("Please donot use a popln name beginning BST_\n");
         goto error;
     ok11:
-        Log "%d %s", i, sparam EL i = copy_population(CurPopln->id, i, sparam);
+        log_cmd("%s %d %s", commands[skk], i, sparam);
+        i = copy_population(CurPopln->id, i, sparam);
         if (i < 0)
             goto error;
         printf("Index%3d = popln %s\n", i + 1, sparam);
@@ -765,7 +790,8 @@ loop:
         k = readpopid(kk);
         if (k < 0)
             goto error;
-        Log "%s", Populations[k]->name EL destroy_population(k);
+        log_cmd("%s %s", commands[skk], Populations[k]->name);
+        destroy_population(k);
         goto loop;
     case 13: /* pickpop */
         goto pickapop;
@@ -797,18 +823,21 @@ loop:
         memcpy(&CurCtx, &oldctx, sizeof(Context));
         if (k < 0)
             goto error;
-        printf("Sample %s index%2d from file %s\n", Samples[k]->name, k + 1,
-               sparam);
-        Log "%s", sparam EL goto loop;
+        printf("Sample %s index%2d from file %s\n", Samples[k]->name, k + 1, sparam);
+        log_cmd("%s %s", commands[skk], sparam);
+        goto loop;
     case 18: /*  flatten  */
-        Log " " EL flatten();
+        log_cmd("%s", commands[skk]);
+        log_cmd("%s", commands[skk]);
+        flatten();
         goto loop;
 
     case 19: /*  dodads  */
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL do_dads(nn);
+        log_cmd("%s %d", commands[skk], nn);
+         do_dads(nn);
         goto loop;
 
     case 20: /*  samps  */
@@ -824,8 +853,8 @@ loop:
             goto error;
         k1 = CurPopln->classes[k1]->serial;
         k2 = CurPopln->classes[k2]->serial;
-        Log "%s %s", sers(CurPopln->classes[k1]),
-            sers(CurPopln->classes[k2]) EL drop = insert_dad(k1, k2, &k);
+        log_cmd("%s %s %s", commands[skk], sers(CurPopln->classes[k1]), sers(CurPopln->classes[k2]));
+        drop = insert_dad(k1, k2, &k);
         flp();
         if (k >= 0)
             printf("New Dad's serial%s\n", sers(CurPopln->classes[k]));
@@ -842,7 +871,9 @@ loop:
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL k = do_good(nn, ((double)0.0));
+        log_cmd("%s %d", commands[skk], nn);
+        log_cmd("%s %d", commands[skk], nn);
+         k = do_good(nn, ((double)0.0));
         if (k >= 0) {
             flp();
             printf("Dogood ends after %d cycles\n", k);
@@ -851,7 +882,8 @@ loop:
 
     case 23: /*  best_insert_dad  */
         clear_bad_move();
-        Log " " EL k = best_insert_dad(0);
+        log_cmd("%s", commands[skk]);
+         k = best_insert_dad(0);
         if (k < 0)
             printf("No good dad insertion found\n");
         else
@@ -860,7 +892,8 @@ loop:
 
     case 24: /*  best_remove_dad  */
         clear_bad_move();
-        Log " " EL k = best_remove_dad();
+        log_cmd("%s", commands[skk]);
+         k = best_remove_dad();
         if (k < 0)
             printf("No good dad deletion found\n");
         else
@@ -868,14 +901,16 @@ loop:
         goto loop;
 
     case 25: /*  rebuild  */
-        Log " " EL rebuild();
+        log_cmd("%s", commands[skk]);
+        rebuild();
         goto loop;
 
     case 26: /*  ranclass  */
         nn = readanint(kk);
         if (nn < 2)
             goto error;
-        Log "%d", nn EL ranclass(nn);
+        log_cmd("%s %d", commands[skk], nn);
+         ranclass(nn);
         goto loop;
 
     case 27: /*  save_population */
@@ -888,7 +923,9 @@ loop:
         j = readsparam(kk);
         if (j < 0)
             goto error;
-        Log "%s %d %s", Populations[k]->name, i, sparam EL i = save_population(k, i, sparam);
+
+        log_cmd("%s %s %d %s", commands[skk], Populations[k]->name, i, sparam);
+        i = save_population(k, i, sparam);
         if (i < 0) {
             printf("Savepop failed\n");
             goto error;
@@ -898,7 +935,8 @@ loop:
     case 28: /*  load_population */
         if (readsparam(kk) < 0)
             goto error;
-        Log "%s", sparam EL k = load_population(sparam);
+        log_cmd("%s %s", commands[skk], sparam);
+        k = load_population(sparam);
         if (k < 0) {
             printf("Restorepop failed\n");
             goto error;
@@ -914,13 +952,15 @@ loop:
             NoSubs = 1;
         else
             NoSubs = 0;
-        Log "%d", NoSubs EL goto loop;
+        log_cmd("%s %d", commands[skk], NoSubs);
+        goto loop;
 
     case 30: /* binary_hierarchy */
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL binary_hierarchy(nn);
+        log_cmd("%s %d", commands[skk], nn);
+        binary_hierarchy(nn);
         goto loop;
 
     case 31: /* move_class */
@@ -932,14 +972,15 @@ loop:
             goto error;
         k1 = CurPopln->classes[k1]->serial;
         k2 = CurPopln->classes[k2]->serial;
-        Log "%s %s", sers(CurPopln->classes[k1]),
-            sers(CurPopln->classes[k2]) EL drop = move_class(k1, k2);
+        log_cmd("%s %s %s", commands[skk], sers(CurPopln->classes[k1]), sers(CurPopln->classes[k2]));
+        drop = move_class(k1, k2);
         printf("Move changes cost by %12.1f\n", -drop);
         goto loop;
 
     case 32: /*  best_move_class  */
         clear_bad_move();
-        Log " " EL best_move_class(0);
+        log_cmd("%s", commands[skk]);
+        best_move_class(0);
         goto loop;
 
     case 33: /*  pops  */
@@ -957,14 +998,16 @@ loop:
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL try_moves(nn);
+        log_cmd("%s %d", commands[skk], nn);
+        try_moves(nn);
         goto loop;
 
     case 36: /* item */
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL kk = find_sample_index(nn);
+        log_cmd("%s %d", commands[skk], nn);
+        kk = find_sample_index(nn);
         printf("Thing%8d  at index%8d\n", nn, kk);
         goto loop;
 
@@ -979,7 +1022,8 @@ loop:
         if (k < 0)
             goto error;
         printf("Selecting sample %s\n", Samples[k]->name);
-        Log "%s", Samples[k]->name EL i = copy_population(CurPopln->id, 0, "OldWork");
+        log_cmd("%s %s", commands[skk], Samples[k]->name);
+        i = copy_population(CurPopln->id, 0, "OldWork");
         if (i < 0) {
             printf("Can't make OldWork copy of work\n");
             goto error;
@@ -1011,7 +1055,8 @@ pickapop:
     k = set_work_population(i);
 picked:
     CurCtx.popln = CurPopln = Populations[k];
-    Log "%s", Populations[i]->name EL goto loop;
+    log_cmd("%s %s", commands[skk], Populations[i]->name);
+     goto loop;
 #ifdef ZZ
 #endif
 }
