@@ -93,7 +93,7 @@ static Basic *cvi, *dcvi;
 static Stats *evi;
 
 /*--------------------------  define ------------------------------- */
-/*    This routine is used to set up a Vtype entry in the global "types"
+/*    This routine is used to set up a VarType entry in the global "types"
 array.  It is the only function whose name needs to be altered for different
 types of variable, and this name must be copied into the file "definetypes.c"
 when installing a new type of variable. It is also necessary to change the
@@ -103,7 +103,7 @@ when installing a new type of variable. It is also necessary to change the
 void reals_define(typindx) int typindx;
 /*    typindx is the index in types[] of this type   */
 {
-    Vtype *vtp;
+    VarType *vtp;
 
     vtp = Types + typindx;
     vtp->id = typindx;
@@ -272,7 +272,6 @@ void score_var(int iv) {
     md2 = evi->frsds * (evi->ldsq + cvi->ldsprd);
     vvd2 += md2;
     mvvd2 += 1.1 * md2;
-    return;
 }
 
 /*    -----------------------  cost_var  --------------------------   */
@@ -294,59 +293,52 @@ void cost_var(int iv, int fac) {
     scasecost += cost;
 
     /*    Only do faccost if fac  */
-    if (!fac)
-        goto facdone;
-    del += cvv * cvi->ld;
-    var = del * del + cvi->fmusprd + saux->epssq + cvvsq * cvi->ldsprd + cvvsprd * evi->ldsq;
-    evi->var = var;
-    cost = hlg2pi + 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd * 2.0 - saux->leps;
-
-facdone:
+    if (fac) {
+        del += cvv * cvi->ld;
+        var = del * del + cvi->fmusprd + saux->epssq + cvvsq * cvi->ldsprd + cvvsprd * evi->ldsq;
+        evi->var = var;
+        cost = hlg2pi + 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd * 2.0 - saux->leps;
+    }
     fcasecost += cost;
     evi->parkftcost = cost;
-
-    return;
 }
 
-/*    --------------------  deriv_var  --------------------------  */
-/*    Given the item weight in cwt, calcs derivs of cost wrt basic
+/* -------------------- deriv_var -------------------------- */
+/* Given the item weight in cwt, calculates derivatives of cost wrt basic
 params and accumulates in paramd1, paramd2.
-Factor derivs done only if fac.  */
+Factor derivatives done only if fac. */
 void deriv_var(int iv, int fac) {
     double del, var, frsds;
     set_var(iv);
+
     if (saux->missing)
         return;
-    /*    Do non-fac first  */
+
+    // Common operations for both fac and non-fac cases
+    double curCaseWeightTimesXn = CurCaseWeight * saux->xn;
     evi->cnt += CurCaseWeight;
-    /*    For non-fac, rather than getting derivatives I just collect
-        the sufficient statistics, sum of xn, sum of xn^2  */
-    evi->tx += CurCaseWeight * saux->xn;
+    evi->tx += curCaseWeightTimesXn;
     evi->txx += CurCaseWeight * (saux->xn * saux->xn + saux->epssq);
-    /*    Accumulate weighted item cost  */
     evi->stcost += CurCaseWeight * evi->parkstcost;
     evi->ftcost += CurCaseWeight * evi->parkftcost;
 
-    /*    Now for factor form  */
-    if (!fac)
-        goto facdone;
-    frsds = evi->frsds;
-    del = cvi->fmu + cvv * cvi->ld - saux->xn;
-    /*    From cost_var, we have:
-        cost = 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd*2.0 + consts
-            where var is given by:
-          del^2 + musprd + cvvsq*ldsprd + cvvsprd*ldsq + epssq
-        var has been kept in stats.  */
-    /*    Add to derivatives:  */
-    var = evi->var;
-    evi->fsdld1 += CurCaseWeight * (1.0 - frsds * var);
-    evi->fsdld2 += 2.0 * CurCaseWeight;
-    evi->fmud1 += CurCaseWeight * del * frsds;
-    evi->fmud2 += CurCaseWeight * frsds;
-    evi->ldd1 += CurCaseWeight * frsds * (del * cvv + cvi->ld * cvvsprd);
-    evi->ldd2 += CurCaseWeight * frsds * (cvvsq + cvvsprd);
-facdone:
-    return;
+    // Processing for factor form
+    if (fac) {
+        frsds = evi->frsds;
+        del = cvi->fmu + cvv * cvi->ld - saux->xn;
+        var = evi->var;
+
+        // Pre-calculate common term
+        double curCaseWeightTimesFrsds = CurCaseWeight * frsds;
+
+        // Accumulate derivatives
+        evi->fsdld1 += CurCaseWeight - curCaseWeightTimesFrsds * var;
+        evi->fsdld2 += 2.0 * CurCaseWeight;
+        evi->fmud1 += curCaseWeightTimesFrsds * del;
+        evi->fmud2 += curCaseWeightTimesFrsds;
+        evi->ldd1 += curCaseWeightTimesFrsds * (del * cvv + cvi->ld * cvvsprd);
+        evi->ldd2 += curCaseWeightTimesFrsds * (cvvsq + cvvsprd);
+    }
 }
 
 /*    -------------------  adjust  ---------------------------    */

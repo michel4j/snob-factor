@@ -7,17 +7,17 @@ int sort_sample();
 /*    ----------------------  print_var_datum  -------------------------  */
 /*    To print datum for variable i, case n, in sample     */
 void print_var_datum(int i, int n) {
-    Sample *samp;
+    Sample *smpl;
     AVinst *avi;
     SVinst *svi;
-    Vtype *vtp;
+    VarType *var_t;
 
-    samp = CurCtx.sample;
-    svi = samp->var_info + i;
+    smpl = CurCtx.sample;
+    svi = smpl->variables + i;
     avi = CurAttrList + i;
-    vtp = avi->vtype;
-    CurField = (char *)samp->records;
-    CurField += n * samp->record_length;
+    var_t = avi->vtype;
+    CurField = (char *)smpl->records;
+    CurField += n * smpl->record_length;
     CurField += svi->offset;
     /*    Test for missing  */
     if (*CurField == 1) {
@@ -25,7 +25,7 @@ void print_var_datum(int i, int n) {
         return;
     }
     CurField += 1;
-    (*vtp->print_datum)(CurField);
+    (*var_t->print_datum)(CurField);
     return;
 }
 /*    ------------------------ load_vset ------------------------------ */
@@ -40,16 +40,16 @@ int load_vset() {
 
     buf = &bufst;
     for (i = 0; i < MAX_VSETS; i++)
-        if (!VSets[i])
+        if (!VarSets[i])
             goto gotit;
 nospce:
-    printf("No space for VariableSet\n");
+    printf("No space for VarSet\n");
     i = -10;
     goto error;
 
 gotit:
     indx = i;
-    CurVSet = VSets[i] = (Vset *)malloc(sizeof(Vset));
+    CurVSet = VarSets[i] = (VarSet *)malloc(sizeof(VarSet));
     if (!CurVSet)
         goto nospce;
     CurVSet->id = indx;
@@ -210,7 +210,7 @@ int load_sample(char *fname) {
         i = -8;
         goto error;
     }
-    CurVSet = CurCtx.vset = VSets[kread];
+    CurVSet = CurCtx.vset = VarSets[kread];
 
     /*    Find a vacant sample slot  */
     for (i = 0; i < MAX_SAMPLES; i++) {
@@ -241,7 +241,7 @@ gotit:
         i = -3;
         goto error;
     }
-    CurSample->var_info = CurVarList;
+    CurSample->variables = CurVarList;
 
     /*    Read in the info for each variable into svars   */
     for (i = 0; i < NumVars; i++) {
@@ -386,8 +386,8 @@ int find_vset(char *nam)
 
     ii = -1;
     for (i = 0; i < MAX_VSETS; i++) {
-        if (VSets[i]) {
-            if (!strcmp(nam, VSets[i]->name))
+        if (VarSets[i]) {
+            if (!strcmp(nam, VarSets[i]->name))
                 ii = i;
         }
     }
@@ -557,9 +557,10 @@ chopped:
 int item_list(char *tlstname)
 {
     FILE *tlst;
-    int nn, dadser, i, bc, tid, bl;
+    int nn, dadser, i, bc, bl, tid;
     double bw, bs;
     Class *clp;
+    char * record;
 
     /*    Check we have an attched sample and model  */
     if (!CurCtx.popln)
@@ -610,10 +611,12 @@ nextcl1:
                 bw = clp->case_weight;
             }
         }
-
-        memcpy(&tid, CurRecord + 1, sizeof(int));
+        
+        record = CurRecords + nn * CurRecLen; 
+        memcpy(&tid, record + 1, sizeof(int));
         fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, Sons[bc]->serial >> 2,
                 Sons[bl]->serial >> 2, ScoreRscale * Sons[bl]->vv[nn]);
+        
     }
 
     fclose(tlst);

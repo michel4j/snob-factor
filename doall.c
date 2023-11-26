@@ -606,22 +606,22 @@ typedef struct PSauxst {
     double xn;
 } PSaux;
 
-void do_case(int cse, int all, int derivs) {
+void do_case(int item, int all, int derivs) {
     double mincost, sum, rootcost, low, diff, w1, w2;
     Class *sub1, *sub2;
     PSaux *psaux;
+    char * record;
     int clc, i;
 
-    CurRecord = CurRecords + cse * CurRecLen; /*  Set ptr to case record  */
-    CurItem = cse;
-    if (!*CurRecord) { // Inactive item
+    record = CurRecords + item * CurRecLen; /*  Set ptr to case record  */
+    if (!*record) { // Inactive item
         return;
     }
 
     /*    Unpack data into 'xn' fields of the Saux for each variable. The
     'xn' field is at the beginning of the Saux. Also the "missing" flag. */
     for (i = 0; i < NumVars; i++) {
-        CurField = CurRecord + CurVarList[i].offset;
+        CurField = record + CurVarList[i].offset;
         psaux = (PSaux *)CurVarList[i].saux;
         if (*CurField == 1) {
             psaux->missing = 1;
@@ -635,15 +635,15 @@ void do_case(int cse, int all, int derivs) {
 
     clc = 0;
     while (clc < NumSon) {
-        set_class_with_scores(Sons[clc]);
+        set_class_with_scores(Sons[clc], item);
         if ((!SeeAll) && (icvv & 1)) { /* Ignore this and decendants */
             clc = NextIc[clc];
             continue;
         } else if (!SeeAll)
             CurClass->scancnt++;
         /*    Score and cost the class  */
-        score_all_vars(CurClass);
-        cost_all_vars(CurClass);
+        score_all_vars(CurClass, item);
+        cost_all_vars(CurClass, item);
         clc++;
     }
     /*    Now have casescost, casefcost and casecost set in all classes for
@@ -652,8 +652,10 @@ void do_case(int cse, int all, int derivs) {
     /*    The whole item is irrelevant if just starting on root  */
     if (NumSon != 1) { /*  Not Just doing root  */
         /*    Clear all casewts   */
+
         for (clc = 0; clc < NumSon; clc++)
             Sons[clc]->case_weight = 0.0;
+
         mincost = 1.0e30;
         clc = 0;
         while (clc < NumSon) {
@@ -765,7 +767,7 @@ void do_case(int cse, int all, int derivs) {
                     sub2->case_score |= 1;
                 else
                     sub2->case_score &= -2;
-                sub2->vv[CurItem] = sub2->case_score;
+                sub2->vv[item] = sub2->case_score;
                 if (Fix == Random)
                     CurClass->dad_case_cost = low;
                 else
@@ -779,7 +781,7 @@ void do_case(int cse, int all, int derivs) {
                     sub1->case_score |= 1;
                 else
                     sub1->case_score &= -2;
-                sub1->vv[CurItem] = sub1->case_score;
+                sub1->vv[item] = sub1->case_score;
                 if (Fix == Random)
                     CurClass->dad_case_cost = low;
                 else
@@ -805,13 +807,13 @@ void do_case(int cse, int all, int derivs) {
         if (CurRootClass->type != Leaf) { /* skip when root is only leaf */
             for (clc = NumSon - 1; clc >= 0; clc--) {
                 CurClass = Sons[clc];
-                if ((CurClass->type == Sub) || ((!SeeAll) && (CurClass->vv[CurItem] & 1))) {
+                if ((CurClass->type == Sub) || ((!SeeAll) && (CurClass->vv[item] & 1))) {
                     continue;
                 }
                 if (CurClass->case_weight < MinWt)
-                    CurClass->vv[CurItem] |= 1;
+                    CurClass->vv[item] |= 1;
                 else
-                    CurClass->vv[CurItem] &= -2;
+                    CurClass->vv[item] &= -2;
                 if (CurClass->dad_id >= 0)
                     CurPopln->classes[CurClass->dad_id]->case_weight += CurClass->case_weight;
                 if (CurClass->type == Dad) {
@@ -836,7 +838,7 @@ void do_case(int cse, int all, int derivs) {
     for (clc = 0; clc < NumSon; clc++) {
         CurClass = Sons[clc];
         if (CurClass->case_weight > 0.0) {
-            deriv_all_vars(CurClass);
+            deriv_all_vars(CurClass, item);
         }
     }
 }

@@ -25,8 +25,8 @@ int serial_to_id(int ss) {
 }
 
 /*    ---------------------  set_class --------------------------   */
-void set_class(Class *ccl) {
-    CurClass = ccl;
+void set_class(Class *cls) {
+    CurClass = cls;
     CurDadID = CurClass->dad_id;
     if (CurDadID >= 0)
         CurDad = CurPopln->classes[CurDadID];
@@ -35,10 +35,10 @@ void set_class(Class *ccl) {
 }
 
 /*    ---------------------  set_class_with_scores --------------------------   */
-void set_class_with_scores(Class *ccl) {
-    set_class(ccl);
+void set_class_with_scores(Class *cls, int item) {
+    set_class(cls);
     vv = CurClass->vv;
-    CurClass->case_score = icvv = vv[CurItem];
+    CurClass->case_score = icvv = vv[item];
     CurCaseWeight = CurClass->case_weight;
 }
 
@@ -290,11 +290,11 @@ void set_best_costs(Class *ccl) {
 /*    Leaves data values set in stats, but does no scoring if class too
 young. If class age = MinFacAge, will guess scores but not cost them */
 /*    If control & AdjSc, will adjust score  */
-void score_all_vars(Class *ccl) {
+void score_all_vars(Class *ccl, int item) {
     double del, cvvTimesHScoreScale, oneOverVvd2;
-    int icvv, oldicvv, igbit;
+    int icvv = 0, oldicvv, igbit;
 
-    set_class_with_scores(ccl);
+    set_class_with_scores(ccl, item);
     if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny)) {
         cvv = CurClass->avvv = CurClass->sum_score_sq = 0.0;
         icvv = 0;
@@ -354,17 +354,17 @@ void score_all_vars(Class *ccl) {
         CurClass->cvvsq = cvvsq = cvv * cvv;
         CurClass->cvvsprd = cvvsprd;
     }
-    vv[CurItem] = CurClass->case_score = icvv;
+    vv[item] = CurClass->case_score = icvv;
 }
 
 /*    ----------------------  cost_all_vars  --------------------------  */
 /*    Does cost_var on all vars of class for the current item, setting
 cls->casecost according to use of class  */
-void cost_all_vars(Class *ccl) {
+void cost_all_vars(Class *ccl, int item) {
     int fac = 0;
     double tmp;
 
-    set_class_with_scores(ccl);
+    set_class_with_scores(ccl, item);
     if ((CurClass->age >= MinFacAge) && (CurClass->use != Tiny)) {
         fac = 1;
         cvvsq = cvv * cvv;
@@ -407,10 +407,10 @@ void cost_all_vars(Class *ccl) {
 
 /*    ----------------------  deriv_all_vars  ---------------------    */
 /*    To collect derivative statistics for all vars of a class   */
-void deriv_all_vars(Class *ccl) {
+void deriv_all_vars(Class *ccl, int item) {
     int fac = 0;
 
-    set_class_with_scores(ccl);
+    set_class_with_scores(ccl, item);
     CurClass->newcnt += CurCaseWeight;
     if ((CurClass->age >= MinFacAge) && (CurClass->use != Tiny)) {
         fac = 1;

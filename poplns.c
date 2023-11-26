@@ -12,7 +12,7 @@ void set_population() {
     CurAttrList = CurVSet->attrs;
     if (CurSample) {
         NumCases = CurSample->num_cases;
-        CurVarList = CurSample->var_info;
+        CurVarList = CurSample->variables;
         CurRecLen = CurSample->record_length;
         CurRecords = CurSample->records;
     } else {
@@ -326,7 +326,7 @@ int copy_population(int p1, int fill, char *newname) {
         indx = -101;
         goto finish;
     }
-    CurVSet = CurCtx.vset = VSets[kk];
+    CurVSet = CurCtx.vset = VarSets[kk];
     sindx = -1;
     NumCases = 0;
     if (!fill)
@@ -441,7 +441,6 @@ newclass:
 
 fakeit: /*  initialize scorevectors  */
     for (n = 0; n < NumCases; n++) {
-        CurRecord = CurRecords + n * CurRecLen;
         cls->vv[n] = 0;
     }
     cls->weights_sum = nomcnt;
@@ -729,7 +728,7 @@ namefixed:
     /*    switch context to TrialPop  */
     CurCtx.popln = Populations[i];
     set_population();
-    CurVSet = CurCtx.vset = VSets[find_vset(CurPopln->vst_name)];
+    CurVSet = CurCtx.vset = VarSets[find_vset(CurPopln->vst_name)];
     nc = CurPopln->sample_size;
     if (!fill)
         nc = 0;
@@ -838,7 +837,7 @@ int load_population(char *nam) {
         printf("Model needs variableset %s\n", name);
         goto error;
     }
-    CurVSet = CurCtx.vset = VSets[j];
+    CurVSet = CurCtx.vset = VarSets[j];
     NumVars = CurVSet->num_vars;
     fscanf(fl, "%s", name);          /* Reading sample name */
     fscanf(fl, "%d%d", &fncl, &fnc); /* num of classes, cases */
@@ -984,10 +983,10 @@ int set_work_population(int pp) {
         printf("Load cannot find variable set\n");
         goto error;
     }
-    CurVSet = CurCtx.vset = VSets[j];
-    /*    Check Vset  */
+    CurVSet = CurCtx.vset = VarSets[j];
+    /*    Check VarSet  */
     if (strcmp(CurVSet->name, oldctx.sample->vset_name)) {
-        printf("Picked popln has incompatible VariableSet\n");
+        printf("Picked popln has incompatible VarSet\n");
         goto error;
     }
     /*    Check sample   */
@@ -1050,6 +1049,7 @@ void correlpops(int xid) {
     Population *xpop, *wpop;
     double fnact, wwt;
     int wic, xic, n, pcw, wnl, xnl;
+    char * record;
 
     set_population();
     wpop = CurPopln;
@@ -1106,9 +1106,10 @@ void correlpops(int xid) {
     for (n = 0; n < NumCases; n++) {
         CurCtx.popln = wpop;
         set_population();
-        CurRecord = CurRecords + n * CurRecLen;
-        if (!*CurRecord)
-            goto ndone;
+        record = CurRecords + n * CurRecLen;
+        if (!*record) {
+            continue;
+        }
         find_all(Leaf);
         do_case(n, Leaf, 0);
         CurCtx.popln = xpop;
@@ -1122,7 +1123,6 @@ void correlpops(int xid) {
                 table[wic][xic] += wwt * xsons[xic]->case_weight;
             }
         }
-    ndone:;
     }
 
     /*    Print results    */

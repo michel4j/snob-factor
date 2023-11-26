@@ -36,7 +36,7 @@ static void cost_var_nonleaf();
 static void adjust();
 static void show();
 
-typedef struct Datumst {
+typedef struct DatumStruct {
     double xx;
     double sinxx;
     double cosxx;
@@ -125,7 +125,7 @@ static Basic *cvi, *dcvi;
 static Stats *evi;
 
 /*--------------------------  define ------------------------------- */
-/*    This routine is used to set up a Vtype entry in the global "types"
+/*    This routine is used to set up a VarType entry in the global "types"
 array.  It is the only function whose name needs to be altered for different
 types of variable, and this name hxst be copied into the file "definetypes.c"
 when installing a new type of variable. It is also necessary to change the
@@ -135,7 +135,7 @@ when installing a new type of variable. It is also necessary to change the
 void vonm_define(int typindx) {
     /*    typindx is the index in types[] of this type   */
 
-    Vtype *vtp;
+    VarType *vtp;
 
     vtp = Types + typindx;
     vtp->id = typindx;

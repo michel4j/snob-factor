@@ -86,14 +86,14 @@ ent file formats as well.
 
 
 The input data required by Snob is basically a set of records, one
-for each thing or case in the data sample. Each record contains
+for each item or case in the data sample. Each record contains
 values for each of several variables as measured or observed for
-that thing. The same set of variables appears for each thing.
+that item. The same set of variables appears for each item.
 Thus, the sample data is essentially just a rectangular table of
-values with a row (i.e. record) for each thing and a column for
+values with a row (i.e. record) for each item and a column for
 each variable.
 
-   Not every value need be known for each thing: Snob provides
+   Not every value need be known for each item: Snob provides
 for "missing" values in the table.
 
 

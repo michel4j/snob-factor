@@ -138,7 +138,7 @@ static double gaustab[Gnt];
 static double *gausorg; /* ptr to gaustab[1] */
 
 /*--------------------------  define ------------------------------- */
-/*    This routine is used to set up a Vtype entry in the global "types"
+/*    This routine is used to set up a VarType entry in the global "types"
 array.  It is the only function whose name needs to be altered for different
 types of variable, and this name must be copied into the file "definetypes.c"
 when installing a new type of variable. It is also necessary to change the

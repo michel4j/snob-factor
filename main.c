@@ -80,7 +80,7 @@ unattached to a sample. P is the new popln name.",
 to keyboard at end of F or error, unless F contains a \"file\" command.\n\
 F may contain a file command with its own name, returning to the start of F.",
 
-    "readsamp <F> reads in a new sample from file F. Sample must use a Vset\n\
+    "readsamp <F> reads in a new sample from file F. Sample must use a VarSet\n\
   already loaded.",
 
     "flatten makes all twigs (non-root classes with no sons) immediate leaves",
@@ -414,6 +414,10 @@ int readsampid(int kk) {
 
 
 /*    ---------------------  main  ---------------------------  */
+
+void initialize() {
+    
+}
 extern char *malloc_options;
 int main() {
     int k, kk, k1, k2;
@@ -429,10 +433,11 @@ int main() {
 
     /*    A section to sort the keywords into alphabetic order, and set
     actk[] to hold their original order indexes   */
-    /*    First, fill out keyw[] with z-strings   */
+
     for (i = 0; strcmp(keyw[i], "zzzzzzzzzzzz"); i++) {
         actk[i] = i;
     }
+    /*    fill out keyw[] with z-strings   */
     nkey = i;
     for (; i < MNkey; i++) {
         keyw[i] = "zzzzzzzzzzzz";
@@ -454,8 +459,7 @@ int main() {
     /*    Count valid ones (not 10 z-s)    */
     nvkey = 0;
     for (i = 0; i < nkey; i++) {
-        if (strcmp(keyw[i], "zzzzzzzzzz"))
-            nvkey++;
+        if (strcmp(keyw[i], "zzzzzzzzzz")) nvkey++;
     }
 
     Fix = DFix = Partial;
@@ -466,8 +470,8 @@ int main() {
     for (k = 0; k < MAX_SAMPLES; k++)
         Samples[k] = 0;
     for (k = 0; k < MAX_VSETS; k++)
-        VSets[k] = 0;
-    dotypes();
+        VarSets[k] = 0;
+    do_types();
 
     /*    Set source to commsbuf and initialize  */
     CurSource = &commsbuf;
@@ -489,7 +493,7 @@ int main() {
     if (kk < 0)
         exit(2);
     else
-        CurVSet = CurCtx.vset = VSets[kk];
+        CurVSet = CurCtx.vset = VarSets[kk];
 
     SeeAll = 2;
     printf("Enter sample file name:\n");

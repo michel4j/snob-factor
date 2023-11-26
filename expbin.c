@@ -91,9 +91,9 @@ static double dadnap;
 static double dapsprd; /* Dad's napsprd */
 
 /*--------------------------  define ------------------------------- */
-/*    This routine is used to set up a Vtype entry in the global "types"
+/*    This routine is used to set up a VarType entry in the global "types"
 array.  It is the only function whose name needs to be altered for different
-types of variable, and this name must be copied into the file "dotypes.c"
+types of variable, and this name must be copied into the file "do_types.c"
 when installing a new type of variable. It is also necessary to change the
 "Ntypes" constant, and to decide on a type id (an integer) for the new type.
     */

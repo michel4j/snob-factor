@@ -66,7 +66,7 @@ controls the mode of weight assignment  */
 
 /*    -----------------  Variable types  ---------------------  */
 
-typedef struct VtypeStruct {
+typedef struct VarTypeStruct {
     int id;
     int data_size;
     int attr_aux_size; /* Size of aux block for vartype in vlist */
@@ -87,7 +87,7 @@ typedef struct VtypeStruct {
     void (*adjust)();
     void (*show)();
     void (*set_var)();
-} Vtype;
+} VarType;
 
 /*    -------------------  Files ----------------------------------  */
 
@@ -113,12 +113,12 @@ typedef struct AVinstStruct {
     int inactive;   /* Inactive attribute flag */
     int basic_size; /*  Sizeof basic block (CVinst) for this var */
     int stats_size; /* Sizeof stats block (EVinst) for this var */
-    Vtype *vtype;
+    VarType *vtype;
     char *vaux;
     char name[80];
 } AVinst;
 
-typedef struct VsetStruct {
+typedef struct VarSetStruct {
     int id;
     Block *blocks;     /* Ptr to chain of blocks allocated */
     char filename[80]; /* file name of vset */
@@ -126,7 +126,7 @@ typedef struct VsetStruct {
     int num_vars;   /* Number of variables */
     int num_active; /* Number of active variables */
     AVinst *attrs;
-} Vset;
+} VarSet;
 
 /*    --------------------  Samples  ---------------------------   */
 
@@ -142,7 +142,7 @@ the 'recs' pointer in a Sample structure. There is one record per item in the
 sample. Each record has the following format:
     char active_flag. If zero, the item is ignored in building classes.
     int ident    The item identifier, as a positive integer.
-  Then follow 'nv' fields for the attribute values of the item. Each field
+  Then follow 'nun_vars' fields for the attribute values of the item. Each field
 actually has two parts:
     char missing_flag  If non-zero, shows value is unknown .
     Datum value.  The type Datum depends on the type of attribute. This
@@ -156,7 +156,7 @@ typedef struct SampleStruct {
     char vset_name[80]; /* Name of variable-set */
     int num_cases;      /* Num of cases */
     int num_active;     /* Num of active cases */
-    SVinst *var_info;   /* Ptr to vector of SVinsts, one per variable */
+    SVinst *variables;   /* Ptr to vector of SVinsts, one per variable */
     char *records;      /*  vector of records  */
     int record_length;  /*  Length in chars of a data record  */
     double best_cost;   /*  Cost of best model */
@@ -271,7 +271,7 @@ typedef struct PoplnStruct {
 /*    -------------------------------------------------------------   */
 
 typedef struct ContextStruct {
-    Vset *vset;
+    VarSet *vset;
     Sample *sample;
     Population *popln;
     Buf *buffer;
@@ -325,15 +325,15 @@ int serial_to_id(int ss);
 int make_class();
 void clear_costs(Class *ccl);
 void set_best_costs(Class *ccl);
-void score_all_vars(Class *ccl);
-void cost_all_vars(Class *ccl);
-void deriv_all_vars(Class *ccl);
+void score_all_vars(Class *ccl, int item);
+void cost_all_vars(Class *ccl, int item);
+void deriv_all_vars(Class *ccl, int item);
 void parent_cost_all_vars(Class *ccl, int valid);
 void adjust_class(Class *ccl, int dod);
 void delete_sons(int kk);
 void print_class(int kk, int full);
 void set_class(Class *ccl);
-void set_class_with_scores(Class *ccl);
+void set_class_with_scores(Class *ccl, int item);
 int split_leaf(int kk);
 void delete_all_classes();
 int next_leaf(Population *cpop, int iss);
@@ -348,7 +348,7 @@ void tidy(int hit);
 int rand_int();
 double rand_float();
 void do_case(int cse, int all, int derivs);
-/*        end doall.c        */
+/*  end doall.c        */
 
 /*    In TUNE.c    */
 void defaulttune();
@@ -383,8 +383,8 @@ int report_space(int pp);
 /*  end block.c        */
 
 /*    In DOTYPES.c    */
-void dotypes();
-/*        end dotypes.c        */
+void do_types();
+/*        end do_types.c        */
 
 /*    In SAMPLES.c    */
 void print_var_datum(int i, int n);
@@ -416,9 +416,9 @@ EXT double FacLog[MAX_CLASSES + 1];
 
 /*    general:    */
 EXT int Ntypes;     /* The number of different attribute types */
-EXT Vtype *Types;   /* a vector of Ntypes type definitions, created in dotypes */
+EXT VarType *Types;   /* a vector of Ntypes type definitions, created in do_types */
 EXT Context CurCtx; /* current context */
-EXT Vset *VSets[MAX_VSETS];
+EXT VarSet *VarSets[MAX_VSETS];
 EXT Sample *Samples[MAX_SAMPLES];
 EXT Population *Populations[MAX_POPULATIONS];
 EXT int NSamples;
@@ -427,8 +427,6 @@ EXT int NSamples;
 EXT Buf *CurSource; /* Ptr to command source buffer */
 
 /*    re Sample records  */
-EXT char *CurRecord;  /*  Common ptr to a data record  */
-EXT int CurItem;      /*  Index of current item  */
 EXT char *CurField;   /*  Common ptr to a data field  */
 EXT int CurRecLen;    /*  reclen of current sample  */
 EXT char *CurRecords; /*  Common ptr to data records block of a sample */
@@ -446,13 +444,13 @@ EXT int Control, DControl;
 EXT int DFix, Fix;
 
 /*    re Poplns  */
-EXT Vset *CurVSet;
+EXT VarSet *CurVSet;
 EXT Sample *CurSample;
 EXT Population *CurPopln;
 EXT AVinst *CurAttr;
 EXT PVinst *pvi;
 EXT SVinst *CurVar;
-EXT Vtype *CurVType;
+EXT VarType *CurVType;
 EXT int NumCases; /* Number of cases */
 EXT int NumVars;  /* Number of variables */
 EXT int CurRoot;
