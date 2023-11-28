@@ -7,15 +7,16 @@
 #define VONM 1
 #include "glob.h"
 
-typedef struct Vmpackst {
-    double kap;
-    double rkap;
-    double lgi0;
-    double aa;
-    double daa;
-    double fh;
-    double dfh;
-} Vmpack;
+
+typedef struct VonMisesPackStr {
+    double kappa;          // sqrt (hx^2 + hy^2)
+    double kappa_inv;      // recip of kappa or 10e6 if kappa very small
+    double log_i0;         // log of normalization const for VonMises density
+    double log_i0_d1;      // deriv of logi0 wrt kappa
+    double log_i0_d2;      // deriv of log_i0_d1 wrt kappa
+    double fisher_sqrt;    // sqrt of the Fisher
+    double fisher_sqrt_d1; // deriv of fisher_sqrt wrt kappa
+} VonMisesPack;
 
 void kapcode(double hx, double hy, double *vmst);
 
@@ -307,12 +308,12 @@ void clear_stats(int iv) {
 
 /*    -------------------------  score_var  ------------------------   */
 /*    To eval derivs of a case cost wrt score, scorespread. Adds to
-vvd1, vvd2.
+case_fac_score_d1, case_fac_score_d2.
     The general form for VonMises message costs has the following
 components:
     Density cost:
-mc1 = -leps + lgi0 - kap * cos (mu + w - xx)
-    where kap^2 = hx^2 + hy^2
+mc1 = -leps + log_i0 - kappa * cos (mu + w - xx)
+    where kappa^2 = hx^2 + hy^2
         tan (mu) = hx / hy
         t = tan (w/2) = factor_scores * ld
 
@@ -351,8 +352,8 @@ void score_var(int iv) {
     dr2dw = -2.0 * dwdt * sinw; /* deriv wrt w of r2 */
 
     /*    Now to get derivs wrt factor_scores, I first get derivs wrt tt  */
-    /*    The mc1 term -kap * cos (mu + w - xx) can be written using
-        kap*cosmu = hy, kap*sinmu = hx as:
+    /*    The mc1 term -kappa * cos (mu + w - xx) can be written using
+        kappa*cosmu = hy, kappa*sinmu = hx as:
         mc1t = -{(hy.cx + hx.sx) cos(w) - (hx.cx - hy.sx) sin(w)}
         with deriv wrt w given by:
         wd1 = -{(hy.cx + hx.sx) (-sin(w)) - (hx.cx - hy.sx) cos (w)}
@@ -366,25 +367,25 @@ void score_var(int iv) {
         (vsq * ldsprd) gives a contibution to wd1 via the r2 factor:  */
     wd1 += 0.5 * cvi->fmufish * cvi->ldsprd * case_fac_score_sq * dr2dw;
 
-    /*    This part also directly contributes to vvd1 via the vsq factor: */
-    vvd1 += cvi->fmufish * cvi->ldsprd * r2 * case_fac_score;
+    /*    This part also directly contributes to case_fac_score_d1 via the vsq factor: */
+    case_fac_score_d1 += cvi->fmufish * cvi->ldsprd * r2 * case_fac_score;
 
-    /*    This gives a term in mvvd2 :  */
-    mvvd2 += cvi->fmufish * cvi->ldsprd * r2;
+    /*    This gives a term in est_fac_score_d2 :  */
+    est_fac_score_d2 += cvi->fmufish * cvi->ldsprd * r2;
 
     /*    The second part, involving vsprd, is treated by accumulating
-        in vvd3 the deriv wrt factor_scores of the multiplier of half vsprd.   */
-    vvd3 += cvi->fmufish * cvi->ldsq * dr2dw * dwdv;
+        in case_fac_score_d3 the deriv wrt factor_scores of the multiplier of half vsprd.   */
+    case_fac_score_d3 += cvi->fmufish * cvi->ldsq * dr2dw * dwdv;
 
     /*    The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
     /*    and so to deriv wrt factor_scores of:  wd1 * dwdv  */
 
-    vvd1 += wd1 * dwdv;
+    case_fac_score_d1 += wd1 * dwdv;
 
-    /*    Now for contribution to vvd2. This is 2 * the coeff of vsprd in
+    /*    Now for contribution to case_fac_score_d2. This is 2 * the coeff of vsprd in
         the item cost.  */
-    vvd2 += cvi->fmufish * cvi->ldsq * r2;
-    mvvd2 += cvi->fmufish * cvi->ldsq * 4.0;
+    case_fac_score_d2 += cvi->fmufish * cvi->ldsq * r2;
+    est_fac_score_d2 += cvi->fmufish * cvi->ldsq * 4.0;
     /*        Note, the max value of r2 is 4  */
     return;
 }
@@ -416,7 +417,7 @@ void cost_var(int iv, int fac) {
     cost = cvi->flgi0 - saux->leps;
     /*    flgi0 already contains the mc2 term hsprd * Fh */
 
-    /*    And we need -kap * cos (mu + w - xx)   */
+    /*    And we need -kappa * cos (mu + w - xx)   */
     tt = cvi->ld * case_fac_score;
     r2 = 1.0 / (1.0 + tt * tt);
     cosw = (1.0 - tt * tt) * r2;
@@ -586,13 +587,13 @@ facdone1:
     /*    Adjust non-fac parameters.   */
     adj = 1.0;
     /*    From things,
-        cost = N * (-leps + LI0 + shsprd * Fh) - kap*Sum{cos(mu-x)}
+        cost = N * (-leps + LI0 + shsprd * Fh) - kappa*Sum{cos(mu-x)}
 
-        Must get kap, Sum, LI0, Fh etc  */
+        Must get kappa, Sum, LI0, Fh etc  */
     if (cvi->sfh < 0.0)
         kapcode(cvi->shx, cvi->shy, &(cvi->skappa));
 
-    /*    From item cost term - kap*Sum{cos(mu-x)} :  */
+    /*    From item cost term - kappa*Sum{cos(mu-x)} :  */
     hxd1 = -evi->tssin;
     hyd1 = -evi->tscos;
 
@@ -638,19 +639,19 @@ facdone1:
 
     /*    Adjust factor parameters   */
     /*    From things,
-        cost = N * (-leps + LI0 - fhsprd * Fh) - kap*Sum{cos(mu-x)}
+        cost = N * (-leps + LI0 - fhsprd * Fh) - kappa*Sum{cos(mu-x)}
             + 0.5 * Fmu * Sum { wsprd }
         where:
-            x = datum - atan (case_fac_score * ld),  Fmu = kappa * aa
+            x = datum - atan (case_fac_score * ld),  Fmu = kappa * log_i0_d1
             wsprd = (cvvsprd * ldsq + ldsprd * case_fac_score_sq) * (dwdt)^2
             w = atan (case_fac_score * ld),
             Sum {wsprd} is in evi->fwd2
 
-        Must get kap, Sum, LI0, Fh etc  */
+        Must get kappa, Sum, LI0, Fh etc  */
     if (cvi->ffh < 0.0)
         kapcode(cvi->fhx, cvi->fhy, &(cvi->fkappa));
 
-    /*    From item cost term - kap*Sum{cos(mu-x)} :  */
+    /*    From item cost term - kappa*Sum{cos(mu-x)} :  */
     hxd1 = -evi->tfsin;
     hyd1 = -evi->tfcos;
 
@@ -966,7 +967,7 @@ adjdone: /*    Calc cost  */
     There are 2501 values tabulated, for kappa from 0 to 50 in
 steps of 0.02   */
 /*    The following define the tabulation interval and highest
-    value of kappa for this table (lgi0) and the following table
+    value of kappa for this table (log_i0) and the following table
     (atab)  */
 
 #define kapstep ((double)0.02)
@@ -976,7 +977,7 @@ steps of 0.02   */
 
 #define twopi ((double)6.283185306)
 
-static double lgi0[] = {
+static double log_i0[] = {
     /* LogI0 table */
     1.837877066409,  /*   0.00 */
     1.837977063909,  /*   0.02 */
@@ -3481,7 +3482,7 @@ static double lgi0[] = {
     48.965452568283, /*  50.00 */
     0};
 
-/*    Table of the differential of lgi0 (kappa) wrt kappa. This
+/*    Table of the differential of log_i0 (kappa) wrt kappa. This
 function is also known as A() in the techical report. It is the
 expected value of cos(theta) when theta has a VonMises2 density with
 zero mean and concentration theta.
@@ -6000,46 +6001,46 @@ Plain or the Factor quantites. The input param 'vmp' must be set to
 either the Plain or the Factor blocks for the derived quantities in some
 Basic structure.
     Normally it uses an interpolation between tabulated values which
-    is cubically correct for lgi0 and quadratic for aa and strictly
+    is cubically correct for log_i0 and quadratic for log_i0_d1 and strictly
     continuous for both.
-    It returns a linear approx to derivative of aa in daa.
-    For values of kap greater than hikap it uses an asymtotic
-    approximation based on a Gaussian with sigmasq = 1/kap, with
-    a small correction quadratic in (1/kap).
+    It returns a linear approx to derivative of log_i0_d1 in log_i0_d2.
+    For values of kappa greater than hikap it uses an asymtotic
+    approximation based on a Gaussian with sigmasq = 1/kappa, with
+    a small correction quadratic in (1/kappa).
         The values returned are:
-    kap        sqrt (hx^2 + hy^2)
-    rkap        recip of kap or 10e6 if kap very small
+    kappa        sqrt (hx^2 + hy^2)
+    kappa_inv        recip of kappa or 10e6 if kappa very small
     logi0        log of normalization const for VonMises density
-    aa        deriv of logi0 wrt kap
-    daa        deriv of aa wrt kap
-    fh        sqrt of the Fisher
-    dfh        deriv of fh wrt kap
+    log_i0_d1        deriv of logi0 wrt kappa
+    log_i0_d2        deriv of log_i0_d1 wrt kappa
+    fisher_sqrt        sqrt of the Fisher
+    fisher_sqrt_d1        deriv of fisher_sqrt wrt kappa
     */
 
 void kapcode(double hx, double hy, double *vmst) {
     double del, skap, c2, c3;
     double va, vb, da, db;
-    double kap;
+    double kappa;
     int ik;
-    Vmpack *vmp;
+    VonMisesPack *vmp;
 
-    vmp = (Vmpack *)vmst;
-    vmp->kap = kap = sqrt(hx * hx + hy * hy);
-    if (kap > 1.0e-6)
-        vmp->rkap = 1.0 / kap;
+    vmp = (VonMisesPack *)vmst;
+    vmp->kappa = kappa = sqrt(hx * hx + hy * hy);
+    if (kappa > 1.0e-6)
+        vmp->kappa_inv = 1.0 / kappa;
     else
-        vmp->rkap = 1.0e6;
-    skap = kap * kscale;
+        vmp->kappa_inv = 1.0e6;
+    skap = kappa * kscale;
     ik = (int)skap;
     del = skap - ik;
     if (ik >= maxik)
         goto asymp;
 
     /*    Interpolate   */
-    va = lgi0[ik];
+    va = log_i0[ik];
     da = atab[ik] * kapstep;
     ik++;
-    vb = lgi0[ik];
+    vb = log_i0[ik];
     db = atab[ik] * kapstep;
 
     /*    Calculate coeffs of cubic in del  */
@@ -6053,47 +6054,47 @@ void kapcode(double hx, double hy, double *vmst) {
     c2 = 3.0 * vb - 2.0 * da - db;
     c3 = -2.0 * vb + da + db;
 
-    vmp->lgi0 = ((c3 * del + c2) * del + da) * del + va;
+    vmp->log_i0 = ((c3 * del + c2) * del + da) * del + va;
 
-    /*    We get aa as derivative of the cubic interpolation,
+    /*    We get log_i0_d1 as derivative of the cubic interpolation,
         times kscale  */
 
-    vmp->aa = ((3.0 * c3 * del + 2.0 * c2) * del + da) * kscale;
+    vmp->log_i0_d1 = ((3.0 * c3 * del + 2.0 * c2) * del + da) * kscale;
 
-    vmp->daa = (6.0 * c3 * del + 2.0 * c2) * (kscale * kscale);
+    vmp->log_i0_d2 = (6.0 * c3 * del + 2.0 * c2) * (kscale * kscale);
     goto derivsdone;
 
 asymp:
-    /*    For large kap, logi0 asymptotes to:
-            kap + 0.5 log (2Pi / kap)
+    /*    For large kappa, logi0 asymptotes to:
+            kappa + 0.5 log (2Pi / kappa)
         */
 
-    del = 1.0 / kap;
+    del = 1.0 / kappa;
 
-    vmp->lgi0 = kap + 0.5 * log(twopi * del) + ((0.067 * del + 0.0625) * del + 0.125) * del;
-    vmp->aa = 1.0 - 0.5 * del - del * del * (0.125 + del * (0.125 + del * 0.201));
-    vmp->daa = del * del * (0.5 + del * (0.25 + del * (0.375 + del * 0.804)));
+    vmp->log_i0 = kappa + 0.5 * log(twopi * del) + ((0.067 * del + 0.0625) * del + 0.125) * del;
+    vmp->log_i0_d1 = 1.0 - 0.5 * del - del * del * (0.125 + del * (0.125 + del * 0.201));
+    vmp->log_i0_d2 = del * del * (0.5 + del * (0.25 + del * (0.375 + del * 0.804)));
 
 derivsdone:
 #ifdef ACC
     /*    Now, Fh is the square root of a/k - a^2/k^2 - a^3/k
-            where a = aa, k = kappa,
+            where a = log_i0_d1, k = kappa,
         so the deriv of Fh wrt kappa is:
         (1/2Fh) {-a/k^2 +2a^2/k^3 + a^3/k^2
               + da * (1/k - 2a/k^2 -3a^2/k) }
         where da = d_aa/d_kappa.
         so from cost term N * Fh * fhsprd :  */
-    aonk = aa * rkappa;
-    *fsh = fh = sqrt(aonk * (1.0 - aonk - aa * aa));
-    dfh = -aonk * rkappa + 2.0 * aonk * aonk * rkappa + aonk * aonk * aa + da * rkappa * (1.0 - 2.0 * aonk - 3.0 * aa * aa);
+    aonk = log_i0_d1 * rkappa;
+    *fsh = fisher_sqrt = sqrt(aonk * (1.0 - aonk - log_i0_d1 * log_i0_d1));
+    fisher_sqrt_d1 = -aonk * rkappa + 2.0 * aonk * aonk * rkappa + aonk * aonk * log_i0_d1 + da * rkappa * (1.0 - 2.0 * aonk - 3.0 * log_i0_d1 * log_i0_d1);
     /*    This gives deriv of Fh^2 wrt kappa  */
-    *dfsh = dfh * (0.5 / fh);
+    *dfsh = fisher_sqrt_d1 * (0.5 / fisher_sqrt);
 #endif
 
 #ifndef ACC
-    /*    Approximate Fh by 0.5 * (1 - aa*aa)  */
-    vmp->fh = 0.5 * (1.0 - vmp->aa * vmp->aa);
-    vmp->dfh = -vmp->aa * vmp->daa;
+    /*    Approximate Fh by 0.5 * (1 - log_i0_d1*log_i0_d1)  */
+    vmp->fisher_sqrt = 0.5 * (1.0 - vmp->log_i0_d1 * vmp->log_i0_d1);
+    vmp->fisher_sqrt_d1 = -vmp->log_i0_d1 * vmp->log_i0_d2;
 #endif
     return;
 }

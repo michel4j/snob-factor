@@ -6,7 +6,7 @@
     There are 2501 values tabulated, for kappa from 0 to 50 in
 steps of 0.02   */
 /*    The following define the tabulation interval and highest
-    value of kappa for this table (lgi0) and the following table
+    value of kappa for this table (log_i0) and the following table
     (atab)  */
 
 #define kapstep ((double)0.02)
@@ -18,7 +18,7 @@ steps of 0.02   */
 
 #define twopi ((double)6.283185306)
 
-static double lgi0[] = {
+static double log_i0[] = {
     /* LogI0 table */
     1.837877066409,  /*   0.00 */
     1.837977063909,  /*   0.02 */
@@ -2523,7 +2523,7 @@ static double lgi0[] = {
     48.965452568283, /*  50.00 */
     0};
 
-/*    Table of the differential of lgi0 (kappa) wrt kappa. This
+/*    Table of the differential of log_i0 (kappa) wrt kappa. This
 function is also known as A() in the techical report. It is the
 expected value of cos(theta) when theta has a VonMises2 density with
 zero mean and concentration theta.
@@ -5036,33 +5036,33 @@ static double atab[] = {
     0};
 
 /*    ------------------  kapcode  --------------------------   */
-/*    This routine calculates lgi0 (kap) and aa (kap) given kap.
+/*    This routine calculates log_i0 (kappa) and log_i0_d1 (kappa) given kappa.
     Normally it uses an interpolation between tabulated values which
-    is cubically correct for lgi0 and quadratic for aa and strictly
+    is cubically correct for log_i0 and quadratic for log_i0_d1 and strictly
     continuous for both.
-    It returns a linear approx to derivative of aa in daa.
-    For values of kap greater than hikap it uses an asymtotic
-    approximation based on a Gaussian with sigmasq = 1/kap, with
-    a small correction quadratic in (1/kap).
+    It returns a linear approx to derivative of log_i0_d1 in log_i0_d2.
+    For values of kappa greater than hikap it uses an asymtotic
+    approximation based on a Gaussian with sigmasq = 1/kappa, with
+    a small correction quadratic in (1/kappa).
     */
 
-void kapcode(kap, logi0, aaa, daa) double kap, *logi0, *aaa, *daa;
+void kapcode(kappa, logi0, aaa, log_i0_d2) double kappa, *logi0, *aaa, *log_i0_d2;
 {
     double del, skap, c2, c3;
     double va, vb, da, db;
     int ik;
 
-    skap = kap * kscale;
+    skap = kappa * kscale;
     ik = (int)skap;
     del = skap - ik;
     if (ik >= maxik)
         goto asymp;
 
     /*    Interpolate   */
-    va = lgi0[ik];
+    va = log_i0[ik];
     da = atab[ik] * kapstep;
     ik++;
-    vb = lgi0[ik];
+    vb = log_i0[ik];
     db = atab[ik] * kapstep;
 
     /*    Calculate coeffs of cubic in del  */
@@ -5083,24 +5083,24 @@ void kapcode(kap, logi0, aaa, daa) double kap, *logi0, *aaa, *daa;
 
     *aaa = ((3.0 * c3 * del + 2.0 * c2) * del + da) * kscale;
 
-    *daa = (6.0 * c3 * del + 2.0 * c2) * (kscale * kscale);
+    *log_i0_d2 = (6.0 * c3 * del + 2.0 * c2) * (kscale * kscale);
     return;
 
 asymp:
-    /*    For large kap, logi0 asymptotes to:
+    /*    For large kappa, logi0 asymptotes to:
 
-        kap + 0.5 log (2Pi / kap)
+        kappa + 0.5 log (2Pi / kappa)
 
         */
 
-    del = 1.0 / kap;
+    del = 1.0 / kappa;
 
-    *logi0 = kap + 0.5 * log(twopi * del) +
+    *logi0 = kappa + 0.5 * log(twopi * del) +
              ((0.067 * del + 0.0625) * del + 0.125) * del;
 
     *aaa = 1.0 - 0.5 * del - del * del * (0.125 + del * (0.125 + del * 0.201));
 
-    *daa = del * del * (0.5 + del * (0.25 + del * (0.375 + del * 0.804)));
+    *log_i0_d2 = del * del * (0.5 + del * (0.25 + del * (0.375 + del * 0.804)));
     return;
 }
 
@@ -5123,8 +5123,8 @@ asymp:
 
 double pi;
 
-/*    ----------------  calc (ka, *li0, *aa, ni) -------------  */
-void calc(ka, li0, aa, ni) double ka, *li0, *aa;
+/*    ----------------  calc (ka, *li0, *log_i0_d1, ni) -------------  */
+void calc(ka, li0, log_i0_d1, ni) double ka, *li0, *log_i0_d1;
 int ni;
 {
     double xx, hh, cx, sum1, sum2, pp;
@@ -5144,30 +5144,30 @@ int ni;
     sum2 = sum2 * 2.0 * hh;
     /*    This gives us (exp (-ka)) * I0  */
     *li0 = log(sum1) + ka;
-    *aa = 1.0 - sum2 / sum1;
+    *log_i0_d1 = 1.0 - sum2 / sum1;
     return;
 }
 
 /*    ---------------  main  ----------------------- */
 int main() {
-    double kap;
-    double lap, llap, rkap;
+    double kappa;
+    double lap, llap, kappa_inv;
     int ni;
-    double aa, li0, aaa, ali0, daa;
+    double log_i0_d1, li0, aaa, ali0, log_i0_d2;
 
     pi = 4.0 * atan(1.0);
 loop:
     printf("Enter kappa: ");
-    scanf("%lf", &kap);
-    if (kap <= 0.0)
+    scanf("%lf", &kappa);
+    if (kappa <= 0.0)
         exit(1);
     ni = 100000;
 
-    calc(kap, &li0, &aa, ni);
-    kapcode(kap, &ali0, &aaa, &daa);
-    printf("K = %10.6lf  True LI0 %12.8lf  AA %12.8lf\n", kap, li0, aa);
-    printf("True-Approx:  LI0 %13.10lf  AA %13.10lf\n", li0 - ali0, aa - aaa);
-    printf("Estimated deriv of aa %13.10lf\n", daa);
+    calc(kappa, &li0, &log_i0_d1, ni);
+    kapcode(kappa, &ali0, &aaa, &log_i0_d2);
+    printf("K = %10.6lf  True LI0 %12.8lf  AA %12.8lf\n", kappa, li0, log_i0_d1);
+    printf("True-Approx:  LI0 %13.10lf  AA %13.10lf\n", li0 - ali0, log_i0_d1 - aaa);
+    printf("Estimated deriv of log_i0_d1 %13.10lf\n", log_i0_d2);
     printf("\n");
     goto loop;
 }

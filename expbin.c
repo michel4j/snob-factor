@@ -264,7 +264,7 @@ void clear_stats(int iv)
 }
 
 /*    -------------------------  score_var  ------------------------   */
-/*    To eval derivs of a case wrt score, scorespread. Adds to vvd1,vvd2.
+/*    To eval derivs of a case wrt score, scorespread. Adds to case_fac_score_d1,case_fac_score_d2.
  */
 void score_var(int iv)
 {
@@ -286,7 +286,7 @@ void score_var(int iv)
         pr0 = 1.0 - pr1;
     }
     /*    Approximate Fisher by 1/(1+cc^2)  (wrt cc)  */
-    /*    This approx is for getting vvd2.  Use true Fisher 4.p0.p1 for
+    /*    This approx is for getting case_fac_score_d2.  Use true Fisher 4.p0.p1 for
         variation in ap, bp.  */
     /*    Now, dffbydc = -2 * cc * ff * ff, and
              dftbydc = 8 * p0 * p1 * (p0-p1) = 2 * ft * (p0-p1)   */
@@ -306,11 +306,11 @@ void score_var(int iv)
     dbyv += case_fac_score * cvi->bpsprd * ft;
     /*    And via dftbydv, terms 0.5*(fapsprd * vvsq*bpsprd)*ft :   */
     dbyv += (cvi->fapsprd + case_fac_score_sq * cvi->bpsprd) * hdftbydv;
-    vvd1 += dbyv;
-    vvd2 += evi->bsq * ff;
-    mvvd2 += evi->bsq * ff;
+    case_fac_score_d1 += dbyv;
+    case_fac_score_d2 += evi->bsq * ff;
+    est_fac_score_d2 += evi->bsq * ff;
     /*    Don't yet know cvvsprd, so just accum bsq * dffbydv  */
-    vvd3 += 2.0 * evi->bsq * hdffbydv;
+    case_fac_score_d3 += 2.0 * evi->bsq * hdffbydv;
     return;
 }
 

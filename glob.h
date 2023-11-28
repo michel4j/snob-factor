@@ -156,7 +156,7 @@ typedef struct SampleStruct {
     char vset_name[80]; /* Name of variable-set */
     int num_cases;      /* Num of cases */
     int num_active;     /* Num of active cases */
-    SVinst *variables;   /* Ptr to vector of SVinsts, one per variable */
+    SVinst *variables;  /* Ptr to vector of SVinsts, one per variable */
     char *records;      /*  vector of records  */
     int record_length;  /*  Length in chars of a data record  */
     double best_cost;   /*  Cost of best model */
@@ -189,12 +189,12 @@ typedef struct ClassStruct {
     double best_par_cost;
     double dad_par_cost, nofac_par_cost, fac_par_cost; /* Parameter costs in above */
     double best_case_cost;
-    double best_fac_cost; /*  Used to track best cfcost to detect improvement*/
-    double weights_sum;   /* sum of weights of members  */
-    double sum_score_sq;  /* Sum of squared scores */
-    double score_boost;   /* Used to inflate score vector early on  */
-    double avg_factor_scores;          /* average factor_scores  */
-    char type;            /* 0 = ?, 1 = root, 2 = dad, 3 = leaf, 4 = sub */
+    double best_fac_cost;     /*  Used to track best cfcost to detect improvement*/
+    double weights_sum;       /* sum of weights of members  */
+    double sum_score_sq;      /* Sum of squared scores */
+    double score_boost;       /* Used to inflate score vector early on  */
+    double avg_factor_scores; /* average factor_scores  */
+    char type;                /* 0 = ?, 1 = root, 2 = dad, 3 = leaf, 4 = sub */
     char hold_type;
     char use; /* Current use: 1=sansfac, 2=confac */
     char hold_use;
@@ -236,10 +236,10 @@ typedef struct ClassStruct {
         change, but may have different values in different machines.
         ********************* */
     int id;
-    short *factor_scores;       /* Factor scores */
-                     /* Scores times 4096 held as signed shorts in +-30000 */
-    CVinst **basics; /* ptr to vec of ptrs to variable basics */
-    EVinst **stats;  /* ptr to vec of ptrs to variable stats blocks*/
+    short *factor_scores; /* Factor scores */
+                          /* Scores times 4096 held as signed shorts in +-30000 */
+    CVinst **basics;      /* ptr to vec of ptrs to variable basics */
+    EVinst **stats;       /* ptr to vec of ptrs to variable stats blocks*/
 } Class;
 
 /*    --------------------------  Population  ----------------------  */
@@ -416,7 +416,7 @@ EXT double FacLog[MAX_CLASSES + 1];
 
 /*    general:    */
 EXT int Ntypes;     /* The number of different attribute types */
-EXT VarType *Types;   /* a vector of Ntypes type definitions, created in do_types */
+EXT VarType *Types; /* a vector of Ntypes type definitions, created in do_types */
 EXT Context CurCtx; /* current context */
 EXT VarSet *VarSets[MAX_VSETS];
 EXT Sample *Samples[MAX_SAMPLES];
@@ -463,11 +463,11 @@ EXT Class *CurClass, *CurDad;
 EXT double CurCaseWeight; /*  weight of case in class  */
 EXT double case_fac_score, case_fac_score_sq, cvvsprd;
 EXT double ctv, ctvsq, ctvd1, ctvd1sq, ctvd1cu, ctvsprd, ctd1d2;
-EXT int icvv; /*  integer form of case_fac_score*4096 */
+EXT int case_fac_int; /*  integer form of case_fac_score*4096 */
 EXT double ncasecost, scasecost, fcasecost;
-EXT double vvd1, vvd2; /* derivs of case cost wrt score  */
-EXT double mvvd2;      /* An over-estimate of vvd2 used in score ajust */
-EXT double vvd3;       /*  derivative of vvd2 wrt score  */
+EXT double case_fac_score_d1, case_fac_score_d2; /* derivs of case cost wrt score  */
+EXT double est_fac_score_d2;                /* An over-estimate of case_fac_score_d2 used in score ajust */
+EXT double case_fac_score_d3;                    /*  derivative of case_fac_score_d2 wrt score  */
 EXT int CurDadID;
 
 /*    re Doall   */

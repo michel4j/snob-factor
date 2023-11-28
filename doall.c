@@ -638,7 +638,7 @@ void do_case(int item, int all, int derivs) {
     clc = 0;
     while (clc < NumSon) {
         set_class_with_scores(Sons[clc], item);
-        if ((!SeeAll) && (icvv & 1)) { /* Ignore this and decendants */
+        if ((!SeeAll) && (case_fac_int & 1)) { /* Ignore this and decendants */
             clc = NextIc[clc];
             continue;
         } else if (!SeeAll)

@@ -441,7 +441,7 @@ void clear_stats(iv) int iv;
 }
 
 /*    -------------------------  score_var  ------------------------   */
-/*    To eval derivs of a case wrt score, scorespread. Adds to vvd1,vvd2.
+/*    To eval derivs of a case wrt score, scorespread. Adds to case_fac_score_d1,vvd2.
  */
 void score_var(iv) int iv;
 {
@@ -457,12 +457,12 @@ void score_var(iv) int iv;
            ff * b1p;
     t3d1 = case_fac_score * cvi->bpsprd * ff;
 
-    vvd1 += t1d1 + t3d1 + t2d1;
-    vvd2 += gg;
+    case_fac_score_d1 += t1d1 + t3d1 + t2d1;
+    case_fac_score_d2 += gg;
     /*xx    vvd2 += Mbeta * evi->mgg;  */
-    mvvd2 += (gg > evi->mgg) ? gg : evi->mgg;
+    est_fac_score_d2 += (gg > evi->mgg) ? gg : evi->mgg;
     /*    Since we don't know vsprd, just calc and accumulate deriv of 'gg' */
-    vvd3 += b3p - b1p * (3.0 * gg + b1p2);
+    case_fac_score_d3 += b3p - b1p * (3.0 * gg + b1p2);
     return;
 }
 
