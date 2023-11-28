@@ -5,7 +5,7 @@ of functions for the new type.
     The routine also sets some global geometric constants.
     */
 
-#include "glob.h"
+#include "snob.h"
 
 void reals_define(int typindx);
 void expmults_define(int typindx);

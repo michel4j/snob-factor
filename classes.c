@@ -1,6 +1,6 @@
 /*    Stuff dealing with classes as members of polpns     */
 #define CLASSES 1
-#include "glob.h"
+#include "snob.h"
 
 /*    -----------------------  serial_to_id  ---------------------------   */
 /*    Finds class index (id) from serial, or -3 if error    */

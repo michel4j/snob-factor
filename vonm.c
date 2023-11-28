@@ -5,7 +5,7 @@
     */
 
 #define VONM 1
-#include "glob.h"
+#include "snob.h"
 
 
 typedef struct VonMisesPackStr {

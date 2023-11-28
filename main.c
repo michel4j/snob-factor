@@ -1,5 +1,5 @@
 /*    ---------------------  MAIN FILE -----------------  */
-#include "glob.h"
+#include "snob.h"
 #include <omp.h>
 #include <stdarg.h>
 #include <time.h>

@@ -7,7 +7,7 @@ files. The declarations herein then become converted to " declarations.
     */
 
 #define GLOBALS 1
-#include "glob.h"
+#include "snob.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>

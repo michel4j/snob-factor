@@ -1,6 +1,6 @@
 #define NOTGLOB 1
 #define SAMPLES 1
-#include "glob.h"
+#include "snob.h"
 
 int sort_sample();
 

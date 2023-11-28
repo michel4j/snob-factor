@@ -2,7 +2,7 @@
 /*    actually for plain Gaussians   */
 
 #define NOTGLOB 1
-#include "glob.h"
+#include "snob.h"
 
 static void set_var();
 static int read_aux_attr();

@@ -1,6 +1,6 @@
 /*    File of stuff for Multistate variables.   */
 
-#include "glob.h"
+#include "snob.h"
 
 #define MaxState 20 /* Max number of discrete states per variable */
 static void set_var();

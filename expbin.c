@@ -1,6 +1,6 @@
 /*    File of stuff for logistic binary variables  */
 
-#include "glob.h"
+#include "snob.h"
 
 static void set_var();
 static int read_aux_attr();

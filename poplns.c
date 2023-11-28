@@ -1,6 +1,6 @@
 #define NOTGLOB 1
 #define POPLNS 1
-#include "glob.h"
+#include "snob.h"
 #include <string.h>
 
 /*    -----------------------  set_population  --------------------------    */

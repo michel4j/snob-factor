@@ -1,7 +1,7 @@
 /*    -----------------  fiddles with tree structure  ----------------  */
 #define NOTGLOB 1
 #define TACTICS 1
-#include "glob.h"
+#include "snob.h"
 
 /*     --------------------  flatten  --------------------------------  */
 /*    Destroys all non-root Dads, leaving all old non-dads (leaf or sub)
