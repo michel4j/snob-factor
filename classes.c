@@ -1,7 +1,6 @@
 /*    Stuff dealing with classes as members of polpns     */
 #define CLASSES 1
 #include "glob.h"
-#include <omp.h>
 
 /*    -----------------------  serial_to_id  ---------------------------   */
 /*    Finds class index (id) from serial, or -3 if error    */
@@ -19,8 +18,9 @@ int serial_to_id(int ss) {
     }
 
     printf("No such class serial as %d", ss >> 2);
-    if (ss & 3)
+    if (ss & 3) {
         printf("%c", (ss & 1) ? 'a' : 'b');
+    }
     printf("\n");
     return (-3);
 }
@@ -41,7 +41,7 @@ void set_class_with_scores(Class *cls, int item) {
 
 /*    ---------------------   make_class  -------------------------   */
 /*    Makes the basic structure of a class (Class) with vector of
-ptrs to CVinsts and CVinsts filled in also EVinsts and ptrs.
+    ptrs to CVinsts and CVinsts filled in also EVinsts and ptrs.
     Uses nc = pop->nc.
     if nc = 0, that's it. Otherwize, if a sample is defined in pop,
     score vector.
@@ -51,7 +51,6 @@ int error_and_message(const char *message) {
     printf("Error: %s\n", message);
     return -1;
 }
-
 int make_class() {
     PVinst *pvars;
     CVinst **cvars, *cvi;
@@ -287,9 +286,11 @@ void set_best_costs(Class *cls) {
 /*    Leaves data values set in stats, but does no scoring if class too
 young. If class age = MinFacAge, will guess scores but not cost them */
 /*    If control & AdjSc, will adjust score  */
-void score_all_vars(Class *ccl, int item) {
-    double del, cvvTimesHScoreScale, oneOverVvd2;
-    int icvv = 0, oldicvv, igbit;
+
+// DONT USE YET: alternative score_all_vars, testing, doesn't produce the same results
+void score_all_vars_alt(Class *ccl, int item) {
+    double del;
+    int oldicvv, igbit;
 
     set_class_with_scores(ccl, item);
     if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny)) {
@@ -310,9 +311,10 @@ void score_all_vars(Class *ccl, int item) {
             if (CurClass->boost_count && ((Control & AdjSP) == AdjSP)) {
                 cvv *= CurClass->score_boost;
                 cvv = fmin(fmax(cvv, -Maxv), Maxv); // Clamp cvv to [-Maxv, Maxv]
-                cvvTimesHScoreScale = cvv * HScoreScale;
-                del = cvvTimesHScoreScale - (cvvTimesHScoreScale < 0.0 ? 1.0 : 0.0);
+                del = cvv * HScoreScale;
+                del -= (del < 0) ? -1.0 : 0.0;
                 icvv = (int)(del + 0.5) << 1; // Round to nearest even times ScoreScale
+                igbit = 0;
                 cvv = icvv * ScoreRscale;
             }
 
@@ -328,8 +330,8 @@ void score_all_vars(Class *ccl, int item) {
             vvd1 += cvv;
             vvd2 += 1.0;
             mvvd2 += 1.0;             //  From prior  There is a cost term 0.5 * cvvsprd from the prior (whence the additional 1 in vvd2).
-            oneOverVvd2 = 1.0 / vvd2; // Also, overall cost includes 0.5*cvvsprd*vvd2, so there is a derivative term wrt cvv of 0.5*cvvsprd*vvd3
-            cvvsprd = oneOverVvd2;
+                                      // Also, overall cost includes 0.5*cvvsprd*vvd2, so there is a derivative term wrt cvv of 0.5*cvvsprd*vvd3
+            cvvsprd = 1.0 / vvd2;
             vvd1 += 0.5 * cvvsprd * vvd3;
             del = vvd1 / mvvd2;
             if (Control & AdjSc) {
@@ -337,20 +339,99 @@ void score_all_vars(Class *ccl, int item) {
             }
         }
 
-        cvv = fmin(fmax(cvv, -Maxv), Maxv); // Clamp cvv to [-Maxv, Maxv]
-        del = cvv * HScoreScale - (cvv * HScoreScale < 0.0 ? 1.0 : 0.0);
-        icvv = ((int)(del + rand_float())) << 1; // Round to nearest even times ScoreScale
-        icvv |= igbit;                           // Restore original ignore bit
+        cvv = fmax(fmin(cvv, Maxv), -Maxv);
+        del = cvv * HScoreScale;
+        del -= ((del < 0) ? -1.0 : 0.0);
+        icvv = del + rand_float();
+        icvv <<= 1;    // Round to nearest even times ScoreScale
+        icvv |= igbit; // Restore original ignore bit
         if (!igbit) {
             oldicvv -= icvv;
             oldicvv = abs(oldicvv);
             if (oldicvv > SigScoreChange)
                 CurClass->score_change_count++;
         }
-        CurClass->cvv = cvv = icvv * ScoreRscale;
-        CurClass->cvvsq = cvvsq = cvv * cvv;
+        CurClass->cvv = cvv;
+        CurClass->cvvsq = cvvsq;
         CurClass->cvvsprd = cvvsprd;
     }
+    CurClass->vv[item] = CurClass->case_score = icvv;
+}
+
+void score_all_vars(Class *ccl, int item) {
+    int i, igbit, oldicvv;
+    double del;
+
+    set_class_with_scores(ccl, item);
+    if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny)) {
+        cvv = CurClass->avvv = CurClass->sum_score_sq = 0.0;
+        icvv = 0;
+    } else {
+        if (CurClass->sum_score_sq <= 0.0) {
+            // Generate a fake score to get started.
+            CurClass->boost_count = 0;
+            cvvsprd = 0.1 / NumVars;
+            oldicvv = igbit = 0;
+            cvv = (rand_int() < 0) ? 1.0 : -1.0;
+        } else {
+            // Get current score
+            oldicvv = icvv;
+            igbit = icvv & 1;
+            cvv = icvv * ScoreRscale;
+            // Additional logic if CurClass has boost_count and AdjSP is set
+            if (CurClass->boost_count && ((Control & AdjSP) == AdjSP)) {
+                cvv *= CurClass->score_boost;
+                cvv = fmax(fmin(cvv, Maxv), -Maxv);
+                del = cvv * HScoreScale;
+                del -= (del < 0.0) ? 1.0 : 0.0;
+                icvv = del + 0.5;
+                icvv <<= 1; // Round to nearest even times ScoreScale
+                igbit = 0;
+                cvv = icvv * ScoreRscale;
+            }
+        }
+
+        cvvsq = cvv * cvv;
+        vvd1 = vvd2 = mvvd2 = vvd3 = 0.0;
+        for (i = 0; i < CurVSet->num_vars; i++) {
+            CurAttr = CurAttrList + i;
+            if (!CurAttr->inactive) {
+                CurVType = CurAttr->vtype;
+                (*CurVType->score_var)(i); // score_var should add to vvd1, vvd2, vvd3, mvvd2.
+            }
+        }
+
+        vvd1 += cvv;
+        vvd2 += 1.0;
+        mvvd2 += 1.0; // From prior
+        cvvsprd = 1.0 / vvd2;
+        vvd1 += 0.5 * cvvsprd * vvd3;
+        del = vvd1 / mvvd2;
+        if (Control & AdjSc) {
+            cvv -= del;
+        }
+    }
+
+    // Code from the 'fake' label
+    cvv = fmax(fmin(cvv, Maxv), -Maxv);
+    del = cvv * HScoreScale;
+    //if (del < 0.0) del -= 1.0; else del -= 0.0;
+    del -= (del < 0.0) ? 1.0 : 0.0;
+    icvv = del + rand_float();
+    icvv <<= 1;    // Round to nearest even times ScoreScale
+    icvv |= igbit; // Restore original ignore bit
+
+    if (!igbit) {
+        oldicvv -= icvv;
+        oldicvv = abs(oldicvv);
+        if (oldicvv > SigScoreChange)
+            CurClass->score_change_count++;
+    }
+
+    CurClass->cvv = cvv;
+    CurClass->cvvsq = cvvsq;
+    CurClass->cvvsprd = cvvsprd;
+
     CurClass->vv[item] = CurClass->case_score = icvv;
 }
 
@@ -419,7 +500,7 @@ void deriv_all_vars(Class *ccl, int item) {
         CurClass->vav += CurCaseWeight * CurClass->clvsprd;
         CurClass->totvv += cvv * CurCaseWeight;
     }
-    
+
     for (int iv = 0; iv < NumVars; iv++) {
         attr = CurAttrList + iv;
         if (!(attr->inactive)) {
@@ -502,7 +583,6 @@ void adjust_class(Class *ccl, int dod) {
 
     /*    Get average score   */
     CurClass->avvv = CurClass->totvv / CurClass->weights_sum;
-
     if (dod)
         parent_cost_all_vars(ccl, npars);
 
@@ -578,7 +658,9 @@ void adjust_class(Class *ccl, int dod) {
             }
         }
     }
+
     set_best_costs(CurClass);
+
     if (Control & AdjPr)
         CurClass->age++;
 }

@@ -48,7 +48,6 @@ void find_all(int class_type) {
     NumSon = j;
 
     // Set indices in nextic[] for non-descendant classes
-    #pragma omp parallel for
     for (i = 0; i < NumSon; i++) {
         int idi = Sons[i]->id;
         for (j = i + 1; j < NumSon; j++) {
@@ -793,11 +792,9 @@ void do_case(int item, int all, int derivs) {
             /*    Assign randomly if sub age 0, or to-best if sub age < MinAge */
             if (sub1->age < MinAge) {
                 if (sub1->age == 0) {
-                    // w1 = (rand_int() < 0) ? 1.0 : 0.0;
-                    w1 = (rand_int() < 0);
+                    w1 = (rand_int() < 0) ? 1.0 : 0.0;
                 } else {
-                    // w1 = (diff < 0) ? 1.0 : 0.0;
-                    w1 = (diff < 0);
+                    w1 = (diff < 0) ? 1.0 : 0.0;
                 }
                 w2 = 1.0 - w1;
             }
