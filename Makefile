@@ -1,4 +1,4 @@
-CC = gcc -g -Wall -O3 -fpic -fopenmp -flto=2
+CC = gcc -g -Wall -fpic -fopenmp -O3 -flto=2
 #CC = gcc -pg -Wall -fopenmp
 
 SRC = main.c dotypes.c glob.c reals.c samples.c inputs.c poplns.c \

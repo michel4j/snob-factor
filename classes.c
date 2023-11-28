@@ -35,7 +35,7 @@ void set_class(Class *cls) {
 /*    ---------------------  set_class_with_scores --------------------------   */
 void set_class_with_scores(Class *cls, int item) {
     set_class(cls);
-    CurClass->case_score = icvv = CurClass->vv[item];
+    CurClass->case_score = icvv = CurClass->factor_scores[item];
     CurCaseWeight = CurClass->case_weight;
 }
 
@@ -128,7 +128,7 @@ int make_class() {
         }
 
         /*    Stomp on ptrs as yet undefined  */
-        CurClass->vv = 0;
+        CurClass->factor_scores = 0;
         CurClass->type = 0;
 
     } else if (vacant) { /* Vacant type shows structure set up but vacated.
@@ -154,7 +154,7 @@ int make_class() {
     if (CurClass->type != Vacant) {
         /* If nc = 0, this completes the make. */
         if (NumCases != 0) {
-            CurClass->vv = (short *)alloc_blocks(2, NumCases * sizeof(short));
+            CurClass->factor_scores = (short *)alloc_blocks(2, NumCases * sizeof(short));
 
             for (int i = 0; i < NumVars; i++) {
                 evars[i]->num_values = 0.0;
@@ -195,7 +195,7 @@ void print_one_class(Class *clp, int full) {
     printf("Vv%6.2f", vrms);
     printf("%c", (CurClass->boost_count) ? 'B' : ' ');
     printf(" +-%5.3f", (clp->vav));
-    printf(" Avv%6.3f", clp->avvv);
+    printf(" Avv%6.3f", clp->avg_factor_scores);
     printf("%c", (clp->use == Fac) ? ' ' : ')');
     if (clp->type == Dad) {
         printf("%4d sons", clp->num_sons);
@@ -246,7 +246,7 @@ void clear_costs(Class *cls) {
     CurClass->newcnt = CurClass->newvsq = 0.0;
     CurClass->score_change_count = 0;
     CurClass->vav = 0.0;
-    CurClass->totvv = 0.0;
+    CurClass->factor_score_sum = 0.0;
     if (!SeeAll)
         CurClass->scancnt = 0;
     for (i = 0; i < CurVSet->num_vars; i++) {
@@ -294,7 +294,7 @@ void score_all_vars_alt(Class *ccl, int item) {
 
     set_class_with_scores(ccl, item);
     if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny)) {
-        cvv = CurClass->avvv = CurClass->sum_score_sq = 0.0;
+        cvv = CurClass->avg_factor_scores = CurClass->sum_score_sq = 0.0;
         icvv = 0;
     } else {
         if (CurClass->sum_score_sq <= 0.0) {
@@ -355,7 +355,7 @@ void score_all_vars_alt(Class *ccl, int item) {
         CurClass->cvvsq = cvvsq;
         CurClass->cvvsprd = cvvsprd;
     }
-    CurClass->vv[item] = CurClass->case_score = icvv;
+    CurClass->factor_scores[item] = CurClass->case_score = icvv;
 }
 
 void score_all_vars(Class *ccl, int item) {
@@ -364,7 +364,7 @@ void score_all_vars(Class *ccl, int item) {
 
     set_class_with_scores(ccl, item);
     if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny)) {
-        cvv = CurClass->avvv = CurClass->sum_score_sq = 0.0;
+        cvv = CurClass->avg_factor_scores = CurClass->sum_score_sq = 0.0;
         icvv = 0;
     } else {
         if (CurClass->sum_score_sq <= 0.0) {
@@ -432,7 +432,7 @@ void score_all_vars(Class *ccl, int item) {
     CurClass->cvvsq = cvvsq;
     CurClass->cvvsprd = cvvsprd;
 
-    CurClass->vv[item] = CurClass->case_score = icvv;
+    CurClass->factor_scores[item] = CurClass->case_score = icvv;
 }
 
 /*    ----------------------  cost_all_vars  --------------------------  */
@@ -498,7 +498,7 @@ void deriv_all_vars(Class *ccl, int item) {
         cvvsprd = CurClass->cvvsprd;
         CurClass->newvsq += CurCaseWeight * cvvsq;
         CurClass->vav += CurCaseWeight * CurClass->clvsprd;
-        CurClass->totvv += cvv * CurCaseWeight;
+        CurClass->factor_score_sum += cvv * CurCaseWeight;
     }
 
     for (int iv = 0; iv < NumVars; iv++) {
@@ -582,7 +582,7 @@ void adjust_class(Class *ccl, int dod) {
     }
 
     /*    Get average score   */
-    CurClass->avvv = CurClass->totvv / CurClass->weights_sum;
+    CurClass->avg_factor_scores = CurClass->factor_score_sum / CurClass->weights_sum;
     if (dod)
         parent_cost_all_vars(ccl, npars);
 

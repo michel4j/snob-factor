@@ -436,12 +436,12 @@ newclass:
         goto fakeit;
     /*    Copy scores  */
     for (n = 0; n < NumCases; n++)
-        cls->vv[n] = fcls->vv[n];
+        cls->factor_scores[n] = fcls->factor_scores[n];
     goto classdone;
 
 fakeit: /*  initialize scorevectors  */
     for (n = 0; n < NumCases; n++) {
-        cls->vv[n] = 0;
+        cls->factor_scores[n] = 0;
     }
     cls->weights_sum = nomcnt;
     if (cls->dad_id < 0) /* Root class */
@@ -791,7 +791,7 @@ newclass:
 
     /*    Copy scores  */
     nch = nc * sizeof(short);
-    save_to_file(fl, cls->vv, nch);
+    save_to_file(fl, cls->factor_scores, nch);
     leng += nch;
 classdone:
     jcl++;
@@ -927,7 +927,7 @@ haveclass:
         goto classdone;
     }
     nch = NumCases * sizeof(short);
-    jp = (char *)(cls->vv);
+    jp = (char *)(cls->factor_scores);
     for (k = 0; k < nch; k++) {
         *jp = fgetc(fl);
         jp++;

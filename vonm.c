@@ -46,7 +46,7 @@ typedef struct Sauxst {
     int missing;
     double dummy;
     Datum xn;
-    double parkfxx; /* angle - vv*ld for item n */
+    double parkfxx; /* angle - factor_scores*ld for item n */
     double eps;
     double leps;   /* Log eps */
     double epsfac; /* It seems that the 'increased variance' effect
@@ -314,7 +314,7 @@ components:
 mc1 = -leps + lgi0 - kap * cos (mu + w - xx)
     where kap^2 = hx^2 + hy^2
         tan (mu) = hx / hy
-        t = tan (w/2) = vv * ld
+        t = tan (w/2) = factor_scores * ld
 
     Round-off costs:
 mc2 = hsprd * Fh
@@ -350,7 +350,7 @@ void score_var(int iv) {
     r2 = dwdt * dwdt;           /* Square of (d_w / d_t) */
     dr2dw = -2.0 * dwdt * sinw; /* deriv wrt w of r2 */
 
-    /*    Now to get derivs wrt vv, I first get derivs wrt tt  */
+    /*    Now to get derivs wrt factor_scores, I first get derivs wrt tt  */
     /*    The mc1 term -kap * cos (mu + w - xx) can be written using
         kap*cosmu = hy, kap*sinmu = hx as:
         mc1t = -{(hy.cx + hx.sx) cos(w) - (hx.cx - hy.sx) sin(w)}
@@ -373,11 +373,11 @@ void score_var(int iv) {
     mvvd2 += cvi->fmufish * cvi->ldsprd * r2;
 
     /*    The second part, involving vsprd, is treated by accumulating
-        in vvd3 the deriv wrt vv of the multiplier of half vsprd.   */
+        in vvd3 the deriv wrt factor_scores of the multiplier of half vsprd.   */
     vvd3 += cvi->fmufish * cvi->ldsq * dr2dw * dwdv;
 
     /*    The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
-    /*    and so to deriv wrt vv of:  wd1 * dwdv  */
+    /*    and so to deriv wrt factor_scores of:  wd1 * dwdv  */
 
     vvd1 += wd1 * dwdv;
 
@@ -494,7 +494,7 @@ void deriv_var(int iv, int fac) {
         wd1 += 0.5 * cvi->fmufish * tsprd * dr2dw;
 
         /*    The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
-        /*    and so to a deriv wrt ld of: (vv * wd1 * dwdt)  */
+        /*    and so to a deriv wrt ld of: (factor_scores * wd1 * dwdt)  */
         evi->ldd1 += CurCaseWeight * cvv * wd1 * dwdt;
 
         /*    There is also a deriv wrt ld via tsprd.  */

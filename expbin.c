@@ -297,7 +297,7 @@ void score_var(int iv)
     /*    Apply Bbeta mix to the approximate Fish  */
     hdffbydv = Bbeta * hdffbydv + (1.0 - Bbeta) * hdftbydv;
     ff = Bbeta * ff + (1.0 - Bbeta) * ft;
-    /*    Now build deriv of cost wrt vv  */
+    /*    Now build deriv of cost wrt factor_scores  */
     if (saux->xn == 1)
         dbyv = -2.0 * cvi->fbp * pr0;
     else

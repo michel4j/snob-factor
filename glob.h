@@ -193,7 +193,7 @@ typedef struct ClassStruct {
     double weights_sum;   /* sum of weights of members  */
     double sum_score_sq;  /* Sum of squared scores */
     double score_boost;   /* Used to inflate score vector early on  */
-    double avvv;          /* average vv  */
+    double avg_factor_scores;          /* average factor_scores  */
     char type;            /* 0 = ?, 1 = root, 2 = dad, 3 = leaf, 4 = sub */
     char hold_type;
     char use; /* Current use: 1=sansfac, 2=confac */
@@ -214,7 +214,7 @@ typedef struct ClassStruct {
     double cfvcost;                   /*  Factor-score cost included in cftcost  */
     double cntcost, cstcost, cftcost; /* Thing costs in above */
     double vav;                       /* sum of log vvsprds */
-    double totvv;                     /* sum of vvs  */
+    double factor_score_sum;                     /* sum of vvs  */
     int scancnt;                      /*  Number of things considered  */
     /*    ********************  Items below here are generated locally by
             docase for each case, and need not be distributed or
@@ -236,7 +236,7 @@ typedef struct ClassStruct {
         change, but may have different values in different machines.
         ********************* */
     int id;
-    short *vv;       /* Factor scores */
+    short *factor_scores;       /* Factor scores */
                      /* Scores times 4096 held as signed shorts in +-30000 */
     CVinst **basics; /* ptr to vec of ptrs to variable basics */
     EVinst **stats;  /* ptr to vec of ptrs to variable stats blocks*/

@@ -769,7 +769,7 @@ void do_case(int item, int all, int derivs) {
                     sub2->case_score |= 1;
                 else
                     sub2->case_score &= -2;
-                sub2->vv[item] = sub2->case_score;
+                sub2->factor_scores[item] = sub2->case_score;
                 if (Fix == Random)
                     CurClass->dad_case_cost = low;
                 else
@@ -783,7 +783,7 @@ void do_case(int item, int all, int derivs) {
                     sub1->case_score |= 1;
                 else
                     sub1->case_score &= -2;
-                sub1->vv[item] = sub1->case_score;
+                sub1->factor_scores[item] = sub1->case_score;
                 if (Fix == Random)
                     CurClass->dad_case_cost = low;
                 else
@@ -807,13 +807,13 @@ void do_case(int item, int all, int derivs) {
         if (CurRootClass->type != Leaf) { /* skip when root is only leaf */
             for (clc = NumSon - 1; clc >= 0; clc--) {
                 CurClass = Sons[clc];
-                if ((CurClass->type == Sub) || ((!SeeAll) && (CurClass->vv[item] & 1))) {
+                if ((CurClass->type == Sub) || ((!SeeAll) && (CurClass->factor_scores[item] & 1))) {
                     continue;
                 }
                 if (CurClass->case_weight < MinWt)
-                    CurClass->vv[item] |= 1;
+                    CurClass->factor_scores[item] |= 1;
                 else
-                    CurClass->vv[item] &= -2;
+                    CurClass->factor_scores[item] &= -2;
                 if (CurClass->dad_id >= 0)
                     CurPopln->classes[CurClass->dad_id]->case_weight += CurClass->case_weight;
                 if (CurClass->type == Dad) {
