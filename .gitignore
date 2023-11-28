@@ -47,6 +47,7 @@ snob-factor
 # Kernel Module Compile Results
 *.mod*
 *.cmd
+*.rep
 .tmp_versions/
 modules.order
 Module.symvers

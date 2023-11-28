@@ -173,42 +173,43 @@ typedef struct CVinstStruct { /*Structure for basic info on a var in a class*/
     int infac; /* shows if affected by factor  */
 } CVinst;
 
-typedef struct EVinstStruct { /* Stuff for var in class in expln */
-    double num_values;        /*  Num of values */
-    double btcost, ntcost, stcost, ftcost;
-    double bpcost, npcost, spcost, fpcost;
-    double sum_scores_sq; /* weighted sum of squared scores */
+typedef struct EVinstStruct {              /* Stuff for var in class in expln */
+    double num_values;                     /*  Num of values */
+    double btcost, ntcost, stcost, ftcost; /**/
+    double bpcost, npcost, spcost, fpcost; /**/
+    double sum_scores_sq;                  /* weighted sum of squared scores */
     int id;
 } EVinst;
 
 typedef struct ClassStruct {
     double relab;
-    double mlogab;                         /*  - log relab  */
-    double best_cost;                      /* Best total class cost  */
-    double dad_cost, nofac_cost, fac_cost; /* Class costs as dad, sansfac, confac */
-    double best_par_cost;
+    double mlogab;                                     /*  - log relab */
+    double best_cost;                                  /* Best total class cost  */
+    double dad_cost, nofac_cost, fac_cost;             /* Class costs as dad, sansfac, confac */
+    double best_par_cost;                              /**/
     double dad_par_cost, nofac_par_cost, fac_par_cost; /* Parameter costs in above */
-    double best_case_cost;
-    double best_fac_cost;     /*  Used to track best cfcost to detect improvement*/
-    double weights_sum;       /* sum of weights of members  */
-    double sum_score_sq;      /* Sum of squared scores */
-    double score_boost;       /* Used to inflate score vector early on  */
-    double avg_factor_scores; /* average factor_scores  */
-    char type;                /* 0 = ?, 1 = root, 2 = dad, 3 = leaf, 4 = sub */
-    char hold_type;
-    char use; /* Current use: 1=sansfac, 2=confac */
-    char hold_use;
-    int boost_count;            /*  Monitors need to boost vsq  */
-    int score_change_count;     /*  Counts significant score changes  */
-    int age;                    /*  age in massage counts  */
-    int dad_id, sib_id, son_id; /* id links in class hierarchy */
-    int num_sons;               /* Number of son classes */
+    double best_case_cost;                             /**/
+    double best_fac_cost;                              /*  Used to track best cfcost to detect improvement*/
+    double weights_sum;                                /* sum of weights of members  */
+    double sum_score_sq;                               /* Sum of squared scores */
+    double score_boost;                                /* Used to inflate score vector early on  */
+    double avg_factor_scores;                          /* average factor_scores  */
+    char type;                                         /* 0 = ?, 1 = root, 2 = dad, 3 = leaf, 4 = sub */
+    char hold_type;                                    /**/
+    char use;                                          /* Current use: 1=sansfac, 2=confac */
+    char hold_use;                                     /**/
+    int boost_count;                                   /*  Monitors need to boost vsq  */
+    int score_change_count;                            /*  Counts significant score changes  */
+    int age;                                           /*  age in massage counts  */
+    int dad_id, sib_id, son_id;                        /* id links in class hierarchy */
+    int num_sons;                                      /* Number of son classes */
     int serial;
-    /*    ******************* Items above this line must be distributed to
-                all remotes before each pass through the data.
-            The items in the next group are accumulated and must be
-            returned to central.  They are cleared to zero by clear_costs.
-            */
+    /*
+        Items above this line must be distributed to
+        all remotes before each pass through the data.
+        The items in the next group are accumulated and must be
+        returned to central.  They are cleared to zero by clear_costs.
+    */
     double newcnt;                    /*  Accumulates weights for cnt  */
     double newvsq;                    /*  Accumulates squared scores for vsq  */
     double cfvcost;                   /*  Factor-score cost included in cftcost  */
@@ -216,9 +217,10 @@ typedef struct ClassStruct {
     double vav;                       /* sum of log vvsprds */
     double factor_score_sum;          /* sum of factor_scores  */
     int scancnt;                      /*  Number of things considered  */
-    /*    ********************  Items below here are generated locally by
-            docase for each case, and need not be distributed or
-            returned  */
+    /*
+        Items below here are generated locally by
+        docase for each case, and need not be distributed or returned
+    */
     int case_score;          /*  Integer score of current case  */
     double total_case_cost;  /*  tcost of current case  */
     double nofac_case_cost;  /* Cost of current case in no-fac class */
@@ -227,14 +229,14 @@ typedef struct ClassStruct {
     double dad_case_cost;    /* """""""""""""""""""""""  dad   class */
     double case_weight;      /*  weight of current case  */
     double case_fac_score, case_fac_score_sq, cvvsprd, clvsprd;
-    /*    *******************
+    /*
         Items below this line are set up when class is made by makeclass()
-    and should NOT be copied to a new class structure. IT IS ASSUMED THAT
-    'ID' IS THE FIRST ITEM BELOW THE LINE.
+        and should NOT be copied to a new class structure. IT IS ASSUMED THAT
+        'ID' IS THE FIRST ITEM BELOW THE LINE.
         Except for id, which never changes and is set by central, the other
         items are pointers which will be set by remotes, will not thereafter
         change, but may have different values in different machines.
-        ********************* */
+    */
     int id;
     short *factor_scores; /* Factor scores */
                           /* Scores times 4096 held as signed shorts in +-30000 */
@@ -396,6 +398,7 @@ void do_types();
 */
 void print_var_datum(int i, int n);
 int load_vset();
+int open_vset(char *fname);
 int load_sample(char *fname);
 int find_sample(char *nam, int expect);
 int find_vset(char *nam);
@@ -407,3 +410,13 @@ int item_list(char *tlstname);
     In glob.c
 */
 char *serial_to_str(Class *cll);
+
+
+/*
+    In main.c
+*/
+
+void initialize();
+void show_pop_names();
+void show_smpl_names();
+void log_cmd(const char *format, ...) __attribute__((format(printf, 1, 2)));

@@ -8,9 +8,7 @@ FILE *logfile;
 
 char sparam[80];
 int intparam;
-void show_pop_names();
-void show_smpl_names();
-void log_cmd(const char *format, ...) __attribute__((format(printf, 1, 2)));
+
 
 /*    ---------------------  menu  ---------------------------  */
 /*    To read a command word and return an integer code for it  */

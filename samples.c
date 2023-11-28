@@ -160,6 +160,133 @@ error:
     return (i);
 }
 
+int open_vset(char* filename) {
+
+    int i, itype, indx;
+    int kread;
+    Buf bufst, *buf;
+    char *vaux;
+
+    buf = &bufst;
+    for (i = 0; i < MAX_VSETS; i++)
+        if (!VarSets[i])
+            goto gotit;
+nospce:
+    printf("No space for VarSet\n");
+    i = -10;
+    goto error;
+
+gotit:
+    indx = i;
+    CurVSet = VarSets[i] = (VarSet *)malloc(sizeof(VarSet));
+    if (!CurVSet)
+        goto nospce;
+    CurVSet->id = indx;
+    CurCtx.vset = CurVSet;
+    CurVSet->attrs = 0;
+    CurVSet->blocks = 0;
+    strcpy(CurVSet->filename, filename);
+    strcpy(buf->cname, filename);
+    CurCtx.buffer = buf;
+    if (open_buffer()) {
+        printf("Cant open variable-set file %s\n", CurVSet->filename);
+        i = -2;
+        goto error;
+    }
+
+    /*    Begin to read variable-set file. First entry is its name   */
+    new_line();
+    kread = read_str(CurVSet->name, 1);
+    if (kread < 0) {
+        printf("Error in name of variable-set\n");
+        i = -9;
+        goto error;
+    }
+    /*    Num of variables   */
+    new_line();
+    kread = read_int(&NumVars, 1);
+    if (kread) {
+        printf("Cant read number of variables\n");
+        i = -4;
+        goto error;
+    }
+    CurVSet->num_vars = NumVars;
+    CurVSet->num_active = CurVSet->num_vars;
+
+    /*    Make a vec of nv AVinst blocks  */
+    CurAttrList = (AVinst *)alloc_blocks(3, NumVars * sizeof(AVinst));
+    if (!CurAttrList) {
+        printf("Cannot allocate memory for variables blocks\n");
+        i = -3;
+        goto error;
+    }
+    CurVSet->attrs = CurAttrList;
+
+    /*    Read in the info for each variable into vlist   */
+    for (i = 0; i < NumVars; i++) {
+        CurAttrList[i].id = -1;
+        CurAttrList[i].vaux = 0;
+    }
+    for (i = 0; i < NumVars; i++) {
+        CurAttr = CurAttrList + i;
+        CurAttr->id = i;
+
+        /*    Read name  */
+        new_line();
+        kread = read_str(CurAttr->name, 1);
+        if (kread < 0) {
+            printf("Error in name of variable %d\n", i + 1);
+            i = -10;
+            goto error;
+        }
+
+        /*    Read type code. Negative means idle.   */
+        kread = read_int(&itype, 1);
+        if (kread) {
+            printf("Cant read type code for var %d\n", i + 1);
+            i = -5;
+            goto error;
+        }
+        CurAttr->inactive = 0;
+        if (itype < 0) {
+            CurAttr->inactive = 1;
+            itype = -itype;
+        }
+        if ((itype < 1) || (itype > Ntypes)) {
+            printf("Bad type code %d for var %d\n", itype, i + 1);
+            i = -5;
+            goto error;
+        }
+        itype = itype - 1; /*  Convert types to start at 0  */
+        CurVType = CurAttr->vtype = Types + itype;
+        CurAttr->type = itype;
+
+        /*    Make the vaux block  */
+        vaux = (char *)alloc_blocks(3, CurVType->attr_aux_size);
+        if (!vaux) {
+            printf("Cant make auxilliary var block\n");
+            i = -6;
+            goto error;
+        }
+        CurAttr->vaux = vaux;
+
+        /*    Read auxilliary information   */
+        if ((*CurVType->read_aux_attr)(vaux)) {
+            printf("Error in reading auxilliary info var %d\n", i + 1);
+            i = -7;
+            goto error;
+        }
+        /*    Set sizes of stats and basic blocks for var in classes */
+        (*CurVType->set_sizes)(i);
+    } /* End of variables loop */
+    i = indx;
+
+error:
+    close_buffer();
+    CurCtx.buffer = CurSource;
+    return (i);
+}
+
 /*    ---------------------  load_sample -------------------------  */
 /*    To open a sample file and read in all about the sample.
     Returns index of new sample in samples array   */
