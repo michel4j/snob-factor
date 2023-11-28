@@ -2,7 +2,7 @@
 /*    actually for plain Gaussians   */
 
 #define NOTGLOB 1
-#include "snob.h"
+#include "glob.h"
 
 static void set_var();
 static int read_aux_attr();
@@ -288,7 +288,7 @@ void cost_var(int iv, int fac) {
     /*    Do no-fac cost first  */
     del = cvi->smu - saux->xn;
     var = del * del + cvi->smusprd + saux->epssq;
-    cost = 0.5 * var * evi->srsds + cvi->ssdlsprd + hlg2pi + cvi->ssdl - saux->leps;
+    cost = 0.5 * var * evi->srsds + cvi->ssdlsprd + HALF_LOG_2PI + cvi->ssdl - saux->leps;
     evi->parkstcost = cost;
     scasecost += cost;
 
@@ -297,7 +297,7 @@ void cost_var(int iv, int fac) {
         del += case_fac_score * cvi->ld;
         var = del * del + cvi->fmusprd + saux->epssq + case_fac_score_sq * cvi->ldsprd + cvvsprd * evi->ldsq;
         evi->var = var;
-        cost = hlg2pi + 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd * 2.0 - saux->leps;
+        cost = HALF_LOG_2PI + 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd * 2.0 - saux->leps;
     }
     fcasecost += cost;
     evi->parkftcost = cost;
@@ -401,7 +401,7 @@ void adjust(int iv, int fac) {
         dsdlsprd = 1.0;
     }
     /*    Make a stab at class tcost  */
-    CurClass->cstcost += cnt * (hlg2pi + cvi->ssdl - saux->leps + 0.5 + CurClass->mlogab) + 1.0;
+    CurClass->cstcost += cnt * (HALF_LOG_2PI + cvi->ssdl - saux->leps + 0.5 + CurClass->mlogab) + 1.0;
     CurClass->cftcost = CurClass->cstcost + 100.0 * cnt;
 
 hasage:
@@ -412,11 +412,11 @@ hasage:
 
     /*    Compute parameter costs as they are  */
     del1 = dadmu - cvi->smu;
-    spcost = hlg2pi + 0.5 * (log(dmusprd) + temp1 * (del1 * del1 + cvi->smusprd));
+    spcost = HALF_LOG_2PI + 0.5 * (log(dmusprd) + temp1 * (del1 * del1 + cvi->smusprd));
     del2 = dadsdl - cvi->ssdl;
-    spcost += hlg2pi + 0.5 * (log(dsdlsprd) + temp2 * (del2 * del2 + cvi->ssdlsprd));
+    spcost += HALF_LOG_2PI + 0.5 * (log(dsdlsprd) + temp2 * (del2 * del2 + cvi->ssdlsprd));
     spcost -= 0.5 * log(cvi->smusprd * cvi->ssdlsprd);
-    spcost += 2.0 * lattice;
+    spcost += 2.0 * LATTICE;
 
     if (!fac) {
         fpcost = spcost + 100.0;
@@ -424,13 +424,13 @@ hasage:
         goto facdone1;
     }
     del3 = cvi->fmu - dadmu;
-    fpcost = hlg2pi + 0.5 * (log(dmusprd) + temp1 * (del3 * del3 + cvi->fmusprd));
+    fpcost = HALF_LOG_2PI + 0.5 * (log(dmusprd) + temp1 * (del3 * del3 + cvi->fmusprd));
     del4 = cvi->fsdl - dadsdl;
-    fpcost += hlg2pi + 0.5 * (log(dsdlsprd) + temp2 * (del4 * del4 + cvi->fsdlsprd));
+    fpcost += HALF_LOG_2PI + 0.5 * (log(dsdlsprd) + temp2 * (del4 * del4 + cvi->fsdlsprd));
     /*    The prior for load ld id N (0, sigsq)  */
-    fpcost += hlg2pi + 0.5 * (evi->ldsq + cvi->ldsprd) * frsds + cvi->fsdl;
+    fpcost += HALF_LOG_2PI + 0.5 * (evi->ldsq + cvi->ldsprd) * frsds + cvi->fsdl;
     fpcost -= 0.5 * log(cvi->fmusprd * cvi->fsdlsprd * cvi->ldsprd);
-    fpcost += 3.0 * lattice;
+    fpcost += 3.0 * LATTICE;
 
 facdone1:
 
@@ -621,7 +621,7 @@ implied by the tn, or at least by the set of estimate values in the son.
 {tn, sn} is
 
 For {tn} :
-    N*hlg2pi + 0.5*N*log(s) + (1/2s)*Sum_n{(tn-t)^2 + deln}
+    N*HALF_LOG_2PI + 0.5*N*log(s) + (1/2s)*Sum_n{(tn-t)^2 + deln}
 For {sm} :
     M*log(s) + (1/s)*Sum_m{sm}    where we index the internal sons by m
                     rather than by n.
@@ -763,9 +763,9 @@ adjloop:
 
 adjdone: /*    Calc cost  */
     del = pp - dadpp;
-    pcost += hlg2pi + 1.5 * log(dppsprd) + 0.5 * (del * del + ppsprd / nson) / dppsprd + ppsprd / dppsprd;
+    pcost += HALF_LOG_2PI + 1.5 * log(dppsprd) + 0.5 * (del * del + ppsprd / nson) / dppsprd + ppsprd / dppsprd;
     /*    Add hlog Fisher, lattice  */
-    pcost += 0.5 * log(nson * (0.5 * nson + nints)) - 1.5 * log(ppsprd) + 2.0 * lattice;
+    pcost += 0.5 * log(nson * (0.5 * nson + nints)) - 1.5 * log(ppsprd) + 2.0 * LATTICE;
 
     /*    Add roundoff for 2 params  (pp, ppsprd)  */
     pcost += 1.0;

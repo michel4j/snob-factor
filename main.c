@@ -1,5 +1,5 @@
 /*    ---------------------  MAIN FILE -----------------  */
-#include "snob.h"
+#include "glob.h"
 #include <omp.h>
 #include <stdarg.h>
 #include <time.h>
@@ -10,7 +10,7 @@ char sparam[80];
 int intparam;
 void show_pop_names();
 void show_smpl_names();
-void log_cmd(const char *format, ...) __attribute__ ((format (printf, 1, 2)));
+void log_cmd(const char *format, ...) __attribute__((format(printf, 1, 2)));
 
 /*    ---------------------  menu  ---------------------------  */
 /*    To read a command word and return an integer code for it  */
@@ -199,7 +199,7 @@ void log_cmd(const char *format, ...) {
     va_start(args, format);
     vfprintf(logfile, format, args);
     fprintf(logfile, "\n");
-    va_end(args);    
+    va_end(args);
     fflush(logfile);
 }
 /* ----------------- readserial ------------------------- */
@@ -631,14 +631,14 @@ loop:
         }
         if (k < 0)
             goto error;
-        log_cmd("%s %s", commands[skk], sers(CurPopln->classes[k]));
+        log_cmd("%s %s", commands[skk], serial_to_str(CurPopln->classes[k]));
         CurPopln->classes[k]->weights_sum = 0.0;
         goto loop;
     case 4: /* delete_sons */
         k = readserial(kk);
         if (k < 0)
             goto error;
-        log_cmd("%s %s", commands[skk], sers(CurPopln->classes[k]));
+        log_cmd("%s %s", commands[skk], serial_to_str(CurPopln->classes[k]));
         delete_sons(k);
         CurPopln->classes[k]->hold_type = HoldTime;
         goto loop;
@@ -649,7 +649,7 @@ loop:
         i = readanint(kk);
         if (i < 0)
             goto error;
-        log_cmd("%s %s %d", commands[skk], sers(CurPopln->classes[k]), i);
+        log_cmd("%s %s %d", commands[skk], serial_to_str(CurPopln->classes[k]), i);
         print_class(k, i);
         goto loop;
     case 6: /*    adjust  */
@@ -719,19 +719,19 @@ loop:
         if (k < 0)
             goto error;
         if (CurPopln->classes[k]->type != Leaf) {
-            printf("Class %s is not a leaf\n", sers(CurPopln->classes[k]));
+            printf("Class %s is not a leaf\n", serial_to_str(CurPopln->classes[k]));
             goto loop;
         }
 
-        log_cmd("%s %s", commands[skk], sers(CurPopln->classes[k]));
+        log_cmd("%s %s", commands[skk], serial_to_str(CurPopln->classes[k]));
         if (split_leaf(k))
-            printf("Cannot split class%s\n", sers(CurPopln->classes[k]));
+            printf("Cannot split class%s\n", serial_to_str(CurPopln->classes[k]));
         goto loop;
     case 9: /* splice_dad */
         k = readserial(kk);
         if (k < 0)
             goto error;
-        log_cmd("%s %s", commands[skk], sers(CurPopln->classes[k]));
+        log_cmd("%s %s", commands[skk], serial_to_str(CurPopln->classes[k]));
         k = CurPopln->classes[k]->serial;
         drop = splice_dad(k);
         goto dropprint;
@@ -837,7 +837,7 @@ loop:
         if (nn < 0)
             goto error;
         log_cmd("%s %d", commands[skk], nn);
-         do_dads(nn);
+        do_dads(nn);
         goto loop;
 
     case 20: /*  samps  */
@@ -853,11 +853,11 @@ loop:
             goto error;
         k1 = CurPopln->classes[k1]->serial;
         k2 = CurPopln->classes[k2]->serial;
-        log_cmd("%s %s %s", commands[skk], sers(CurPopln->classes[k1]), sers(CurPopln->classes[k2]));
+        log_cmd("%s %s %s", commands[skk], serial_to_str(CurPopln->classes[k1]), serial_to_str(CurPopln->classes[k2]));
         drop = insert_dad(k1, k2, &k);
         flp();
         if (k >= 0)
-            printf("New Dad's serial%s\n", sers(CurPopln->classes[k]));
+            printf("New Dad's serial%s\n", serial_to_str(CurPopln->classes[k]));
     dropprint:
         if (drop < -1000000.0) {
             printf("Cannot be done\n");
@@ -873,7 +873,7 @@ loop:
             goto error;
         log_cmd("%s %d", commands[skk], nn);
         log_cmd("%s %d", commands[skk], nn);
-         k = do_good(nn, ((double)0.0));
+        k = do_good(nn, ((double)0.0));
         if (k >= 0) {
             flp();
             printf("Dogood ends after %d cycles\n", k);
@@ -881,9 +881,9 @@ loop:
         goto loop;
 
     case 23: /*  best_insert_dad  */
-        clear_bad_move();
+        clr_bad_move();
         log_cmd("%s", commands[skk]);
-         k = best_insert_dad(0);
+        k = best_insert_dad(0);
         if (k < 0)
             printf("No good dad insertion found\n");
         else
@@ -891,9 +891,9 @@ loop:
         goto loop;
 
     case 24: /*  best_remove_dad  */
-        clear_bad_move();
+        clr_bad_move();
         log_cmd("%s", commands[skk]);
-         k = best_remove_dad();
+        k = best_remove_dad();
         if (k < 0)
             printf("No good dad deletion found\n");
         else
@@ -910,7 +910,7 @@ loop:
         if (nn < 2)
             goto error;
         log_cmd("%s %d", commands[skk], nn);
-         ranclass(nn);
+        ranclass(nn);
         goto loop;
 
     case 27: /*  save_population */
@@ -972,13 +972,13 @@ loop:
             goto error;
         k1 = CurPopln->classes[k1]->serial;
         k2 = CurPopln->classes[k2]->serial;
-        log_cmd("%s %s %s", commands[skk], sers(CurPopln->classes[k1]), sers(CurPopln->classes[k2]));
+        log_cmd("%s %s %s", commands[skk], serial_to_str(CurPopln->classes[k1]), serial_to_str(CurPopln->classes[k2]));
         drop = move_class(k1, k2);
         printf("Move changes cost by %12.1f\n", -drop);
         goto loop;
 
     case 32: /*  best_move_class  */
-        clear_bad_move();
+        clr_bad_move();
         log_cmd("%s", commands[skk]);
         best_move_class(0);
         goto loop;
@@ -1056,7 +1056,7 @@ pickapop:
 picked:
     CurCtx.popln = CurPopln = Populations[k];
     log_cmd("%s %s", commands[skk], Populations[i]->name);
-     goto loop;
+    goto loop;
 #ifdef ZZ
 #endif
 }

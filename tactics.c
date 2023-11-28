@@ -1,7 +1,7 @@
 /*    -----------------  fiddles with tree structure  ----------------  */
 #define NOTGLOB 1
 #define TACTICS 1
-#include "snob.h"
+#include "glob.h"
 
 /*     --------------------  flatten  --------------------------------  */
 /*    Destroys all non-root Dads, leaving all old non-dads (leaf or sub)
@@ -215,7 +215,7 @@ inner:
     if (cls1->dad_id != cls2->dad_id)
         goto i2done;
     ser2 = cls2->serial;
-    if (check_bad_move(1, ser1, ser2))
+    if (chk_bad_move(1, ser1, ser2))
         goto i2done;
 
     /*    Copy population to TrialPop, unfilled  */
@@ -298,7 +298,7 @@ winner:
     flp();
     printf("%s\n", (succ) ? "ACCEPTED !!!" : "FORCED");
     print_tree();
-    clear_bad_move();
+    clr_bad_move();
     /*    Reverse roles of 'work' and TrialPop  */
     strcpy(oldctx.popln->name, "TrialPop");
     strcpy(CurPopln->name, "work");
@@ -389,7 +389,7 @@ loop:
     if (cls->type != Dad)
         goto i1done;
     ser = cls->serial;
-    if (check_bad_move(2, 0, ser))
+    if (chk_bad_move(2, 0, ser))
         goto i1done;
     newp = copy_population(CurPopln->id, 0, "TrialPop");
     if (newp < 0)
@@ -449,7 +449,7 @@ popfails:
 
 winner:
     flp();
-    clear_bad_move();
+    clr_bad_move();
     printf("ACCEPTED !!!\n");
     print_tree();
     strcpy(oldctx.popln->name, "TrialPop");
@@ -475,7 +475,7 @@ void binary_hierarchy(int flat)
     NoSubs++;
     if (Heard)
         goto kicked;
-    clear_bad_move();
+    clr_bad_move();
 insloop:
     nn = best_insert_dad(1);
     if (Heard)
@@ -502,7 +502,7 @@ finish:
     print_tree();
     if (NoSubs > 0)
         NoSubs--;
-    clear_bad_move();
+    clr_bad_move();
     return;
 
 kicked:
@@ -570,7 +570,7 @@ again:
     dad = Sons[ib];
     if (split_leaf(dad->id))
         goto windup;
-    printf("Splitting %s size%8.1f\n", sers(dad), dad->weights_sum);
+    printf("Splitting %s size%8.1f\n", serial_to_str(dad), dad->weights_sum);
     dad->hold_type = Forever;
     n++;
     goto again;
@@ -725,7 +725,7 @@ inner:
         odad = CurPopln->classes[od2];
     }
     ser2 = cls2->serial;
-    if (check_bad_move(3, ser1, ser2))
+    if (chk_bad_move(3, ser1, ser2))
         goto i2done;
 
     /*    Copy pop to TrialPop, unfilled  */
@@ -799,7 +799,7 @@ winner:
     flp();
     printf("%s\n", (succ) ? "ACCEPTED !!!" : "FORCED");
     print_tree();
-    clear_bad_move();
+    clr_bad_move();
     /*    Reverse roles of 'work' and TrialPop  */
     strcpy(oldctx.popln->name, "TrialPop");
     strcpy(CurPopln->name, "work");
@@ -820,7 +820,7 @@ void try_moves(int ntry){
 
     NoSubs++;
     do_all(1, 1);
-    clear_bad_move();
+    clr_bad_move();
     nfail = 0;
 
     while (nfail < ntry) {

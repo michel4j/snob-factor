@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "snob.h"
+#include "glob.h"
 
 #define LI 200
 /*    Listens for instruction via file "comms"    */

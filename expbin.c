@@ -1,6 +1,6 @@
 /*    File of stuff for logistic binary variables  */
 
-#include "snob.h"
+#include "glob.h"
 
 static void set_var();
 static int read_aux_attr();
@@ -468,7 +468,7 @@ hasage:
     is a variance with squared spread dapsprd, Normal form */
     spcost = 0.5 * vara / dapsprd; /* The squared deviations term */
     spcost += 0.5 * log(dapsprd);  /* log sigma */
-    spcost += hlg2pi + lattice;
+    spcost += HALF_LOG_2PI + LATTICE;
     /*    This completes the prior density terms  */
     /*    The vol of uncertainty is sqrt (sapsprd)  */
     spcost -= 0.5 * log(cvi->sapsprd);
@@ -483,13 +483,13 @@ hasage:
     vara = del * del + cvi->fapsprd;
     fpcost = 0.5 * vara / dapsprd; /* The squared deviations term */
     fpcost += 0.5 * log(dapsprd);  /* log sigma */
-    fpcost += (hlg2pi + lattice);
+    fpcost += (HALF_LOG_2PI + LATTICE);
     fpcost -= 0.5 * log(cvi->fapsprd);
 
     /*    And for fbp[]:  (N(0,1) prior)  */
     vara = cvi->fbp * cvi->fbp + cvi->bpsprd;
     fpcost += 0.5 * vara; /* The squared deviations term */
-    fpcost += hlg2pi + lattice - 0.5 * log(cvi->bpsprd);
+    fpcost += HALF_LOG_2PI + LATTICE - 0.5 * log(cvi->bpsprd);
 
 facdone1:
     /*    Store param costs  */
@@ -663,10 +663,10 @@ adjloop:
     del = cvi->nap - dadnap;
     pcost = del * del;
     pcost =
-        0.5 * (pcost + apsprd / nson) / dapsprd + (hlg2pi + 0.5 * log(dapsprd));
+        0.5 * (pcost + apsprd / nson) / dapsprd + (HALF_LOG_2PI + 0.5 * log(dapsprd));
     /*      Add hlog Fisher, lattice  */
     pcost += 0.5 * log(0.5 * nson + nints) + 0.5 * log((double)nson) -
-             1.5 * log(apsprd) + 2.0 * lattice;
+             1.5 * log(apsprd) + 2.0 * LATTICE;
     /*    Add roundoff for params  */
     pcost += 1.0;
     evi->npcost = pcost;

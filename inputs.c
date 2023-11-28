@@ -1,6 +1,6 @@
 
 #define INPUTS 1
-#include "snob.h"
+#include "glob.h"
 
 /*    ------------------------  Some routines to read numbers  -------- */
 

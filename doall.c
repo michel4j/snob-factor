@@ -1,6 +1,6 @@
 
 #define DOALL 1
-#include "snob.h"
+#include "glob.h"
 #include <omp.h>
 
 /*    -------------------- rand_int, rand_float, -------------------------- */

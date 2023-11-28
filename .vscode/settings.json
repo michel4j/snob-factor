@@ -1,5 +1,5 @@
 {
     "files.associations": {
-        "snob.h": "c"
+        "glob.h": "c"
     }
 }

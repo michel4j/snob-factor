@@ -1,6 +1,6 @@
 /*    Stuff dealing with classes as members of polpns     */
 #define CLASSES 1
-#include "snob.h"
+#include "glob.h"
 
 /*    -----------------------  serial_to_id  ---------------------------   */
 /*    Finds class index (id) from serial, or -3 if error    */
@@ -183,12 +183,12 @@ void print_one_class(Class *clp, int full) {
     int i;
     double vrms;
 
-    printf("\nS%s", sers(clp));
+    printf("\nS%s", serial_to_str(clp));
     printf(" %s", typstr[((int)clp->type)]);
     if (clp->dad_id < 0)
         printf("    Root");
     else
-        printf(" Dad%s", sers(CurPopln->classes[((int)clp->dad_id)]));
+        printf(" Dad%s", serial_to_str(CurPopln->classes[((int)clp->dad_id)]));
     printf(" Age%4d  Sz%6.1f  Use %s", clp->age, clp->weights_sum, usestr[((int)clp->use)]);
     printf("%c", (clp->use == Fac) ? ' ' : '(');
     vrms = sqrt(clp->sum_score_sq / clp->weights_sum);
@@ -464,14 +464,14 @@ void cost_all_vars(Class *ccl, int item) {
     if (fac) {
         /*    Now we add the cost of coding the score, and its roundoff */
         /*    The simple form for costing a score is :
-            tmp = hlg2pi + 0.5 * (case_fac_score_sq + cvvsprd - log (cvvsprd)) + lattice;
+            tmp = HALF_LOG_2PI + 0.5 * (case_fac_score_sq + cvvsprd - log (cvvsprd)) + LATTICE;
         However, we appeal to the large number of score parameters, which gives a
-        more negative 'lattice' ((log 12)/2 for one parameter) approaching -(1/2)
+        more negative 'LATTICE' ((log 12)/2 for one parameter) approaching -(1/2)
         log (2 Pi e) which results in the reduced cost :  */
         CurClass->clvsprd = log(cvvsprd);
         tmp = 0.5 * (case_fac_score_sq + cvvsprd - CurClass->clvsprd - 1.0);
         /*
-            Over all scores for the class, the lattice effect will add approx
+            Over all scores for the class, the LATTICE effect will add approx
                 ( log (2 Pi cnt)) / 2  + 1
             to the class cost. This is added later, once cnt is known.
         */
@@ -589,7 +589,7 @@ void adjust_class(Class *ccl, int dod) {
     CurClass->nofac_cost = CurClass->nofac_par_cost + CurClass->cstcost;
     /*    The 'lattice' effect on the cost of coding scores is approx
         (log (2 Pi cnt))/2 + 1,  which adds to cftcost  */
-    CurClass->cftcost += 0.5 * log(CurClass->newcnt + 1.0) + hlg2pi + 1.0;
+    CurClass->cftcost += 0.5 * log(CurClass->newcnt + 1.0) + HALF_LOG_2PI + 1.0;
     CurClass->fac_cost = CurClass->fac_par_cost + CurClass->cftcost;
     if (npars)
         CurClass->dad_cost = CurClass->dad_par_cost + CurClass->cntcost;
@@ -640,12 +640,12 @@ void adjust_class(Class *ccl, int dod) {
 
         if ((CurClass->type == Dad) && (leafcost < CurClass->dad_cost) && (Fix != Random)) {
             flp();
-            printf("Changing type of class%s from Dad to Leaf\n", sers(CurClass));
+            printf("Changing type of class%s from Dad to Leaf\n", serial_to_str(CurClass));
             SeeAll = 4;
             delete_sons(CurClass->id); // Changes type to leaf
         } else if (npars && (leafcost > CurClass->dad_cost) && (CurClass->type == Leaf)) {
             flp();
-            printf("Changing type of class%s from Leaf to Dad\n", sers(CurClass));
+            printf("Changing type of class%s from Leaf to Dad\n", serial_to_str(CurClass));
             SeeAll = 4;
             CurClass->type = Dad;
             if (CurDad)
@@ -693,7 +693,7 @@ void parent_cost_all_vars(Class *ccl, int valid) {
         /*    The sons of a dad may be listed in any order, so the param cost
         of the dad can be reduced by log (nson !)  */
         /*    The cost of saying 'dad' and number of sons is set at nson bits. */
-        abcost += nson * bit - FacLog[nson];
+        abcost += nson * BIT - FacLog[nson];
 
         /*    Now add cost of specifying the relabs of the sons.  */
         /*    Their relabs are absolute, but we specify them as fractions of this
@@ -706,7 +706,7 @@ void parent_cost_all_vars(Class *ccl, int valid) {
         }
         /*    Add other terms from Fisher  */
         /*    And from prior:  */
-        abcost += (nson - 1) * (log(CurClass->weights_sum) + lattice) - FacLog[nson - 1];
+        abcost += (nson - 1) * (log(CurClass->weights_sum) + LATTICE) - FacLog[nson - 1];
 
         /*    The sons will have been processed by 'adjust_class' already, and
         this will have caused their best pcosts to be added into cls->cnpcost  */

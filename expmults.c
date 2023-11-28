@@ -1,6 +1,6 @@
 /*    File of stuff for Multistate variables.   */
 
-#include "snob.h"
+#include "glob.h"
 
 #define MaxState 20 /* Max number of discrete states per variable */
 static void set_var();
@@ -638,7 +638,7 @@ hasage:
     is a variance in (states-1) space with sum-sq spread dapsprd, Normal form */
     spcost = 0.5 * vara / dapsprd;          /* The squared deviations term */
     spcost += 0.5 * statesm * log(dapsprd); /* statesm * log sigma */
-    spcost += statesm * (hlg2pi + lattice);
+    spcost += statesm * (HALF_LOG_2PI + LATTICE);
     /*    This completes the prior density terms  */
     /*    The vol of uncertainty is (sapsprd/statesm)^(statesm/2)  */
     spcost -= 0.5 * statesm * log(cvi->sapsprd / statesm);
@@ -659,7 +659,7 @@ hasage:
     is a variance in (states-1) space with sum-sq spread dapsprd, Normal form */
     fpcost = 0.5 * vara / dapsprd;          /* The squared deviations term */
     fpcost += 0.5 * statesm * log(dapsprd); /* statesm * log sigma */
-    fpcost += statesm * (hlg2pi + lattice);
+    fpcost += statesm * (HALF_LOG_2PI + LATTICE);
     /*    The vol of uncertainty is (fapsprd/statesm)^(statesm/2)  */
     fpcost -= 0.5 * statesm * log(cvi->fapsprd / statesm);
 
@@ -668,7 +668,7 @@ hasage:
     Fork vara += fbp[k] * fbp[k];
     vara += cvi->bpsprd;  /* Additional variance from roundoff */
     fpcost += 0.5 * vara; /* The squared deviations term */
-    fpcost += statesm * (hlg2pi + lattice);
+    fpcost += statesm * (HALF_LOG_2PI + LATTICE);
     /*    The vol of uncertainty is (bpsprd/statesm)^(statesm/2)  */
     fpcost -= 0.5 * statesm * log(cvi->bpsprd / statesm);
 
@@ -935,11 +935,11 @@ adjloop:
         pcost += del * del;
     }
     pcost = 0.5 * (pcost + statesm * apsprd / nson) / dapsprd +
-            statesm * (hlg2pi + 0.5 * log(dapsprd));
+            statesm * (HALF_LOG_2PI + 0.5 * log(dapsprd));
     /*      Add hlog Fisher, lattice  */
     pcost += 0.5 * log(0.5 * nson * statesm + nints) +
              0.5 * statesm * log((double)nson) -
-             0.5 * (statesm + 2.0) * log(apsprd) + states * lattice;
+             0.5 * (statesm + 2.0) * log(apsprd) + states * LATTICE;
     /*    Add roundoff for states params  */
     pcost += 0.5 * states;
     evi->npcost = pcost;

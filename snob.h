@@ -279,16 +279,14 @@ typedef struct ContextStruct {
 
 /*    --------- Functions -------------------------------   */
 
-/*    In LISTEN.c    */
+/*
+    In listen.c
+*/
 int hark(char *lline);
-/*        end listen.c        */
 
-/*    In inputs.c  */
-#ifndef INPUTS
-extern int terminator;
-extern Buf cfilebuf, commsbuf;
-#endif
-
+/*
+    In inputs.c
+*/
 int open_buffer();
 int new_line();
 int read_int(int *x, int cnl);
@@ -300,9 +298,10 @@ void close_buffer();
 void revert(int flag);
 void rep(int ch);
 void flp();
-/*    end inputs.c  */
 
-/*    In POPLNS.c   */
+/*
+    In poplns.c
+*/
 void next_class(Class **ptr);
 int make_population(int fill);
 int init_population();
@@ -318,9 +317,10 @@ int get_best_pop();
 void track_best(int verify);
 int find_population(char *nam);
 void correlpops(int xid);
-/*        end poplns.c        */
 
-/*    In CLASSES.c    */
+/*
+    in classes.c
+ */
 int serial_to_id(int ss);
 int make_class();
 void clear_costs(Class *ccl);
@@ -337,9 +337,10 @@ void set_class_with_scores(Class *ccl, int item);
 int split_leaf(int kk);
 void delete_all_classes();
 int next_leaf(Population *cpop, int iss);
-/*        end classes.c        */
 
-/*    In DOALL.c    */
+/*
+    In doall.c
+*/
 int do_all(int ncy, int all);
 void find_all(int typ);
 int do_dads(int ncy);
@@ -348,13 +349,15 @@ void tidy(int hit);
 int rand_int();
 double rand_float();
 void do_case(int cse, int all, int derivs);
-/*  end doall.c        */
 
-/*    In TUNE.c    */
+/*
+    In tune.c
+*/
 void defaulttune();
-/*    end tune.c    */
 
-/*    In TACTICS.c    */
+/*
+    In tactics.c
+*/
 void flatten();
 double insert_dad(int ser1, int ser2, int *dadid);
 int best_insert_dad(int force);
@@ -367,26 +370,30 @@ double move_class(int ser1, int ser2);
 int best_move_class(int force);
 void try_moves(int ntry);
 void trial(int param);
-/*    end tactics.c        */
 
-/*    In BADMOVES.c    */
-#define BadSize 1013
-void clear_bad_move();
-int check_bad_move(int code, int w1, int w2);
+/*
+    In badmoves.c
+*/
+
+void clr_bad_move();
+int chk_bad_move(int code, int w1, int w2);
 void set_bad_move(int code, int s1, int s2);
-/* end badmoves.c        */
 
-/*    In BLOCK.c    */
+/*
+    In block.c
+*/
 void *alloc_blocks(int gr, int size);
 void free_blocks(int gr);
 int report_space(int pp);
-/*  end block.c        */
 
-/*    In DOTYPES.c    */
+/*
+    In dotypes.c
+*/
 void do_types();
-/*        end do_types.c        */
 
-/*    In SAMPLES.c    */
+/*
+    In samples.c
+*/
 void print_var_datum(int i, int n);
 int load_vset();
 int load_sample(char *fname);
@@ -395,114 +402,8 @@ int find_vset(char *nam);
 int sort_sample(Sample *samp);
 int find_sample_index(int id);
 int item_list(char *tlstname);
-/*        end samples.c        */
 
-/*    In GLOB.c    */
-void cmcpy(void *pt, void *pf, int ntm);
-char *sers(Class *cll);
-
-/*    --------------  Global variables declared here  ----------------  */
-
-#ifndef GLOBALS
-#define EXT extern
-#else
-#define EXT
-#endif
-
-/*    mathematical constants   */
-EXT double hlg2pi, hlg2, lattice, pi, bit, bit2, twoonpi, pion2;
-EXT double ZeroVec[MAX_ZERO];
-EXT double FacLog[MAX_CLASSES + 1];
-
-/*    general:    */
-EXT int Ntypes;     /* The number of different attribute types */
-EXT VarType *Types; /* a vector of Ntypes type definitions, created in do_types */
-EXT Context CurCtx; /* current context */
-EXT VarSet *VarSets[MAX_VSETS];
-EXT Sample *Samples[MAX_SAMPLES];
-EXT Population *Populations[MAX_POPULATIONS];
-EXT int NSamples;
-
-/*    re inputs for main  */
-EXT Buf *CurSource; /* Ptr to command source buffer */
-
-/*    re Sample records  */
-EXT int CurRecLen;    /*  reclen of current sample  */
-EXT char *CurRecords; /*  Common ptr to data records block of a sample */
-
-/*    re hark  */
-EXT int Heard;    /* Flag showing a new command line has been detected */
-EXT int UseStdIn; /* Flag showing input from sdtdin */
-
-EXT int trapkk, trapage, trapcnt;
-
-/*    To control what is adjusted  */
-EXT int Control, DControl;
-
-/*    To determine how weights are distributed  */
-EXT int DFix, Fix;
-
-/*    re Poplns  */
-EXT VarSet *CurVSet;
-EXT Sample *CurSample;
-EXT Population *CurPopln;
-EXT AVinst *CurAttr;
-EXT PVinst *pvi;
-EXT SVinst *CurVar;
-EXT VarType *CurVType;
-EXT int NumCases; /* Number of cases */
-EXT int NumVars;  /* Number of variables */
-EXT int CurRoot;
-EXT Class *CurRootClass;
-EXT AVinst *CurAttrList;
-EXT PVinst *pvars;
-EXT SVinst *CurVarList;
-
-/*    re Classes  */
-EXT Class *CurClass, *CurDad;
-EXT double CurCaseWeight; /*  weight of case in class  */
-EXT double case_fac_score, case_fac_score_sq, cvvsprd;
-EXT double ctv, ctvsq, ctvd1, ctvd1sq, ctvd1cu, ctvsprd, ctd1d2;
-EXT int case_fac_int; /*  integer form of case_fac_score*4096 */
-EXT double ncasecost, scasecost, fcasecost;
-EXT double case_fac_score_d1, case_fac_score_d2; /* derivs of case cost wrt score  */
-EXT double est_fac_score_d2;                /* An over-estimate of case_fac_score_d2 used in score ajust */
-EXT double case_fac_score_d3;                    /*  derivative of case_fac_score_d2 wrt score  */
-EXT int CurDadID;
-
-/*    re Doall   */
-EXT int RSeed; /*    Seed for random routines */
-EXT int NoSubs;
-EXT int NewSubs;
-EXT int Deaded; /* Shows some class killed */
-EXT int NumSon;
-EXT Class *Sons[MAX_CLASSES];
-EXT int NextIc[MAX_CLASSES];
-
-/*    re Tuning  */
-EXT int MinAge;         /* Min class age for creation of subs */
-EXT int MinFacAge;      /* Min age for contemplating a factor model */
-EXT int MinSubAge;      /* Until this age, subclass relabs not allowed to
-          decay.  */
-EXT int MaxSubAge;      /* Subclasses older than this are replaced  */
-EXT int HoldTime;       /* Massage cycles for which class type is fixed
-       following forcible change  */
-EXT int Forever;        /* If holdtype set to this, it isnt counted down */
-EXT double MinSize;     /* Min size for a class */
-EXT double MinWt;       /* Min weight for a case to be treated in a class */
-EXT double MinSubWt;    /* Min fractional wt for a case to be treated in a Sub */
-EXT int SigScoreChange; /*  Min significant change in factor score */
-EXT int SeeAll;         /* A flag to make all cases be treated in all classes */
-EXT int DontIgnore;     /* A flag signalling a major change to structure */
-EXT int ScoreChanges;
-EXT int NewSubsTime; /* Period for making new subclasses */
-EXT double InitialAdj;
-EXT double MaxAdj;
-EXT double MinGain; /* smallest decrease in cost taken as success */
-EXT double Mbeta;   /* A constant compensating for a deficiency in mults.c */
-EXT double Bbeta;
-EXT int RootAge;
-EXT int GiveUp; /* Num of nojoy steps until stopping */
-
-/*    re Badmoves  */
-EXT int BadKey[BadSize];
+/*
+    In glob.c
+*/
+char *serial_to_str(Class *cll);

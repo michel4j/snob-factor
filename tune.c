@@ -1,7 +1,7 @@
 /*    ---------------- stuff to tune actions -------------------------- */
 #define NOTGLOB 1
 #define TUNE
-#include "snob.h"
+#include "glob.h"
 
 /*    ----------------  defaulttune -------------------------------- */
 void defaulttune() {

@@ -1,6 +1,6 @@
 #define NOTGLOB 1
 #define POPLNS 1
-#include "snob.h"
+#include "glob.h"
 #include <string.h>
 
 /*    -----------------------  set_population  --------------------------    */
@@ -153,7 +153,7 @@ and non-fac estimates done  */
 int init_population() {
     int ipop;
 
-    clear_bad_move();
+    clr_bad_move();
     CurSample = CurCtx.sample;
     CurVSet = CurCtx.vset;
     ipop = -1;
@@ -489,7 +489,7 @@ void print_subtree(int kk) {
     for (kks = 0; kks < pdeep; kks++)
         printf("   ");
     clp = CurPopln->classes[kk];
-    printf("%s", sers(clp));
+    printf("%s", serial_to_str(clp));
     if (clp->type == Dad)
         printf(" Dad");
     if (clp->type == Leaf)

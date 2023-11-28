@@ -5,7 +5,7 @@
     */
 
 #define VONM 1
-#include "snob.h"
+#include "glob.h"
 
 
 typedef struct VonMisesPackStr {
@@ -203,7 +203,7 @@ int read_aux_smpl(Saux *sax) {
         return (1);
     }
     if (sax->unit)
-        sax->eps *= (pi / 180.0);
+        sax->eps *= (PI / 180.0);
     if (sax->eps > 0.01)
         sax->epsfac = 2.0 * sin(0.5 * sax->eps) / sax->eps;
     else
@@ -228,7 +228,7 @@ int read_datum(char *loc, int iv) {
         /*    Get quantization effect from Saux  */
         epsfac = ((Saux *)(CurVar->saux))->epsfac;
         if (unit)
-            xn.xx *= (pi / 180.0);
+            xn.xx *= (PI / 180.0);
         xn.sinxx = epsfac * sin(xn.xx);
         xn.cosxx = epsfac * cos(xn.xx);
         memcpy(loc, &xn, sizeof(Datum));
@@ -550,7 +550,7 @@ void adjust(int iv, int fac) {
     cvi->ld = 0.0;
     cvi->sfh = cvi->ffh = -1.0;
     /*    Make a stab at class tcost  */
-    CurClass->cstcost += cnt * (2.0 * hlg2pi - saux->leps + CurClass->mlogab) + 1.0;
+    CurClass->cstcost += cnt * (2.0 * HALF_LOG_2PI - saux->leps + CurClass->mlogab) + 1.0;
     CurClass->cftcost = CurClass->cstcost + 100.0 * cnt;
 
 hasage:
@@ -558,7 +558,7 @@ hasage:
 
     /*    Compute parameter costs as they are  */
     del1 = (dadhx - cvi->shx) * (dadhx - cvi->shx) + (dadhy - cvi->shy) * (dadhy - cvi->shy);
-    spcost = 2.0 * hlg2pi + log(dhsprd) + 0.5 * temp1 * (del1 + 2.0 * cvi->shsprd) - log(cvi->shsprd) + 2.0 * lattice;
+    spcost = 2.0 * HALF_LOG_2PI + log(dhsprd) + 0.5 * temp1 * (del1 + 2.0 * cvi->shsprd) - log(cvi->shsprd) + 2.0 * LATTICE;
 
     if (!fac) {
         fpcost = spcost + 100.0;
@@ -566,10 +566,10 @@ hasage:
         goto facdone1;
     }
     del2 = (dadhx - cvi->fhx) * (dadhx - cvi->fhx) + (dadhy - cvi->fhy) * (dadhy - cvi->fhy);
-    fpcost = 2.0 * hlg2pi + log(dhsprd) + 0.5 * temp1 * (del2 + 2.0 * cvi->fhsprd) - log(cvi->fhsprd) + 2.0 * lattice;
+    fpcost = 2.0 * HALF_LOG_2PI + log(dhsprd) + 0.5 * temp1 * (del2 + 2.0 * cvi->fhsprd) - log(cvi->fhsprd) + 2.0 * LATTICE;
     /*    The prior for load ld is N (0, 1)  */
-    fpcost += hlg2pi + 0.5 * (cvi->ldsq + cvi->ldsprd);
-    fpcost -= 0.5 * log(cvi->ldsprd) + lattice;
+    fpcost += HALF_LOG_2PI + 0.5 * (cvi->ldsq + cvi->ldsprd);
+    fpcost -= 0.5 * log(cvi->ldsprd) + LATTICE;
 
 facdone1:
 
@@ -737,7 +737,7 @@ skipn:
     mu = atan2(cvi->bhx, cvi->bhy);
     printf(" B:  Mean ");
     if (saux->unit)
-        printf("%6.1f deg", (180.0 / pi) * mu);
+        printf("%6.1f deg", (180.0 / PI) * mu);
     else
         printf("%6.3f rad", mu);
     printf("  Kappa %8.2f\n", kappa);
@@ -799,7 +799,7 @@ implied by the tn, or at least by the set of estimate values in the son.
 {tn, sn} is
 
 For {tn} :
-    N*hlg2pi + 0.5*N*log(s) + (1/2s)*Sum_n{(tn-t)^2 + deln}
+    N*HALF_LOG_2PI + 0.5*N*log(s) + (1/2s)*Sum_n{(tn-t)^2 + deln}
 For {sm} :
     M*log(s) + (1/s)*Sum_m{sm}    where we index the internal sons by m
                     rather than by n.
@@ -946,9 +946,9 @@ adjloop:
 
 adjdone: /*    Calc cost  */
     del = (nhx - dadhx) * (nhx - dadhx) + (nhy - dadhy) * (nhy - dadhy);
-    pcost = 2.0 * hlg2pi + 2.0 * log(dadhsprd) + (0.5 * del + nhsprd / nson) / dadhsprd + nhsprd / dadhsprd;
+    pcost = 2.0 * HALF_LOG_2PI + 2.0 * log(dadhsprd) + (0.5 * del + nhsprd / nson) / dadhsprd + nhsprd / dadhsprd;
     /*    Add hlog Fisher, lattice  */
-    pcost += 0.5 * log(nson * nson * (nson + nints)) - 2.0 * log(nhsprd + 1.0e-8) + 3.0 * lattice;
+    pcost += 0.5 * log(nson * nson * (nson + nints)) - 2.0 * log(nhsprd + 1.0e-8) + 3.0 * LATTICE;
 
     /*    Add roundoff for 3 params (nhx, nhy, nhsprd)  */
     pcost += 1.5;
