@@ -1,4 +1,4 @@
-CC = gcc -g -Wall -O3 -fpic -fopenmp -flto=2 -march=native 
+CC = gcc -g -Wall -O3 -fpic -fopenmp -flto=2
 #CC = gcc -pg -Wall -fopenmp
 
 SRC = main.c dotypes.c glob.c reals.c samples.c inputs.c poplns.c \
@@ -13,8 +13,7 @@ LIBOBJ = dotypes.o glob.o reals.o samples.o inputs.o poplns.o \
 	classes.o expmults.o doall.o tune.o block.o listen.o \
 	tactics.o badmoves.o expbin.o vonm.o
 
-all: clean snob-factor libsnob.so pro
-
+all: clean snob-factor libsnob.so
 snob-factor:	$(OBJ)
 	$(CC) $(OBJ) -lm -o snob-factor
 
