@@ -214,7 +214,7 @@ typedef struct ClassStruct {
     double cfvcost;                   /*  Factor-score cost included in cftcost  */
     double cntcost, cstcost, cftcost; /* Thing costs in above */
     double vav;                       /* sum of log vvsprds */
-    double factor_score_sum;                     /* sum of vvs  */
+    double factor_score_sum;          /* sum of factor_scores  */
     int scancnt;                      /*  Number of things considered  */
     /*    ********************  Items below here are generated locally by
             docase for each case, and need not be distributed or
@@ -226,7 +226,7 @@ typedef struct ClassStruct {
     double coding_case_cost; /* Part of casefcost due to coding score */
     double dad_case_cost;    /* """""""""""""""""""""""  dad   class */
     double case_weight;      /*  weight of current case  */
-    double cvv, cvvsq, cvvsprd, clvsprd;
+    double case_fac_score, case_fac_score_sq, cvvsprd, clvsprd;
     /*    *******************
         Items below this line are set up when class is made by makeclass()
     and should NOT be copied to a new class structure. IT IS ASSUMED THAT
@@ -461,9 +461,9 @@ EXT SVinst *CurVarList;
 /*    re Classes  */
 EXT Class *CurClass, *CurDad;
 EXT double CurCaseWeight; /*  weight of case in class  */
-EXT double cvv, cvvsq, cvvsprd;
+EXT double case_fac_score, case_fac_score_sq, cvvsprd;
 EXT double ctv, ctvsq, ctvd1, ctvd1sq, ctvd1cu, ctvsprd, ctd1d2;
-EXT int icvv; /*  integer form of cvv*4096 */
+EXT int icvv; /*  integer form of case_fac_score*4096 */
 EXT double ncasecost, scasecost, fcasecost;
 EXT double vvd1, vvd2; /* derivs of case cost wrt score  */
 EXT double mvvd2;      /* An over-estimate of vvd2 used in score ajust */

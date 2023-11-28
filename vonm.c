@@ -339,7 +339,7 @@ void score_var(int iv) {
         return;
 
     /*    Get t  */
-    tt = cvi->ld * cvv;
+    tt = cvi->ld * case_fac_score;
     /*    tt is tan of w/2.  Use the formulae for cos and sin in terms of
         tan of half-angle.  */
     r2 = 1.0 / (1.0 + tt * tt);
@@ -364,10 +364,10 @@ void score_var(int iv) {
     /*    The mc3 term 0.5 * Fmu * r2 * (vsq * ldsprd + ldsq * vsprd)
         is treated in two parts, as we don't yet know vsprd. The part in
         (vsq * ldsprd) gives a contibution to wd1 via the r2 factor:  */
-    wd1 += 0.5 * cvi->fmufish * cvi->ldsprd * cvvsq * dr2dw;
+    wd1 += 0.5 * cvi->fmufish * cvi->ldsprd * case_fac_score_sq * dr2dw;
 
     /*    This part also directly contributes to vvd1 via the vsq factor: */
-    vvd1 += cvi->fmufish * cvi->ldsprd * r2 * cvv;
+    vvd1 += cvi->fmufish * cvi->ldsprd * r2 * case_fac_score;
 
     /*    This gives a term in mvvd2 :  */
     mvvd2 += cvi->fmufish * cvi->ldsprd * r2;
@@ -417,7 +417,7 @@ void cost_var(int iv, int fac) {
     /*    flgi0 already contains the mc2 term hsprd * Fh */
 
     /*    And we need -kap * cos (mu + w - xx)   */
-    tt = cvi->ld * cvv;
+    tt = cvi->ld * case_fac_score;
     r2 = 1.0 / (1.0 + tt * tt);
     cosw = (1.0 - tt * tt) * r2;
     r2 = 2.0 * r2;
@@ -427,7 +427,7 @@ void cost_var(int iv, int fac) {
     cost -= (cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * cosw - (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * sinw;
 
     /*    And cost term mc3, depending on tsprd:  */
-    tsprd = cvvsq * cvi->ldsprd + cvi->ldsq * cvvsprd;
+    tsprd = case_fac_score_sq * cvi->ldsprd + cvi->ldsq * cvvsprd;
     cost += 0.5 * cvi->fmufish * tsprd * r2;
 
 facdone:
@@ -460,7 +460,7 @@ void deriv_var(int iv, int fac) {
     /*    Now for factor form  */
     if (fac) {
 
-        tt = cvi->ld * cvv;
+        tt = cvi->ld * case_fac_score;
         /*    Hence cos(w), sin(w)  */
         r2 = 1.0 / (1.0 + tt * tt);
         cosw = (1.0 - tt * tt) * r2; /* (1-t^2) / (1+t^2) */
@@ -481,7 +481,7 @@ void deriv_var(int iv, int fac) {
             also derivs of mc2, but there remains mc3, and load. */
 
         /*    Cost mc3 = 0.5 * Fmu * tsprd * r2  */
-        tsprd = cvvsq * cvi->ldsprd + cvi->ldsq * cvvsprd;
+        tsprd = case_fac_score_sq * cvi->ldsprd + cvi->ldsq * cvvsprd;
         wtr2 = CurCaseWeight * r2;
         /*    Accumulate wsprd = tsprd * r2  */
         evi->fwd2 += tsprd * wtr2;
@@ -495,13 +495,13 @@ void deriv_var(int iv, int fac) {
 
         /*    The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
         /*    and so to a deriv wrt ld of: (factor_scores * wd1 * dwdt)  */
-        evi->ldd1 += CurCaseWeight * cvv * wd1 * dwdt;
+        evi->ldd1 += CurCaseWeight * case_fac_score * wd1 * dwdt;
 
         /*    There is also a deriv wrt ld via tsprd.  */
         evi->ldd1 += cvi->fmufish * wtr2 * cvi->ld * cvvsprd;
 
         /*    Accum as ldd2 twice the multiplier of ldsprd in mc3  */
-        evi->ldd2 += 0.5 * cvi->fmufish * r2 * cvvsq;
+        evi->ldd2 += 0.5 * cvi->fmufish * r2 * case_fac_score_sq;
     }
 }
 
@@ -641,9 +641,9 @@ facdone1:
         cost = N * (-leps + LI0 - fhsprd * Fh) - kap*Sum{cos(mu-x)}
             + 0.5 * Fmu * Sum { wsprd }
         where:
-            x = datum - atan (cvv * ld),  Fmu = kappa * aa
-            wsprd = (cvvsprd * ldsq + ldsprd * cvvsq) * (dwdt)^2
-            w = atan (cvv * ld),
+            x = datum - atan (case_fac_score * ld),  Fmu = kappa * aa
+            wsprd = (cvvsprd * ldsq + ldsprd * case_fac_score_sq) * (dwdt)^2
+            w = atan (case_fac_score * ld),
             Sum {wsprd} is in evi->fwd2
 
         Must get kap, Sum, LI0, Fh etc  */

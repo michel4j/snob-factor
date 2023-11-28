@@ -275,7 +275,7 @@ void score_var(int iv)
     if (saux->missing)
         return;
     /*    Calc prob of val 1  */
-    cc = cvi->fap + cvv * cvi->fbp;
+    cc = cvi->fap + case_fac_score * cvi->fbp;
     if (cc > 0.0) {
         pr1 = exp(-2.0 * cc);
         pr0 = pr1 / (1.0 + pr1);
@@ -303,9 +303,9 @@ void score_var(int iv)
     else
         dbyv = 2.0 * cvi->fbp * pr1;
     /*    From cost term 0.5 * vvsq * bpsprd * ft: */
-    dbyv += cvv * cvi->bpsprd * ft;
+    dbyv += case_fac_score * cvi->bpsprd * ft;
     /*    And via dftbydv, terms 0.5*(fapsprd * vvsq*bpsprd)*ft :   */
-    dbyv += (cvi->fapsprd + cvvsq * cvi->bpsprd) * hdftbydv;
+    dbyv += (cvi->fapsprd + case_fac_score_sq * cvi->bpsprd) * hdftbydv;
     vvd1 += dbyv;
     vvd2 += evi->bsq * ff;
     mvvd2 += evi->bsq * ff;
@@ -335,7 +335,7 @@ void cost_var(int iv, int fac)
     /*    Only do faccost if fac  */
     if (!fac)
         goto facdone;
-    cc = cvi->fap + cvv * cvi->fbp;
+    cc = cvi->fap + case_fac_score * cvi->fbp;
     if (cc > 0.0) {
         small = exp(-2.0 * cc);
         pr0 = small / (1.0 + small);
@@ -368,11 +368,11 @@ void cost_var(int iv, int fac)
     ff = Bbeta * ff + (1.0 - Bbeta) * ft;
     /*    In calculating the cost, use ft for all spreads, rather than using
         ff for the v spread, but use ff in getting differentials  */
-    cost += 0.5 * ((cvi->fapsprd + cvvsq * cvi->bpsprd) * ft +
+    cost += 0.5 * ((cvi->fapsprd + case_fac_score_sq * cvi->bpsprd) * ft +
                    evi->bsq * cvvsprd * ft);
-    evi->dbya += (cvi->fapsprd + cvvsq * cvi->bpsprd) * hdftbydc +
+    evi->dbya += (cvi->fapsprd + case_fac_score_sq * cvi->bpsprd) * hdftbydc +
                  evi->bsq * cvvsprd * hdffbydc;
-    evi->dbyb = cvv * evi->dbya + cvi->fbp * cvvsprd * ff;
+    evi->dbyb = case_fac_score * evi->dbya + cvi->fbp * cvvsprd * ff;
 
 facdone:
     fcasecost += cost;
@@ -401,12 +401,12 @@ void deriv_var(int iv, int fac)
     /*    Now for factor form  */
     if (!fac)
         goto facdone;
-    evi->vsq += CurCaseWeight * cvvsq;
+    evi->vsq += CurCaseWeight * case_fac_score_sq;
     evi->fapd1 += CurCaseWeight * evi->dbya;
     evi->fbpd1 += CurCaseWeight * evi->dbyb;
     /*    Accum actual 2nd derivs  */
     evi->apd2 += CurCaseWeight * evi->parkft;
-    evi->bpd2 += CurCaseWeight * evi->parkft * cvvsq;
+    evi->bpd2 += CurCaseWeight * evi->parkft * case_fac_score_sq;
 facdone:
     return;
 }

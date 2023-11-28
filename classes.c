@@ -294,7 +294,7 @@ void score_all_vars_alt(Class *ccl, int item) {
 
     set_class_with_scores(ccl, item);
     if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny)) {
-        cvv = CurClass->avg_factor_scores = CurClass->sum_score_sq = 0.0;
+        case_fac_score = CurClass->avg_factor_scores = CurClass->sum_score_sq = 0.0;
         icvv = 0;
     } else {
         if (CurClass->sum_score_sq <= 0.0) {
@@ -302,23 +302,23 @@ void score_all_vars_alt(Class *ccl, int item) {
             CurClass->boost_count = 0;
             cvvsprd = 0.1 / NumVars;
             oldicvv = igbit = 0;
-            cvv = (rand_int() < 0) ? 1.0 : -1.0;
+            case_fac_score = (rand_int() < 0) ? 1.0 : -1.0;
         } else {
             //    Get current score
             oldicvv = icvv;
             igbit = icvv & 1;
-            cvv = icvv * ScoreRscale;
+            case_fac_score = icvv * ScoreRscale;
             if (CurClass->boost_count && ((Control & AdjSP) == AdjSP)) {
-                cvv *= CurClass->score_boost;
-                cvv = fmin(fmax(cvv, -Maxv), Maxv); // Clamp cvv to [-Maxv, Maxv]
-                del = cvv * HScoreScale;
+                case_fac_score *= CurClass->score_boost;
+                case_fac_score = fmin(fmax(case_fac_score, -Maxv), Maxv); // Clamp case_fac_score to [-Maxv, Maxv]
+                del = case_fac_score * HScoreScale;
                 del -= (del < 0) ? -1.0 : 0.0;
                 icvv = (int)(del + 0.5) << 1; // Round to nearest even times ScoreScale
                 igbit = 0;
-                cvv = icvv * ScoreRscale;
+                case_fac_score = icvv * ScoreRscale;
             }
 
-            cvvsq = cvv * cvv;
+            case_fac_score_sq = case_fac_score * case_fac_score;
             vvd1 = vvd2 = mvvd2 = vvd3 = 0.0;
             for (int i = 0; i < CurVSet->num_vars; i++) {
                 CurAttr = CurAttrList + i;
@@ -327,20 +327,20 @@ void score_all_vars_alt(Class *ccl, int item) {
                     (*CurVType->score_var)(i); // score_var should add to vvd1, vvd2, vvd3, mvvd2.
                 }
             }
-            vvd1 += cvv;
+            vvd1 += case_fac_score;
             vvd2 += 1.0;
             mvvd2 += 1.0;             //  From prior  There is a cost term 0.5 * cvvsprd from the prior (whence the additional 1 in vvd2).
-                                      // Also, overall cost includes 0.5*cvvsprd*vvd2, so there is a derivative term wrt cvv of 0.5*cvvsprd*vvd3
+                                      // Also, overall cost includes 0.5*cvvsprd*vvd2, so there is a derivative term wrt case_fac_score of 0.5*cvvsprd*vvd3
             cvvsprd = 1.0 / vvd2;
             vvd1 += 0.5 * cvvsprd * vvd3;
             del = vvd1 / mvvd2;
             if (Control & AdjSc) {
-                cvv -= del;
+                case_fac_score -= del;
             }
         }
 
-        cvv = fmax(fmin(cvv, Maxv), -Maxv);
-        del = cvv * HScoreScale;
+        case_fac_score = fmax(fmin(case_fac_score, Maxv), -Maxv);
+        del = case_fac_score * HScoreScale;
         del -= ((del < 0) ? -1.0 : 0.0);
         icvv = del + rand_float();
         icvv <<= 1;    // Round to nearest even times ScoreScale
@@ -351,8 +351,8 @@ void score_all_vars_alt(Class *ccl, int item) {
             if (oldicvv > SigScoreChange)
                 CurClass->score_change_count++;
         }
-        CurClass->cvv = cvv;
-        CurClass->cvvsq = cvvsq;
+        CurClass->case_fac_score = case_fac_score;
+        CurClass->case_fac_score_sq = case_fac_score_sq;
         CurClass->cvvsprd = cvvsprd;
     }
     CurClass->factor_scores[item] = CurClass->case_score = icvv;
@@ -364,7 +364,7 @@ void score_all_vars(Class *ccl, int item) {
 
     set_class_with_scores(ccl, item);
     if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny)) {
-        cvv = CurClass->avg_factor_scores = CurClass->sum_score_sq = 0.0;
+        case_fac_score = CurClass->avg_factor_scores = CurClass->sum_score_sq = 0.0;
         icvv = 0;
     } else {
         if (CurClass->sum_score_sq <= 0.0) {
@@ -372,26 +372,26 @@ void score_all_vars(Class *ccl, int item) {
             CurClass->boost_count = 0;
             cvvsprd = 0.1 / NumVars;
             oldicvv = igbit = 0;
-            cvv = (rand_int() < 0) ? 1.0 : -1.0;
+            case_fac_score = (rand_int() < 0) ? 1.0 : -1.0;
         } else {
             // Get current score
             oldicvv = icvv;
             igbit = icvv & 1;
-            cvv = icvv * ScoreRscale;
+            case_fac_score = icvv * ScoreRscale;
             // Additional logic if CurClass has boost_count and AdjSP is set
             if (CurClass->boost_count && ((Control & AdjSP) == AdjSP)) {
-                cvv *= CurClass->score_boost;
-                cvv = fmax(fmin(cvv, Maxv), -Maxv);
-                del = cvv * HScoreScale;
+                case_fac_score *= CurClass->score_boost;
+                case_fac_score = fmax(fmin(case_fac_score, Maxv), -Maxv);
+                del = case_fac_score * HScoreScale;
                 del -= (del < 0.0) ? 1.0 : 0.0;
                 icvv = del + 0.5;
                 icvv <<= 1; // Round to nearest even times ScoreScale
                 igbit = 0;
-                cvv = icvv * ScoreRscale;
+                case_fac_score = icvv * ScoreRscale;
             }
         }
 
-        cvvsq = cvv * cvv;
+        case_fac_score_sq = case_fac_score * case_fac_score;
         vvd1 = vvd2 = mvvd2 = vvd3 = 0.0;
         for (i = 0; i < CurVSet->num_vars; i++) {
             CurAttr = CurAttrList + i;
@@ -401,20 +401,20 @@ void score_all_vars(Class *ccl, int item) {
             }
         }
 
-        vvd1 += cvv;
+        vvd1 += case_fac_score;
         vvd2 += 1.0;
         mvvd2 += 1.0; // From prior
         cvvsprd = 1.0 / vvd2;
         vvd1 += 0.5 * cvvsprd * vvd3;
         del = vvd1 / mvvd2;
         if (Control & AdjSc) {
-            cvv -= del;
+            case_fac_score -= del;
         }
     }
 
     // Code from the 'fake' label
-    cvv = fmax(fmin(cvv, Maxv), -Maxv);
-    del = cvv * HScoreScale;
+    case_fac_score = fmax(fmin(case_fac_score, Maxv), -Maxv);
+    del = case_fac_score * HScoreScale;
     //if (del < 0.0) del -= 1.0; else del -= 0.0;
     del -= (del < 0.0) ? 1.0 : 0.0;
     icvv = del + rand_float();
@@ -428,8 +428,8 @@ void score_all_vars(Class *ccl, int item) {
             CurClass->score_change_count++;
     }
 
-    CurClass->cvv = cvv;
-    CurClass->cvvsq = cvvsq;
+    CurClass->case_fac_score = case_fac_score;
+    CurClass->case_fac_score_sq = case_fac_score_sq;
     CurClass->cvvsprd = cvvsprd;
 
     CurClass->factor_scores[item] = CurClass->case_score = icvv;
@@ -445,7 +445,7 @@ void cost_all_vars(Class *ccl, int item) {
     set_class_with_scores(ccl, item);
     if ((CurClass->age >= MinFacAge) && (CurClass->use != Tiny)) {
         fac = 1;
-        cvvsq = cvv * cvv;
+        case_fac_score_sq = case_fac_score * case_fac_score;
     }
     ncasecost = scasecost = fcasecost = CurClass->mlogab; /* Abundance cost */
     for (int iv = 0; iv < CurVSet->num_vars; iv++) {
@@ -464,12 +464,12 @@ void cost_all_vars(Class *ccl, int item) {
     if (fac) {
         /*    Now we add the cost of coding the score, and its roundoff */
         /*    The simple form for costing a score is :
-            tmp = hlg2pi + 0.5 * (cvvsq + cvvsprd - log (cvvsprd)) + lattice;
+            tmp = hlg2pi + 0.5 * (case_fac_score_sq + cvvsprd - log (cvvsprd)) + lattice;
         However, we appeal to the large number of score parameters, which gives a
         more negative 'lattice' ((log 12)/2 for one parameter) approaching -(1/2)
         log (2 Pi e) which results in the reduced cost :  */
         CurClass->clvsprd = log(cvvsprd);
-        tmp = 0.5 * (cvvsq + cvvsprd - CurClass->clvsprd - 1.0);
+        tmp = 0.5 * (case_fac_score_sq + cvvsprd - CurClass->clvsprd - 1.0);
         /*
             Over all scores for the class, the lattice effect will add approx
                 ( log (2 Pi cnt)) / 2  + 1
@@ -493,12 +493,12 @@ void deriv_all_vars(Class *ccl, int item) {
     CurClass->newcnt += CurCaseWeight;
     if ((CurClass->age >= MinFacAge) && (CurClass->use != Tiny)) {
         fac = 1;
-        cvv = CurClass->cvv;
-        cvvsq = CurClass->cvvsq;
+        case_fac_score = CurClass->case_fac_score;
+        case_fac_score_sq = CurClass->case_fac_score_sq;
         cvvsprd = CurClass->cvvsprd;
-        CurClass->newvsq += CurCaseWeight * cvvsq;
+        CurClass->newvsq += CurCaseWeight * case_fac_score_sq;
         CurClass->vav += CurCaseWeight * CurClass->clvsprd;
-        CurClass->factor_score_sum += cvv * CurCaseWeight;
+        CurClass->factor_score_sum += case_fac_score * CurCaseWeight;
     }
 
     for (int iv = 0; iv < NumVars; iv++) {

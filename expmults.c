@@ -337,7 +337,7 @@ void set_best_pars(iv) int iv;
 }
 
 /*    --------------------  setprobs -------------------------------- */
-/*    Routine to set state probs for a item using fap, fbp, cvv */
+/*    Routine to set state probs for a item using fap, fbp, case_fac_score */
 /*    Sets probs in pr[], -log probs in qr[].  */
 /*    Also calcs b1p, b2p, b3p, b1p2, gg  */
 void setprobs() {
@@ -347,7 +347,7 @@ void setprobs() {
     b3p = b2p = b1p = 0.0; /* For calculating dispersion of bp[] */
     sum = 0.0;
     Fork {
-        tt = fabs(cvv - fbp[k]);
+        tt = fabs(case_fac_score - fbp[k]);
         /*    Do table interpolation in gausorg   */
         tt = tt * Gns;
         ig = tt;
@@ -453,9 +453,9 @@ void score_var(iv) int iv;
         return;
     setprobs(); /* Will calc pr[], qr[], gg, ff  */
     t1d1 = b1p - fbp[saux->xn];
-    t2d1 = -(0.5 * states * rstatesm) * (cvi->fapsprd + cvvsq * cvi->bpsprd) *
+    t2d1 = -(0.5 * states * rstatesm) * (cvi->fapsprd + case_fac_score_sq * cvi->bpsprd) *
            ff * b1p;
-    t3d1 = cvv * cvi->bpsprd * ff;
+    t3d1 = case_fac_score * cvi->bpsprd * ff;
 
     vvd1 += t1d1 + t3d1 + t2d1;
     vvd2 += gg;
@@ -488,7 +488,7 @@ void cost_var(iv, fac) int iv, fac;
         goto facdone;
     setprobs();
     cost = -log(pr[saux->xn]); /* -log prob of xn */
-    evi->conff = 0.5 * ff * (cvi->fapsprd + cvvsq * cvi->bpsprd);
+    evi->conff = 0.5 * ff * (cvi->fapsprd + case_fac_score_sq * cvi->bpsprd);
     evi->ff = ff;
     evi->parkb1p = b1p;
     evi->parkb2p = b2p;
@@ -522,7 +522,7 @@ void deriv_var(iv, fac) int iv, fac;
     evi->ftcost += CurCaseWeight * evi->parkftcost;
 
     /*    Now for factor form  */
-    evi->vsq += CurCaseWeight * cvvsq;
+    evi->vsq += CurCaseWeight * case_fac_score_sq;
     if (!fac)
         goto facdone;
     b1p = evi->parkb1p;
@@ -530,10 +530,10 @@ void deriv_var(iv, fac) int iv, fac;
     b2p = evi->parkb2p;
     /*    From 1st cost term:  */
     fapd1[saux->xn] -= CurCaseWeight;
-    fbpd1[saux->xn] -= CurCaseWeight * cvv;
+    fbpd1[saux->xn] -= CurCaseWeight * case_fac_score;
     Fork {
         fapd1[k] += CurCaseWeight * pr[k];
-        fbpd1[k] += CurCaseWeight * pr[k] * cvv;
+        fbpd1[k] += CurCaseWeight * pr[k] * case_fac_score;
     }
 
     /*    Second cost term :  */
@@ -542,7 +542,7 @@ void deriv_var(iv, fac) int iv, fac;
     Fork {
         inc = cons1 - pr[k] * cons2;
         fapd1[k] += inc;
-        fbpd1[k] += cvv * inc;
+        fbpd1[k] += case_fac_score * inc;
     }
 
     /*    Third cost term:  */
@@ -552,7 +552,7 @@ void deriv_var(iv, fac) int iv, fac;
         inc = 0.5 * CurCaseWeight * cvvsprd * pr[k] *
               (fbp[k] * fbp[k] - 2.0 * fbp[k] * b1p + cons1);
         fapd1[k] += inc;
-        fbpd1[k] += cvv * inc;
+        fbpd1[k] += case_fac_score * inc;
         /*    Terms I forgot :  */
         fbpd1[k] += CurCaseWeight * cvvsprd * pr[k] * (fbp[k] - b1p);
         fbpd1[k] += cons2 * fbp[k];
@@ -560,7 +560,7 @@ void deriv_var(iv, fac) int iv, fac;
 
     /*    Second derivs (i.e. derivs wrt fapsprd, bpsprd)  */
     evi->apd2 += CurCaseWeight * evi->ff;
-    evi->bpd2 += CurCaseWeight * evi->ff * cvvsq;
+    evi->bpd2 += CurCaseWeight * evi->ff * case_fac_score_sq;
 facdone:
     return;
 }
@@ -744,7 +744,7 @@ adjloop:
     evi->apd2 += 1.0 / dapsprd;
     evi->bpd2 += 1.0;
     /*    Stabilization  */
-    cvv = 0.0;
+    case_fac_score = 0.0;
     setprobs();
     Fork fapd1[k] += 0.5 * pr[k];
     evi->apd2 += 0.5 * states * ff;
