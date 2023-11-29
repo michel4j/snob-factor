@@ -7,7 +7,6 @@
 #define VONM 1
 #include "glob.h"
 
-
 typedef struct VonMisesPackStr {
     double kappa;          // sqrt (hx^2 + hy^2)
     double kappa_inv;      // recip of kappa or 10e6 if kappa very small
@@ -123,7 +122,7 @@ static Saux *saux;
 static Paux *paux;
 static Vaux *vaux;
 static Basic *cvi, *dcvi;
-static Stats *evi;
+static Stats *stats;
 
 /*--------------------------  define ------------------------------- */
 /*    This routine is used to set up a VarType entry in the global "types"
@@ -172,7 +171,7 @@ void set_var(int iv) {
     vaux = (Vaux *)CurAttr->vaux;
     saux = (Saux *)CurVar->saux;
     cvi = (Basic *)CurClass->basics[iv];
-    evi = (Stats *)CurClass->stats[iv];
+    stats = (Stats *)CurClass->stats[iv];
     if (CurDad)
         dcvi = (Basic *)CurDad->basics[iv];
     else
@@ -261,20 +260,20 @@ void set_best_pars(int iv) {
         cvi->bhx = cvi->nhx;
         cvi->bhy = cvi->nhy;
         cvi->bhsprd = cvi->nhsprd;
-        evi->btcost = evi->ntcost;
-        evi->bpcost = evi->npcost;
+        stats->btcost = stats->ntcost;
+        stats->bpcost = stats->npcost;
     } else if ((CurClass->use == Fac) && cvi->infac) {
         cvi->bhx = cvi->fhx;
         cvi->bhy = cvi->fhy;
         cvi->bhsprd = cvi->fhsprd;
-        evi->btcost = evi->ftcost;
-        evi->bpcost = evi->fpcost;
+        stats->btcost = stats->ftcost;
+        stats->bpcost = stats->fpcost;
     } else {
         cvi->bhx = cvi->shx;
         cvi->bhy = cvi->shy;
         cvi->bhsprd = cvi->shsprd;
-        evi->btcost = evi->stcost;
-        evi->bpcost = evi->spcost;
+        stats->btcost = stats->stcost;
+        stats->bpcost = stats->spcost;
     }
     return;
 }
@@ -284,12 +283,12 @@ void set_best_pars(int iv) {
 of basic params  */
 void clear_stats(int iv) {
     set_var(iv);
-    evi->cnt = 0.0;
-    evi->stcost = evi->ftcost = 0.0;
-    evi->vsq = 0.0;
-    evi->tssin = evi->tscos = 0.0;
-    evi->tfsin = evi->tfcos = 0.0;
-    evi->ldd2 = evi->ldd1 = evi->fwd2 = 0.0;
+    stats->cnt = 0.0;
+    stats->stcost = stats->ftcost = 0.0;
+    stats->vsq = 0.0;
+    stats->tssin = stats->tscos = 0.0;
+    stats->tfsin = stats->tfcos = 0.0;
+    stats->ldd2 = stats->ldd1 = stats->fwd2 = 0.0;
 
     if (CurClass->age > 0)
         return;
@@ -398,7 +397,7 @@ void cost_var(int iv, int fac) {
     if (saux->missing)
         return;
     if (CurClass->age == 0) {
-        evi->parkftcost = evi->parkstcost = 0.0;
+        stats->parkftcost = stats->parkstcost = 0.0;
         return;
     }
     /*    Do no-fac cost first  */
@@ -407,7 +406,7 @@ void cost_var(int iv, int fac) {
     /*    This is already multiplied by field strength kappa  */
     cost = cvi->slgi0 - del - saux->leps;
     /*    slgi0 contains the roundoff costs from shsprd   */
-    evi->parkstcost = cost;
+    stats->parkstcost = cost;
     scasecost += cost;
 
     /*    Only do faccost if fac  */
@@ -433,7 +432,7 @@ void cost_var(int iv, int fac) {
 
 facdone:
     fcasecost += cost;
-    evi->parkftcost = cost;
+    stats->parkftcost = cost;
 
     return;
 }
@@ -449,14 +448,14 @@ void deriv_var(int iv, int fac) {
     if (saux->missing)
         return;
     /*    Do non-fac first  */
-    evi->cnt += CurCaseWeight;
+    stats->cnt += CurCaseWeight;
     /*    For non-fac, rather than getting derivatives I just collect
         the sufficient statistics, sum of xn.sinxx, xn.cosxx  */
-    evi->tssin += CurCaseWeight * saux->xn.sinxx;
-    evi->tscos += CurCaseWeight * saux->xn.cosxx;
+    stats->tssin += CurCaseWeight * saux->xn.sinxx;
+    stats->tscos += CurCaseWeight * saux->xn.cosxx;
     /*    Accumulate weighted item cost  */
-    evi->stcost += CurCaseWeight * evi->parkstcost;
-    evi->ftcost += CurCaseWeight * evi->parkftcost;
+    stats->stcost += CurCaseWeight * stats->parkstcost;
+    stats->ftcost += CurCaseWeight * stats->parkftcost;
 
     /*    Now for factor form  */
     if (fac) {
@@ -474,9 +473,9 @@ void deriv_var(int iv, int fac) {
             accumulation as tfcos, tssin  */
 
         coser = saux->xn.cosxx * cosw + saux->xn.sinxx * sinw;
-        evi->tfcos += CurCaseWeight * coser;
+        stats->tfcos += CurCaseWeight * coser;
         siner = saux->xn.sinxx * cosw - saux->xn.cosxx * sinw;
-        evi->tfsin += CurCaseWeight * siner;
+        stats->tfsin += CurCaseWeight * siner;
 
         /*    These should be sufficient to get derivs of mc1 wrt hx, hy,
             also derivs of mc2, but there remains mc3, and load. */
@@ -485,7 +484,7 @@ void deriv_var(int iv, int fac) {
         tsprd = case_fac_score_sq * cvi->ldsprd + cvi->ldsq * cvvsprd;
         wtr2 = CurCaseWeight * r2;
         /*    Accumulate wsprd = tsprd * r2  */
-        evi->fwd2 += tsprd * wtr2;
+        stats->fwd2 += tsprd * wtr2;
 
         /*    To get deriv wrt ld, deriv of mc1 wrt w is:  */
         wd1 = ((cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * sinw + (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * cosw);
@@ -496,13 +495,13 @@ void deriv_var(int iv, int fac) {
 
         /*    The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
         /*    and so to a deriv wrt ld of: (factor_scores * wd1 * dwdt)  */
-        evi->ldd1 += CurCaseWeight * case_fac_score * wd1 * dwdt;
+        stats->ldd1 += CurCaseWeight * case_fac_score * wd1 * dwdt;
 
         /*    There is also a deriv wrt ld via tsprd.  */
-        evi->ldd1 += cvi->fmufish * wtr2 * cvi->ld * cvvsprd;
+        stats->ldd1 += cvi->fmufish * wtr2 * cvi->ld * cvvsprd;
 
         /*    Accum as ldd2 twice the multiplier of ldsprd in mc3  */
-        evi->ldd2 += 0.5 * cvi->fmufish * r2 * case_fac_score_sq;
+        stats->ldd2 += 0.5 * cvi->fmufish * r2 * case_fac_score_sq;
     }
 }
 
@@ -510,13 +509,13 @@ void deriv_var(int iv, int fac) {
 /*    To adjust parameters of a vonmises variable     */
 void adjust(int iv, int fac) {
     double adj, temp1, cnt, ldd2;
-    double del1, del2, spcost, fpcost;
+    double del1, del2, spcost, fpcost = 0.0;
     double dadhx, dadhy, dhsprd;
     double hxd1, hyd1, hkd1, hkd2;
 
     set_var(iv);
     adj = InitialAdj;
-    cnt = evi->cnt;
+    cnt = stats->cnt;
 
     /*    Get prior constants from dad, or if root, fake them  */
     if (!CurDad) { /* Class is root */
@@ -541,10 +540,10 @@ void adjust(int iv, int fac) {
     /*    If class age is zero, make some preliminary estimates  */
     if (CurClass->age)
         goto hasage;
-    evi->oldftcost = 0.0;
-    evi->adj = 1.0;
-    cvi->shx = cvi->fhx = evi->tssin / cnt;
-    cvi->shy = cvi->fhy = evi->tscos / cnt;
+    stats->oldftcost = 0.0;
+    stats->adj = 1.0;
+    cvi->shx = cvi->fhx = stats->tssin / cnt;
+    cvi->shy = cvi->fhy = stats->tscos / cnt;
     cvi->shsprd = cvi->fhsprd = 1.0 / cnt;
     cvi->ldsprd = 1.0 / cnt;
     cvi->ld = 0.0;
@@ -574,8 +573,8 @@ hasage:
 facdone1:
 
     /*    Store param costs for this variable  */
-    evi->spcost = spcost;
-    evi->fpcost = fpcost;
+    stats->spcost = spcost;
+    stats->fpcost = fpcost;
     /*    Add to class param costs  */
     CurClass->nofac_par_cost += spcost;
     CurClass->fac_par_cost += fpcost;
@@ -594,8 +593,8 @@ facdone1:
         kapcode(cvi->shx, cvi->shy, &(cvi->skappa));
 
     /*    From item cost term - kappa*Sum{cos(mu-x)} :  */
-    hxd1 = -evi->tssin;
-    hyd1 = -evi->tscos;
+    hxd1 = -stats->tssin;
+    hyd1 = -stats->tscos;
 
     /*    From item cost term N * LI0 : */
     /*    Deriv wrt kappa is : */
@@ -645,15 +644,15 @@ facdone1:
             x = datum - atan (case_fac_score * ld),  Fmu = kappa * log_i0_d1
             wsprd = (cvvsprd * ldsq + ldsprd * case_fac_score_sq) * (dwdt)^2
             w = atan (case_fac_score * ld),
-            Sum {wsprd} is in evi->fwd2
+            Sum {wsprd} is in stats->fwd2
 
         Must get kappa, Sum, LI0, Fh etc  */
     if (cvi->ffh < 0.0)
         kapcode(cvi->fhx, cvi->fhy, &(cvi->fkappa));
 
     /*    From item cost term - kappa*Sum{cos(mu-x)} :  */
-    hxd1 = -evi->tfsin;
-    hyd1 = -evi->tfcos;
+    hxd1 = -stats->tfsin;
+    hyd1 = -stats->tfcos;
 
     /*    From item cost term N * LI0 : */
     /*    Deriv wrt kappa is : */
@@ -663,41 +662,41 @@ facdone1:
     hkd1 += cnt * cvi->fhsprd * cvi->fdfh;
     hkd2 = cnt * cvi->ffh;
 
-    /*    We have Sum {wsprd} in evi->fwd2, so cost term 0.5 * Fmu * wsprd gives:
+    /*    We have Sum {wsprd} in stats->fwd2, so cost term 0.5 * Fmu * wsprd gives:
      */
-    hkd1 += 0.5 * (cvi->faa + cvi->fkappa * cvi->fdaa) * evi->fwd2;
+    hkd1 += 0.5 * (cvi->faa + cvi->fkappa * cvi->fdaa) * stats->fwd2;
 
     /*    Deriv of kappa wrt fhx is fhx / kappa, so  */
     hxd1 += cvi->fhx * hkd1 * cvi->rfkappa;
     hyd1 += cvi->fhy * hkd1 * cvi->rfkappa;
 
-    /*    Have evi->ldd1, evi->ldd2  */
-    ldd2 = evi->ldd2;
+    /*    Have stats->ldd1, stats->ldd2  */
+    ldd2 = stats->ldd2;
 
     /*    From prior cost:  */
     hxd1 += (cvi->fhx - dadhx) * temp1;
     hyd1 += (cvi->fhy - dadhy) * temp1;
     hkd2 += 2.0 * temp1;
-    evi->ldd1 += cvi->ld;
+    stats->ldd1 += cvi->ld;
     ldd2 += 1.0;
 
     /*     Adjust fhx, fhy, ld  */
-    del1 = evi->ftcost / cnt;
-    adj = evi->adj * 1.1;
+    del1 = stats->ftcost / cnt;
+    adj = stats->adj * 1.1;
     if (adj > 1.25)
         adj = 1.25;
-    if (del1 > evi->oldftcost)
+    if (del1 > stats->oldftcost)
         adj = 0.5 * adj;
     if (adj < InitialAdj)
         adj = InitialAdj;
-    evi->adj = adj;
-    evi->oldftcost = del1;
+    stats->adj = adj;
+    stats->oldftcost = del1;
     cvi->fhsprd = 1.0 / hkd2;
     if ((cvi->fhsprd * cnt) < 1.0)
         cvi->fhsprd = 1.0 / cnt;
     cvi->fhx -= adj * hxd1 * cvi->fhsprd;
     cvi->fhy -= adj * hyd1 * cvi->fhsprd;
-    cvi->ld -= adj * evi->ldd1 / ldd2;
+    cvi->ld -= adj * stats->ldd1 / ldd2;
     cvi->ldsprd = 1.0 / ldd2;
 
 facdone2:
@@ -713,7 +712,7 @@ facdone2:
         cvi->nhy = cvi->shy;
         cvi->nhsprd = cvi->shsprd;
     }
-    cvi->samplesize = evi->cnt;
+    cvi->samplesize = stats->cnt;
 
 adjdone:
     return;
@@ -726,13 +725,12 @@ void show(Class *ccl, int iv) {
     set_class(ccl);
     set_var(iv);
 
-    printf("V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out", evi->adj);
-    if (CurClass->num_sons < 2)
-        goto skipn;
-    printf(" N: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", evi->npcost, cvi->nhx, cvi->nhy, sqrt(cvi->nhsprd));
-skipn:
-    printf(" S: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", evi->spcost + evi->stcost, cvi->shx, cvi->shy, sqrt(cvi->shsprd));
-    printf(" F: Cost%8.1f  Hx%8.3f  Hy%8.3f  Ld%8.3f +-%5.2f\n", evi->fpcost + evi->ftcost, cvi->fhx, cvi->fhy, cvi->ld, sqrt(cvi->ldsprd));
+    printf("V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv + 1, stats->cnt, (cvi->infac) ? " In" : "Out", stats->adj);
+    if (CurClass->num_sons > 1) {
+        printf(" N: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", stats->npcost, cvi->nhx, cvi->nhy, sqrt(cvi->nhsprd));
+    }
+    printf(" S: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", stats->spcost + stats->stcost, cvi->shx, cvi->shy, sqrt(cvi->shsprd));
+    printf(" F: Cost%8.1f  Hx%8.3f  Hy%8.3f  Ld%8.3f +-%5.2f\n", stats->fpcost + stats->ftcost, cvi->fhx, cvi->fhy, cvi->ld, sqrt(cvi->ldsprd));
     kappa = sqrt(cvi->bhx * cvi->bhx + cvi->bhy * cvi->bhy);
     mu = atan2(cvi->bhx, cvi->bhy);
     printf(" B:  Mean ");
@@ -860,14 +858,14 @@ void cost_var_nonleaf(iv, vald) int iv, vald;
 
     set_var(iv);
     if (!vald) { /* Cannot define as-dad params, so fake it */
-        evi->npcost = 0.0;
+        stats->npcost = 0.0;
         cvi->nhx = cvi->shx;
         cvi->nhy = cvi->shy;
-        cvi->nhsprd = cvi->shsprd * evi->cnt;
+        cvi->nhsprd = cvi->shsprd * stats->cnt;
         return;
     }
     if (CurAttr->inactive) {
-        evi->npcost = evi->ntcost = 0.0;
+        stats->npcost = stats->ntcost = 0.0;
         return;
     }
     nson = CurClass->num_sons;
@@ -953,7 +951,7 @@ adjdone: /*    Calc cost  */
     /*    Add roundoff for 3 params (nhx, nhy, nhsprd)  */
     pcost += 1.5;
 
-    evi->npcost = pcost;
+    stats->npcost = pcost;
 
     return;
 }

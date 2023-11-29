@@ -44,7 +44,7 @@ void flatten() {
     do_all(1, 1);
     do_dads(3);
     do_all(3, 0);
-    if (Heard)
+    if (!UseLib && Heard)
         printf("Flatten ends prematurely\n");
     if (NoSubs > 0)
         NoSubs--;
@@ -60,10 +60,9 @@ a sub, or it they have different dads, returns a huge negative benefit  */
 of the other, provided neither is the root  */
 /*    The change, if possible, is made to ctx.popln.
     dadid is set to the id of the new dad, if any.  */
-double insert_dad(int ser1, int ser2, int *dadid)
-{
+double insert_dad(int ser1, int ser2, int *dadid) {
     Class *cls1, *cls2, *ndad, *odad;
-    EVinst *evi, *fevi;
+    EVinst *stats, *fevi;
     CVinst *cvi, *fcvi;
     int nch, iv, k1, k2;
     double origcost, newcost, drop;
@@ -111,7 +110,7 @@ configok:
     if (newid < 0)
         goto nullit;
     ndad = CurPopln->classes[newid]; /*  The new dad  */
-                                /*    Copy old dad's basics, stats into new dad  */
+                                     /*    Copy old dad's basics, stats into new dad  */
     nch = ((char *)&odad->id) - ((char *)odad);
     memcpy(ndad, odad, nch);
     ndad->serial = CurPopln->next_serial << 2;
@@ -129,9 +128,9 @@ configok:
     /*      Copy stats  */
     for (iv = 0; iv < NumVars; iv++) {
         fevi = odad->stats[iv];
-        evi = ndad->stats[iv];
+        stats = ndad->stats[iv];
         nch = CurAttrList[iv].stats_size;
-        memcpy(evi, fevi, nch);
+        memcpy(stats, fevi, nch);
     }
 
     ndad->dad_id = oldid; /* So new dad is son of old dad */
@@ -158,8 +157,7 @@ done:
 /*    ----------------------  best_insert_dad ---------------------   */
 /*    Returns serial of new dad, or 0 if best no good, or -1 if none
 to try  */
-int best_insert_dad(int force)
-{
+int best_insert_dad(int force) {
     Context oldctx;
     Class *cls1, *cls2;
     int i1, i2, hiid, succ;
@@ -267,7 +265,7 @@ alldone:
     Control = 0;
     do_all(1, 1);
     Control = AdjAll;
-    if (Heard) {
+    if (!UseLib && Heard) {
         printf("BestInsDad ends prematurely\n");
         return (0);
     }
@@ -323,8 +321,7 @@ void rebuild() {
 /*    If class ser is Dad (not root), it is removed, and its sons become
 sons of its dad.
     */
-double splice_dad(int ser)
-{
+double splice_dad(int ser) {
     Class *son;
     int kk, kkd, kks;
     double drop, origcost, newcost;
@@ -427,7 +424,7 @@ i1done:
     Control = 0;
     do_all(1, 1);
     Control = AdjAll;
-    if (Heard) {
+    if (!UseLib && Heard) {
         printf("BestDelDad ends prematurely\n");
         return (0);
     }
@@ -465,37 +462,36 @@ finish:
 /*    ---------------  binary_hierarchy  --------------------------------  */
 /*    If flat, flattens population. Then inserts dads to make a binary hierarchy.
     Then deletes dads as appropriate  */
-void binary_hierarchy(int flat)
-{
+void binary_hierarchy(int flat) {
     int nn;
 
     set_population();
     if (flat)
         flatten();
     NoSubs++;
-    if (Heard)
+    if (!UseLib && Heard)
         goto kicked;
     clr_bad_move();
 insloop:
     nn = best_insert_dad(1);
-    if (Heard)
+    if (!UseLib && Heard)
         goto kicked;
     if (nn > 0)
         goto insloop;
 
     try_moves(2);
-    if (Heard)
+    if (!UseLib && Heard)
         goto kicked;
 
 delloop:
     nn = best_remove_dad();
-    if (Heard)
+    if (!UseLib && Heard)
         goto kicked;
     if (nn > 0)
         goto delloop;
 
     try_moves(2);
-    if (Heard)
+    if (!UseLib && Heard)
         goto kicked;
 
 finish:
@@ -515,8 +511,7 @@ kicked:
 
 /*    ------------------  ranclass  --------------------------  */
 /*    To make nn random classes  */
-void ranclass(int nn)
-{
+void ranclass(int nn) {
     int n, ic, ib;
     double bs;
     Class *sub, *dad;
@@ -590,8 +585,7 @@ finish:
 
 /*    ---------------  move_class  --------------------------------  */
 /*    To move class ser1 to be a child of class ser2  */
-double move_class(int ser1, int ser2)
-{
+double move_class(int ser1, int ser2) {
     Class *cls1, *cls2, *odad;
     int k1, k2, od2;
     double origcost, newcost, drop;
@@ -631,11 +625,11 @@ double move_class(int ser1, int ser2)
     do_dads(30);
     if (CurPopln->sample_size) {
         do_all(4, 0);
-        if (Heard)
+        if (!UseLib && Heard)
             goto kicked;
         /*     To collect weights, counts */
         do_all(4, 1);
-        if (Heard)
+        if (!UseLib && Heard)
             goto kicked;
     }
     newcost = CurRootClass->best_par_cost;
@@ -653,8 +647,7 @@ done:
 }
 
 /*    -----------------  trial  ---------------------------------  */
-void trial( int param)
-{
+void trial(int param) {
     printf("Running TRIAL\n");
     correlpops(param);
 }
@@ -663,8 +656,7 @@ void trial( int param)
 /*    Lokks for the best move_class. If force, or if an improvement,
 does it. Returns 1 if an improvement, 0 if best no improvement, -1 if none
 possible.    */
-int best_move_class(int force)
-{
+int best_move_class(int force) {
     Context oldctx;
     Class *cls1, *cls2, *odad;
     int i1, i2, hiid;
@@ -772,7 +764,7 @@ alldone:
     Control = 0;
     do_all(1, 1);
     Control = AdjAll;
-    if (Heard)
+    if (!UseLib && Heard)
         printf("BestMoveClass ends prematurely\n");
     /*    Setting dogood's target to origcost-1 allows early exit  */
     /*    See if the trial model has improved over original  */
@@ -815,7 +807,7 @@ finish:
 /*    --------------------  try_moves  ----------------------------   */
 /*    Tries moving classes using best_move_class until ntry attempts in
 succession have failed, or until all possible moves have been tried   */
-void try_moves(int ntry){
+void try_moves(int ntry) {
     int nfail, succ;
 
     NoSubs++;
@@ -826,18 +818,15 @@ void try_moves(int ntry){
     while (nfail < ntry) {
         succ = best_move_class(0);
         if (succ < 0)
-            goto finish;
+            break;
         nfail++;
         if (succ)
             nfail = 0;
-        if (Heard) {
+        if (!UseLib && Heard) {
             printf("Trymoves ends prematurely\n");
-            goto finish;
+            break;
         }
     }
-
-finish:
     if (NoSubs > 0)
         NoSubs--;
-    return;
 }

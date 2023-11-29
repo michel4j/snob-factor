@@ -54,7 +54,7 @@ int error_and_message(const char *message) {
 int make_class() {
     PVinst *pvars;
     CVinst **cvars, *cvi;
-    EVinst **evars, *evi;
+    EVinst **evars, *stats;
     int i, kk, found = 0, vacant = 0;
 
     NumCases = CurCtx.popln->sample_size;
@@ -120,11 +120,11 @@ int make_class() {
         for (i = 0; i < NumVars; i++) {
             pvi = pvars + i;
             CurAttr = CurAttrList + i;
-            evi = evars[i] = (EVinst *)alloc_blocks(1, CurAttr->stats_size);
-            if (!evi) {
+            stats = evars[i] = (EVinst *)alloc_blocks(1, CurAttr->stats_size);
+            if (!stats) {
                 return error_and_message("No space for new class\n");
             }
-            evi->id = pvi->id;
+            stats->id = pvi->id;
         }
 
         /*    Stomp on ptrs as yet undefined  */
@@ -182,8 +182,8 @@ char *usestr[] = {"Tny", "Pln", "Fac"};
 void print_one_class(Class *clp, int full) {
     int i;
     double vrms;
-
-    printf("\nS%s", serial_to_str(clp));
+    printf("\n--------------------------------------------------------------------------------\n");
+    printf("S%s", serial_to_str(clp));
     printf(" %s", typstr[((int)clp->type)]);
     if (clp->dad_id < 0)
         printf("    Root");
@@ -205,13 +205,13 @@ void print_one_class(Class *clp, int full) {
     printf("Tcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->cstcost, clp->cftcost - CurClass->cfvcost, clp->cntcost, clp->best_case_cost);
     printf("Vcost     ---------  F:%9.2f\n", clp->cfvcost);
     printf("totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->nofac_cost, clp->fac_cost, clp->dad_cost, clp->best_cost);
-    if (!full)
-        return;
-    for (i = 0; i < CurVSet->num_vars; i++) {
-        CurVType = CurAttrList[i].vtype;
-        (*CurVType->show)(clp, i);
+    if (full) {
+        for (i = 0; i < CurVSet->num_vars; i++) {
+            CurVType = CurAttrList[i].vtype;
+            (*CurVType->show)(clp, i);
+        }
     }
-    return;
+    printf("--------------------------------------------------------------------------------\n");
 }
 
 void print_class(int kk, int full) {
@@ -290,7 +290,7 @@ young. If class age = MinFacAge, will guess scores but not cost them */
 // DONT USE YET: alternative score_all_vars, testing, doesn't produce the same results
 void score_all_vars_alt(Class *ccl, int item) {
     double del;
-    int oldicvv, igbit;
+    int oldicvv = 0 , igbit = 0;
 
     set_class_with_scores(ccl, item);
     if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny)) {
@@ -329,8 +329,9 @@ void score_all_vars_alt(Class *ccl, int item) {
             }
             case_fac_score_d1 += case_fac_score;
             case_fac_score_d2 += 1.0;
-            est_fac_score_d2 += 1.0;             //  From prior  There is a cost term 0.5 * cvvsprd from the prior (whence the additional 1 in case_fac_score_d2).
-                                      // Also, overall cost includes 0.5*cvvsprd*case_fac_score_d2, so there is a derivative term wrt case_fac_score of 0.5*cvvsprd*case_fac_score_d3
+            est_fac_score_d2 += 1.0; //  From prior  There is a cost term 0.5 * cvvsprd from the prior (whence the additional 1 in case_fac_score_d2).
+                                     // Also, overall cost includes 0.5*cvvsprd*case_fac_score_d2, so there is a derivative term wrt case_fac_score of
+                                     // 0.5*cvvsprd*case_fac_score_d3
             cvvsprd = 1.0 / case_fac_score_d2;
             case_fac_score_d1 += 0.5 * cvvsprd * case_fac_score_d3;
             del = case_fac_score_d1 / est_fac_score_d2;
@@ -359,7 +360,7 @@ void score_all_vars_alt(Class *ccl, int item) {
 }
 
 void score_all_vars(Class *ccl, int item) {
-    int i, igbit, oldicvv;
+    int i, igbit = 0, oldicvv = 0;
     double del;
 
     set_class_with_scores(ccl, item);
@@ -415,7 +416,7 @@ void score_all_vars(Class *ccl, int item) {
     // Code from the 'fake' label
     case_fac_score = fmax(fmin(case_fac_score, Maxv), -Maxv);
     del = case_fac_score * HScoreScale;
-    //if (del < 0.0) del -= 1.0; else del -= 0.0;
+    // if (del < 0.0) del -= 1.0; else del -= 0.0;
     del -= (del < 0.0) ? 1.0 : 0.0;
     case_fac_int = del + rand_float();
     case_fac_int <<= 1;    // Round to nearest even times ScoreScale
@@ -606,7 +607,7 @@ void adjust_class(Class *ccl, int dod) {
             /*    Check if size too small to support a factor  */
             /*    Add up the number of data values  */
             small = 0;
-            leafcost = 0.0; /* Used to add up evi->cnts */
+            leafcost = 0.0; /* Used to add up stats->cnts */
             for (iv = 0; iv < NumVars; iv++) {
                 if (!(CurAttrList[iv].inactive)) {
                     small++;
@@ -670,7 +671,7 @@ void adjust_class(Class *ccl, int dod) {
 /*    If not 'valid', don't cost, and fake params  */
 void parent_cost_all_vars(Class *ccl, int valid) {
     Class *son;
-    EVinst *evi;
+    EVinst *stats;
     int ison, nson;
     double abcost, rrelab;
 
@@ -680,9 +681,9 @@ void parent_cost_all_vars(Class *ccl, int valid) {
         CurAttr = CurAttrList + i;
         CurVType = CurAttr->vtype;
         (*CurVType->cost_var_nonleaf)(i, valid);
-        evi = (EVinst *)CurClass->stats[i];
+        stats = (EVinst *)CurClass->stats[i];
         if (!CurAttr->inactive) {
-            abcost += evi->npcost;
+            abcost += stats->npcost;
         }
     }
 

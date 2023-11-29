@@ -9,7 +9,6 @@ FILE *logfile;
 char sparam[80];
 int intparam;
 
-
 /*    ---------------------  menu  ---------------------------  */
 /*    To read a command word and return an integer code for it  */
 
@@ -339,37 +338,6 @@ int readintname(int kk, int jj) {
     return 0;
 }
 
-/*    --------------------  show_pop_names  ---------------------  */
-void show_pop_names() {
-    int i;
-    printf("The defined models are:\n");
-    for (i = 0; i < MAX_POPULATIONS; i++) {
-        if (Populations[i]) {
-            printf("%2d %s", i + 1, Populations[i]->name);
-            if (Populations[i]->sample_size)
-                printf(" Sample %s", Populations[i]->sample_name);
-            else
-                printf(" (unattached)");
-            printf("\n");
-        }
-    }
-    printf("Also, the pseudonym \"BST_\" can be used for the best\n");
-    printf("model for the current sample\n");
-    return;
-}
-
-/*      ----------------------  show_smpl_names  -----------------  */
-void show_smpl_names() {
-    int k;
-    printf("Loaded samples:\n");
-    for (k = 0; k < MAX_SAMPLES; k++) {
-        if (Samples[k]) {
-            printf("%2d:  %s\n", k + 1, Samples[k]->name);
-        }
-    }
-    return;
-}
-
 /* -------------------- readpopid ------------------------ */
 /* To read a popln index (+1) or name and return index */
 int readpopid(int kk) {
@@ -475,6 +443,13 @@ void clear_vectors() {
         VarSets[k] = 0;
 }
 
+void reset_input() {
+    printf("??? line %6d\n", CurSource->line);
+    new_line();
+    if (CurSource->cfile)
+        revert(0);
+}
+
 extern char *malloc_options;
 int main() {
     int k, kk, k1, k2;
@@ -496,6 +471,7 @@ int main() {
     CurSource->nch = 0;
     CurSource->inl[0] = '\n';
     Heard = UseStdIn = 0;
+    SeeAll = 2;
 
     /*ddd
     printf("Enter var and state to watch (kiv, kz)\n");
@@ -507,12 +483,11 @@ int main() {
     kk = load_vset();
 
     printf("Readvset returns %d\n", kk);
-    if (kk < 0)
+    if (kk < 0) {
         exit(2);
-    else
-        CurVSet = CurCtx.vset = VarSets[kk];
+    }
+    CurVSet = CurCtx.vset = VarSets[kk];
 
-    SeeAll = 2;
     printf("Enter sample file name:\n");
     if (read_str(sparam, 1) < 0) {
         printf("Cannot read sample file name\n");
@@ -537,10 +512,7 @@ int main() {
 #endif
     print_class(CurRoot, 0);
 error:
-    printf("??? line %6d\n", CurSource->line);
-    new_line();
-    if (CurSource->cfile)
-        revert(0);
+    reset_input();
 loop:
     k = find_population("TrialPop");
     if (k >= 0)

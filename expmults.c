@@ -112,7 +112,7 @@ static Saux *saux;
 static Paux *paux;
 static Vaux *vaux;
 static Basic *cvi, *dcvi;
-static Stats *evi;
+static Stats *stats;
 
 /*    The macro below abbreviates a scan over states  */
 #define Fork for (k = 0; k < states; k++)
@@ -195,7 +195,7 @@ void set_var(iv) int iv;
     vaux = (Vaux *)CurAttr->vaux;
     saux = (Saux *)CurVar->saux;
     cvi = (Basic *)CurClass->basics[iv];
-    evi = (Stats *)CurClass->stats[iv];
+    stats = (Stats *)CurClass->stats[iv];
     states = vaux->states;
     statesm = states - 1;
     rstates = 1.0 / states;
@@ -205,7 +205,7 @@ void set_var(iv) int iv;
     fap = sap + states;
     fbp = fap + states;
     frate = fbp + states;
-    scnt = &(evi->origin);
+    scnt = &(stats->origin);
     scst = scnt + states;
     pr = scst + states;
     fapd1 = pr + states;
@@ -320,18 +320,18 @@ void set_best_pars(iv) int iv;
     if (CurClass->type == Dad) {
         cvi->bap = nap;
         cvi->bapsprd = cvi->napsprd;
-        evi->btcost = evi->ntcost;
-        evi->bpcost = evi->npcost;
+        stats->btcost = stats->ntcost;
+        stats->bpcost = stats->npcost;
     } else if ((CurClass->use == Fac) && cvi->infac) {
         cvi->bap = fap;
         cvi->bapsprd = cvi->fapsprd;
-        evi->btcost = evi->ftcost;
-        evi->bpcost = evi->fpcost;
+        stats->btcost = stats->ftcost;
+        stats->bpcost = stats->fpcost;
     } else {
         cvi->bap = sap;
         cvi->bapsprd = cvi->sapsprd;
-        evi->btcost = evi->stcost;
-        evi->bpcost = evi->spcost;
+        stats->btcost = stats->stcost;
+        stats->bpcost = stats->spcost;
     }
     return;
 }
@@ -387,11 +387,11 @@ void clear_stats(iv) int iv;
     int k;
 
     set_var(iv);
-    evi->cnt = 0.0;
-    evi->stcost = evi->ftcost = 0.0;
-    evi->vsq = 0.0;
+    stats->cnt = 0.0;
+    stats->stcost = stats->ftcost = 0.0;
+    stats->vsq = 0.0;
     Fork { scnt[k] = fapd1[k] = fbpd1[k] = 0.0; }
-    evi->apd2 = evi->bpd2 = 0.0;
+    stats->apd2 = stats->bpd2 = 0.0;
     if (CurClass->age == 0) {
         /*    Set nominal state costs in scst[]  */
         sum = log((double)states) + 1.0;
@@ -402,7 +402,7 @@ void clear_stats(iv) int iv;
     /*    Calc a maximum? for gg  */
     sum = 0.0;
     Fork sum += fbp[k] * fbp[k];
-    evi->mgg = 0.5 * sum * rstates;
+    stats->mgg = 0.5 * sum * rstates;
 
     /*    Set up non-fac case costs in scst[]  */
     /*    This requires us to calculate probs and log probs of states.  */
@@ -459,8 +459,8 @@ void score_var(iv) int iv;
 
     case_fac_score_d1 += t1d1 + t3d1 + t2d1;
     case_fac_score_d2 += gg;
-    /*xx    vvd2 += Mbeta * evi->mgg;  */
-    est_fac_score_d2 += (gg > evi->mgg) ? gg : evi->mgg;
+    /*xx    vvd2 += Mbeta * stats->mgg;  */
+    est_fac_score_d2 += (gg > stats->mgg) ? gg : stats->mgg;
     /*    Since we don't know vsprd, just calc and accumulate deriv of 'gg' */
     case_fac_score_d3 += b3p - b1p * (3.0 * gg + b1p2);
     return;
@@ -476,7 +476,7 @@ void cost_var(iv, fac) int iv, fac;
     if (saux->missing)
         return;
     if (CurClass->age == 0) {
-        evi->parkftcost = 0.0;
+        stats->parkftcost = 0.0;
         return;
     }
     /*    Do nofac costing first  */
@@ -488,17 +488,17 @@ void cost_var(iv, fac) int iv, fac;
         goto facdone;
     setprobs();
     cost = -log(pr[saux->xn]); /* -log prob of xn */
-    evi->conff = 0.5 * ff * (cvi->fapsprd + case_fac_score_sq * cvi->bpsprd);
-    evi->ff = ff;
-    evi->parkb1p = b1p;
-    evi->parkb2p = b2p;
-    cost += evi->conff;
+    stats->conff = 0.5 * ff * (cvi->fapsprd + case_fac_score_sq * cvi->bpsprd);
+    stats->ff = ff;
+    stats->parkb1p = b1p;
+    stats->parkb2p = b2p;
+    cost += stats->conff;
     /*    In cost calculation, use gg as is without Mbeta mod  */
     cost += 0.5 * cvvsprd * gg;
 
 facdone:
     fcasecost += cost;
-    evi->parkftcost = cost;
+    stats->parkftcost = cost;
     return;
 }
 
@@ -514,20 +514,20 @@ void deriv_var(iv, fac) int iv, fac;
     if (saux->missing)
         return;
     /*    Do no-fac first  */
-    evi->cnt += CurCaseWeight;
+    stats->cnt += CurCaseWeight;
     /*    For non-fac, I just accumulate counts in scnt[]  */
     scnt[saux->xn] += CurCaseWeight;
     /*    Accum. weighted item cost  */
-    evi->stcost += CurCaseWeight * scst[saux->xn];
-    evi->ftcost += CurCaseWeight * evi->parkftcost;
+    stats->stcost += CurCaseWeight * scst[saux->xn];
+    stats->ftcost += CurCaseWeight * stats->parkftcost;
 
     /*    Now for factor form  */
-    evi->vsq += CurCaseWeight * case_fac_score_sq;
+    stats->vsq += CurCaseWeight * case_fac_score_sq;
     if (!fac)
         goto facdone;
-    b1p = evi->parkb1p;
+    b1p = stats->parkb1p;
     b1p2 = b1p * b1p;
-    b2p = evi->parkb2p;
+    b2p = stats->parkb2p;
     /*    From 1st cost term:  */
     fapd1[saux->xn] -= CurCaseWeight;
     fbpd1[saux->xn] -= CurCaseWeight * case_fac_score;
@@ -537,7 +537,7 @@ void deriv_var(iv, fac) int iv, fac;
     }
 
     /*    Second cost term :  */
-    cons1 = CurCaseWeight * evi->conff * rstatesm;
+    cons1 = CurCaseWeight * stats->conff * rstatesm;
     cons2 = states * cons1;
     Fork {
         inc = cons1 - pr[k] * cons2;
@@ -559,8 +559,8 @@ void deriv_var(iv, fac) int iv, fac;
     }
 
     /*    Second derivs (i.e. derivs wrt fapsprd, bpsprd)  */
-    evi->apd2 += CurCaseWeight * evi->ff;
-    evi->bpd2 += CurCaseWeight * evi->ff * case_fac_score_sq;
+    stats->apd2 += CurCaseWeight * stats->ff;
+    stats->bpd2 += CurCaseWeight * stats->ff * case_fac_score_sq;
 facdone:
     return;
 }
@@ -574,7 +574,7 @@ void adjust(iv, fac) int iv, fac;
     int k, n;
 
     set_var(iv);
-    cnt = evi->cnt;
+    cnt = stats->cnt;
 
     if (CurDad) { /* Not root */
         dcvi = (Basic *)CurDad->basics[iv];
@@ -601,8 +601,8 @@ void adjust(iv, fac) int iv, fac;
     /*    If class age zero, make some preliminary estimates  */
     if (CurClass->age)
         goto hasage;
-    evi->oldftcost = 0.0;
-    evi->adj = 1.0;
+    stats->oldftcost = 0.0;
+    stats->adj = 1.0;
     sum = 0.0;
     Fork {
         sap[k] = log((scnt[k] + 0.5) / (cnt + 0.5 * states));
@@ -674,8 +674,8 @@ hasage:
 
 facdone1:
     /*    Store param costs  */
-    evi->spcost = spcost;
-    evi->fpcost = fpcost;
+    stats->spcost = spcost;
+    stats->fpcost = fpcost;
     /*    Add to class param costs  */
     CurClass->nofac_par_cost += spcost;
     CurClass->fac_par_cost += fpcost;
@@ -741,28 +741,28 @@ adjloop:
         fapd1[k] += (fap[k] - dadnap[k]) / dapsprd;
         fbpd1[k] += fbp[k];
     }
-    evi->apd2 += 1.0 / dapsprd;
-    evi->bpd2 += 1.0;
+    stats->apd2 += 1.0 / dapsprd;
+    stats->bpd2 += 1.0;
     /*    Stabilization  */
     case_fac_score = 0.0;
     setprobs();
     Fork fapd1[k] += 0.5 * pr[k];
-    evi->apd2 += 0.5 * states * ff;
+    stats->apd2 += 0.5 * states * ff;
     /*    This section uses a slow but apparently safe adjustment of fa[[], fbp[]
      */
     /*    In an attempt to speed things, fiddle adjustment multiple   */
-    sum = evi->ftcost / cnt;
-    if (sum < evi->oldftcost)
-        adj = evi->adj * 1.1;
+    sum = stats->ftcost / cnt;
+    if (sum < stats->oldftcost)
+        adj = stats->adj * 1.1;
     else
         adj = InitialAdj;
     if (adj > MaxAdj)
         adj = MaxAdj;
-    evi->adj = adj;
-    evi->oldftcost = sum;
+    stats->adj = adj;
+    stats->oldftcost = sum;
     /*    To do the adjustments, divide 1st derivs by a 'max' value of 2nd
     derivs, held in vaux.  */
-    adj = adj / (evi->cnt * vaux->mff);
+    adj = adj / (stats->cnt * vaux->mff);
     adj *= statesm / states;
     Fork {
         fap[k] -= adj * fapd1[k];
@@ -778,8 +778,8 @@ adjloop:
     sum = -sum / states;
     Fork fbp[k] += sum;
     /*    Set fapsprd, bpsprd.   */
-    cvi->fapsprd = statesm / evi->apd2;
-    cvi->bpsprd = statesm / evi->bpd2;
+    cvi->fapsprd = statesm / stats->apd2;
+    cvi->bpsprd = statesm / stats->bpd2;
 
 facdone2:
     /*    If no sons, set as-dad params from non-fac params  */
@@ -787,7 +787,7 @@ facdone2:
         Fork nap[k] = sap[k];
         cvi->napsprd = cvi->sapsprd;
     }
-    cvi->samplesize = evi->cnt;
+    cvi->samplesize = stats->cnt;
 
 adjdone:
     return;
@@ -823,8 +823,8 @@ int iv;
 
     set_class(ccl);
     set_var(iv);
-    printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt,
-           (cvi->infac) ? " In" : "Out", evi->adj);
+    printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, stats->cnt,
+           (cvi->infac) ? " In" : "Out", stats->adj);
 
     if (CurClass->num_sons < 2)
         goto skipn;
@@ -858,12 +858,12 @@ void cost_var_nonleaf(iv) int iv;
 
     set_var(iv);
     if (CurAttr->inactive) {
-        evi->npcost = evi->ntcost = 0.0;
+        stats->npcost = stats->ntcost = 0.0;
         return;
     }
     nson = CurClass->num_sons;
     if (nson < 2) { /* cannot define parameters */
-        evi->npcost = evi->ntcost = 0.0;
+        stats->npcost = stats->ntcost = 0.0;
         Fork nap[k] = sap[k];
         cvi->napsprd = 1.0;
         return;
@@ -942,7 +942,7 @@ adjloop:
              0.5 * (statesm + 2.0) * log(apsprd) + states * LATTICE;
     /*    Add roundoff for states params  */
     pcost += 0.5 * states;
-    evi->npcost = pcost;
+    stats->npcost = pcost;
     return;
 }
 /*zzzz*/

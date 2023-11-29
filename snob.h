@@ -398,8 +398,8 @@ void do_types();
 */
 void print_var_datum(int i, int n);
 int load_vset();
-int open_vset(char *fname);
-int load_sample(char *fname);
+int open_vset(const char *fname);
+int load_sample(const char *fname);
 int find_sample(char *nam, int expect);
 int find_vset(char *nam);
 int sort_sample(Sample *samp);
@@ -410,7 +410,8 @@ int item_list(char *tlstname);
     In glob.c
 */
 char *serial_to_str(Class *cll);
-
+void show_smpl_names();
+void show_pop_names();
 
 /*
     In main.c

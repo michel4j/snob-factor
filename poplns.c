@@ -23,7 +23,6 @@ void set_population() {
     pvars = CurPopln->pvars;
     CurRoot = CurPopln->root;
     CurRootClass = CurPopln->classes[CurRoot];
-    return;
 }
 
 /*    -----------------------  next_class  ---------------------  */
@@ -146,10 +145,11 @@ nospace:
     return (-1);
 }
 
-/*    ----------------------  init_population  ---------------------  */
-/*    To make an initial population given a vset and a samp.
+/**    ----------------------  init_population  ---------------------
+ *  To make an initial population given a vset and a samp.
     Should return a popln index for a popln with a root class set up
-and non-fac estimates done  */
+    and non-fac estimates done
+*/
 int init_population() {
     int ipop;
 
@@ -157,20 +157,17 @@ int init_population() {
     CurSample = CurCtx.sample;
     CurVSet = CurCtx.vset;
     ipop = -1;
+
     if (!CurSample) {
         printf("No sample defined for initial population\n");
-        goto finish;
+    } else {
+        ipop = make_population(1); // Makes a configured popln
+        if (ipop >= 0) {
+            strcpy(CurPopln->name, "work");
+            set_population();
+            do_all(5, 0); //    Run doall on the root alone
+        }
     }
-    ipop = make_population(1); /* Makes a configured popln */
-    if (ipop < 0)
-        goto finish;
-    strcpy(CurPopln->name, "work");
-
-    set_population();
-    /*    Run doall on the root alone  */
-    do_all(5, 0);
-
-finish:
     return (ipop);
 }
 /*    ----------------------  make_subclasses -----------------------    */
@@ -307,7 +304,7 @@ int copy_population(int p1, int fill, char *newname) {
     Context oldctx;
     Class *cls, *fcls;
     CVinst *cvi, *fcvi;
-    EVinst *evi, *fevi;
+    EVinst *stats, *fevi;
     double nomcnt;
     int indx, sindx, kk, jdad, nch, n, i, iv, hiser;
 
@@ -424,9 +421,9 @@ newclass:
     /*    Copy stats  */
     for (iv = 0; iv < NumVars; iv++) {
         fevi = fcls->stats[iv];
-        evi = cls->stats[iv];
+        stats = cls->stats[iv];
         nch = CurAttrList[iv].stats_size;
-        memcpy(evi, fevi, nch);
+        memcpy(stats, fevi, nch);
     }
     if (fill == 0)
         goto classdone;
@@ -520,15 +517,15 @@ void print_subtree(int kk) {
 
 /*    ---------------------  printtree  ---------------------------  */
 void print_tree() {
+    Population * popln = CurCtx.popln;
 
-    CurPopln = CurCtx.popln;
-    if (!CurPopln) {
+    if (!popln) {
         printf("No current population.\n");
         return;
     }
     set_population();
-    printf("Popln%3d on sample%3d,%4d classes,%6d things", CurPopln->id + 1, CurSample->id + 1, CurPopln->num_classes, CurSample->num_cases);
-    printf("  Cost %10.2f\n", CurPopln->classes[CurPopln->root]->best_cost);
+    printf("Popln%3d on sample%3d,%4d classes,%6d things", popln->id + 1, CurCtx.sample->id + 1, popln->num_classes, CurCtx.sample->num_cases);
+    printf("  Cost %10.2f\n", popln->classes[popln->root]->best_cost);
     printf("\n  Assign mode ");
     if (Fix == Partial)
         printf("Partial    ");
@@ -545,7 +542,7 @@ void print_tree() {
         printf(" Tree");
     printf("\n");
     pdeep = 0;
-    print_subtree(CurRoot);
+    print_subtree(popln->root);
     return;
 }
 
@@ -596,8 +593,9 @@ void track_best(int verify) {
     if (!CurCtx.popln)
         return;
     /*    Check current popln is 'work'  */
-    if (strcmp("work", CurCtx.popln->name))
+    if (strcmp("work", CurCtx.popln->name)) {
         return;
+    }
     /*    Don't believe cost if fix is random  */
     if (Fix == Random)
         return;
@@ -683,7 +681,7 @@ int save_population(int p1, int fill, char *newname) {
     Context oldctx;
     Class *cls;
     CVinst *cvi;
-    EVinst *evi;
+    EVinst *stats;
     int leng, nch, i, iv, nc, jcl;
 
     memcpy(&oldctx, &CurCtx, sizeof(Context));
@@ -781,9 +779,9 @@ newclass:
 
     /*    Copy stats  */
     for (iv = 0; iv < NumVars; iv++) {
-        evi = cls->stats[iv];
+        stats = cls->stats[iv];
         nch = CurAttrList[iv].stats_size;
-        save_to_file(fl, evi, nch);
+        save_to_file(fl, stats, nch);
         leng += nch;
     }
     if (nc == 0)
@@ -814,7 +812,7 @@ int load_population(char *nam) {
     int i, j, k, indx, fncl, fnc, nch, iv;
     Class *cls;
     CVinst *cvi;
-    EVinst *evi;
+    EVinst *stats;
     FILE *fl;
 
     indx = -999;
@@ -906,9 +904,9 @@ haveclass:
         }
     }
     for (iv = 0; iv < NumVars; iv++) {
-        evi = cls->stats[iv];
+        stats = cls->stats[iv];
         nch = CurAttrList[iv].stats_size;
-        jp = (char *)evi;
+        jp = (char *)stats;
         for (k = 0; k < nch; k++) {
             *jp = fgetc(fl);
             jp++;
@@ -1014,7 +1012,7 @@ fixscores:
     /*    doall should leave a count of score changes in global  */
     flp();
     printf("%8d  score changes\n", ScoreChanges);
-    if (Heard) {
+    if (!UseLib && Heard) {
         flp();
         printf("Score fixing stopped prematurely\n");
     } else if (ScoreChanges > 1)
@@ -1049,7 +1047,7 @@ void correlpops(int xid) {
     Population *xpop, *wpop;
     double fnact, wwt;
     int wic, xic, n, pcw, wnl, xnl;
-    char * record;
+    char *record;
 
     set_population();
     wpop = CurPopln;

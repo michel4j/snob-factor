@@ -431,11 +431,11 @@ int do_all(int ncycles, int all) {
             niter = nfail = 0;
             continue;
         }
-        if ((!UseStdIn) && hark(commsbuf.inl)) {
+        if ((!UseLib) && (!UseStdIn) && hark(commsbuf.inl)) {
             flp();
             printf("Doall interrupted after %4d steps\n", ncydone);
             break;
-        }
+        } 
 
         if (SeeAll > 0) {
             SeeAll--;
@@ -564,7 +564,7 @@ int do_good(int ncy, double target) {
         else
             nfail++;
         rep((nfail) ? 'g' : 'G');
-        if (Heard)
+        if (!UseLib && Heard)
             goto kicked;
         if (nfail > 2)
             goto done;

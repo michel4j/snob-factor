@@ -2,13 +2,13 @@ phi.v
 phi.s
  
 doall 50
-trymoves 2
+trymoves 4
  
 doall 50
-trymoves 2
+trymoves 4
  
 doall 50
-trymoves 2
+trymoves 4
 
 tree
  
