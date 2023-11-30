@@ -121,8 +121,8 @@ int main(int argc, char *argv[]) {
         cleanup_population();
         if (j % 2 == 0) {
             log_msg(1, "Cycle %d", 1+j/2);
-            do_all(50, 1);
-            log_msg(1, "DOALL:   Completed %d steps of re-estimation and assignment.", DO_ALL_STEPS);
+            log_msg(1, "DOALL:   Doing %d steps of re-estimation and assignment.", DO_ALL_STEPS);
+            do_all(DO_ALL_STEPS, 1);
         } else {
             log_msg(1, "TRYMOVE: Attempting class moves until %d successive failures", TRY_MOVE_STEPS);
             try_moves(TRY_MOVE_STEPS);

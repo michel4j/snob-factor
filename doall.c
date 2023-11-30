@@ -319,7 +319,7 @@ double update_leaf_classes(double *oldleafsum, int *nfail) {
         leafsum += Sons[k]->best_cost;
     }
     if (SeeAll == 0) {
-        token ='.';
+        token = '.';
     } else {
         if (leafsum < (*oldleafsum - MinGain)) {
             *nfail = 0;
@@ -446,6 +446,7 @@ int do_all(int ncycles, int all) {
         }
 
         niter++;
+        print_progress(niter, ncycles);
         if (niter >= ncycles) {
             if (ncydone >= ncyask) {
                 ncydone = -1;
@@ -457,6 +458,7 @@ int do_all(int ncycles, int all) {
     /*    Scan leaf classes whose use is 'Fac' to accumulate significant
         score changes.  */
     ScoreChanges = count_score_changes();
+    printf("\n");
     return (niter);
 }
 

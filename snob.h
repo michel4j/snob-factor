@@ -412,7 +412,7 @@ int item_list(char *tlstname);
 char *serial_to_str(Class *cll);
 void show_smpl_names();
 void show_pop_names();
-
+void print_progress(size_t count, size_t max);
 /*
     In main.c
 */

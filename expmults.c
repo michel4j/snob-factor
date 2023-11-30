@@ -230,8 +230,7 @@ Vaux *vax;
         return (1);
     }
     if (vax->states > MaxState) {
-        printf("Variable has more than %d states (%d)\n", MaxState,
-               vax->states);
+        printf("Variable has more than %d states (%d)\n", MaxState, vax->states);
         return (2);
     }
     lstates = log((double)(vax->states));
@@ -453,8 +452,7 @@ void score_var(iv) int iv;
         return;
     setprobs(); /* Will calc pr[], qr[], gg, ff  */
     t1d1 = b1p - fbp[saux->xn];
-    t2d1 = -(0.5 * states * rstatesm) * (cvi->fapsprd + case_fac_score_sq * cvi->bpsprd) *
-           ff * b1p;
+    t2d1 = -(0.5 * states * rstatesm) * (cvi->fapsprd + case_fac_score_sq * cvi->bpsprd) * ff * b1p;
     t3d1 = case_fac_score * cvi->bpsprd * ff;
 
     case_fac_score_d1 += t1d1 + t3d1 + t2d1;
@@ -549,8 +547,7 @@ void deriv_var(iv, fac) int iv, fac;
     cons1 = 2.0 * b1p2 - b2p;
     cons2 = CurCaseWeight * cvvsprd * Mbeta * rstates;
     Fork {
-        inc = 0.5 * CurCaseWeight * cvvsprd * pr[k] *
-              (fbp[k] * fbp[k] - 2.0 * fbp[k] * b1p + cons1);
+        inc = 0.5 * CurCaseWeight * cvvsprd * pr[k] * (fbp[k] * fbp[k] - 2.0 * fbp[k] * b1p + cons1);
         fapd1[k] += inc;
         fbpd1[k] += case_fac_score * inc;
         /*    Terms I forgot :  */
@@ -713,7 +710,7 @@ adjloop:
     /*    Use dads's nap[], dapsprd for Normal prior.   */
     /*    Reduce corrections by statesm/states  */
     adj = InitialAdj * statesm / states;
-    Fork {
+    for (k = 0; k < states; k++) {
         del = (sap[k] - dadnap[k]) / dapsprd; /* 1st deriv from prior */
         del += pr[k] * cnt - scnt[k];         /* From data */
         del += 0.5 * pr[k];                   /*  Stabilization  */
@@ -722,9 +719,11 @@ adjloop:
         sap[k] -= del * adj / (1.0 + scnt[k] + 1.0 / dapsprd);
     }
     sum = 0.0;
-    Fork sum += sap[k];
+    for (k = 0; k < states; k++)
+        sum += sap[k];
     sum = -sum / states;
-    Fork sap[k] += sum;
+    for (k = 0; k < states; k++)
+        sap[k] += sum;
     /*    Compute sapsprd  */
     apd2 = (1.0 / dapsprd) + cnt * ff;
     cvi->sapsprd = statesm / apd2;
@@ -737,7 +736,7 @@ adjloop:
 
     /*    Adjust factor parameters.  We have fapd1[], fbpd1[] from the data,
         but must add derivatives of pcost terms.  */
-    Fork {
+    for (k = 0; k < states; k++) {
         fapd1[k] += (fap[k] - dadnap[k]) / dapsprd;
         fbpd1[k] += fbp[k];
     }
@@ -746,7 +745,8 @@ adjloop:
     /*    Stabilization  */
     case_fac_score = 0.0;
     setprobs();
-    Fork fapd1[k] += 0.5 * pr[k];
+    for (k = 0; k < states; k++)
+        fapd1[k] += 0.5 * pr[k];
     stats->apd2 += 0.5 * states * ff;
     /*    This section uses a slow but apparently safe adjustment of fa[[], fbp[]
      */
@@ -764,19 +764,19 @@ adjloop:
     derivs, held in vaux.  */
     adj = adj / (stats->cnt * vaux->mff);
     adj *= statesm / states;
-    Fork {
+    for (k = 0; k < states; k++) {
         fap[k] -= adj * fapd1[k];
         fbp[k] -= adj * fbpd1[k];
     }
 
     sum = 0.0;
-    Fork sum += fap[k];
+    for (k = 0; k < states; k++) sum += fap[k];
     sum = -sum / states;
-    Fork fap[k] += sum;
+    for (k = 0; k < states; k++) fap[k] += sum;
     sum = 0.0;
-    Fork sum += fbp[k];
+    for (k = 0; k < states; k++) sum += fbp[k];
     sum = -sum / states;
-    Fork fbp[k] += sum;
+    for (k = 0; k < states; k++) fbp[k] += sum;
     /*    Set fapsprd, bpsprd.   */
     cvi->fapsprd = statesm / stats->apd2;
     cvi->bpsprd = statesm / stats->bpd2;
@@ -784,7 +784,7 @@ adjloop:
 facdone2:
     /*    If no sons, set as-dad params from non-fac params  */
     if (CurClass->num_sons < 2) {
-        Fork nap[k] = sap[k];
+        for (k = 0; k < states; k++) nap[k] = sap[k];
         cvi->napsprd = cvi->sapsprd;
     }
     cvi->samplesize = stats->cnt;
@@ -823,8 +823,7 @@ int iv;
 
     set_class(ccl);
     set_var(iv);
-    printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, stats->cnt,
-           (cvi->infac) ? " In" : "Out", stats->adj);
+    printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, stats->cnt, (cvi->infac) ? " In" : "Out", stats->adj);
 
     if (CurClass->num_sons < 2)
         goto skipn;
@@ -838,9 +837,9 @@ skipn:
     if (CurClass->use == Tiny)
         goto skipf;
     printf(" FR: ");
-    Fork printf("%7.3f", frate[k]);
+    for (k = 0; k < states; k++) printf("%7.3f", frate[k]);
     printf("\n BP: ");
-    Fork printf("%7.3f", fbp[k]);
+    for (k = 0; k < states; k++) printf("%7.3f", fbp[k]);
     printf(" +-%7.3f\n", sqrt(cvi->bpsprd * rstatesm));
 skipf:;
     return;
@@ -901,7 +900,7 @@ void cost_var_nonleaf(iv) int iv;
      */
     /*      First we get the V around the sons' mean, then update nap and
        correct the value of V.  We use static qr[] for the mean. */
-    Fork {
+    for (k = 0; k < states; k++) {
         qr[k] = pr[k] / nson;
         tstvn -= pr[k] * qr[k];
     }
@@ -913,9 +912,8 @@ adjloop:
     /*      Update param  */
     /*      The V of comments is tstvn + nson * del * del */
     del = 0.0;
-    Fork {
-        nap[k] =
-            (dapsprd * qr[k] + apsprd * dadnap[k]) / (nson * dapsprd + apsprd);
+    for (k = 0; k < states; k++) {
+        nap[k] = (dapsprd * qr[k] + apsprd * dadnap[k]) / (nson * dapsprd + apsprd);
         del = nap[k] - qr[k];
         tstvn += del * del * nson; /* adding variance round new nap */
     }
@@ -930,16 +928,13 @@ adjloop:
 
     /*      Calc cost  */
     pcost = 0.0;
-    Fork {
+    for (k = 0; k < states; k++) {
         del = nap[k] - dadnap[k];
         pcost += del * del;
     }
-    pcost = 0.5 * (pcost + statesm * apsprd / nson) / dapsprd +
-            statesm * (HALF_LOG_2PI + 0.5 * log(dapsprd));
+    pcost = 0.5 * (pcost + statesm * apsprd / nson) / dapsprd + statesm * (HALF_LOG_2PI + 0.5 * log(dapsprd));
     /*      Add hlog Fisher, lattice  */
-    pcost += 0.5 * log(0.5 * nson * statesm + nints) +
-             0.5 * statesm * log((double)nson) -
-             0.5 * (statesm + 2.0) * log(apsprd) + states * LATTICE;
+    pcost += 0.5 * log(0.5 * nson * statesm + nints) + 0.5 * statesm * log((double)nson) - 0.5 * (statesm + 2.0) * log(apsprd) + states * LATTICE;
     /*    Add roundoff for states params  */
     pcost += 0.5 * states;
     stats->npcost = pcost;

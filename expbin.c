@@ -161,8 +161,7 @@ Saux *sax;
 
 /*    -------------------  read_datum -------------------------------  */
 /*    To read a value for this variable type         */
-int read_datum(char *loc, int iv)
-{
+int read_datum(char *loc, int iv) {
     int i;
     Datum xn;
 
@@ -181,8 +180,7 @@ int read_datum(char *loc, int iv)
 
 /*    ---------------------  print_datum --------------------------  */
 /*    To print a Datum value   */
-void print_datum(Datum *loc)
-{
+void print_datum(Datum *loc) {
     /*    Print datum from address loc   */
     printf("%3d", (*((Datum *)loc) + 1));
     return;
@@ -192,8 +190,7 @@ void print_datum(Datum *loc)
 /*    To use info in ctx.vset to set sizes of basic and stats
 blocks for variable, and place in AVinst basicsize, statssize.
     */
-void set_sizes( int iv)
-{
+void set_sizes(int iv) {
 
     CurAttr = CurAttrList + iv;
 
@@ -204,8 +201,7 @@ void set_sizes( int iv)
 }
 
 /*    ----------------------- set_best_pars -----------------------  */
-void set_best_pars(int iv)
-{
+void set_best_pars(int iv) {
 
     set_var(iv);
 
@@ -231,8 +227,7 @@ void set_best_pars(int iv)
 /*    ---------------------------  clear_stats  --------------------   */
 /*    Clears stats to accumulate in cost_var, and derives useful functions
 of basic params   */
-void clear_stats(int iv)
-{
+void clear_stats(int iv) {
     double round, pr0, pr1;
 
     set_var(iv);
@@ -266,8 +261,7 @@ void clear_stats(int iv)
 /*    -------------------------  score_var  ------------------------   */
 /*    To eval derivs of a case wrt score, scorespread. Adds to case_fac_score_d1,case_fac_score_d2.
  */
-void score_var(int iv)
-{
+void score_var(int iv) {
     double cc, pr0, pr1, ff, ft, dbyv, hdffbydv, hdftbydv;
     set_var(iv);
     if (CurAttr->inactive)
@@ -316,8 +310,7 @@ void score_var(int iv)
 
 /*    ---------------------  cost_var  ---------------------------  */
 /*    Accumulate item cost into scasecost, fcasecost  */
-void cost_var(int iv, int fac)
-{
+void cost_var(int iv, int fac) {
     double cost;
     double cc, ff, ft, hdffbydc, hdftbydc, pr0, pr1, small;
 
@@ -368,10 +361,8 @@ void cost_var(int iv, int fac)
     ff = Bbeta * ff + (1.0 - Bbeta) * ft;
     /*    In calculating the cost, use ft for all spreads, rather than using
         ff for the v spread, but use ff in getting differentials  */
-    cost += 0.5 * ((cvi->fapsprd + case_fac_score_sq * cvi->bpsprd) * ft +
-                   stats->bsq * cvvsprd * ft);
-    stats->dbya += (cvi->fapsprd + case_fac_score_sq * cvi->bpsprd) * hdftbydc +
-                 stats->bsq * cvvsprd * hdffbydc;
+    cost += 0.5 * ((cvi->fapsprd + case_fac_score_sq * cvi->bpsprd) * ft + stats->bsq * cvvsprd * ft);
+    stats->dbya += (cvi->fapsprd + case_fac_score_sq * cvi->bpsprd) * hdftbydc + stats->bsq * cvvsprd * hdffbydc;
     stats->dbyb = case_fac_score * stats->dbya + cvi->fbp * cvvsprd * ff;
 
 facdone:
@@ -383,8 +374,7 @@ facdone:
 /*    ------------------  deriv_var  ------------------------------  */
 /*    Given item weight in cwt, calcs derivs of item cost wrt basic
 params and accumulates in paramd1, paramd2  */
-void deriv_var(int iv, int fac)
-{
+void deriv_var(int iv, int fac) {
 
     set_var(iv);
     if (saux->missing)
@@ -413,8 +403,7 @@ facdone:
 
 /*    -------------------  adjust  ---------------------------    */
 /*    To adjust parameters of a multistate variable     */
-void adjust(int iv, int fac)
-{
+void adjust(int iv, int fac) {
 
     double pr0, pr1, cc;
     double adj, apd2, cnt, vara, del, tt, spcost, fpcost;
@@ -568,12 +557,11 @@ adjdone:
 }
 
 /*    ------------------------  show  -----------------------   */
-void show(Class* ccl, int iv){
+void show(Class *ccl, int iv) {
 
     set_class(ccl);
     set_var(iv);
-    printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, stats->cnt,
-           (cvi->infac) ? " In" : "Out", stats->adj);
+    printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, stats->cnt, (cvi->infac) ? " In" : "Out", stats->adj);
 
     if (CurClass->num_sons < 2)
         goto skipn;
@@ -644,29 +632,26 @@ void cost_var_nonleaf(int iv) {
 
     /*      Iterate the adjustment of param, spread  */
     n = 5;
-adjloop:
-    /*      Update param  */
-    /*      The V of comments is tstvn + nson * del * del */
-    cvi->nap = (dapsprd * map) / (nson * dapsprd + apsprd);
-    del = cvi->nap - map;
-    tstvn += del * del * nson; /* adding variance round new nap */
-    co0 = 0.5 * (tstvn + nson * del * del) + tssn;
-    /*      Solve for new spread  */
-    apsprd = 2.0 * co0 / (co1 + sqrt(co1 * co1 + 4.0 * co0 * co2));
-    n--;
-    if (n)
-        goto adjloop;
+    while (n) {
+        /*      Update param  */
+        /*      The V of comments is tstvn + nson * del * del */
+        cvi->nap = (dapsprd * map) / (nson * dapsprd + apsprd);
+        del = cvi->nap - map;
+        tstvn += del * del * nson; /* adding variance round new nap */
+        co0 = 0.5 * (tstvn + nson * del * del) + tssn;
+        /*      Solve for new spread  */
+        apsprd = 2.0 * co0 / (co1 + sqrt(co1 * co1 + 4.0 * co0 * co2));
+        n--;
+    }
     /*    Store new values  */
     cvi->napsprd = apsprd;
 
     /*      Calc cost  */
     del = cvi->nap - dadnap;
     pcost = del * del;
-    pcost =
-        0.5 * (pcost + apsprd / nson) / dapsprd + (HALF_LOG_2PI + 0.5 * log(dapsprd));
+    pcost = 0.5 * (pcost + apsprd / nson) / dapsprd + (HALF_LOG_2PI + 0.5 * log(dapsprd));
     /*      Add hlog Fisher, lattice  */
-    pcost += 0.5 * log(0.5 * nson + nints) + 0.5 * log((double)nson) -
-             1.5 * log(apsprd) + 2.0 * LATTICE;
+    pcost += 0.5 * log(0.5 * nson + nints) + 0.5 * log((double)nson) - 1.5 * log(apsprd) + 2.0 * LATTICE;
     /*    Add roundoff for params  */
     pcost += 1.0;
     stats->npcost = pcost;
