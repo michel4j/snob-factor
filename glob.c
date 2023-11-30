@@ -4,11 +4,13 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
 
 /* Initialize some variables */
 int UseLib = 0;
+int Debug = 0;
 
 /*    To assist in printing class serials  */
 char *serial_to_str(Class *cls) {
@@ -70,4 +72,15 @@ void show_smpl_names() {
         }
     }
     return;
+}
+
+
+void log_msg(int level, const char *format, ...) {
+    if (level || Debug) {
+        va_list args;
+        va_start(args, format);
+        vprintf(format, args);
+        va_end(args);
+        printf("\n");
+    }
 }

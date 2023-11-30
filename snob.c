@@ -4,6 +4,9 @@
 #include <stdarg.h>
 #include <time.h>
 
+#define DO_ALL_STEPS 50
+#define TRY_MOVE_STEPS 4
+
 /*    ---------------------  main  ---------------------------  */
 
 /**
@@ -24,8 +27,10 @@ void clear_vectors() {
 */
 void initialize() {
     RSeed = 1234567;
+    SeeAll = 2;
+    UseLib = 1;
     defaulttune();
-    printf("SNOB-Factor: %d Threads Available\n\n", omp_get_max_threads());
+    log_msg(1, "SNOB-Factor: %d Threads Available\n\n", omp_get_max_threads());
     clear_vectors();
 }
 
@@ -63,16 +68,14 @@ void pick_population(int index) {
     if (index >= 0 && index < MAX_POPULATIONS && Populations[index] && Populations[index]->id == index) {
         if (!strcmp(Populations[index]->name, "work")) {
             if (CurCtx.popln && (CurCtx.popln->id == index))
-                printf("Work already picked\n");
+                log_msg(1, "Work already picked");
             else
-                printf("Switching context to existing 'work'");
+                log_msg(1, "Switching context to existing 'work'");
             set_work_population(index);
         }
     }
     CurCtx.popln = CurPopln = Populations[index];
 }
-
-
 
 void cleanup_population() {
     int index = find_population("TrialPop");
@@ -85,15 +88,14 @@ void cleanup_population() {
     Control = DControl;
     tidy(1);
     track_best(1);
-    show_population(CurPopln, CurSample);
 }
 
-extern char *malloc_options;
+
 int main(int argc, char *argv[]) {
-    int index, ret_code;
+    int index, cycles = 4;
 
     if (argc < 3) {
-        printf("Usage: %s <vset.v> <smpl.s> <report.rep>\n", argv[1]);
+        log_msg(1, "Usage: %s <vset.v> <smpl.s> <report.rep>", argv[1]);
         exit(2);
     }
 
@@ -104,18 +106,9 @@ int main(int argc, char *argv[]) {
     clear_vectors(); //    Clear vectors of pointers to Poplns, Samples
     do_types();
 
-    /*    Set source to commsbuf and initialize  */
-    CurSource = &commsbuf;
-    CurCtx.buffer = CurSource;
-    CurSource->cfile = 0;
-    CurSource->nch = 0;
-    CurSource->inl[0] = '\n';
-    UseLib = 1;
-    SeeAll = 2;
-
     index = open_vset(argv[1]);
     if (index < 0) {
-        printf("Error[ %d ] reading vset: %s\n", index, argv[1]);
+        log_msg(2, "Error[ %d ] reading vset: %s", index, argv[1]);
         exit(2);
     }
     CurVSet = CurCtx.vset = VarSets[index];
@@ -124,22 +117,22 @@ int main(int argc, char *argv[]) {
     init_population();
     print_class(CurRoot, 0);
 
-    for (int j = 0; j < 6; j++) {
+    for (int j = 0; j < cycles * 2; j++) {
         cleanup_population();
         if (j % 2 == 0) {
-
-            ret_code = do_all(50, 1);
-            if (ret_code >= 0) {
-                printf("\nDoall ends after %d cycles\n", ret_code);
-            }
+            log_msg(1, "Cycle %d", 1+j/2);
+            do_all(50, 1);
+            log_msg(1, "DOALL:   Completed %d steps of re-estimation and assignment.", DO_ALL_STEPS);
         } else {
-            try_moves(4);
+            log_msg(1, "TRYMOVE: Attempting class moves until %d successive failures", TRY_MOVE_STEPS);
+            try_moves(TRY_MOVE_STEPS);
+            show_population(CurPopln, CurSample);
         }
     }
     cleanup_population();
-    print_tree();    
-    tidy(1);
 
+    // display tree and classes
+    print_tree();
     print_class(-2, 1);
     show_population(CurPopln, CurSample);
     if (argc == 4) {

@@ -132,9 +132,8 @@ void tidy(int hit) {
 
             kkd = cls->dad_id;
             if (kkd < 0) {
-                printf("Dad error in tidy\n");
-                for (;;)
-                    ;
+                log_msg(2, "Dad error in tidy!");
+                return;
             }
             int hard = 0;
             if (hit && (cls->weights_sum < MinSize)) {
@@ -314,23 +313,24 @@ int find_and_estimate(int *all, int niter, int ncycles) {
 
 double update_leaf_classes(double *oldleafsum, int *nfail) {
     double leafsum = 0.0;
+    char token;
     for (int k = 0; k < NumSon; k++) {
-        adjust_class(Sons[k], 0);
-        /*    The second para tells adjust not to do as-dad params  */
+        adjust_class(Sons[k], 0); // The second par tells adjust not to do as-dad params
         leafsum += Sons[k]->best_cost;
     }
     if (SeeAll == 0) {
-        rep('.');
+        token ='.';
     } else {
         if (leafsum < (*oldleafsum - MinGain)) {
             *nfail = 0;
             *oldleafsum = leafsum;
-            rep('L');
+            token = 'L';
         } else {
             (*nfail)++;
-            rep('l');
+            token = 'l';
         }
     }
+    rep(token);
     return leafsum;
 }
 
@@ -339,6 +339,8 @@ void update_all_classes(double *oldcost, int *nfail) {
                 We do from bottom up, collecting as-dad pcosts.  */
     CurClass = CurRootClass;
     int repeat;
+    char token;
+
     do {
         repeat = 0;
         CurClass->dad_par_cost = 0.0;
@@ -369,15 +371,16 @@ void update_all_classes(double *oldcost, int *nfail) {
 
     /*    Test for an improvement  */
     if (SeeAll == 0) {
-        rep('.');
+        token = '.';
     } else if (CurRootClass->best_cost < (*oldcost - MinGain)) {
         *nfail = 0;
         *oldcost = CurRootClass->best_cost;
-        rep('A');
+        token = 'A';
     } else {
         (*nfail)++;
-        rep('a');
+        token = 'a';
     }
+    rep(token);
 }
 
 int count_score_changes() {
@@ -408,7 +411,8 @@ int do_all(int ncycles, int all) {
         oldleafsum += Sons[k]->best_cost;
     }
 
-    while (1) {
+    while (niter < ncycles) {
+
         update_seeall_newsubs(niter, ncycles);
 
         do {
@@ -431,16 +435,16 @@ int do_all(int ncycles, int all) {
             niter = nfail = 0;
             continue;
         }
+        ncydone++;
         if ((!UseLib) && (!UseStdIn) && hark(commsbuf.inl)) {
-            flp();
-            printf("Doall interrupted after %4d steps\n", ncydone);
+            log_msg(2, "\nDOALL: Interrupted after %4d steps", ncydone);
             break;
-        } 
+        }
 
         if (SeeAll > 0) {
             SeeAll--;
         }
-        ncydone++;
+
         niter++;
         if (niter >= ncycles) {
             if (ncydone >= ncyask) {
@@ -453,7 +457,7 @@ int do_all(int ncycles, int all) {
     /*    Scan leaf classes whose use is 'Fac' to accumulate significant
         score changes.  */
     ScoreChanges = count_score_changes();
-    return (ncydone);
+    return (niter);
 }
 
 /*    ----------------------  do_dads  -----------------------------  */
@@ -550,11 +554,10 @@ int do_good(int ncy, double target) {
     double oldcost;
 
     do_all(1, 1);
-    
 
     for (nn = 0; nn < 6; nn++)
         olddogcosts[nn] = CurRootClass->best_cost + 10000.0;
-    
+
     nfail = 0;
     for (nn = 0; nn < ncy; nn++) {
         oldcost = CurRootClass->best_cost;
@@ -592,15 +595,14 @@ done:
     return (nn);
 }
 
-/*    -----------------------  do_case  -----------------------------   */
-/*    It is assumed that all classes have parameter info set up, and
+/*  -----------------------  do_case  -----------------------------
+    It is assumed that all classes have parameter info set up, and
     that all cases have scores in all classes.
-    Assumes find_all() has been used to find classes and set up
-sons[], numson
+    Assumes find_all() has been used to find classes and set up sons[], numson
     If 'derivs', calcs derivatives. Otherwize not.
-    */
-/*    Defines and uses a prototypical 'Saux' containing missing and Datum
-    fields */
+    Defines and uses a prototypical 'Saux' containing missing and Datum
+    fields
+*/
 typedef struct PSauxst {
     int missing;
     double dummy;
@@ -614,7 +616,7 @@ void do_case(int item, int all, int derivs) {
     char *record, *field;
     int clc, i;
 
-    record = CurRecords + item * CurRecLen; //  Set ptr to case record  
+    record = CurRecords + item * CurRecLen; //  Set ptr to case record
     if (!*record) {                         // Inactive item
         return;
     }
@@ -654,7 +656,7 @@ void do_case(int item, int all, int derivs) {
     /*    The whole item is irrelevant if just starting on root  */
     if (NumSon != 1) { /*  Not Just doing root  */
         /*    Clear all casewts   */
-        
+
         for (clc = 0; clc < NumSon; clc++)
             Sons[clc]->case_weight = 0.0;
 

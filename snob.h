@@ -360,7 +360,7 @@ void defaulttune();
 /*
     In tactics.c
 */
-void flatten();
+int flatten(const int show);
 double insert_dad(int ser1, int ser2, int *dadid);
 int best_insert_dad(int force);
 int best_remove_dad();
@@ -420,4 +420,4 @@ void show_pop_names();
 void initialize();
 void show_pop_names();
 void show_smpl_names();
-void log_cmd(const char *format, ...) __attribute__((format(printf, 1, 2)));
+void log_msg(int level, const char *format, ...) __attribute__((format(printf, 2, 3)));

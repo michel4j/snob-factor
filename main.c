@@ -191,6 +191,8 @@ int menu(int cnl) {
 }
 
 // write to logfile and flush buffers
+void log_cmd(const char *format, ...) __attribute__((format(printf, 1, 2)));
+
 void log_cmd(const char *format, ...) {
     va_list args;
     va_start(args, format);
@@ -450,7 +452,7 @@ void reset_input() {
         revert(0);
 }
 
-extern char *malloc_options;
+//extern char *malloc_options;
 int main() {
     int k, kk, k1, k2;
     int i, j, n, nn, cspace = 0;
@@ -472,6 +474,7 @@ int main() {
     CurSource->inl[0] = '\n';
     Heard = UseStdIn = 0;
     SeeAll = 2;
+    Debug = 1;
 
     /*ddd
     printf("Enter var and state to watch (kiv, kz)\n");
@@ -799,7 +802,7 @@ loop:
     case 18: /*  flatten  */
         log_cmd("%s", commands[skk]);
         log_cmd("%s", commands[skk]);
-        flatten();
+        flatten(1);
         goto loop;
 
     case 19: /*  dodads  */
@@ -841,7 +844,6 @@ loop:
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        log_cmd("%s %d", commands[skk], nn);
         log_cmd("%s %d", commands[skk], nn);
         k = do_good(nn, ((double)0.0));
         if (k >= 0) {

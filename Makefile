@@ -32,7 +32,10 @@ pro: prompt.c
 	$(CC) -opro prompt.c
 
 clean:
-	rm -f *.o snob-factor pro libsnob.so
+	rm -f *.o snob-factor pro libsnob.so snob-factor-small
 
 test:
 	cd ./examples && time ../snob-factor < phi.cmd | tee phi.out
+
+small-test:
+	time ./snob-factor-small ./examples/phi.v ./examples/phi.s 

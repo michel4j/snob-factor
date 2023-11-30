@@ -978,18 +978,18 @@ int set_work_population(int pp) {
     /*    Check popln vset  */
     j = find_vset(CurPopln->vst_name);
     if (j < 0) {
-        printf("Load cannot find variable set\n");
+        log_msg(2, "Load cannot find variable set");
         goto error;
     }
     CurVSet = CurCtx.vset = VarSets[j];
     /*    Check VarSet  */
     if (strcmp(CurVSet->name, oldctx.sample->vset_name)) {
-        printf("Picked popln has incompatible VarSet\n");
+        log_msg(2, "Picked popln has incompatible VarSet");
         goto error;
     }
     /*    Check sample   */
     if (fpopnc && strcmp(CurPopln->sample_name, oldctx.sample->name)) {
-        printf("Picked popln attached to non-current sample.\n");
+        log_msg(0, "Picked popln attached to non-current sample.");
         /*    Make pop appear unattached  */
         CurPopln->sample_size = 0;
     }
@@ -1003,18 +1003,16 @@ int set_work_population(int pp) {
 
     /*    The popln was copied as if unattached, so scores, weights must be
         fixed  */
-    printf("Model will have weights, scores adjusted to sample.\n");
+    log_msg(0, "Model will have weights, scores adjusted to sample.");
     Fix = Partial;
     Control = AdjSc;
 fixscores:
     SeeAll = 16;
     do_all(15, 0);
     /*    doall should leave a count of score changes in global  */
-    flp();
-    printf("%8d  score changes\n", ScoreChanges);
+    log_msg(0, "%8d  score changes\n", ScoreChanges);
     if (!UseLib && Heard) {
-        flp();
-        printf("Score fixing stopped prematurely\n");
+        log_msg(0, "Score fixing stopped prematurely\n");
     } else if (ScoreChanges > 1)
         goto fixscores;
     Fix = DFix;

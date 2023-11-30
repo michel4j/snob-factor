@@ -19,7 +19,7 @@ void *alloc_blocks(int gr, int size) {
 
     blk = (Block *)malloc(size + SpUnit);
     if (!blk) {
-        printf("No more memory available\n");
+        log_msg(2, "No more memory available\n");
         return (0);
     }
     blk->size = size;
@@ -69,7 +69,7 @@ void free_blocks(int gr) {
         CurCtx.vset->blocks = 0;
         break;
     default:
-        printf("False group value %d in freespace\n", gr);
+        log_msg(0, "False group value %d in freespace\n", gr);
         exit(10);
     }
     while (blk) {
@@ -85,6 +85,6 @@ void free_blocks(int gr) {
 int report_space(int pp)
 {
     if (pp)
-        printf("Allocated space %8d chars\n", allocated);
+        log_msg(1, "Allocated space %8d chars\n", allocated);
     return (allocated);
 }

@@ -17,11 +17,12 @@ int serial_to_id(int ss) {
         }
     }
 
-    printf("No such class serial as %d", ss >> 2);
     if (ss & 3) {
-        printf("%c", (ss & 1) ? 'a' : 'b');
+        log_msg(2, "No such class serial as %d %c", ss >> 2, (ss & 1) ? 'a' : 'b');
+    } else {
+        log_msg(2, "No such class serial as %d", ss >> 2);
     }
-    printf("\n");
+
     return (-3);
 }
 
@@ -48,7 +49,7 @@ void set_class_with_scores(Class *cls, int item) {
     Returns index of class, or negative if no good  */
 
 int error_and_message(const char *message) {
-    printf("Error: %s\n", message);
+    log_msg(2, "Error: %s", message);
     return -1;
 }
 int make_class() {
@@ -82,12 +83,12 @@ int make_class() {
         }
     }
     if (!(found || vacant)) {
-        return error_and_message("Popln full of classes\n");
+        return error_and_message("Popln full of classes");
     } else if (found) {
 
         CurClass = (Class *)alloc_blocks(1, sizeof(Class));
         if (!CurClass) {
-            return error_and_message("No space for new class\n");
+            return error_and_message("No space for new class");
         }
 
         CurPopln->classes[kk] = CurClass;
@@ -97,7 +98,7 @@ int make_class() {
         /*    Make vector of ptrs to CVinsts   */
         cvars = CurClass->basics = (CVinst **)alloc_blocks(1, NumVars * sizeof(CVinst *));
         if (!cvars) {
-            return error_and_message("No space for new class\n");
+            return error_and_message("No space for new class");
         }
 
         /*    Now make the CVinst blocks, which are of varying size   */
@@ -106,7 +107,7 @@ int make_class() {
             CurAttr = CurAttrList + i;
             cvi = cvars[i] = (CVinst *)alloc_blocks(1, CurAttr->basic_size);
             if (!cvi) {
-                return error_and_message("No space for new class\n");
+                return error_and_message("No space for new class");
             }
             /*    Fill in standard stuff  */
             cvi->id = CurAttr->id;
@@ -115,14 +116,14 @@ int make_class() {
         /*    Make EVinst blocks and vector of pointers  */
         evars = CurClass->stats = (EVinst **)alloc_blocks(1, NumVars * sizeof(EVinst *));
         if (!evars) {
-            return error_and_message("No space for new class\n");
+            return error_and_message("No space for new class");
         }
         for (i = 0; i < NumVars; i++) {
             pvi = pvars + i;
             CurAttr = CurAttrList + i;
             stats = evars[i] = (EVinst *)alloc_blocks(1, CurAttr->stats_size);
             if (!stats) {
-                return error_and_message("No space for new class\n");
+                return error_and_message("No space for new class");
             }
             stats->id = pvi->id;
         }
@@ -220,7 +221,7 @@ void print_class(int kk, int full) {
         clp = CurPopln->classes[kk];
         print_one_class(clp, full);
     } else if (kk < -2) {
-        printf("%d passed to print_class\n", kk);
+        log_msg(0, "%d passed to print_class", kk);
     } else {
         set_population();
         clp = CurRootClass;
@@ -640,13 +641,12 @@ void adjust_class(Class *ccl, int dod) {
         leafcost = (CurClass->use == Fac) ? CurClass->fac_cost : CurClass->nofac_cost;
 
         if ((CurClass->type == Dad) && (leafcost < CurClass->dad_cost) && (Fix != Random)) {
-            flp();
-            printf("Changing type of class%s from Dad to Leaf\n", serial_to_str(CurClass));
+
+            log_msg(0, "\nChanging type of class %s from DAD to LEAF", serial_to_str(CurClass));
             SeeAll = 4;
             delete_sons(CurClass->id); // Changes type to leaf
         } else if (npars && (leafcost > CurClass->dad_cost) && (CurClass->type == Leaf)) {
-            flp();
-            printf("Changing type of class%s from Leaf to Dad\n", serial_to_str(CurClass));
+            log_msg(0, "\nChanging type of class %s from LEAF to DAD", serial_to_str(CurClass));
             SeeAll = 4;
             CurClass->type = Dad;
             if (CurDad)

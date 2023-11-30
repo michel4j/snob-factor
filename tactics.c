@@ -3,39 +3,43 @@
 #define TACTICS 1
 #include "glob.h"
 
-/*     --------------------  flatten  --------------------------------  */
-/*    Destroys all non-root Dads, leaving all old non-dads (leaf or sub)
-which had no children as leaves, direct sons of root. Prepares for a rebuild */
-/*    Locks the type of root to dad  */
-void flatten() {
+/** flatten
+    Destroys all non-root Dads, leaving all old non-dads (leaf or sub)
+    which had no children as leaves, direct sons of root. Prepares for a rebuild
+    Locks the type of root to dad
 
-    int i;
+    returns:
+         0:  if success
+        -1:  if nothing to flatten
+        -2:  interrupted
 
+*/
+int flatten(const int show) {
+    int i, out = 0;
     set_population();
     tidy(0);
     if (CurRootClass->num_sons == 0) {
-        printf("Nothing to flatten\n");
-        return;
+        return -1;
     }
     for (i = 0; i <= CurPopln->hi_class; i++) {
         if (i == CurRoot)
-            goto donecls;
+            continue;
         CurClass = CurPopln->classes[i];
-        if (CurClass->type == Vacant)
-            goto donecls;
-        if (CurClass->num_sons) { /*  Kill it  */
-            CurClass->type = Vacant;
-            CurClass->dad_id = Deadkilled;
-            CurPopln->num_classes--;
-        } else {
-            if (CurClass->type == Sub) {
-                CurClass->type = Leaf;
-                CurClass->serial = CurPopln->next_serial << 2;
-                CurPopln->next_serial++;
+        if (CurClass->type != Vacant) {
+
+            if (CurClass->num_sons) { /*  Kill it  */
+                CurClass->type = Vacant;
+                CurClass->dad_id = Deadkilled;
+                CurPopln->num_classes--;
+            } else {
+                if (CurClass->type == Sub) {
+                    CurClass->type = Leaf;
+                    CurClass->serial = CurPopln->next_serial << 2;
+                    CurPopln->next_serial++;
+                }
+                CurClass->dad_id = CurRoot;
             }
-            CurClass->dad_id = CurRoot;
         }
-    donecls:;
     }
     NoSubs++;
     tidy(0);
@@ -44,12 +48,14 @@ void flatten() {
     do_all(1, 1);
     do_dads(3);
     do_all(3, 0);
-    if (!UseLib && Heard)
-        printf("Flatten ends prematurely\n");
+    out = (!UseLib && Heard) ? -2 : 0;
+
     if (NoSubs > 0)
         NoSubs--;
-    print_tree();
-    return;
+    if (show) {
+        print_tree();
+    }
+    return out;
 }
 
 /*    ------------------------  insert_dad  ------------------------------  */
@@ -184,8 +190,7 @@ int best_insert_dad(int force) {
     origcost = CurRootClass->best_cost;
     hiid = CurPopln->hi_class;
     if (CurPopln->num_classes < 4) {
-        flp();
-        printf("Model has only%2d class\n", CurPopln->num_classes);
+        log_msg(0, "Model has only%2d class\n", CurPopln->num_classes);
         succ = -1;
         goto alldone;
     }
@@ -246,8 +251,7 @@ i1done:
 
 alldone:
     if (bser1 < 0) {
-        flp();
-        printf("No possible dad insertions\n");
+        log_msg(0, "No possible dad insertions\n");
         succ = newser = -1;
         goto finish;
     }
@@ -257,8 +261,7 @@ alldone:
         goto popfails;
     CurCtx.popln = Populations[newp];
     set_population();
-    flp();
-    printf("TRYING INSERT %6d,%6d\n", bser1 >> 2, bser2 >> 2);
+    log_msg(0, "TRYING INSERT %6d,%6d", bser1 >> 2, bser2 >> 2);
     res = insert_dad(bser1, bser2, &newid);
     /*    But check it is not killed off   */
     newser = CurPopln->classes[newid]->serial;
@@ -266,7 +269,7 @@ alldone:
     do_all(1, 1);
     Control = AdjAll;
     if (!UseLib && Heard) {
-        printf("BestInsDad ends prematurely\n");
+        log_msg(0, "BestInsDad ends prematurely");
         return (0);
     }
     if (newser != CurPopln->classes[newid]->serial)
@@ -282,20 +285,19 @@ alldone:
     newser = 0;
     memcpy(&CurCtx, &oldctx, sizeof(Context));
     set_population(); /* Return to original popln */
-    flp();
-    printf("Failed ******\n");
+    log_msg(0, "FAILED ******");
     goto finish;
 
 popfails:
     succ = newser = -1;
-    flp();
-    printf("Cannot make TrialPop\n");
+    log_msg(2, "Cannot make TrialPop");
     goto finish;
 
 winner:
-    flp();
-    printf("%s\n", (succ) ? "ACCEPTED !!!" : "FORCED");
-    print_tree();
+    log_msg(0, "%s\n", (succ) ? "ACCEPTED !!!" : "FORCED");
+    if (Debug) {
+        print_tree();
+    }
     clr_bad_move();
     /*    Reverse roles of 'work' and TrialPop  */
     strcpy(oldctx.popln->name, "TrialPop");
@@ -311,11 +313,7 @@ finish:
 
 /*    ---------------  rebuild  --------------------------------  */
 /*    Flattens the rebuilds the tree  */
-void rebuild() {
-    flp();
-    printf("Rebuild obsolete\n");
-    return;
-}
+void rebuild() { log_msg(2, "Rebuild obsolete"); }
 
 /*    ------------------  splice_dad  -------------------------  */
 /*    If class ser is Dad (not root), it is removed, and its sons become
@@ -409,8 +407,7 @@ i1done:
         goto loop;
 
     if (bser < 0) {
-        flp();
-        printf("No possible dad deletions\n");
+        log_msg(0, "No possible dad deletions");
         goto finish;
     }
     newp = copy_population(CurPopln->id, 1, "TrialPop");
@@ -418,14 +415,13 @@ i1done:
         goto popfails;
     CurCtx.popln = Populations[newp];
     set_population();
-    flp();
-    printf("TRYING DELETE %6d\n", bser >> 2);
+    log_msg(0, "TRYING DELETE %6d", bser >> 2);
     res = splice_dad(bser);
     Control = 0;
     do_all(1, 1);
     Control = AdjAll;
     if (!UseLib && Heard) {
-        printf("BestDelDad ends prematurely\n");
+        log_msg(0, "BestDelDad ends prematurely");
         return (0);
     }
     if (CurRootClass->best_cost < origcost)
@@ -434,21 +430,20 @@ i1done:
     bser = 0;
     memcpy(&CurCtx, &oldctx, sizeof(Context));
     set_population();
-    flp();
-    printf("Failed ******\n");
+    log_msg(0, "FAILED ******\n");
     goto finish;
 
 popfails:
-    flp();
-    printf("BestDelDad cannot make TrialPop\n");
+    log_msg(0, "BestDelDad cannot make TrialPop");
     bser = -1;
     goto finish;
 
 winner:
-    flp();
     clr_bad_move();
-    printf("ACCEPTED !!!\n");
-    print_tree();
+    log_msg(0, "ACCEPTED !!!");
+    if (Debug) {
+        print_tree();
+    }
     strcpy(oldctx.popln->name, "TrialPop");
     strcpy(CurPopln->name, "work");
     track_best(1);
@@ -467,7 +462,7 @@ void binary_hierarchy(int flat) {
 
     set_population();
     if (flat)
-        flatten();
+        flatten(1);
     NoSubs++;
     if (!UseLib && Heard)
         goto kicked;
@@ -505,7 +500,7 @@ kicked:
     nn = find_population("work");
     CurCtx.popln = Populations[nn];
     set_population();
-    printf("BinHier ends prematurely\n");
+    log_msg(0, "BinHier ends prematurely");
     goto finish;
 }
 
@@ -518,15 +513,15 @@ void ranclass(int nn) {
 
     set_population();
     if (!CurPopln) {
-        printf("Ranclass needs a model\n");
+        log_msg(0, "Ranclass needs a model");
         goto finish;
     }
     if (!CurPopln->sample_size) {
-        printf("Model has no sample\n");
+        log_msg(0, "Model has no sample");
         goto finish;
     }
     if (nn > (CurPopln->cls_vec_len - 2)) {
-        printf("Too many classes\n");
+        log_msg(0, "Too many classes");
         goto finish;
     }
 
@@ -565,7 +560,7 @@ again:
     dad = Sons[ib];
     if (split_leaf(dad->id))
         goto windup;
-    printf("Splitting %s size%8.1f\n", serial_to_str(dad), dad->weights_sum);
+    log_msg(0, "Splitting %s size%8.1f", serial_to_str(dad), dad->weights_sum);
     dad->hold_type = Forever;
     n++;
     goto again;
@@ -573,10 +568,11 @@ again:
 windup:
     NoSubs = 1;
     do_all(5, 1);
-    flatten();
+    flatten(1);
     do_all(6, 0);
     do_all(4, 1);
-    print_tree();
+    if (Debug)
+        print_tree();
     CurRootClass->hold_type = 0;
 
 finish:
@@ -602,18 +598,18 @@ double move_class(int ser1, int ser2) {
         goto nullit;
     cls2 = CurPopln->classes[k2];
     if (cls2->type != Dad) {
-        printf("Class %4d is not a dad\n", ser2);
+        log_msg(0, "Class %4d is not a DAD", ser2);
         goto nullit;
     }
     /*    Check that a change is needed  */
     if (cls1->dad_id == k2) {
-        printf("No change needed\n");
+        log_msg(0, "No change needed");
         goto nullit;
     }
     /*    Check that cls1 is not an ancestor of cls2  */
     for (od2 = cls2->dad_id; od2 >= 0; od2 = odad->dad_id) {
         if (od2 == k1) {
-            printf("Class %4d is ancestor of class %4d\n", ser1, ser2);
+            log_msg(0, "Class %4d is ancestor of class %4d", ser1, ser2);
             goto nullit;
         }
         odad = CurPopln->classes[od2];
@@ -637,7 +633,7 @@ double move_class(int ser1, int ser2) {
     goto done;
 
 kicked:
-    printf("Moveclass interrupted prematurely\n");
+    log_msg(0, "Moveclass interrupted prematurely");
 
 nullit:
     drop = -1.0e20;
@@ -648,7 +644,7 @@ done:
 
 /*    -----------------  trial  ---------------------------------  */
 void trial(int param) {
-    printf("Running TRIAL\n");
+    log_msg(0, "Running TRIAL");
     correlpops(param);
 }
 
@@ -682,8 +678,7 @@ int best_move_class(int force) {
     origcost = CurRootClass->best_cost;
     hiid = CurPopln->hi_class;
     if (CurPopln->num_classes < 4) {
-        flp();
-        printf("Model has only%2d class\n", CurPopln->num_classes);
+        log_msg(0, "Model has only%2d class\n", CurPopln->num_classes);
         succ = -1;
         goto alldone;
     }
@@ -747,9 +742,8 @@ i1done:
 
 alldone:
     if (bser1 < 0) {
-        flp();
         succ = -1;
-        printf("No possible class move\n");
+        log_msg(0, "No possible class move");
         goto finish;
     }
     /*    Copy pop to TrialPop, filled  */
@@ -758,14 +752,14 @@ alldone:
         goto popfails;
     CurCtx.popln = Populations[newp];
     set_population();
-    flp();
-    printf("TRYING MOVE CLASS %6d TO DAD %6d\n", bser1 >> 2, bser2 >> 2);
+    log_msg(0, "TRYING MOVE CLASS %6d TO DAD %6d: ", bser1 >> 2, bser2 >> 2);
     res = move_class(bser1, bser2);
     Control = 0;
     do_all(1, 1);
     Control = AdjAll;
-    if (!UseLib && Heard)
-        printf("BestMoveClass ends prematurely\n");
+    if (!UseLib && Heard) {
+        log_msg(0, "BestMoveClass ends prematurely");
+    }
     /*    Setting dogood's target to origcost-1 allows early exit  */
     /*    See if the trial model has improved over original  */
     succ = 1;
@@ -777,20 +771,18 @@ alldone:
     set_bad_move(3, bser1, bser2);
     memcpy(&CurCtx, &oldctx, sizeof(Context));
     set_population(); /* Return to original popln */
-    flp();
-    printf("Failed ******\n");
+    log_msg(0, "\nMOVE CLASS FAILED ******");
     goto finish;
 
 popfails:
     succ = -1;
-    flp();
-    printf("Cannot make TrialPop\n");
+    log_msg(2, "Cannot make TrialPop");
     goto finish;
 
 winner:
-    flp();
-    printf("%s\n", (succ) ? "ACCEPTED !!!" : "FORCED");
-    print_tree();
+    log_msg(0, "%s", (succ) ? "\nACCEPTED !!!" : "FORCED");
+    if (Debug)
+        print_tree();
     clr_bad_move();
     /*    Reverse roles of 'work' and TrialPop  */
     strcpy(oldctx.popln->name, "TrialPop");
@@ -809,7 +801,6 @@ finish:
 succession have failed, or until all possible moves have been tried   */
 void try_moves(int ntry) {
     int nfail, succ;
-
     NoSubs++;
     do_all(1, 1);
     clr_bad_move();
@@ -823,7 +814,7 @@ void try_moves(int ntry) {
         if (succ)
             nfail = 0;
         if (!UseLib && Heard) {
-            printf("Trymoves ends prematurely\n");
+            log_msg(0, "Trymoves ends prematurely");
             break;
         }
     }
