@@ -99,7 +99,7 @@ void print_progress(size_t count, size_t max) {
         printf("━");
     }
     for (int i = bar_length; i < bar_width; ++i) {
-        printf("");
+        printf(" ");
     }
     printf("] %.2f%%", progress * 100);
 
