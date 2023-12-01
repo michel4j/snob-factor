@@ -307,7 +307,7 @@ void clear_stats(int iv) {
 
 /*    -------------------------  score_var  ------------------------   */
 /*    To eval derivs of a case cost wrt score, scorespread. Adds to
-case_fac_score_d1, case_fac_score_d2.
+CaseFacScoreD1, CaseFacScoreD2.
     The general form for VonMises message costs has the following
 components:
     Density cost:
@@ -366,25 +366,25 @@ void score_var(int iv) {
         (vsq * ldsprd) gives a contibution to wd1 via the r2 factor:  */
     wd1 += 0.5 * cvi->fmufish * cvi->ldsprd * CurCaseFacScoreSq * dr2dw;
 
-    /*    This part also directly contributes to case_fac_score_d1 via the vsq factor: */
-    case_fac_score_d1 += cvi->fmufish * cvi->ldsprd * r2 * CurCaseFacScore;
+    /*    This part also directly contributes to CaseFacScoreD1 via the vsq factor: */
+    CaseFacScoreD1 += cvi->fmufish * cvi->ldsprd * r2 * CurCaseFacScore;
 
-    /*    This gives a term in est_fac_score_d2 :  */
-    est_fac_score_d2 += cvi->fmufish * cvi->ldsprd * r2;
+    /*    This gives a term in EstFacScoreD2 :  */
+    EstFacScoreD2 += cvi->fmufish * cvi->ldsprd * r2;
 
     /*    The second part, involving vsprd, is treated by accumulating
-        in case_fac_score_d3 the deriv wrt factor_scores of the multiplier of half vsprd.   */
-    case_fac_score_d3 += cvi->fmufish * cvi->ldsq * dr2dw * dwdv;
+        in CaseFacScoreD3 the deriv wrt factor_scores of the multiplier of half vsprd.   */
+    CaseFacScoreD3 += cvi->fmufish * cvi->ldsq * dr2dw * dwdv;
 
     /*    The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
     /*    and so to deriv wrt factor_scores of:  wd1 * dwdv  */
 
-    case_fac_score_d1 += wd1 * dwdv;
+    CaseFacScoreD1 += wd1 * dwdv;
 
-    /*    Now for contribution to case_fac_score_d2. This is 2 * the coeff of vsprd in
+    /*    Now for contribution to CaseFacScoreD2. This is 2 * the coeff of vsprd in
         the item cost.  */
-    case_fac_score_d2 += cvi->fmufish * cvi->ldsq * r2;
-    est_fac_score_d2 += cvi->fmufish * cvi->ldsq * 4.0;
+    CaseFacScoreD2 += cvi->fmufish * cvi->ldsq * r2;
+    EstFacScoreD2 += cvi->fmufish * cvi->ldsq * 4.0;
     /*        Note, the max value of r2 is 4  */
     return;
 }

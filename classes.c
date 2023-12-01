@@ -36,7 +36,7 @@ void set_class(Class *cls) {
 /*    ---------------------  set_class_with_scores --------------------------   */
 void set_class_with_scores(Class *cls, int item) {
     set_class(cls);
-    cls->case_score = case_fac_int = cls->factor_scores[item];
+    cls->case_score = CaseFacInt = cls->factor_scores[item];
     CurCaseWeight = cls->case_weight;
 }
 
@@ -295,7 +295,7 @@ void score_all_vars_alt(Class *ccl, int item) {
     set_class_with_scores(ccl, item);
     if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny)) {
         CurCaseFacScore = CurClass->avg_factor_scores = CurClass->sum_score_sq = 0.0;
-        case_fac_int = 0;
+        CaseFacInt = 0;
     } else {
         if (CurClass->sum_score_sq <= 0.0) {
             //    Generate a fake score to get started.
@@ -305,36 +305,36 @@ void score_all_vars_alt(Class *ccl, int item) {
             CurCaseFacScore = (rand_int() < 0) ? 1.0 : -1.0;
         } else {
             //    Get current score
-            oldicvv = case_fac_int;
-            igbit = case_fac_int & 1;
-            CurCaseFacScore = case_fac_int * ScoreRscale;
+            oldicvv = CaseFacInt;
+            igbit = CaseFacInt & 1;
+            CurCaseFacScore = CaseFacInt * ScoreRscale;
             if (CurClass->boost_count && ((Control & AdjSP) == AdjSP)) {
                 CurCaseFacScore *= CurClass->score_boost;
                 CurCaseFacScore = fmin(fmax(CurCaseFacScore, -Maxv), Maxv); // Clamp CurCaseFacScore to [-Maxv, Maxv]
                 del = CurCaseFacScore * HScoreScale;
                 del -= (del < 0) ? -1.0 : 0.0;
-                case_fac_int = (int)(del + 0.5) << 1; // Round to nearest even times ScoreScale
+                CaseFacInt = (int)(del + 0.5) << 1; // Round to nearest even times ScoreScale
                 igbit = 0;
-                CurCaseFacScore = case_fac_int * ScoreRscale;
+                CurCaseFacScore = CaseFacInt * ScoreRscale;
             }
 
             CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
-            case_fac_score_d1 = case_fac_score_d2 = est_fac_score_d2 = case_fac_score_d3 = 0.0;
+            CaseFacScoreD1 = CaseFacScoreD2 = EstFacScoreD2 = CaseFacScoreD3 = 0.0;
             for (int i = 0; i < CurVSet->num_vars; i++) {
                 CurAttr = CurAttrList + i;
                 if (!CurAttr->inactive) {
                     CurVType = CurAttr->vtype;
-                    (*CurVType->score_var)(i); // score_var should add to case_fac_score_d1, case_fac_score_d2, case_fac_score_d3, est_fac_score_d2.
+                    (*CurVType->score_var)(i); // score_var should add to CaseFacScoreD1, CaseFacScoreD2, CaseFacScoreD3, EstFacScoreD2.
                 }
             }
-            case_fac_score_d1 += CurCaseFacScore;
-            case_fac_score_d2 += 1.0;
-            est_fac_score_d2 += 1.0; //  From prior  There is a cost term 0.5 * cvvsprd from the prior (whence the additional 1 in case_fac_score_d2).
-                                     // Also, overall cost includes 0.5*cvvsprd*case_fac_score_d2, so there is a derivative term wrt CurCaseFacScore of
-                                     // 0.5*cvvsprd*case_fac_score_d3
-            cvvsprd = 1.0 / case_fac_score_d2;
-            case_fac_score_d1 += 0.5 * cvvsprd * case_fac_score_d3;
-            del = case_fac_score_d1 / est_fac_score_d2;
+            CaseFacScoreD1 += CurCaseFacScore;
+            CaseFacScoreD2 += 1.0;
+            EstFacScoreD2 += 1.0; //  From prior  There is a cost term 0.5 * cvvsprd from the prior (whence the additional 1 in CaseFacScoreD2).
+                                     // Also, overall cost includes 0.5*cvvsprd*CaseFacScoreD2, so there is a derivative term wrt CurCaseFacScore of
+                                     // 0.5*cvvsprd*CaseFacScoreD3
+            cvvsprd = 1.0 / CaseFacScoreD2;
+            CaseFacScoreD1 += 0.5 * cvvsprd * CaseFacScoreD3;
+            del = CaseFacScoreD1 / EstFacScoreD2;
             if (Control & AdjSc) {
                 CurCaseFacScore -= del;
             }
@@ -343,11 +343,11 @@ void score_all_vars_alt(Class *ccl, int item) {
         CurCaseFacScore = fmax(fmin(CurCaseFacScore, Maxv), -Maxv);
         del = CurCaseFacScore * HScoreScale;
         del -= ((del < 0) ? -1.0 : 0.0);
-        case_fac_int = del + rand_float();
-        case_fac_int <<= 1;    // Round to nearest even times ScoreScale
-        case_fac_int |= igbit; // Restore original ignore bit
+        CaseFacInt = del + rand_float();
+        CaseFacInt <<= 1;    // Round to nearest even times ScoreScale
+        CaseFacInt |= igbit; // Restore original ignore bit
         if (!igbit) {
-            oldicvv -= case_fac_int;
+            oldicvv -= CaseFacInt;
             oldicvv = abs(oldicvv);
             if (oldicvv > SigScoreChange)
                 CurClass->score_change_count++;
@@ -356,7 +356,7 @@ void score_all_vars_alt(Class *ccl, int item) {
         CurClass->case_fac_score_sq = CurCaseFacScoreSq;
         CurClass->cvvsprd = cvvsprd;
     }
-    CurClass->factor_scores[item] = CurClass->case_score = case_fac_int;
+    CurClass->factor_scores[item] = CurClass->case_score = CaseFacInt;
 }
 
 void score_all_vars(Class *ccl, int item) {
@@ -366,7 +366,7 @@ void score_all_vars(Class *ccl, int item) {
     set_class_with_scores(ccl, item);
     if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny)) {
         CurCaseFacScore = CurClass->avg_factor_scores = CurClass->sum_score_sq = 0.0;
-        case_fac_int = 0;
+        CaseFacInt = 0;
     } else {
         if (CurClass->sum_score_sq <= 0.0) {
             // Generate a fake score to get started.
@@ -376,38 +376,38 @@ void score_all_vars(Class *ccl, int item) {
             CurCaseFacScore = (rand_int() < 0) ? 1.0 : -1.0;
         } else {
             // Get current score
-            oldicvv = case_fac_int;
-            igbit = case_fac_int & 1;
-            CurCaseFacScore = case_fac_int * ScoreRscale;
+            oldicvv = CaseFacInt;
+            igbit = CaseFacInt & 1;
+            CurCaseFacScore = CaseFacInt * ScoreRscale;
             // Additional logic if CurClass has boost_count and AdjSP is set
             if (CurClass->boost_count && ((Control & AdjSP) == AdjSP)) {
                 CurCaseFacScore *= CurClass->score_boost;
                 CurCaseFacScore = fmax(fmin(CurCaseFacScore, Maxv), -Maxv);
                 del = CurCaseFacScore * HScoreScale;
                 del -= (del < 0.0) ? 1.0 : 0.0;
-                case_fac_int = del + 0.5;
-                case_fac_int <<= 1; // Round to nearest even times ScoreScale
+                CaseFacInt = del + 0.5;
+                CaseFacInt <<= 1; // Round to nearest even times ScoreScale
                 igbit = 0;
-                CurCaseFacScore = case_fac_int * ScoreRscale;
+                CurCaseFacScore = CaseFacInt * ScoreRscale;
             }
         }
 
         CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
-        case_fac_score_d1 = case_fac_score_d2 = est_fac_score_d2 = case_fac_score_d3 = 0.0;
+        CaseFacScoreD1 = CaseFacScoreD2 = EstFacScoreD2 = CaseFacScoreD3 = 0.0;
         for (i = 0; i < CurVSet->num_vars; i++) {
             CurAttr = CurAttrList + i;
             if (!CurAttr->inactive) {
                 CurVType = CurAttr->vtype;
-                (*CurVType->score_var)(i); // score_var should add to case_fac_score_d1, case_fac_score_d2, case_fac_score_d3, est_fac_score_d2.
+                (*CurVType->score_var)(i); // score_var should add to CaseFacScoreD1, CaseFacScoreD2, CaseFacScoreD3, EstFacScoreD2.
             }
         }
 
-        case_fac_score_d1 += CurCaseFacScore;
-        case_fac_score_d2 += 1.0;
-        est_fac_score_d2 += 1.0; // From prior
-        cvvsprd = 1.0 / case_fac_score_d2;
-        case_fac_score_d1 += 0.5 * cvvsprd * case_fac_score_d3;
-        del = case_fac_score_d1 / est_fac_score_d2;
+        CaseFacScoreD1 += CurCaseFacScore;
+        CaseFacScoreD2 += 1.0;
+        EstFacScoreD2 += 1.0; // From prior
+        cvvsprd = 1.0 / CaseFacScoreD2;
+        CaseFacScoreD1 += 0.5 * cvvsprd * CaseFacScoreD3;
+        del = CaseFacScoreD1 / EstFacScoreD2;
         if (Control & AdjSc) {
             CurCaseFacScore -= del;
         }
@@ -418,12 +418,12 @@ void score_all_vars(Class *ccl, int item) {
     del = CurCaseFacScore * HScoreScale;
     // if (del < 0.0) del -= 1.0; else del -= 0.0;
     del -= (del < 0.0) ? 1.0 : 0.0;
-    case_fac_int = del + rand_float();
-    case_fac_int <<= 1;    // Round to nearest even times ScoreScale
-    case_fac_int |= igbit; // Restore original ignore bit
+    CaseFacInt = del + rand_float();
+    CaseFacInt <<= 1;    // Round to nearest even times ScoreScale
+    CaseFacInt |= igbit; // Restore original ignore bit
 
     if (!igbit) {
-        oldicvv -= case_fac_int;
+        oldicvv -= CaseFacInt;
         oldicvv = abs(oldicvv);
         if (oldicvv > SigScoreChange)
             CurClass->score_change_count++;
@@ -433,7 +433,7 @@ void score_all_vars(Class *ccl, int item) {
     CurClass->case_fac_score_sq = CurCaseFacScoreSq;
     CurClass->cvvsprd = cvvsprd;
 
-    CurClass->factor_scores[item] = CurClass->case_score = case_fac_int;
+    CurClass->factor_scores[item] = CurClass->case_score = CaseFacInt;
 }
 
 /*    ----------------------  cost_all_vars  --------------------------  */

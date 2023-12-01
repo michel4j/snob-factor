@@ -64,11 +64,11 @@ EXT Class *CurClass, *CurDad;
 EXT double CurCaseWeight; /*  weight of case in class  */
 EXT double CurCaseFacScore, CurCaseFacScoreSq, cvvsprd;
 EXT double ctv, ctvsq, ctvd1, ctvd1sq, ctvd1cu, ctvsprd, ctd1d2;
-EXT int case_fac_int; /*  integer form of case_fac_score*4096 */
+EXT int CaseFacInt; /*  integer form of case_fac_score*4096 */
 EXT double ncasecost, scasecost, fcasecost;
-EXT double case_fac_score_d1, case_fac_score_d2; /* derivs of case cost wrt score  */
-EXT double est_fac_score_d2;                     /* An over-estimate of case_fac_score_d2 used in score ajust */
-EXT double case_fac_score_d3;                    /*  derivative of case_fac_score_d2 wrt score  */
+EXT double CaseFacScoreD1, CaseFacScoreD2; /* derivs of case cost wrt score  */
+EXT double EstFacScoreD2;                     /* An over-estimate of CaseFacScoreD2 used in score ajust */
+EXT double CaseFacScoreD3;                    /*  derivative of CaseFacScoreD2 wrt score  */
 EXT int CurDadID;
 
 /*    re Doall   */
@@ -83,11 +83,9 @@ EXT int NextIc[MAX_CLASSES];
 /*    re Tuning  */
 EXT int MinAge;         /* Min class age for creation of subs */
 EXT int MinFacAge;      /* Min age for contemplating a factor model */
-EXT int MinSubAge;      /* Until this age, subclass relabs not allowed to
-          decay.  */
+EXT int MinSubAge;      /* Until this age, subclass relabs not allowed to decay.  */
 EXT int MaxSubAge;      /* Subclasses older than this are replaced  */
-EXT int HoldTime;       /* Massage cycles for which class type is fixed
-       following forcible change  */
+EXT int HoldTime;       /* Massage cycles for which class type is fixed following forcible change  */
 EXT int Forever;        /* If holdtype set to this, it isnt counted down */
 EXT double MinSize;     /* Min size for a class */
 EXT double MinWt;       /* Min weight for a case to be treated in a class */

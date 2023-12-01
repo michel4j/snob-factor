@@ -255,7 +255,7 @@ void clear_stats(int iv) {
 
 /*    -------------------------  score_var  ------------------------   */
 /*    To eval derivs of a case cost wrt score, scorespread. Adds to
-case_fac_score_d1, case_fac_score_d2.
+CaseFacScoreD1, CaseFacScoreD2.
     */
 void score_var(int iv) {
 
@@ -268,10 +268,10 @@ void score_var(int iv) {
     if (saux->missing)
         return;
     del = cvi->fmu + CurCaseFacScore * cvi->ld - saux->xn;
-    case_fac_score_d1 += stats->frsds * (del * cvi->ld + CurCaseFacScore * cvi->ldsprd);
+    CaseFacScoreD1 += stats->frsds * (del * cvi->ld + CurCaseFacScore * cvi->ldsprd);
     md2 = stats->frsds * (stats->ldsq + cvi->ldsprd);
-    case_fac_score_d2 += md2;
-    est_fac_score_d2 += 1.1 * md2;
+    CaseFacScoreD2 += md2;
+    EstFacScoreD2 += 1.1 * md2;
 }
 
 /*    -----------------------  cost_var  --------------------------   */
