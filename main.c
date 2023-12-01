@@ -391,16 +391,10 @@ int readsampid(int kk) {
 }
 
 /*    ---------------------  main  ---------------------------  */
-
-void initialize() {
-    int i, j, n;
-    char *chp;
-
-    RSeed = 1234567;
-    defaulttune();
-    printf("SNOB-Factor: %d Threads Available\n\n", omp_get_max_threads());
-
-    /*    A section to sort the keywords into alphabetic order, and set
+void setup_menu() {
+    int i, n;
+        char *chp;
+/*    A section to sort the keywords into alphabetic order, and set
     cmd_index[] to hold their original order indexes   */
 
     for (i = 0; strcmp(commands[i], "zzzzzzzzzzzz"); i++) {
@@ -433,17 +427,6 @@ void initialize() {
     }
 }
 
-/*    Clear vectors of pointers to Poplns, Samples  */
-void clear_vectors() {
-    int k;
-
-    for (k = 0; k < MAX_POPULATIONS; k++)
-        Populations[k] = 0;
-    for (k = 0; k < MAX_SAMPLES; k++)
-        Samples[k] = 0;
-    for (k = 0; k < MAX_VSETS; k++)
-        VarSets[k] = 0;
-}
 
 void reset_input() {
     printf("??? line %6d\n", CurSource->line);
@@ -463,8 +446,8 @@ int main() {
     DControl = Control = AdjAll;
 
     initialize();    // initialize menu
-    clear_vectors(); //    Clear vectors of pointers to Poplns, Samples
-    do_types();
+    setup_menu(); //    Clear vectors of pointers to Poplns, Samples
+
 
     /*    Set source to commsbuf and initialize  */
     CurSource = &commsbuf;
