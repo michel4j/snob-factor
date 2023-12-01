@@ -279,6 +279,16 @@ typedef struct ContextStruct {
     Buf *buffer;
 } Context;
 
+/* Classification Result */
+typedef struct ResultStruct {
+    int num_classes;    // Number of classes found, includes Dads, Leaves and Subs
+    int num_leaves;     // Number of leaves, these are the relevant categories
+    double model_length;   // Cost of Transmitting Model 
+    double data_length;   // Cost of Transmitting Data
+    double message_length; // Total Cost
+} Result;
+
+
 /*    --------- Functions -------------------------------   */
 
 /*
@@ -398,8 +408,8 @@ void do_types();
     In samples.c
 */
 void print_var_datum(int i, int n);
-int load_vset();
-int open_vset(const char *fname);
+int read_vset();
+int load_vset(const char *fname);
 int load_sample(const char *fname);
 int find_sample(char *nam, int expect);
 int find_vset(char *nam);
@@ -411,18 +421,18 @@ int item_list(char *tlstname);
     In glob.c
 */
 void cleanup_population();
-void show_population(Population *popln, Sample *sample);
+void show_population();
 void pick_population(int index);
 char *serial_to_str(Class *cll);
 void show_smpl_names();
 void show_pop_names();
 void print_progress(size_t count, size_t max);
-int classify(unsigned int cycles, unsigned int do_steps, unsigned int move_steps);
+Result classify(const int max_cycles, const int do_steps, const int move_steps, const double tol);
 
 /*
     In main.c
 */
-void initialize(int lib);
+void initialize(int lib, int debug);
 void show_pop_names();
 void show_smpl_names();
 void log_msg(int level, const char *format, ...) __attribute__((format(printf, 2, 3)));

@@ -26,7 +26,7 @@ snob-factor-small:	$(SMALLOBJ)
 	$(CC) $(SMALLOBJ) -lm -o snob-factor-small
 
 libsnob.so: $(LIBOBJ)
-	gcc -shared -o libsnob.so $(LIBOBJ)
+	$(CC) -shared -o libsnob.so $(LIBOBJ)
 
 pro: prompt.c
 	$(CC) -opro prompt.c

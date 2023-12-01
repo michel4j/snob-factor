@@ -2,9 +2,9 @@
 #define GLOBALS 1
 #include "glob.h"
 #include <math.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -74,7 +74,6 @@ void show_smpl_names() {
     return;
 }
 
-
 void log_msg(int level, const char *format, ...) {
     if (level || Debug) {
         va_list args;
@@ -85,17 +84,17 @@ void log_msg(int level, const char *format, ...) {
     }
 }
 
-
 /**
     Initialize SNOB
 */
-void initialize(int lib) {
+void initialize(int lib, int debug) {
     int k;
     RSeed = 1234567;
     SeeAll = 2;
     UseLib = lib;
     Fix = DFix = Partial;
     DControl = Control = AdjAll;
+    Debug = debug;
 
     defaulttune();
     for (k = 0; k < MAX_POPULATIONS; k++)
@@ -107,8 +106,11 @@ void initialize(int lib) {
     do_types();
 }
 
-void show_population(Population *popln, Sample *sample) {
+void show_population() {
     Class *root;
+    Population *popln = CurPopln;
+    Sample *sample = CurSample;
+
     root = popln->classes[popln->root];
     printf("\n--------------------------------------------------------------------------------\n");
     printf("P%1d  %4d classes, %4d leaves,  Pcost%8.1f", popln->id + 1, popln->num_classes, popln->num_leaves, root->best_par_cost);
@@ -148,7 +150,7 @@ void cleanup_population() {
 void print_progress(size_t count, size_t max) {
     const int bar_width = 70;
 
-    float progress = (float) count / max;
+    float progress = (float)count / max;
     int bar_length = progress * bar_width;
 
     printf("\r[");
@@ -162,22 +164,53 @@ void print_progress(size_t count, size_t max) {
     fflush(stdout);
 }
 
-int classify(unsigned int cycles, unsigned int do_steps, unsigned int move_steps) {
+Result classify(const int max_cycles, const int do_steps, const int move_steps, const double tol) {
+    Result result;
+    Class *root;
+    int cycle = 0, prev_classes = 0, prev_leaves = 0, no_change_count = 0;
+
     init_population();
     cleanup_population();
     print_class(CurRoot, 0);
+    root = CurPopln->classes[CurPopln->root];
 
-    for (int j = 0; j < cycles * 2; j++) {
-        if (j % 2 == 0) {
-            log_msg(1, "Cycle %d", 1 + j / 2);
-            log_msg(1, "DOALL:   Doing %d steps of re-estimation and assignment.", do_steps);
-            do_all(do_steps, 1);
-        } else {
-            log_msg(1, "TRYMOVE: Attempting class moves until %d successive failures", move_steps);
-            try_moves(move_steps);
-            show_population(CurPopln, CurSample);
-        }
+    double cost = root->best_cost, delta = 0.0;
+    do {
+        log_msg(1, "Cycle %d", 1 + cycle);
+        log_msg(1, "DOALL:   Doing %d steps of re-estimation and assignment.", do_steps);
+        do_all(do_steps, 1);
+
+        log_msg(1, "TRYMOVE: Attempting class moves until %d successive failures", move_steps);
+        try_moves(move_steps);
         cleanup_population();
+        show_population();
+        root = CurPopln->classes[CurPopln->root];
+        delta = 100.0 * (cost - root->best_cost) / cost;
+        if ((prev_classes == CurPopln->num_classes) && (prev_leaves == CurPopln->num_leaves) && (delta < tol)) {
+            no_change_count++;
+        }
+        prev_classes = CurPopln->num_classes;
+        prev_leaves = CurPopln->num_leaves;
+        cost = root->best_cost;
+        cycle++;
+        if (no_change_count > 2) {
+            break;
+        }
+    } while (cycle < max_cycles);
+
+    if (cycle > max_cycles) {
+        log_msg(1, "WARNING: Classification did not converge after %d cycles", max_cycles);
+    } else {
+        log_msg(1, "Classification converged after %d cycles", cycle);
+        log_msg(1, "%4d classes,  %4d leaves,  Cost %8.1f", prev_classes, prev_leaves, cost);
     }
-    return CurPopln->num_leaves;
+
+    //  Prepare return structure
+    result.num_classes = CurPopln->num_classes;
+    result.num_leaves = CurPopln->num_leaves;
+    result.model_length = root->best_par_cost;
+    result.data_length = root->best_case_cost;
+    result.message_length = root->best_cost;
+
+    return result;
 }

@@ -32,134 +32,20 @@ void print_var_datum(int i, int n) {
 /*    ------------------------ load_vset ------------------------------ */
 /*    To read in a vset from a file. Returns index of vset  */
 /*    Returns negative if fail*/
-int load_vset() {
-    int i, itype, indx;
+int read_vset() {
+    char filename[80];
     int kread;
-    Buf bufst, *buf;
-    char *vaux;
-
-    buf = &bufst;
-    for (i = 0; i < MAX_VSETS; i++)
-        if (!VarSets[i])
-            goto gotit;
-nospce:
-    log_msg(2, "No space for VarSet");
-    i = -10;
-    goto error;
-
-gotit:
-    indx = i;
-    CurVSet = VarSets[i] = (VarSet *)malloc(sizeof(VarSet));
-    if (!CurVSet)
-        goto nospce;
-    CurVSet->id = indx;
-    CurCtx.vset = CurVSet;
-    CurVSet->attrs = 0;
-    CurVSet->blocks = 0;
     printf("Enter variable-set file name:\n");
-    kread = read_str(CurVSet->filename, 1);
-    strcpy(buf->cname, CurVSet->filename);
-    CurCtx.buffer = buf;
-    if (open_buffer()) {
-        log_msg(2, "Cant open variable-set file %s", CurVSet->filename);
-        i = -2;
-        goto error;
-    }
-
-    /*    Begin to read variable-set file. First entry is its name   */
-    new_line();
-    kread = read_str(CurVSet->name, 1);
+    kread = read_str(filename, 1);
     if (kread < 0) {
-        log_msg(2, "Error in name of variable-set");
-        i = -9;
-        goto error;
+        log_msg(2, "Error in name of variable-set file");
+        return (-2);
+    } else {
+        return load_vset(filename);
     }
-    /*    Num of variables   */
-    new_line();
-    kread = read_int(&NumVars, 1);
-    if (kread) {
-        log_msg(2, "Cant read number of variables");
-        i = -4;
-        goto error;
-    }
-    CurVSet->num_vars = NumVars;
-    CurVSet->num_active = CurVSet->num_vars;
-
-    /*    Make a vec of nv AVinst blocks  */
-    CurAttrList = (AVinst *)alloc_blocks(3, NumVars * sizeof(AVinst));
-    if (!CurAttrList) {
-        log_msg(2, "Cannot allocate memory for variables blocks");
-        i = -3;
-        goto error;
-    }
-    CurVSet->attrs = CurAttrList;
-
-    /*    Read in the info for each variable into vlist   */
-    for (i = 0; i < NumVars; i++) {
-        CurAttrList[i].id = -1;
-        CurAttrList[i].vaux = 0;
-    }
-    for (i = 0; i < NumVars; i++) {
-        CurAttr = CurAttrList + i;
-        CurAttr->id = i;
-
-        /*    Read name  */
-        new_line();
-        kread = read_str(CurAttr->name, 1);
-        if (kread < 0) {
-            log_msg(2, "Error in name of variable %d", i + 1);
-            i = -10;
-            goto error;
-        }
-
-        /*    Read type code. Negative means idle.   */
-        kread = read_int(&itype, 1);
-        if (kread) {
-            log_msg(2, "Cant read type code for var %d", i + 1);
-            i = -5;
-            goto error;
-        }
-        CurAttr->inactive = 0;
-        if (itype < 0) {
-            CurAttr->inactive = 1;
-            itype = -itype;
-        }
-        if ((itype < 1) || (itype > Ntypes)) {
-            log_msg(2, "Bad type code %d for var %d", itype, i + 1);
-            i = -5;
-            goto error;
-        }
-        itype = itype - 1; /*  Convert types to start at 0  */
-        CurVType = CurAttr->vtype = Types + itype;
-        CurAttr->type = itype;
-
-        /*    Make the vaux block  */
-        vaux = (char *)alloc_blocks(3, CurVType->attr_aux_size);
-        if (!vaux) {
-            log_msg(2, "Cant make auxilliary var block");
-            i = -6;
-            goto error;
-        }
-        CurAttr->vaux = vaux;
-
-        /*    Read auxilliary information   */
-        if ((*CurVType->read_aux_attr)(vaux)) {
-            log_msg(2, "Error in reading auxilliary info var %d", i + 1);
-            i = -7;
-            goto error;
-        }
-        /*    Set sizes of stats and basic blocks for var in classes */
-        (*CurVType->set_sizes)(i);
-    } /* End of variables loop */
-    i = indx;
-
-error:
-    close_buffer();
-    CurCtx.buffer = CurSource;
-    return (i);
 }
 
-int open_vset(const char *filename) {
+int load_vset(const char *filename) {
     int i, itype, indx = -10;
     int kread;
     Buf bufst, *buf;
@@ -716,7 +602,7 @@ nextcl1:
     fprintf(tlst, "0 0\n");
 
     find_all(Dad + Leaf);
-#pragma omp for
+
     for (nn = 0; nn < CurSample->num_cases; nn++) {
         do_case(nn, Leaf + Dad, 0);
         bl = bc = -1;

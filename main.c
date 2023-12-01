@@ -441,10 +441,7 @@ int main() {
     double drop;
     Context oldctx;
 
-    Fix = DFix = Partial;
-    DControl = Control = AdjAll;
-
-    initialize(0); // initialize menu
+    initialize(0, 1); // initialize menu
     setup_menu();  // Clear vectors of pointers to Poplns, Samples
 
     /*    Set source to commsbuf and initialize  */
@@ -462,7 +459,7 @@ int main() {
 
     /*    Open a log file   */
     logfile = fopen("run.log", "w");
-    kk = load_vset();
+    kk = read_vset();
 
     printf("Readvset returns %d\n", kk);
     if (kk < 0) {
