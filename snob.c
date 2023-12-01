@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <time.h>
 
-#define DO_ALL_STEPS 100
+#define DO_ALL_STEPS 50
 #define TRY_MOVE_STEPS 2
 
 /*    ---------------------  main  ---------------------------  */
