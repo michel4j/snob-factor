@@ -269,7 +269,7 @@ void score_var(int iv) {
     if (saux->missing)
         return;
     /*    Calc prob of val 1  */
-    cc = cvi->fap + case_fac_score * cvi->fbp;
+    cc = cvi->fap + CurCaseFacScore * cvi->fbp;
     if (cc > 0.0) {
         pr1 = exp(-2.0 * cc);
         pr0 = pr1 / (1.0 + pr1);
@@ -297,9 +297,9 @@ void score_var(int iv) {
     else
         dbyv = 2.0 * cvi->fbp * pr1;
     /*    From cost term 0.5 * vvsq * bpsprd * ft: */
-    dbyv += case_fac_score * cvi->bpsprd * ft;
+    dbyv += CurCaseFacScore * cvi->bpsprd * ft;
     /*    And via dftbydv, terms 0.5*(fapsprd * vvsq*bpsprd)*ft :   */
-    dbyv += (cvi->fapsprd + case_fac_score_sq * cvi->bpsprd) * hdftbydv;
+    dbyv += (cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd) * hdftbydv;
     case_fac_score_d1 += dbyv;
     case_fac_score_d2 += stats->bsq * ff;
     est_fac_score_d2 += stats->bsq * ff;
@@ -328,7 +328,7 @@ void cost_var(int iv, int fac) {
     /*    Only do faccost if fac  */
     if (!fac)
         goto facdone;
-    cc = cvi->fap + case_fac_score * cvi->fbp;
+    cc = cvi->fap + CurCaseFacScore * cvi->fbp;
     if (cc > 0.0) {
         small = exp(-2.0 * cc);
         pr0 = small / (1.0 + small);
@@ -361,9 +361,9 @@ void cost_var(int iv, int fac) {
     ff = Bbeta * ff + (1.0 - Bbeta) * ft;
     /*    In calculating the cost, use ft for all spreads, rather than using
         ff for the v spread, but use ff in getting differentials  */
-    cost += 0.5 * ((cvi->fapsprd + case_fac_score_sq * cvi->bpsprd) * ft + stats->bsq * cvvsprd * ft);
-    stats->dbya += (cvi->fapsprd + case_fac_score_sq * cvi->bpsprd) * hdftbydc + stats->bsq * cvvsprd * hdffbydc;
-    stats->dbyb = case_fac_score * stats->dbya + cvi->fbp * cvvsprd * ff;
+    cost += 0.5 * ((cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd) * ft + stats->bsq * cvvsprd * ft);
+    stats->dbya += (cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd) * hdftbydc + stats->bsq * cvvsprd * hdffbydc;
+    stats->dbyb = CurCaseFacScore * stats->dbya + cvi->fbp * cvvsprd * ff;
 
 facdone:
     fcasecost += cost;
@@ -391,12 +391,12 @@ void deriv_var(int iv, int fac) {
     /*    Now for factor form  */
     if (!fac)
         goto facdone;
-    stats->vsq += CurCaseWeight * case_fac_score_sq;
+    stats->vsq += CurCaseWeight * CurCaseFacScoreSq;
     stats->fapd1 += CurCaseWeight * stats->dbya;
     stats->fbpd1 += CurCaseWeight * stats->dbyb;
     /*    Accum actual 2nd derivs  */
     stats->apd2 += CurCaseWeight * stats->parkft;
-    stats->bpd2 += CurCaseWeight * stats->parkft * case_fac_score_sq;
+    stats->bpd2 += CurCaseWeight * stats->parkft * CurCaseFacScoreSq;
 facdone:
     return;
 }

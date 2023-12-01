@@ -62,7 +62,7 @@ EXT SVinst *CurVarList;
 /*    re Classes  */
 EXT Class *CurClass, *CurDad;
 EXT double CurCaseWeight; /*  weight of case in class  */
-EXT double case_fac_score, case_fac_score_sq, cvvsprd;
+EXT double CurCaseFacScore, CurCaseFacScoreSq, cvvsprd;
 EXT double ctv, ctvsq, ctvd1, ctvd1sq, ctvd1cu, ctvsprd, ctd1d2;
 EXT int case_fac_int; /*  integer form of case_fac_score*4096 */
 EXT double ncasecost, scasecost, fcasecost;

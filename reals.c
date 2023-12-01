@@ -267,8 +267,8 @@ void score_var(int iv) {
 
     if (saux->missing)
         return;
-    del = cvi->fmu + case_fac_score * cvi->ld - saux->xn;
-    case_fac_score_d1 += stats->frsds * (del * cvi->ld + case_fac_score * cvi->ldsprd);
+    del = cvi->fmu + CurCaseFacScore * cvi->ld - saux->xn;
+    case_fac_score_d1 += stats->frsds * (del * cvi->ld + CurCaseFacScore * cvi->ldsprd);
     md2 = stats->frsds * (stats->ldsq + cvi->ldsprd);
     case_fac_score_d2 += md2;
     est_fac_score_d2 += 1.1 * md2;
@@ -294,8 +294,8 @@ void cost_var(int iv, int fac) {
 
     /*    Only do faccost if fac  */
     if (fac) {
-        del += case_fac_score * cvi->ld;
-        var = del * del + cvi->fmusprd + saux->epssq + case_fac_score_sq * cvi->ldsprd + cvvsprd * stats->ldsq;
+        del += CurCaseFacScore * cvi->ld;
+        var = del * del + cvi->fmusprd + saux->epssq + CurCaseFacScoreSq * cvi->ldsprd + cvvsprd * stats->ldsq;
         stats->var = var;
         cost = HALF_LOG_2PI + 0.5 * stats->frsds * var + cvi->fsdl + cvi->fsdlsprd * 2.0 - saux->leps;
     }
@@ -325,7 +325,7 @@ void deriv_var(int iv, int fac) {
     // Processing for factor form
     if (fac) {
         frsds = stats->frsds;
-        del = cvi->fmu + case_fac_score * cvi->ld - saux->xn;
+        del = cvi->fmu + CurCaseFacScore * cvi->ld - saux->xn;
         var = stats->var;
 
         // Pre-calculate common term
@@ -336,8 +336,8 @@ void deriv_var(int iv, int fac) {
         stats->fsdld2 += 2.0 * CurCaseWeight;
         stats->fmud1 += curCaseWeightTimesFrsds * del;
         stats->fmud2 += curCaseWeightTimesFrsds;
-        stats->ldd1 += curCaseWeightTimesFrsds * (del * case_fac_score + cvi->ld * cvvsprd);
-        stats->ldd2 += curCaseWeightTimesFrsds * (case_fac_score_sq + cvvsprd);
+        stats->ldd1 += curCaseWeightTimesFrsds * (del * CurCaseFacScore + cvi->ld * cvvsprd);
+        stats->ldd2 += curCaseWeightTimesFrsds * (CurCaseFacScoreSq + cvvsprd);
     }
 }
 
