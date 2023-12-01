@@ -94,6 +94,9 @@ void initialize(int lib) {
     RSeed = 1234567;
     SeeAll = 2;
     UseLib = lib;
+    Fix = DFix = Partial;
+    DControl = Control = AdjAll;
+
     defaulttune();
     for (k = 0; k < MAX_POPULATIONS; k++)
         Populations[k] = 0;
@@ -156,6 +159,25 @@ void print_progress(size_t count, size_t max) {
         printf(" ");
     }
     printf("] %.2f%%", progress * 100);
-
     fflush(stdout);
+}
+
+int classify(unsigned int cycles, unsigned int do_steps, unsigned int move_steps) {
+    init_population();
+    cleanup_population();
+    print_class(CurRoot, 0);
+
+    for (int j = 0; j < cycles * 2; j++) {
+        if (j % 2 == 0) {
+            log_msg(1, "Cycle %d", 1 + j / 2);
+            log_msg(1, "DOALL:   Doing %d steps of re-estimation and assignment.", do_steps);
+            do_all(do_steps, 1);
+        } else {
+            log_msg(1, "TRYMOVE: Attempting class moves until %d successive failures", move_steps);
+            try_moves(move_steps);
+            show_population(CurPopln, CurSample);
+        }
+        cleanup_population();
+    }
+    return CurPopln->num_leaves;
 }

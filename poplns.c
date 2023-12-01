@@ -49,14 +49,14 @@ void next_class(Class **ptr) {
     return;
 }
 
-/*    -----------------------   make_population   ---------------------   */
-/*      To make a population with the parameter set 'vst'  */
-/*    Returns index of new popln in poplns array    */
-/*    The popln is given a root class appropriate for the variable-set.
+/*  -----------------------   make_population   ---------------------   */
+/*  To make a population with the parameter set 'vst'  */
+/*  Returns index of new popln in poplns array    */
+/*  The popln is given a root class appropriate for the variable-set.
     If fill = 0, root has only basics and stats, but no weight, cost or
-or score vectors, and the popln is not connected to the current sample.
-OTHERWIZE, the root class is fully configured for the current sample.
-    */
+    or score vectors, and the popln is not connected to the current sample.
+    OTHERWIZE, the root class is fully configured for the current sample.
+*/
 int make_population(int fill) {
     PVinst *pvars;
     Class *cls;
@@ -70,7 +70,7 @@ int make_population(int fill) {
     else
         NumCases = 0;
     if ((!CurSample) && fill) {
-        printf("Makepop cannot fill because no sample defined\n");
+        log_msg(0, "Makepop cannot fill because no sample defined");
         return (-1);
     }
     /*    Find vacant popln slot    */
@@ -141,7 +141,7 @@ gotit:
     return (indx);
 
 nospace:
-    printf("No space for another population\n");
+    log_msg(0, "No space for another population");
     return (-1);
 }
 
@@ -159,7 +159,7 @@ int init_population() {
     ipop = -1;
 
     if (!CurSample) {
-        printf("No sample defined for initial population\n");
+        log_msg(2, "No sample defined for initial population");
     } else {
         ipop = make_population(1); // Makes a configured popln
         if (ipop >= 0) {
@@ -313,13 +313,13 @@ int copy_population(int p1, int fill, char *newname) {
     indx = -1;
     fpop = Populations[p1];
     if (!fpop) {
-        printf("No popln index %d\n", p1);
+        log_msg(0, "No popln index %d", p1);
         indx = -106;
         goto finish;
     }
     kk = find_vset(fpop->vst_name);
     if (kk < 0) {
-        printf("No Variable-set %s\n", fpop->vst_name);
+        log_msg(0, "No Variable-set %s", fpop->vst_name);
         indx = -101;
         goto finish;
     }
@@ -339,7 +339,7 @@ int copy_population(int p1, int fill, char *newname) {
         goto sampfound;
     }
     /*    Fill is indicated but no sample is defined.  */
-    printf("There is no defined sample to fill for.\n");
+    log_msg(0, "There is no defined sample to fill for.");
     indx = -103;
     goto finish;
 
@@ -356,7 +356,7 @@ sampfound:
     i = find_population(newname);
     /*    Check for copying into self  */
     if (i == p1) {
-        printf("From copypop: attempt to copy model%3d into itself\n", p1 + 1);
+        log_msg(0, "From copypop: attempt to copy model%3d into itself", p1 + 1);
         indx = -102;
         goto finish;
     }
@@ -365,7 +365,7 @@ sampfound:
     /*    Make a new popln  */
     indx = make_population(fill);
     if (indx < 0) {
-        printf("Cant make new popln from%4d\n", p1 + 1);
+        log_msg(0, "Cant make new popln from%4d", p1 + 1);
         indx = -104;
         goto finish;
     }
@@ -520,7 +520,7 @@ void print_tree() {
     Population * popln = CurCtx.popln;
 
     if (!popln) {
-        printf("No current population.\n");
+        log_msg(2, "No current population.\n");
         return;
     }
     

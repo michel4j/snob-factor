@@ -224,7 +224,7 @@ void print_class(int kk, int full) {
         log_msg(0, "%d passed to print_class", kk);
     } else {
         set_population();
-        cls = CurRootClass;
+        cls = CurRootClass;      
         do {
             if ((kk == -2) || (cls->type != Sub))
                 print_one_class(cls, full);

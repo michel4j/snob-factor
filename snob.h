@@ -417,10 +417,11 @@ char *serial_to_str(Class *cll);
 void show_smpl_names();
 void show_pop_names();
 void print_progress(size_t count, size_t max);
+int classify(unsigned int cycles, unsigned int do_steps, unsigned int move_steps);
+
 /*
     In main.c
 */
-
 void initialize(int lib);
 void show_pop_names();
 void show_smpl_names();
