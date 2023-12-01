@@ -29,21 +29,21 @@ void set_population() {
 /*    given a ptr to a ptr to a class in pop, changes the Class* to point
 to the next class in a depth-first traversal, or 0 if there is none  */
 void next_class(Class **ptr) {
-    Class *clp;
+    Class *cls;
 
-    clp = *ptr;
-    if (clp->son_id >= 0) {
-        *ptr = CurPopln->classes[clp->son_id];
+    cls = *ptr;
+    if (cls->son_id >= 0) {
+        *ptr = CurPopln->classes[cls->son_id];
     } else {
         while (1) {
-            if (clp->sib_id >= 0) {
-                *ptr = CurPopln->classes[clp->sib_id];
+            if (cls->sib_id >= 0) {
+                *ptr = CurPopln->classes[cls->sib_id];
                 break;
-            } else if (clp->dad_id < 0) {
+            } else if (cls->dad_id < 0) {
                 *ptr = 0;
                 break;
             }
-            clp = CurPopln->classes[clp->dad_id];
+            cls = CurPopln->classes[cls->dad_id];
         }
     }
     return;
@@ -523,6 +523,7 @@ void print_tree() {
         printf("No current population.\n");
         return;
     }
+    
     set_population();
     printf("Popln%3d on sample%3d,%4d classes,%6d things", popln->id + 1, CurCtx.sample->id + 1, popln->num_classes, CurCtx.sample->num_cases);
     printf("  Cost %10.2f\n", popln->classes[popln->root]->best_cost);

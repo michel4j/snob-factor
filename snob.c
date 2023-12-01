@@ -9,7 +9,7 @@
 
 /*    ---------------------  main  ---------------------------  */
 int main(int argc, char *argv[]) {
-    int index, cycles = 4;
+    int index, cycles = 3;
 
     if (argc < 3) {
         log_msg(1, "Usage: %s <vset.v> <smpl.s> <report.rep>", argv[1]);
@@ -19,9 +19,7 @@ int main(int argc, char *argv[]) {
     Fix = DFix = Partial;
     DControl = Control = AdjAll;
 
-    initialize();    // initialize menu
-
-    do_types();
+    initialize(1);    // initialize menu
 
     index = open_vset(argv[1]);
     if (index < 0) {
@@ -52,6 +50,7 @@ int main(int argc, char *argv[]) {
     print_tree();
     print_class(-2, 1);
     show_population(CurPopln, CurSample);
+
     if (argc == 4) {
         item_list(argv[3]);
     }

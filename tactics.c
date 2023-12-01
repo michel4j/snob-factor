@@ -261,7 +261,7 @@ alldone:
         goto popfails;
     CurCtx.popln = Populations[newp];
     set_population();
-    log_msg(0, "TRYING INSERT %6d,%6d", bser1 >> 2, bser2 >> 2);
+    log_msg(0, "\nTRYING INSERT %6d,%6d", bser1 >> 2, bser2 >> 2);
     res = insert_dad(bser1, bser2, &newid);
     /*    But check it is not killed off   */
     newser = CurPopln->classes[newid]->serial;
@@ -407,7 +407,7 @@ i1done:
         goto loop;
 
     if (bser < 0) {
-        log_msg(0, "No possible dad deletions");
+        log_msg(0, "\nNo possible dad deletions");
         goto finish;
     }
     newp = copy_population(CurPopln->id, 1, "TrialPop");
@@ -415,13 +415,13 @@ i1done:
         goto popfails;
     CurCtx.popln = Populations[newp];
     set_population();
-    log_msg(0, "TRYING DELETE %6d", bser >> 2);
+    log_msg(0, "\nTRYING DELETE %6d", bser >> 2);
     res = splice_dad(bser);
     Control = 0;
     do_all(1, 1);
     Control = AdjAll;
     if (!UseLib && Heard) {
-        log_msg(0, "BestDelDad ends prematurely");
+        log_msg(0, "\nBestDelDad ends prematurely");
         return (0);
     }
     if (CurRootClass->best_cost < origcost)
@@ -430,17 +430,17 @@ i1done:
     bser = 0;
     memcpy(&CurCtx, &oldctx, sizeof(Context));
     set_population();
-    log_msg(0, "FAILED ******\n");
+    log_msg(0, "\nFAILED ******\n");
     goto finish;
 
 popfails:
-    log_msg(0, "BestDelDad cannot make TrialPop");
+    log_msg(0, "\nBestDelDad cannot make TrialPop");
     bser = -1;
     goto finish;
 
 winner:
     clr_bad_move();
-    log_msg(0, "ACCEPTED !!!");
+    log_msg(0, "\nACCEPTED !!!");
     if (Debug) {
         print_tree();
     }
@@ -500,7 +500,7 @@ kicked:
     nn = find_population("work");
     CurCtx.popln = Populations[nn];
     set_population();
-    log_msg(0, "BinHier ends prematurely");
+    log_msg(0, "\nBinHier ends prematurely");
     goto finish;
 }
 
@@ -560,7 +560,7 @@ again:
     dad = Sons[ib];
     if (split_leaf(dad->id))
         goto windup;
-    log_msg(0, "Splitting %s size%8.1f", serial_to_str(dad), dad->weights_sum);
+    log_msg(0, "\nSplitting %s size%8.1f", serial_to_str(dad), dad->weights_sum);
     dad->hold_type = Forever;
     n++;
     goto again;
@@ -752,13 +752,13 @@ alldone:
         goto popfails;
     CurCtx.popln = Populations[newp];
     set_population();
-    log_msg(0, "TRYING MOVE CLASS %6d TO DAD %6d: ", bser1 >> 2, bser2 >> 2);
+    log_msg(0, "\nTRYING MOVE CLASS %6d TO DAD %6d: ", bser1 >> 2, bser2 >> 2);
     res = move_class(bser1, bser2);
     Control = 0;
     do_all(1, 1);
     Control = AdjAll;
     if (!UseLib && Heard) {
-        log_msg(0, "BestMoveClass ends prematurely");
+        log_msg(0, "\nBestMoveClass ends prematurely");
     }
     /*    Setting dogood's target to origcost-1 allows early exit  */
     /*    See if the trial model has improved over original  */

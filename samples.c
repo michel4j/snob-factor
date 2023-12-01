@@ -713,7 +713,7 @@ nextcl1:
     fprintf(tlst, "0 0\n");
 
     find_all(Dad + Leaf);
-
+    #pragma omp for
     for (nn = 0; nn < CurSample->num_cases; nn++) {
         do_case(nn, Leaf + Dad, 0);
         bl = bc = -1;

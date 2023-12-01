@@ -351,6 +351,7 @@ void tidy(int hit);
 int rand_int();
 double rand_float();
 void do_case(int cse, int all, int derivs);
+void sort_sons(int kk);
 
 /*
     In tune.c
@@ -420,7 +421,7 @@ void print_progress(size_t count, size_t max);
     In main.c
 */
 
-void initialize();
+void initialize(int lib);
 void show_pop_names();
 void show_smpl_names();
 void log_msg(int level, const char *format, ...) __attribute__((format(printf, 2, 3)));

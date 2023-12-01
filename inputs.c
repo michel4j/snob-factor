@@ -49,7 +49,7 @@ int new_line() {
     if (buf->cfile == 0) { /* Input via comms */
         j = 0;             /* To count tries at opening comms */
     retry:
-        if (!UseLib && UseStdIn)
+        if (UseStdIn)
             goto usestd;
         i = hark(buf->inl);
         /*    i = 0 means comms OK but no input yet. 1 means input present

@@ -392,10 +392,10 @@ int readsampid(int kk) {
 
 /*    ---------------------  main  ---------------------------  */
 void setup_menu() {
-    int i, n;
-        char *chp;
-/*    A section to sort the keywords into alphabetic order, and set
-    cmd_index[] to hold their original order indexes   */
+    int i, j, n;
+    char *chp;
+    /*    A section to sort the keywords into alphabetic order, and set
+        cmd_index[] to hold their original order indexes   */
 
     for (i = 0; strcmp(commands[i], "zzzzzzzzzzzz"); i++) {
         cmd_index[i] = i;
@@ -427,7 +427,6 @@ void setup_menu() {
     }
 }
 
-
 void reset_input() {
     printf("??? line %6d\n", CurSource->line);
     new_line();
@@ -435,7 +434,7 @@ void reset_input() {
         revert(0);
 }
 
-//extern char *malloc_options;
+// extern char *malloc_options;
 int main() {
     int k, kk, k1, k2;
     int i, j, n, nn, cspace = 0;
@@ -445,9 +444,8 @@ int main() {
     Fix = DFix = Partial;
     DControl = Control = AdjAll;
 
-    initialize();    // initialize menu
-    setup_menu(); //    Clear vectors of pointers to Poplns, Samples
-
+    initialize(0); // initialize menu
+    setup_menu();  // Clear vectors of pointers to Poplns, Samples
 
     /*    Set source to commsbuf and initialize  */
     CurSource = &commsbuf;
@@ -456,7 +454,6 @@ int main() {
     CurSource->nch = 0;
     CurSource->inl[0] = '\n';
     Heard = UseStdIn = 0;
-    SeeAll = 2;
     Debug = 1;
 
     /*ddd
@@ -465,7 +462,6 @@ int main() {
 
     /*    Open a log file   */
     logfile = fopen("run.log", "w");
-
     kk = load_vset();
 
     printf("Readvset returns %d\n", kk);

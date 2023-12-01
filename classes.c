@@ -29,15 +29,15 @@ int serial_to_id(int ss) {
 /*    ---------------------  set_class --------------------------   */
 void set_class(Class *cls) {
     CurClass = cls;
-    CurDadID = CurClass->dad_id;
+    CurDadID = cls->dad_id;
     CurDad = (CurDadID >= 0) ? CurPopln->classes[CurDadID] : 0;
 }
 
 /*    ---------------------  set_class_with_scores --------------------------   */
 void set_class_with_scores(Class *cls, int item) {
     set_class(cls);
-    CurClass->case_score = case_fac_int = CurClass->factor_scores[item];
-    CurCaseWeight = CurClass->case_weight;
+    cls->case_score = case_fac_int = cls->factor_scores[item];
+    CurCaseWeight = cls->case_weight;
 }
 
 /*    ---------------------   make_class  -------------------------   */
@@ -180,57 +180,56 @@ int make_class() {
 /*    If kk = -1, prints all non-subs. If kk = -2, prints all  */
 char *typstr[] = {"typ?", " DAD", "LEAF", "typ?", " Sub"};
 char *usestr[] = {"Tny", "Pln", "Fac"};
-void print_one_class(Class *clp, int full) {
+void print_one_class(Class *cls, int full) {
     int i;
     double vrms;
     printf("\n--------------------------------------------------------------------------------\n");
-    printf("S%s", serial_to_str(clp));
-    printf(" %s", typstr[((int)clp->type)]);
-    if (clp->dad_id < 0)
+    printf("S%s", serial_to_str(cls));
+    printf(" %s", typstr[((int)cls->type)]);
+    if (cls->dad_id < 0)
         printf("    Root");
     else
-        printf(" Dad%s", serial_to_str(CurPopln->classes[((int)clp->dad_id)]));
-    printf(" Age%4d  Sz%6.1f  Use %s", clp->age, clp->weights_sum, usestr[((int)clp->use)]);
-    printf("%c", (clp->use == Fac) ? ' ' : '(');
-    vrms = sqrt(clp->sum_score_sq / clp->weights_sum);
+        printf(" Dad%s", serial_to_str(CurPopln->classes[((int)cls->dad_id)]));
+    printf(" Age%4d  Sz%6.1f  Use %s", cls->age, cls->weights_sum, usestr[((int)cls->use)]);
+    printf("%c", (cls->use == Fac) ? ' ' : '(');
+    vrms = sqrt(cls->sum_score_sq / cls->weights_sum);
     printf("Vv%6.2f", vrms);
-    printf("%c", (CurClass->boost_count) ? 'B' : ' ');
-    printf(" +-%5.3f", (clp->vav));
-    printf(" Avv%6.3f", clp->avg_factor_scores);
-    printf("%c", (clp->use == Fac) ? ' ' : ')');
-    if (clp->type == Dad) {
-        printf("%4d sons", clp->num_sons);
+    printf("%c", (cls->boost_count) ? 'B' : ' ');
+    printf(" +-%5.3f", (cls->vav));
+    printf(" Avv%6.3f", cls->avg_factor_scores);
+    printf("%c", (cls->use == Fac) ? ' ' : ')');
+    if (cls->type == Dad) {
+        printf("%4d sons", cls->num_sons);
     }
     printf("\n");
-    printf("Pcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->nofac_par_cost, clp->fac_par_cost, clp->dad_par_cost, clp->best_par_cost);
-    printf("Tcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->cstcost, clp->cftcost - CurClass->cfvcost, clp->cntcost, clp->best_case_cost);
-    printf("Vcost     ---------  F:%9.2f\n", clp->cfvcost);
-    printf("totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->nofac_cost, clp->fac_cost, clp->dad_cost, clp->best_cost);
+    printf("Pcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", cls->nofac_par_cost, cls->fac_par_cost, cls->dad_par_cost, cls->best_par_cost);
+    printf("Tcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", cls->cstcost, cls->cftcost - cls->cfvcost, cls->cntcost, cls->best_case_cost);
+    printf("Vcost     ---------  F:%9.2f\n", cls->cfvcost);
+    printf("totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", cls->nofac_cost, cls->fac_cost, cls->dad_cost, cls->best_cost);
     if (full) {
         for (i = 0; i < CurVSet->num_vars; i++) {
             CurVType = CurAttrList[i].vtype;
-            (*CurVType->show)(clp, i);
+            (*CurVType->show)(cls, i);
         }
     }
     printf("--------------------------------------------------------------------------------\n");
 }
 
 void print_class(int kk, int full) {
-    Class *clp;
+    Class *cls;
     if (kk >= 0) {
-        clp = CurPopln->classes[kk];
-        print_one_class(clp, full);
+        cls = CurPopln->classes[kk];
+        print_one_class(cls, full);
     } else if (kk < -2) {
         log_msg(0, "%d passed to print_class", kk);
     } else {
         set_population();
-        clp = CurRootClass;
-
+        cls = CurRootClass;
         do {
-            if ((kk == -2) || (clp->type != Sub))
-                print_one_class(clp, full);
-            next_class(&clp);
-        } while (clp);
+            if ((kk == -2) || (cls->type != Sub))
+                print_one_class(cls, full);
+            next_class(&cls);
+        } while (cls);
     }
 }
 
@@ -487,20 +486,20 @@ void cost_all_vars(Class *ccl, int item) {
 
 /*    ----------------------  deriv_all_vars  ---------------------    */
 /*    To collect derivative statistics for all vars of a class   */
-void deriv_all_vars(Class *ccl, int item) {
+void deriv_all_vars(Class *cls, int item) {
     int fac = 0;
     AVinst *attr;
 
-    set_class_with_scores(ccl, item);
-    CurClass->newcnt += CurCaseWeight;
-    if ((CurClass->age >= MinFacAge) && (CurClass->use != Tiny)) {
+    set_class_with_scores(cls, item);
+    cls->newcnt += CurCaseWeight;
+    if ((cls->age >= MinFacAge) && (cls->use != Tiny)) {
         fac = 1;
-        case_fac_score = CurClass->case_fac_score;
-        case_fac_score_sq = CurClass->case_fac_score_sq;
-        cvvsprd = CurClass->cvvsprd;
-        CurClass->newvsq += CurCaseWeight * case_fac_score_sq;
-        CurClass->vav += CurCaseWeight * CurClass->clvsprd;
-        CurClass->factor_score_sum += case_fac_score * CurCaseWeight;
+        case_fac_score = cls->case_fac_score;
+        case_fac_score_sq = cls->case_fac_score_sq;
+        cvvsprd = cls->cvvsprd;
+        cls->newvsq += CurCaseWeight * case_fac_score_sq;
+        cls->vav += CurCaseWeight * cls->clvsprd;
+        cls->factor_score_sum += case_fac_score * CurCaseWeight;
     }
 
     for (int iv = 0; iv < NumVars; iv++) {
@@ -511,99 +510,101 @@ void deriv_all_vars(Class *ccl, int item) {
     }
 
     /*    Collect case item costs   */
-    CurClass->cstcost += CurCaseWeight * CurClass->nofac_case_cost;
-    CurClass->cftcost += CurCaseWeight * CurClass->fac_case_cost;
-    CurClass->cntcost += CurCaseWeight * CurClass->dad_case_cost;
-    CurClass->cfvcost += CurCaseWeight * CurClass->coding_case_cost;
+    cls->cstcost += CurCaseWeight * cls->nofac_case_cost;
+    cls->cftcost += CurCaseWeight * cls->fac_case_cost;
+    cls->cntcost += CurCaseWeight * cls->dad_case_cost;
+    cls->cfvcost += CurCaseWeight * cls->coding_case_cost;
 }
 
 /*    --------------------  adjust_class  -----------------------   */
 /*    To compute pcosts of a class, and if needed, adjust params  */
 /*    Will process as-dad params only if 'dod'  */
-void adjust_class(Class *ccl, int dod) {
+void adjust_class(Class *cls, int dod) {
     int iv, fac, npars, small;
     Class *son;
+    AVinst *attr;
     double leafcost;
 
-    set_class(ccl);
+    set_class(cls);
     /*    Get root (logarithmic average of vvsprds)  */
-    CurClass->vav = exp(0.5 * CurClass->vav / (CurClass->newcnt + 0.1));
+    cls->vav = exp(0.5 * cls->vav / (cls->newcnt + 0.1));
     if (Control & AdjSc)
-        CurClass->sum_score_sq = CurClass->newvsq;
+        cls->sum_score_sq = cls->newvsq;
     if (Control & AdjPr) {
-        CurClass->weights_sum = CurClass->newcnt;
+        cls->weights_sum = cls->newcnt;
         /*    Count down holds   */
-        if ((CurClass->hold_type) && (CurClass->hold_type < Forever))
-            CurClass->hold_type--;
-        if ((CurClass->hold_use) && (CurClass->hold_use < Forever))
-            CurClass->hold_use--;
+        if ((cls->hold_type) && (cls->hold_type < Forever))
+            cls->hold_type--;
+        if ((cls->hold_use) && (cls->hold_use < Forever))
+            cls->hold_use--;
         if (CurDad) {
-            CurClass->relab = (CurDad->relab * (CurClass->weights_sum + 0.5)) / (CurDad->weights_sum + 0.5 * CurDad->num_sons);
-            CurClass->mlogab = -log(CurClass->relab);
+            cls->relab = (CurDad->relab * (cls->weights_sum + 0.5)) / (CurDad->weights_sum + 0.5 * CurDad->num_sons);
+            cls->mlogab = -log(cls->relab);
         } else {
-            CurClass->relab = 1.0;
-            CurClass->mlogab = 0.0;
+            cls->relab = 1.0;
+            cls->mlogab = 0.0;
         }
     }
     /*    But if a young subclass, make relab half of dad's  */
-    if ((CurClass->type == Sub) && (CurClass->age < MinSubAge)) {
-        CurClass->relab = 0.5 * CurDad->relab;
+    if ((cls->type == Sub) && (cls->age < MinSubAge)) {
+        cls->relab = 0.5 * CurDad->relab;
     }
 
-    if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny))
+    if ((cls->age < MinFacAge) || (cls->use == Tiny))
         fac = 0;
     else
         fac = 1;
 
     /*    Set npars to show if class may be treated as a dad  */
     npars = 1;
-    if ((CurClass->age < MinAge) || (CurClass->num_sons < 2) || (CurPopln->classes[CurClass->son_id]->age < MinSubAge))
+    if ((cls->age < MinAge) || (cls->num_sons < 2) || (CurPopln->classes[cls->son_id]->age < MinSubAge))
         npars = 0;
-    if (CurClass->type == Dad)
+    if (cls->type == Dad)
         npars = 1;
 
     /*    cls->cnpcost was zeroed in do_all, and has accumulated the cbpcosts
     of cls's sons, so we don't zero it here. 'parent_cost_all_vars' will add to it.  */
-    CurClass->nofac_par_cost = CurClass->fac_par_cost = 0.0;
+    cls->nofac_par_cost = cls->fac_par_cost = 0.0;
+
     for (iv = 0; iv < CurVSet->num_vars; iv++) {
-        CurAttr = CurAttrList + iv;
-        if (!(CurAttr->inactive)) {
-            CurVType = CurAttr->vtype;
-            (*CurVType->adjust)(iv, fac);
+        attr = CurAttrList + iv;
+        if (!(attr->inactive)) {
+            //CurVType = CurAttr->vtype;
+            (*attr->vtype->adjust)(iv, fac);
         }
     }
 
     /*    If vsq less than 0.3, set vboost to inflate  */
     /*    but only if both scores and params are being adjusted  */
-    if (((Control & AdjSP) == AdjSP) && fac && (CurClass->sum_score_sq < (0.3 * CurClass->weights_sum))) {
-        CurClass->score_boost = sqrt((1.0 * CurClass->weights_sum) / (CurClass->sum_score_sq + 1.0));
-        CurClass->boost_count++;
+    if (((Control & AdjSP) == AdjSP) && fac && (cls->sum_score_sq < (0.3 * cls->weights_sum))) {
+        cls->score_boost = sqrt((1.0 * cls->weights_sum) / (cls->sum_score_sq + 1.0));
+        cls->boost_count++;
     } else {
-        CurClass->score_boost = 1.0;
-        CurClass->boost_count = 0;
+        cls->score_boost = 1.0;
+        cls->boost_count = 0;
     }
 
     /*    Get average score   */
-    CurClass->avg_factor_scores = CurClass->factor_score_sum / CurClass->weights_sum;
+    cls->avg_factor_scores = cls->factor_score_sum / cls->weights_sum;
     if (dod)
-        parent_cost_all_vars(ccl, npars);
+        parent_cost_all_vars(cls, npars);
 
-    CurClass->nofac_cost = CurClass->nofac_par_cost + CurClass->cstcost;
+    cls->nofac_cost = cls->nofac_par_cost + cls->cstcost;
     /*    The 'lattice' effect on the cost of coding scores is approx
         (log (2 Pi cnt))/2 + 1,  which adds to cftcost  */
-    CurClass->cftcost += 0.5 * log(CurClass->newcnt + 1.0) + HALF_LOG_2PI + 1.0;
-    CurClass->fac_cost = CurClass->fac_par_cost + CurClass->cftcost;
+    cls->cftcost += 0.5 * log(cls->newcnt + 1.0) + HALF_LOG_2PI + 1.0;
+    cls->fac_cost = cls->fac_par_cost + cls->cftcost;
     if (npars)
-        CurClass->dad_cost = CurClass->dad_par_cost + CurClass->cntcost;
+        cls->dad_cost = cls->dad_par_cost + cls->cntcost;
     else
-        CurClass->dad_cost = CurClass->dad_par_cost = CurClass->cntcost = 0.0;
+        cls->dad_cost = cls->dad_par_cost = cls->cntcost = 0.0;
 
     /*    Contemplate changes to class use and type   */
-    if ((!CurClass->hold_use) && (Control & AdjPr)) {
+    if ((!cls->hold_use) && (Control & AdjPr)) {
         /*    If scores boosted too many times, make Tiny and hold   */
-        if (CurClass->boost_count > 20) {
-            CurClass->use = Tiny;
-            CurClass->hold_use = 10;
+        if (cls->boost_count > 20) {
+            cls->use = Tiny;
+            cls->hold_use = 10;
         } else {
             /*    Check if size too small to support a factor  */
             /*    Add up the number of data values  */
@@ -612,85 +613,85 @@ void adjust_class(Class *ccl, int dod) {
             for (iv = 0; iv < NumVars; iv++) {
                 if (!(CurAttrList[iv].inactive)) {
                     small++;
-                    leafcost += CurClass->stats[iv]->num_values;
+                    leafcost += cls->stats[iv]->num_values;
                 }
             }
             /*    I want at least 1.5 data vals per param  */
-            small = (leafcost < (9 * small + 1.5 * CurClass->weights_sum + 1)) ? 1 : 0;
+            small = (leafcost < (9 * small + 1.5 * cls->weights_sum + 1)) ? 1 : 0;
             if (small) {
-                if (CurClass->use != Tiny) {
-                    CurClass->use = Tiny;
+                if (cls->use != Tiny) {
+                    cls->use = Tiny;
                 }
-            } else if (CurClass->use == Tiny) {
-                CurClass->use = Plain;
-                CurClass->sum_score_sq = 0.0;
-            } else if (CurClass->age >= MinFacAge) {
-                if ((CurClass->use == Plain && CurClass->fac_cost < CurClass->nofac_cost) ||
-                    (CurClass->use != Plain && CurClass->nofac_cost < CurClass->fac_cost)) {
-                    CurClass->use = (CurClass->use == Plain) ? Fac : Plain;
-                    if (CurClass->use == Fac) {
-                        CurClass->boost_count = 0;
-                        CurClass->score_boost = 1.0;
+            } else if (cls->use == Tiny) {
+                cls->use = Plain;
+                cls->sum_score_sq = 0.0;
+            } else if (cls->age >= MinFacAge) {
+                if ((cls->use == Plain && cls->fac_cost < cls->nofac_cost) ||
+                    (cls->use != Plain && cls->nofac_cost < cls->fac_cost)) {
+                    cls->use = (cls->use == Plain) ? Fac : Plain;
+                    if (cls->use == Fac) {
+                        cls->boost_count = 0;
+                        cls->score_boost = 1.0;
                     }
                 }
             }
         }
     }
 
-    if (dod && !(CurClass->hold_type) && (Control & AdjTr) && (CurClass->num_sons >= 2)) {
-        leafcost = (CurClass->use == Fac) ? CurClass->fac_cost : CurClass->nofac_cost;
+    if (dod && !(cls->hold_type) && (Control & AdjTr) && (cls->num_sons >= 2)) {
+        leafcost = (cls->use == Fac) ? cls->fac_cost : cls->nofac_cost;
 
-        if ((CurClass->type == Dad) && (leafcost < CurClass->dad_cost) && (Fix != Random)) {
+        if ((cls->type == Dad) && (leafcost < cls->dad_cost) && (Fix != Random)) {
 
-            log_msg(0, "\nChanging type of class %s from DAD to LEAF", serial_to_str(CurClass));
+            log_msg(0, "\nChanging type of class %s from DAD to LEAF", serial_to_str(cls));
             SeeAll = 4;
-            delete_sons(CurClass->id); // Changes type to leaf
-        } else if (npars && (leafcost > CurClass->dad_cost) && (CurClass->type == Leaf)) {
-            log_msg(0, "\nChanging type of class %s from LEAF to DAD", serial_to_str(CurClass));
+            delete_sons(cls->id); // Changes type to leaf
+        } else if (npars && (leafcost > cls->dad_cost) && (cls->type == Leaf)) {
+            log_msg(0, "\nChanging type of class %s from LEAF to DAD", serial_to_str(cls));
             SeeAll = 4;
-            CurClass->type = Dad;
+            cls->type = Dad;
             if (CurDad)
                 CurDad->hold_type += 3;
 
             for (int i = 0; i < 2; i++) {
-                son = CurPopln->classes[i == 0 ? CurClass->son_id : son->sib_id];
+                son = CurPopln->classes[i == 0 ? cls->son_id : son->sib_id];
                 son->type = Leaf;
                 son->serial = 4 * CurPopln->next_serial++;
             }
         }
     }
 
-    set_best_costs(CurClass);
+    set_best_costs(cls);
 
     if (Control & AdjPr)
-        CurClass->age++;
+        cls->age++;
 }
 
 /*    ----------------  parent_cost_all_vars  ------------------------------   */
 /*    To do parent costing on all vars of a class        */
 /*    If not 'valid', don't cost, and fake params  */
-void parent_cost_all_vars(Class *ccl, int valid) {
+void parent_cost_all_vars(Class *cls, int valid) {
     Class *son;
     EVinst *stats;
     int ison, nson;
     double abcost, rrelab;
 
-    set_class(ccl);
+    set_class(cls);
     abcost = 0.0;
     for (int i = 0; i < CurVSet->num_vars; i++) {
         CurAttr = CurAttrList + i;
         CurVType = CurAttr->vtype;
         (*CurVType->cost_var_nonleaf)(i, valid);
-        stats = (EVinst *)CurClass->stats[i];
+        stats = (EVinst *)cls->stats[i];
         if (!CurAttr->inactive) {
             abcost += stats->npcost;
         }
     }
 
     if (!valid) {
-        CurClass->dad_par_cost = CurClass->dad_cost = 0.0;
+        cls->dad_par_cost = cls->dad_cost = 0.0;
     } else {
-        nson = CurClass->num_sons;
+        nson = cls->num_sons;
         /*    The sons of a dad may be listed in any order, so the param cost
         of the dad can be reduced by log (nson !)  */
         /*    The cost of saying 'dad' and number of sons is set at nson bits. */
@@ -700,18 +701,18 @@ void parent_cost_all_vars(Class *ccl, int valid) {
         /*    Their relabs are absolute, but we specify them as fractions of this
         dad's relab. The cost includes -0.5 * Sum_sons { log (sonab / dadab) }
             */
-        rrelab = 1.0 / CurClass->relab;
-        for (ison = CurClass->son_id; ison >= 0; ison = son->sib_id) {
+        rrelab = 1.0 / cls->relab;
+        for (ison = cls->son_id; ison >= 0; ison = son->sib_id) {
             son = CurPopln->classes[ison];
             abcost -= 0.5 * log(son->relab * rrelab);
         }
         /*    Add other terms from Fisher  */
         /*    And from prior:  */
-        abcost += (nson - 1) * (log(CurClass->weights_sum) + LATTICE) - FacLog[nson - 1];
+        abcost += (nson - 1) * (log(cls->weights_sum) + LATTICE) - FacLog[nson - 1];
 
         /*    The sons will have been processed by 'adjust_class' already, and
         this will have caused their best pcosts to be added into cls->cnpcost  */
-        CurClass->dad_par_cost += abcost;
+        cls->dad_par_cost += abcost;
     }
 }
 
@@ -743,13 +744,13 @@ void delete_sons(int index) {
 /*    If index is a leaf and has subs, turns it into a dad and makes
 its subs into leaves.  Returns 0 if successful.  */
 int split_leaf(int index) {
-    Class *son;
+    Class *son, *cls;
 
-    CurClass = CurPopln->classes[index];
-    if ((CurClass->type == Leaf) && (CurClass->num_sons > 1) && !CurClass->hold_type) {
-        CurClass->type = Dad;
-        CurClass->hold_type = HoldTime;
-        for (int k = CurClass->son_id; k >= 0; k = son->sib_id) {
+    cls = CurPopln->classes[index];
+    if ((cls->type == Leaf) && (cls->num_sons > 1) && !cls->hold_type) {
+        cls->type = Dad;
+        cls->hold_type = HoldTime;
+        for (int k = cls->son_id; k >= 0; k = son->sib_id) {
             son = CurPopln->classes[k];
             son->type = Leaf;
             son->serial = 4 * CurPopln->next_serial;
@@ -766,26 +767,27 @@ int split_leaf(int index) {
 /*    To remove all classes of a popln except its root  */
 void delete_all_classes() {
     int k;
+    Class *cls;
     CurPopln = CurCtx.popln;
     CurRoot = CurPopln->root;
     for (k = 0; k <= CurPopln->hi_class; k++) {
-        CurClass = CurPopln->classes[k];
-        if (CurClass->id != CurRoot) {
-            CurClass->type = Vacant;
-            CurClass->dad_id = Deadkilled;
+        cls = CurPopln->classes[k];
+        if (cls->id != CurRoot) {
+            cls->type = Vacant;
+            cls->dad_id = Deadkilled;
         }
     }
     CurPopln->num_classes = 1;
     CurPopln->hi_class = CurRoot;
-    CurRootClass = CurClass = CurPopln->classes[CurRoot];
-    CurClass->son_id = -1;
-    CurClass->sib_id = -1;
-    CurClass->num_sons = 0;
-    CurClass->serial = 4;
+    CurRootClass = cls = CurPopln->classes[CurRoot];
+    cls->son_id = -1;
+    cls->sib_id = -1;
+    cls->num_sons = 0;
+    cls->serial = 4;
     CurPopln->next_serial = 2;
-    CurClass->age = 0;
-    CurClass->hold_type = CurClass->hold_use = 0;
-    CurClass->type = Leaf;
+    cls->age = 0;
+    cls->hold_type = cls->hold_use = 0;
+    cls->type = Leaf;
     NoSubs++;
     tidy(1);
     if (NoSubs > 0)

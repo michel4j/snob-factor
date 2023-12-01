@@ -38,4 +38,4 @@ test:
 	cd ./examples && time ../snob-factor < phi.cmd | tee phi.out
 
 small-test:
-	time ./snob-factor-small ./examples/phi.v ./examples/phi.s 
+	cd ./examples && time ../snob-factor-small phi.v phi.s phi.trep 
