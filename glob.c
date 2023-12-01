@@ -86,7 +86,61 @@ void log_msg(int level, const char *format, ...) {
 }
 
 
+/**
+    Initialize SNOB
+*/
+void initialize(int lib) {
+    int k;
+    RSeed = 1234567;
+    SeeAll = 2;
+    UseLib = lib;
+    defaulttune();
+    for (k = 0; k < MAX_POPULATIONS; k++)
+        Populations[k] = 0;
+    for (k = 0; k < MAX_SAMPLES; k++)
+        Samples[k] = 0;
+    for (k = 0; k < MAX_VSETS; k++)
+        VarSets[k] = 0;
+    do_types();
+}
 
+void show_population(Population *popln, Sample *sample) {
+    Class *root;
+    root = popln->classes[popln->root];
+    printf("\n--------------------------------------------------------------------------------\n");
+    printf("P%1d  %4d classes, %4d leaves,  Pcost%8.1f", popln->id + 1, popln->num_classes, popln->num_leaves, root->best_par_cost);
+    if (popln->sample_size) {
+        printf("  Tcost%10.1f,  Cost%10.1f", root->best_case_cost, root->best_cost);
+    }
+    printf("\n");
+    printf("Sample %2d %s", (sample) ? sample->id + 1 : 0, (sample) ? sample->name : "NULL");
+    printf("\n--------------------------------------------------------------------------------\n");
+}
+
+void pick_population(int index) {
+    if (index >= 0 && index < MAX_POPULATIONS && Populations[index] && Populations[index]->id == index) {
+        if (!strcmp(Populations[index]->name, "work")) {
+            if (CurCtx.popln && (CurCtx.popln->id == index))
+                log_msg(1, "Work already picked");
+            else
+                log_msg(1, "Switching context to existing 'work'");
+            set_work_population(index);
+        }
+    }
+    CurCtx.popln = CurPopln = Populations[index];
+}
+
+void cleanup_population() {
+    int index = find_population("TrialPop");
+    if (index >= 0) {
+        destroy_population(index);
+    }
+    set_population();
+    Fix = DFix;
+    Control = DControl;
+    tidy(1);
+    track_best(1);
+}
 
 void print_progress(size_t count, size_t max) {
     const int bar_width = 70;

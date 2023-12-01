@@ -409,6 +409,9 @@ int item_list(char *tlstname);
 /*
     In glob.c
 */
+void cleanup_population();
+void show_population(Population *popln, Sample *sample);
+void pick_population(int index);
 char *serial_to_str(Class *cll);
 void show_smpl_names();
 void show_pop_names();
