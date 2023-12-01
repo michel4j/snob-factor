@@ -28,7 +28,7 @@ snob.item_list.argtypes = [ct.c_char_p]
 
                 
 if __name__ == '__main__':
-    snob.initialize(1, 0)
+    snob.initialize(1, 1)
 
     snob.load_vset(b'./examples/phi.v')
     snob.load_sample(b'./examples/phi.s')

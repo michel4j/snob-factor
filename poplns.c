@@ -13,7 +13,6 @@ void set_population() {
     if (CurSample) {
         NumCases = CurSample->num_cases;
         CurVarList = CurSample->variables;
-        CurRecLen = CurSample->record_length;
         CurRecords = CurSample->records;
     } else {
         NumCases = 0;
@@ -1103,7 +1102,7 @@ void correlpops(int xid) {
     for (n = 0; n < NumCases; n++) {
         CurCtx.popln = wpop;
         set_population();
-        record = CurRecords + n * CurRecLen;
+        record = CurRecords + n * CurSample->record_length;
         if (!*record) {
             continue;
         }

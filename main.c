@@ -481,14 +481,6 @@ int main() {
     printf("Firstpop returns %d\n", kk);
     cspace = report_space(1);
 
-    trapcnt = 0;
-#ifdef TRAP
-    printf("Enter trap class, age; or -1 for notrap: ");
-    scanf("%d", &trapkk);
-    trapcnt = 0;
-    if (trapkk >= 0)
-        scanf("%d", &trapage);
-#endif
     print_class(CurRoot, 0);
 error:
     reset_input();
@@ -1005,6 +997,4 @@ picked:
     CurCtx.popln = CurPopln = Populations[k];
     log_cmd("%s %s", commands[skk], Populations[i]->name);
     goto loop;
-#ifdef ZZ
-#endif
 }

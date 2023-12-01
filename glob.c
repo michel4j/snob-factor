@@ -121,19 +121,6 @@ void show_population() {
     printf("\n--------------------------------------------------------------------------------\n");
 }
 
-void pick_population(int index) {
-    if (index >= 0 && index < MAX_POPULATIONS && Populations[index] && Populations[index]->id == index) {
-        if (!strcmp(Populations[index]->name, "work")) {
-            if (CurCtx.popln && (CurCtx.popln->id == index))
-                log_msg(1, "Work already picked");
-            else
-                log_msg(1, "Switching context to existing 'work'");
-            set_work_population(index);
-        }
-    }
-    CurCtx.popln = CurPopln = Populations[index];
-}
-
 void cleanup_population() {
     int index = find_population("TrialPop");
     if (index >= 0) {

@@ -286,6 +286,7 @@ int find_and_estimate(int *all, int niter, int ncycles) {
         clear_costs(Sons[k]);
     }
 
+    //#pragma omp parallel for
     for (int j = 0; j < CurSample->num_cases; j++) {
         do_case(j, *all, 1);
         // do_case ignores classes with ignore bit in cls->vv[] for the
@@ -622,7 +623,8 @@ void do_case(int item, int all, int derivs) {
     char *record, *field;
     int clc, i;
 
-    record = CurRecords + item * CurRecLen; //  Set ptr to case record
+
+    record = CurRecords + item * CurSample->record_length; //  Set ptr to case record
     if (!*record) {                         // Inactive item
         return;
     }

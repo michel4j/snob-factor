@@ -186,6 +186,7 @@ int load_sample(const char *fname) {
     Buf bufst, *buf;
     Context oldctx;
     char *saux, *field, vstnam[80], sampname[80];
+    size_t rec_len;
 
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     buf = &bufst;
@@ -266,7 +267,7 @@ gotit:
         CurVarList[i].offset = 0;
         CurVarList[i].nval = 0;
     }
-    CurRecLen = 1 + sizeof(int); /* active flag and ident  */
+    rec_len = 1 + sizeof(int); /* active flag and ident  */
     for (i = 0; i < NumVars; i++) {
         CurVar = CurVarList + i;
         CurVar->id = i;
@@ -290,8 +291,8 @@ gotit:
         }
 
         /*    Set the offset of the (missing, value) pair  */
-        CurVar->offset = CurRecLen;
-        CurRecLen += (1 + CurVType->data_size); /* missing flag and value */
+        CurVar->offset = rec_len;
+        rec_len += (1 + CurVType->data_size); /* missing flag and value */
     }                                           /* End of variables loop */
 
     /*    Now attempt to read in the data. The first item is the number of cases*/
@@ -305,13 +306,13 @@ gotit:
     CurSample->num_cases = NumCases;
     CurSample->num_active = 0;
     /*    Make a vector of nc records each of size reclen  */
-    CurRecords = CurSample->records = field = (char *)alloc_blocks(0, NumCases * CurRecLen);
+    CurRecords = CurSample->records = field = (char *)alloc_blocks(0, NumCases * rec_len);
     if (!field) {
         log_msg(0, "No space for data");
         i = -8;
         goto error;
     }
-    CurSample->record_length = CurRecLen;
+    CurSample->record_length = rec_len;
 
     /*    Read in the data cases, each preceded by an active flag and ident   */
     for (n = 0; n < NumCases; n++) {
@@ -620,7 +621,7 @@ nextcl1:
             }
         }
 
-        record = CurRecords + nn * CurRecLen;
+        record = CurRecords + nn * CurSample->record_length;
         memcpy(&tid, record + 1, sizeof(int));
         fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, Sons[bc]->serial >> 2, Sons[bl]->serial >> 2, ScoreRscale * Sons[bl]->factor_scores[nn]);
     }
