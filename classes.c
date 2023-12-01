@@ -240,15 +240,15 @@ void clear_costs(Class *cls) {
     int i;
 
     set_class(cls);
-    CurClass->mlogab = -log(CurClass->relab);
-    CurClass->cstcost = CurClass->cftcost = CurClass->cntcost = 0.0;
-    CurClass->cfvcost = 0.0;
-    CurClass->newcnt = CurClass->newvsq = 0.0;
-    CurClass->score_change_count = 0;
-    CurClass->vav = 0.0;
-    CurClass->factor_score_sum = 0.0;
+    cls->mlogab = -log(cls->relab);
+    cls->cstcost = cls->cftcost = cls->cntcost = 0.0;
+    cls->cfvcost = 0.0;
+    cls->newcnt = cls->newvsq = 0.0;
+    cls->score_change_count = 0;
+    cls->vav = 0.0;
+    cls->factor_score_sum = 0.0;
     if (!SeeAll)
-        CurClass->scancnt = 0;
+        cls->scancnt = 0;
     for (i = 0; i < CurVSet->num_vars; i++) {
         CurVType = CurAttrList[i].vtype;
         (*CurVType->clear_stats)(i);
@@ -261,18 +261,18 @@ void set_best_costs(Class *cls) {
     int i;
 
     set_class(cls);
-    if (CurClass->type == Dad) {
-        CurClass->best_cost = CurClass->dad_cost;
-        CurClass->best_par_cost = CurClass->dad_par_cost;
-        CurClass->best_case_cost = CurClass->cntcost;
-    } else if (CurClass->use != Fac) {
-        CurClass->best_cost = CurClass->nofac_cost;
-        CurClass->best_par_cost = CurClass->nofac_par_cost;
-        CurClass->best_case_cost = CurClass->cstcost;
+    if (cls->type == Dad) {
+        cls->best_cost = cls->dad_cost;
+        cls->best_par_cost = cls->dad_par_cost;
+        cls->best_case_cost = cls->cntcost;
+    } else if (cls->use != Fac) {
+        cls->best_cost = cls->nofac_cost;
+        cls->best_par_cost = cls->nofac_par_cost;
+        cls->best_case_cost = cls->cstcost;
     } else {
-        CurClass->best_cost = CurClass->fac_cost;
-        CurClass->best_par_cost = CurClass->fac_par_cost;
-        CurClass->best_case_cost = CurClass->cftcost;
+        cls->best_cost = cls->fac_cost;
+        cls->best_par_cost = cls->fac_par_cost;
+        cls->best_case_cost = cls->cftcost;
     }
     for (i = 0; i < CurVSet->num_vars; i++) {
         CurVType = CurAttrList[i].vtype;
@@ -288,18 +288,18 @@ young. If class age = MinFacAge, will guess scores but not cost them */
 /*    If control & AdjSc, will adjust score  */
 
 // DONT USE YET: alternative score_all_vars, testing, doesn't produce the same results
-void score_all_vars_alt(Class *ccl, int item) {
+void score_all_vars_alt(Class *cls, int item) {
     double del;
     int oldicvv = 0 , igbit = 0;
 
-    set_class_with_scores(ccl, item);
-    if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny)) {
-        CurCaseFacScore = CurClass->avg_factor_scores = CurClass->sum_score_sq = 0.0;
+    set_class_with_scores(cls, item);
+    if ((cls->age < MinFacAge) || (cls->use == Tiny)) {
+        CurCaseFacScore = cls->avg_factor_scores = cls->sum_score_sq = 0.0;
         CaseFacInt = 0;
     } else {
-        if (CurClass->sum_score_sq <= 0.0) {
+        if (cls->sum_score_sq <= 0.0) {
             //    Generate a fake score to get started.
-            CurClass->boost_count = 0;
+            cls->boost_count = 0;
             cvvsprd = 0.1 / NumVars;
             oldicvv = igbit = 0;
             CurCaseFacScore = (rand_int() < 0) ? 1.0 : -1.0;
@@ -308,8 +308,8 @@ void score_all_vars_alt(Class *ccl, int item) {
             oldicvv = CaseFacInt;
             igbit = CaseFacInt & 1;
             CurCaseFacScore = CaseFacInt * ScoreRscale;
-            if (CurClass->boost_count && ((Control & AdjSP) == AdjSP)) {
-                CurCaseFacScore *= CurClass->score_boost;
+            if (cls->boost_count && ((Control & AdjSP) == AdjSP)) {
+                CurCaseFacScore *= cls->score_boost;
                 CurCaseFacScore = fmin(fmax(CurCaseFacScore, -Maxv), Maxv); // Clamp CurCaseFacScore to [-Maxv, Maxv]
                 del = CurCaseFacScore * HScoreScale;
                 del -= (del < 0) ? -1.0 : 0.0;
@@ -350,27 +350,27 @@ void score_all_vars_alt(Class *ccl, int item) {
             oldicvv -= CaseFacInt;
             oldicvv = abs(oldicvv);
             if (oldicvv > SigScoreChange)
-                CurClass->score_change_count++;
+                cls->score_change_count++;
         }
-        CurClass->case_fac_score = CurCaseFacScore;
-        CurClass->case_fac_score_sq = CurCaseFacScoreSq;
-        CurClass->cvvsprd = cvvsprd;
+        cls->case_fac_score = CurCaseFacScore;
+        cls->case_fac_score_sq = CurCaseFacScoreSq;
+        cls->cvvsprd = cvvsprd;
     }
-    CurClass->factor_scores[item] = CurClass->case_score = CaseFacInt;
+    cls->factor_scores[item] = cls->case_score = CaseFacInt;
 }
 
-void score_all_vars(Class *ccl, int item) {
+void score_all_vars(Class *cls, int item) {
     int i, igbit = 0, oldicvv = 0;
     double del;
 
-    set_class_with_scores(ccl, item);
-    if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny)) {
-        CurCaseFacScore = CurClass->avg_factor_scores = CurClass->sum_score_sq = 0.0;
+    set_class_with_scores(cls, item);
+    if ((cls->age < MinFacAge) || (cls->use == Tiny)) {
+        CurCaseFacScore = cls->avg_factor_scores = cls->sum_score_sq = 0.0;
         CaseFacInt = 0;
     } else {
-        if (CurClass->sum_score_sq <= 0.0) {
+        if (cls->sum_score_sq <= 0.0) {
             // Generate a fake score to get started.
-            CurClass->boost_count = 0;
+            cls->boost_count = 0;
             cvvsprd = 0.1 / NumVars;
             oldicvv = igbit = 0;
             CurCaseFacScore = (rand_int() < 0) ? 1.0 : -1.0;
@@ -379,9 +379,9 @@ void score_all_vars(Class *ccl, int item) {
             oldicvv = CaseFacInt;
             igbit = CaseFacInt & 1;
             CurCaseFacScore = CaseFacInt * ScoreRscale;
-            // Additional logic if CurClass has boost_count and AdjSP is set
-            if (CurClass->boost_count && ((Control & AdjSP) == AdjSP)) {
-                CurCaseFacScore *= CurClass->score_boost;
+            // Additional logic if cls has boost_count and AdjSP is set
+            if (cls->boost_count && ((Control & AdjSP) == AdjSP)) {
+                CurCaseFacScore *= cls->score_boost;
                 CurCaseFacScore = fmax(fmin(CurCaseFacScore, Maxv), -Maxv);
                 del = CurCaseFacScore * HScoreScale;
                 del -= (del < 0.0) ? 1.0 : 0.0;
@@ -426,29 +426,29 @@ void score_all_vars(Class *ccl, int item) {
         oldicvv -= CaseFacInt;
         oldicvv = abs(oldicvv);
         if (oldicvv > SigScoreChange)
-            CurClass->score_change_count++;
+            cls->score_change_count++;
     }
 
-    CurClass->case_fac_score = CurCaseFacScore;
-    CurClass->case_fac_score_sq = CurCaseFacScoreSq;
-    CurClass->cvvsprd = cvvsprd;
+    cls->case_fac_score = CurCaseFacScore;
+    cls->case_fac_score_sq = CurCaseFacScoreSq;
+    cls->cvvsprd = cvvsprd;
 
-    CurClass->factor_scores[item] = CurClass->case_score = CaseFacInt;
+    cls->factor_scores[item] = cls->case_score = CaseFacInt;
 }
 
 /*    ----------------------  cost_all_vars  --------------------------  */
 /*    Does cost_var on all vars of class for the current item, setting
 cls->casecost according to use of class  */
-void cost_all_vars(Class *ccl, int item) {
+void cost_all_vars(Class *cls, int item) {
     int fac = 0;
     double tmp;
 
-    set_class_with_scores(ccl, item);
-    if ((CurClass->age >= MinFacAge) && (CurClass->use != Tiny)) {
+    set_class_with_scores(cls, item);
+    if ((cls->age >= MinFacAge) && (cls->use != Tiny)) {
         fac = 1;
         CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
     }
-    ncasecost = scasecost = fcasecost = CurClass->mlogab; /* Abundance cost */
+    ncasecost = scasecost = fcasecost = cls->mlogab; /* Abundance cost */
     for (int iv = 0; iv < CurVSet->num_vars; iv++) {
         CurAttr = CurAttrList + iv;
         if (!(CurAttr->inactive)) {
@@ -457,11 +457,11 @@ void cost_all_vars(Class *ccl, int item) {
         }
     }
 
-    CurClass->total_case_cost = CurClass->nofac_case_cost = scasecost;
-    CurClass->fac_case_cost = scasecost + 10.0;
-    if (CurClass->num_sons < 2)
-        CurClass->dad_case_cost = 0.0;
-    CurClass->coding_case_cost = 0.0;
+    cls->total_case_cost = cls->nofac_case_cost = scasecost;
+    cls->fac_case_cost = scasecost + 10.0;
+    if (cls->num_sons < 2)
+        cls->dad_case_cost = 0.0;
+    cls->coding_case_cost = 0.0;
     if (fac) {
         /*    Now we add the cost of coding the score, and its roundoff */
         /*    The simple form for costing a score is :
@@ -469,18 +469,18 @@ void cost_all_vars(Class *ccl, int item) {
         However, we appeal to the large number of score parameters, which gives a
         more negative 'LATTICE' ((log 12)/2 for one parameter) approaching -(1/2)
         log (2 Pi e) which results in the reduced cost :  */
-        CurClass->clvsprd = log(cvvsprd);
-        tmp = 0.5 * (CurCaseFacScoreSq + cvvsprd - CurClass->clvsprd - 1.0);
+        cls->clvsprd = log(cvvsprd);
+        tmp = 0.5 * (CurCaseFacScoreSq + cvvsprd - cls->clvsprd - 1.0);
         /*
             Over all scores for the class, the LATTICE effect will add approx
                 ( log (2 Pi cnt)) / 2  + 1
             to the class cost. This is added later, once cnt is known.
         */
         fcasecost += tmp;
-        CurClass->fac_case_cost = fcasecost;
-        CurClass->coding_case_cost = tmp;
-        if (CurClass->use == Fac)
-            CurClass->total_case_cost = fcasecost;
+        cls->fac_case_cost = fcasecost;
+        cls->coding_case_cost = tmp;
+        if (cls->use == Fac)
+            cls->total_case_cost = fcasecost;
     }
 }
 

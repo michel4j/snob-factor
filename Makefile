@@ -19,14 +19,14 @@ SMALLOBJ = snob.o dotypes.o glob.o reals.o samples.o inputs.o poplns.o \
 
 all: clean snob-factor snob-factor-small libsnob.so
 
-snob-factor:	$(OBJ)
-	$(CC) $(OBJ) -lm -o snob-factor
+snob-factor:	$(OBJ) libsnob.so
+	$(CC) -Wl,-rpath,$(PWD) -L$(PWD) main.o -lm -lsnob -o snob-factor
 
-snob-factor-small:	$(SMALLOBJ)
-	$(CC) $(SMALLOBJ) -lm -o snob-factor-small
+snob-factor-small:	$(SMALLOBJ) libsnob.so
+	$(CC) snob.o -Wl,-rpath,$(PWD) -L$(PWD)  -lm -lsnob -o snob-factor-small
 
 libsnob.so: $(LIBOBJ)
-	$(CC) -shared -o libsnob.so $(LIBOBJ)
+	$(CC) -Wl,-rpath,$(PWD) -L$(PWD) -lm -shared -o libsnob.so $(LIBOBJ)
 
 pro: prompt.c
 	$(CC) -opro prompt.c

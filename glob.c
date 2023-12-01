@@ -144,6 +144,7 @@ void cleanup_population() {
     Control = DControl;
     tidy(1);
     track_best(1);
+    CurPopln = CurCtx.popln;
 }
 
 void print_progress(size_t count, size_t max) {

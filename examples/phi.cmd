@@ -2,16 +2,16 @@ phi.v
 phi.s
  
 doall 50
-trymoves 4
+trymoves 2
  
 doall 50
-trymoves 4
+trymoves 2
  
 doall 50
-trymoves 4
+trymoves 2
 
 tree
- 
-prclass -2 1
-trep phi.log
+
+prclass -1 1
+trep phi.rep
 stop
