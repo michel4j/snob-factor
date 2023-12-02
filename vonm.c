@@ -163,13 +163,13 @@ void vonm_define(int typindx) {
 
 /*    -------------------  set_var -----------------------------  */
 void set_var(int iv) {
+    SampleVar *smpl_var;
     CurVSetVar = CurCtx.vset->variables + iv;
-    CurVType = CurVSetVar->vtype;
     CurPopVar = CurCtx.popln->variables + iv;
     paux = (Paux *)CurPopVar->paux;
-    CurSmplVar = CurCtx.sample->variables + iv;
+    smpl_var = CurCtx.sample->variables + iv;
     vaux = (Vaux *)CurVSetVar->vaux;
-    saux = (Saux *)CurSmplVar->saux;
+    saux = (Saux *)smpl_var->saux;
     cvi = (Basic *)CurClass->basics[iv];
     stats = (Stats *)CurClass->stats[iv];
     if (CurDad)
@@ -218,14 +218,16 @@ int read_datum(char *loc, int iv) {
     int unit;
     double epsfac;
     Datum xn;
+    SampleVar *smpl_var;
 
     /*    Read datum into xn.xx, return error.  */
     i = read_double(&(xn.xx), 1);
     if (!i) {
+        smpl_var = CurCtx.sample->variables + iv;
         /*    Get the unit code from Saux   */
-        unit = ((Saux *)(CurSmplVar->saux))->unit;
+        unit = ((Saux *)(smpl_var->saux))->unit;
         /*    Get quantization effect from Saux  */
-        epsfac = ((Saux *)(CurSmplVar->saux))->epsfac;
+        epsfac = ((Saux *)(smpl_var->saux))->epsfac;
         if (unit)
             xn.xx *= (PI / 180.0);
         xn.sinxx = epsfac * sin(xn.xx);

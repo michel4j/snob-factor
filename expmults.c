@@ -145,34 +145,34 @@ when installing a new type of variable. It is also necessary to change the
 "Ntypes" constant, and to decide on a type id (an integer) for the new type.
     */
 
-void expmults_define(typindx) int typindx;
-/*    typindx is the index in types[] of this type   */
-{
+void expmults_define(int typindx) {
+    /*    typindx is the index in types[] of this type   */
     int ig;
     double xg;
+    VarType *var_type;
 
-    CurVType = Types + typindx;
-    CurVType->id = typindx;
+    var_type = Types + typindx;
+    var_type->id = typindx;
     /*     Set type name as string up to 59 chars  */
-    CurVType->name = "ExpMultiState";
-    CurVType->data_size = sizeof(Datum);
-    CurVType->attr_aux_size = sizeof(Vaux);
-    CurVType->pop_aux_size = sizeof(Paux);
-    CurVType->smpl_aux_size = sizeof(Saux);
-    CurVType->read_aux_attr = &read_aux_attr;
-    CurVType->read_aux_smpl = &read_aux_smpl;
-    CurVType->read_datum = &read_datum;
-    CurVType->print_datum = &print_datum;
-    CurVType->set_sizes = &set_sizes;
-    CurVType->set_best_pars = &set_best_pars;
-    CurVType->clear_stats = &clear_stats;
-    CurVType->score_var = &score_var;
-    CurVType->cost_var = &cost_var;
-    CurVType->deriv_var = &deriv_var;
-    CurVType->cost_var_nonleaf = &cost_var_nonleaf;
-    CurVType->adjust = &adjust;
-    CurVType->show = &show;
-    CurVType->set_var = &set_var;
+    var_type->name = "ExpMultiState";
+    var_type->data_size = sizeof(Datum);
+    var_type->attr_aux_size = sizeof(Vaux);
+    var_type->pop_aux_size = sizeof(Paux);
+    var_type->smpl_aux_size = sizeof(Saux);
+    var_type->read_aux_attr = &read_aux_attr;
+    var_type->read_aux_smpl = &read_aux_smpl;
+    var_type->read_datum = &read_datum;
+    var_type->print_datum = &print_datum;
+    var_type->set_sizes = &set_sizes;
+    var_type->set_best_pars = &set_best_pars;
+    var_type->clear_stats = &clear_stats;
+    var_type->score_var = &score_var;
+    var_type->cost_var = &cost_var;
+    var_type->deriv_var = &deriv_var;
+    var_type->cost_var_nonleaf = &cost_var_nonleaf;
+    var_type->adjust = &adjust;
+    var_type->show = &show;
+    var_type->set_var = &set_var;
 
     /*    Make table of exp (-0.5 * x * x) in gaustab[]
         Entry for x = 0 is at gaustab[1]  */
@@ -187,13 +187,13 @@ void expmults_define(typindx) int typindx;
 /*    ----------------------- set_var --------------------------  */
 void set_var(iv) int iv;
 {
+    SampleVar *smpl_var;
     CurVSetVar = CurCtx.vset->variables + iv;
-    CurVType = CurVSetVar->vtype;
     CurPopVar = CurCtx.popln->variables + iv;
     paux = (Paux *)CurPopVar->paux;
-    CurSmplVar = CurCtx.sample->variables + iv;
+    smpl_var = CurCtx.sample->variables + iv;
     vaux = (Vaux *)CurVSetVar->vaux;
-    saux = (Saux *)CurSmplVar->saux;
+    saux = (Saux *)smpl_var->saux;
     cvi = (Basic *)CurClass->basics[iv];
     stats = (Stats *)CurClass->stats[iv];
     states = vaux->states;
@@ -770,13 +770,17 @@ adjloop:
     }
 
     sum = 0.0;
-    for (k = 0; k < states; k++) sum += fap[k];
+    for (k = 0; k < states; k++)
+        sum += fap[k];
     sum = -sum / states;
-    for (k = 0; k < states; k++) fap[k] += sum;
+    for (k = 0; k < states; k++)
+        fap[k] += sum;
     sum = 0.0;
-    for (k = 0; k < states; k++) sum += fbp[k];
+    for (k = 0; k < states; k++)
+        sum += fbp[k];
     sum = -sum / states;
-    for (k = 0; k < states; k++) fbp[k] += sum;
+    for (k = 0; k < states; k++)
+        fbp[k] += sum;
     /*    Set fapsprd, bpsprd.   */
     cvi->fapsprd = statesm / stats->apd2;
     cvi->bpsprd = statesm / stats->bpd2;
@@ -784,7 +788,8 @@ adjloop:
 facdone2:
     /*    If no sons, set as-dad params from non-fac params  */
     if (CurClass->num_sons < 2) {
-        for (k = 0; k < states; k++) nap[k] = sap[k];
+        for (k = 0; k < states; k++)
+            nap[k] = sap[k];
         cvi->napsprd = cvi->sapsprd;
     }
     cvi->samplesize = stats->cnt;
@@ -837,9 +842,11 @@ skipn:
     if (CurClass->use == Tiny)
         goto skipf;
     printf(" FR: ");
-    for (k = 0; k < states; k++) printf("%7.3f", frate[k]);
+    for (k = 0; k < states; k++)
+        printf("%7.3f", frate[k]);
     printf("\n BP: ");
-    for (k = 0; k < states; k++) printf("%7.3f", fbp[k]);
+    for (k = 0; k < states; k++)
+        printf("%7.3f", fbp[k]);
     printf(" +-%7.3f\n", sqrt(cvi->bpsprd * rstatesm));
 skipf:;
     return;

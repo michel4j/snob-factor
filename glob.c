@@ -83,10 +83,9 @@ void log_msg(int level, const char *format, ...) {
     }
 }
 
-
 /// @brief Initialize SNOB parameters
 /// @param lib integer specifying if running from a library or not 1 = library, 0 = interactive
-/// @param debug turn on verbose printing of progress 
+/// @param debug turn on verbose printing of progress
 /// @param threads number of threads to use during parallel portions, 0 = use OpenMP environment variables instead
 void initialize(int lib, int debug, int threads) {
     int k;
@@ -109,7 +108,7 @@ void initialize(int lib, int debug, int threads) {
         Samples[k] = 0;
     for (k = 0; k < MAX_VSETS; k++)
         VarSets[k] = 0;
-    
+
     do_types();
 }
 
@@ -183,7 +182,7 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
 
         log_msg(1, "TRYMOVE: Attempting class moves until %d successive failures", move_steps);
         try_moves(move_steps);
-        //cleanup_population();
+        // cleanup_population();
         show_population();
         root = CurCtx.popln->classes[CurCtx.popln->root];
         delta = 100.0 * (cost - root->best_cost) / cost;

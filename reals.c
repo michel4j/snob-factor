@@ -131,13 +131,13 @@ void reals_define(typindx) int typindx;
 
 /*    -------------------  set_var -----------------------------  */
 void set_var(int iv) {
+    SampleVar *smpl_var;
     CurVSetVar = CurCtx.vset->variables + iv;
-    CurVType = CurVSetVar->vtype;
     CurPopVar = CurCtx.popln->variables + iv;
     paux = (Paux *)CurPopVar->paux;
-    CurSmplVar = CurCtx.sample->variables + iv;
+    smpl_var = CurCtx.sample->variables + iv;
     vaux = (Vaux *)CurVSetVar->vaux;
-    saux = (Saux *)CurSmplVar->saux;
+    saux = (Saux *)smpl_var->saux;
     cvi = (Basic *)CurClass->basics[iv];
     stats = (Stats *)CurClass->stats[iv];
     if (CurDad)

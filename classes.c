@@ -178,8 +178,9 @@ int make_class() {
 char *typstr[] = {"typ?", " DAD", "LEAF", "typ?", " Sub"};
 char *usestr[] = {"Tny", "Pln", "Fac"};
 void print_one_class(Class *cls, int full) {
-    int i;
     double vrms;
+    
+
     printf("\n--------------------------------------------------------------------------------\n");
     printf("S%s", serial_to_str(cls));
     printf(" %s", typstr[((int)cls->type)]);
@@ -204,9 +205,10 @@ void print_one_class(Class *cls, int full) {
     printf("Vcost     ---------  F:%9.2f\n", cls->cfvcost);
     printf("totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", cls->nofac_cost, cls->fac_cost, cls->dad_cost, cls->best_cost);
     if (full) {
-        for (i = 0; i < CurCtx.vset->length; i++) {
-            CurVType = CurCtx.vset->variables[i].vtype;
-            (*CurVType->show)(cls, i);
+        VarType *var_type;
+        for (int i = 0; i < CurCtx.vset->length; i++) {
+            var_type = CurCtx.vset->variables[i].vtype;
+            (*var_type->show)(cls, i);
         }
     }
     printf("--------------------------------------------------------------------------------\n");
@@ -247,8 +249,7 @@ void clear_costs(Class *cls) {
     if (!SeeAll)
         cls->scancnt = 0;
     for (i = 0; i < CurCtx.vset->length; i++) {
-        CurVType = CurCtx.vset->variables[i].vtype;
-        (*CurVType->clear_stats)(i);
+        (*(CurCtx.vset->variables[i].vtype)->clear_stats)(i);
     }
 }
 
@@ -272,8 +273,7 @@ void set_best_costs(Class *cls) {
         cls->best_case_cost = cls->cftcost;
     }
     for (i = 0; i < CurCtx.vset->length; i++) {
-        CurVType = CurCtx.vset->variables[i].vtype;
-        (*CurVType->set_best_pars)(i);
+        (*(CurCtx.vset->variables[i].vtype)->set_best_pars)(i);
     }
 }
 
@@ -283,78 +283,6 @@ void set_best_costs(Class *cls) {
 /*    Leaves data values set in stats, but does no scoring if class too
 young. If class age = MinFacAge, will guess scores but not cost them */
 /*    If control & AdjSc, will adjust score  */
-
-// DONT USE YET: alternative score_all_vars, testing, doesn't produce the same results
-void score_all_vars_alt(Class *cls, int item) {
-    double del;
-    int oldicvv = 0 , igbit = 0;
-
-    set_class_with_scores(cls, item);
-    if ((cls->age < MinFacAge) || (cls->use == Tiny)) {
-        CurCaseFacScore = cls->avg_factor_scores = cls->sum_score_sq = 0.0;
-        CaseFacInt = 0;
-    } else {
-        if (cls->sum_score_sq <= 0.0) {
-            //    Generate a fake score to get started.
-            cls->boost_count = 0;
-            cvvsprd = 0.1 / CurCtx.vset->length;
-            oldicvv = igbit = 0;
-            CurCaseFacScore = (rand_int() < 0) ? 1.0 : -1.0;
-        } else {
-            //    Get current score
-            oldicvv = CaseFacInt;
-            igbit = CaseFacInt & 1;
-            CurCaseFacScore = CaseFacInt * ScoreRscale;
-            if (cls->boost_count && ((Control & AdjSP) == AdjSP)) {
-                CurCaseFacScore *= cls->score_boost;
-                CurCaseFacScore = fmin(fmax(CurCaseFacScore, -Maxv), Maxv); // Clamp CurCaseFacScore to [-Maxv, Maxv]
-                del = CurCaseFacScore * HScoreScale;
-                del -= (del < 0) ? -1.0 : 0.0;
-                CaseFacInt = (int)(del + 0.5) << 1; // Round to nearest even times ScoreScale
-                igbit = 0;
-                CurCaseFacScore = CaseFacInt * ScoreRscale;
-            }
-
-            CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
-            CaseFacScoreD1 = CaseFacScoreD2 = EstFacScoreD2 = CaseFacScoreD3 = 0.0;
-            for (int i = 0; i < CurCtx.vset->length; i++) {
-                CurVSetVar = CurCtx.vset->variables + i;
-                if (!CurVSetVar->inactive) {
-                    CurVType = CurVSetVar->vtype;
-                    (*CurVType->score_var)(i); // score_var should add to CaseFacScoreD1, CaseFacScoreD2, CaseFacScoreD3, EstFacScoreD2.
-                }
-            }
-            CaseFacScoreD1 += CurCaseFacScore;
-            CaseFacScoreD2 += 1.0;
-            EstFacScoreD2 += 1.0; //  From prior  There is a cost term 0.5 * cvvsprd from the prior (whence the additional 1 in CaseFacScoreD2).
-                                     // Also, overall cost includes 0.5*cvvsprd*CaseFacScoreD2, so there is a derivative term wrt CurCaseFacScore of
-                                     // 0.5*cvvsprd*CaseFacScoreD3
-            cvvsprd = 1.0 / CaseFacScoreD2;
-            CaseFacScoreD1 += 0.5 * cvvsprd * CaseFacScoreD3;
-            del = CaseFacScoreD1 / EstFacScoreD2;
-            if (Control & AdjSc) {
-                CurCaseFacScore -= del;
-            }
-        }
-
-        CurCaseFacScore = fmax(fmin(CurCaseFacScore, Maxv), -Maxv);
-        del = CurCaseFacScore * HScoreScale;
-        del -= ((del < 0) ? -1.0 : 0.0);
-        CaseFacInt = del + rand_float();
-        CaseFacInt <<= 1;    // Round to nearest even times ScoreScale
-        CaseFacInt |= igbit; // Restore original ignore bit
-        if (!igbit) {
-            oldicvv -= CaseFacInt;
-            oldicvv = abs(oldicvv);
-            if (oldicvv > SigScoreChange)
-                cls->score_change_count++;
-        }
-        cls->case_fac_score = CurCaseFacScore;
-        cls->case_fac_score_sq = CurCaseFacScoreSq;
-        cls->cvvsprd = cvvsprd;
-    }
-    cls->factor_scores[item] = cls->case_score = CaseFacInt;
-}
 
 void score_all_vars(Class *cls, int item) {
     int i, igbit = 0, oldicvv = 0;
@@ -391,11 +319,12 @@ void score_all_vars(Class *cls, int item) {
 
         CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
         CaseFacScoreD1 = CaseFacScoreD2 = EstFacScoreD2 = CaseFacScoreD3 = 0.0;
+        VarType *var_type;
         for (i = 0; i < CurCtx.vset->length; i++) {
             CurVSetVar = CurCtx.vset->variables + i;
             if (!CurVSetVar->inactive) {
-                CurVType = CurVSetVar->vtype;
-                (*CurVType->score_var)(i); // score_var should add to CaseFacScoreD1, CaseFacScoreD2, CaseFacScoreD3, EstFacScoreD2.
+                var_type = CurVSetVar->vtype;
+                (*var_type->score_var)(i); // score_var should add to CaseFacScoreD1, CaseFacScoreD2, CaseFacScoreD3, EstFacScoreD2.
             }
         }
 
@@ -446,11 +375,12 @@ void cost_all_vars(Class *cls, int item) {
         CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
     }
     ncasecost = scasecost = fcasecost = cls->mlogab; /* Abundance cost */
+    VarType *var_type;
     for (int iv = 0; iv < CurCtx.vset->length; iv++) {
         CurVSetVar = CurCtx.vset->variables + iv;
         if (!(CurVSetVar->inactive)) {
-            CurVType = CurVSetVar->vtype;
-            (*CurVType->cost_var)(iv, fac); /*    will add to scasecost, fcasecost  */
+            var_type = CurVSetVar->vtype;
+            (*var_type->cost_var)(iv, fac); /*    will add to scasecost, fcasecost  */
         }
     }
 
@@ -672,15 +602,17 @@ void parent_cost_all_vars(Class *cls, int valid) {
     EVinst *stats;
     int ison, nson;
     double abcost, rrelab;
+    VarType *var_type;
+    VSetVar *vset_var;
 
     set_class(cls);
     abcost = 0.0;
     for (int i = 0; i < CurCtx.vset->length; i++) {
-        CurVSetVar = CurCtx.vset->variables + i;
-        CurVType = CurVSetVar->vtype;
-        (*CurVType->cost_var_nonleaf)(i, valid);
+        vset_var = CurCtx.vset->variables + i;
+        var_type = vset_var->vtype;
+        (*var_type->cost_var_nonleaf)(i, valid);
         stats = (EVinst *)cls->stats[i];
-        if (!CurVSetVar->inactive) {
+        if (!vset_var->inactive) {
             abcost += stats->npcost;
         }
     }

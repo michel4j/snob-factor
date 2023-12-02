@@ -48,6 +48,9 @@ void next_class(Class **ptr) {
 int make_population(int fill) {
     PVinst *pvars;
     Class *cls;
+    VSetVar *vset_var;
+    PVinst *pop_var;
+    VarType *var_type;
 
     int indx, i, num_cases;
 
@@ -90,12 +93,12 @@ gotit:
         goto nospace;
     /*    Copy from variable-set AVinsts to PVinsts  */
     for (i = 0; i < CurCtx.vset->length; i++) {
-        CurVSetVar = CurCtx.vset->variables + i;
-        CurVType = CurVSetVar->vtype;
-        CurPopVar = pvars + i;
-        CurPopVar->id = CurVSetVar->id;
-        CurPopVar->paux = (char *)alloc_blocks(1, CurVType->pop_aux_size);
-        if (!CurPopVar->paux)
+        vset_var = CurCtx.vset->variables + i;
+        var_type = vset_var->vtype;
+        pop_var = pvars + i;
+        pop_var->id = vset_var->id;
+        pop_var->paux = (char *)alloc_blocks(1, var_type->pop_aux_size);
+        if (!pop_var->paux)
             goto nospace;
     }
 

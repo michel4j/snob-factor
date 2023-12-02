@@ -51,6 +51,7 @@ int load_vset(const char *filename) {
     Buffer bufst, *buf;
     char *vaux;
     VarSet *vset;
+    VarType *var_type;
 
     buf = &bufst;
     for (i = 0; i < MAX_VSETS; i++) {
@@ -147,11 +148,11 @@ int load_vset(const char *filename) {
                 break;
             }
             itype = itype - 1; /*  Convert types to start at 0  */
-            CurVType = CurVSetVar->vtype = Types + itype;
+            var_type = CurVSetVar->vtype = Types + itype;
             CurVSetVar->type = itype;
 
             /*    Make the vaux block  */
-            vaux = (char *)alloc_blocks(3, CurVType->attr_aux_size);
+            vaux = (char *)alloc_blocks(3, var_type->attr_aux_size);
             if (!vaux) {
                 log_msg(2, "Cant make auxilliary var block");
                 indx = -6;
@@ -160,13 +161,13 @@ int load_vset(const char *filename) {
             CurVSetVar->vaux = vaux;
 
             /*    Read auxilliary information   */
-            if ((*CurVType->read_aux_attr)(vaux)) {
+            if ((*var_type->read_aux_attr)(vaux)) {
                 log_msg(2, "Error in reading auxilliary info var %d", i + 1);
                 indx = -7;
                 break;
             }
             /*    Set sizes of stats and basic blocks for var in classes */
-            (*CurVType->set_sizes)(i);
+            (*var_type->set_sizes)(i);
         } /* End of variables loop */
         i = indx;
         break;
@@ -189,7 +190,8 @@ int load_sample(const char *fname) {
     char *saux, *field, vstnam[80], sampname[80];
     size_t rec_len;
     Sample *sample;
-    SampleVar *var_list;
+    SampleVar *var_list, *CurSmplVar;
+    VarType *var_type;
 
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     buf = &bufst;
@@ -273,10 +275,10 @@ gotit:
         CurSmplVar = var_list + i;
         CurSmplVar->id = i;
         CurVSetVar = CurCtx.vset->variables + i;
-        CurVType = CurVSetVar->vtype;
+        var_type = CurVSetVar->vtype;
 
         /*    Make the saux block  */
-        saux = (char *)alloc_blocks(0, CurVType->smpl_aux_size);
+        saux = (char *)alloc_blocks(0, var_type->smpl_aux_size);
         if (!saux) {
             log_msg(0, "Cant make auxilliary var block");
             i = -6;
@@ -285,7 +287,7 @@ gotit:
         CurSmplVar->saux = saux;
 
         /*    Read auxilliary information   */
-        if ((*CurVType->read_aux_smpl)(saux)) {
+        if ((*var_type->read_aux_smpl)(saux)) {
             log_msg(0, "Error in reading auxilliary info var %d", i + 1);
             i = -7;
             goto error;
@@ -293,7 +295,7 @@ gotit:
 
         /*    Set the offset of the (missing, value) pair  */
         CurSmplVar->offset = rec_len;
-        rec_len += (1 + CurVType->data_size); /* missing flag and value */
+        rec_len += (1 + var_type->data_size); /* missing flag and value */
     }                                           /* End of variables loop */
 
     /*    Now attempt to read in the data. The first item is the number of cases*/
@@ -340,8 +342,8 @@ gotit:
         for (i = 0; i < CurCtx.vset->length; i++) {
             CurSmplVar = var_list + i;
             CurVSetVar = CurCtx.vset->variables + i;
-            CurVType = CurVSetVar->vtype;
-            kread = (*CurVType->read_datum)(field + 1, i);
+            var_type = CurVSetVar->vtype;
+            kread = (*var_type->read_datum)(field + 1, i);
             if (kread < 0) {
                 log_msg(0, "Data error case %d var %d", n + 1, i + 1);
                 swallow();
@@ -352,7 +354,7 @@ gotit:
                 *field = 0;
                 CurSmplVar->nval++;
             }
-            field += (CurVType->data_size + 1);
+            field += (var_type->data_size + 1);
         }
     }
     log_msg(0, "Number of active cases = %d", CurCtx.sample->num_active);

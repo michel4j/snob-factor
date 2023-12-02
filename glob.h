@@ -43,9 +43,6 @@ EXT int DFix, Fix;
 /*    re Poplns  */
 EXT VSetVar *CurVSetVar;
 EXT PVinst *CurPopVar;
-EXT SampleVar *CurSmplVar;
-EXT VarType *CurVType;
-
 
 /*    re Classes  */
 EXT Class *CurClass, *CurDad;
