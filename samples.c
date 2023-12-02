@@ -183,7 +183,7 @@ int load_sample(const char *fname) {
 
     int i, n;
     int kread;
-    int caseid;
+    int caseid, num_cases;
     Buf bufst, *buf;
     Context oldctx;
     char *saux, *field, vstnam[80], sampname[80];
@@ -298,16 +298,16 @@ gotit:
 
     /*    Now attempt to read in the data. The first item is the number of cases*/
     new_line();
-    kread = read_int(&NumCases, 1);
+    kread = read_int(&num_cases, 1);
     if (kread) {
         log_msg(0, "Cant read number of cases");
         i = -11;
         goto error;
     }
-    CurCtx.sample->num_cases = NumCases;
+    CurCtx.sample->num_cases = num_cases;
     CurCtx.sample->num_active = 0;
     /*    Make a vector of nc records each of size reclen  */
-    CurRecords = CurCtx.sample->records = field = (char *)alloc_blocks(0, NumCases * rec_len);
+    CurRecords = CurCtx.sample->records = field = (char *)alloc_blocks(0, num_cases * rec_len);
     if (!field) {
         log_msg(0, "No space for data");
         i = -8;
@@ -316,7 +316,7 @@ gotit:
     CurCtx.sample->record_length = rec_len;
 
     /*    Read in the data cases, each preceded by an active flag and ident   */
-    for (n = 0; n < NumCases; n++) {
+    for (n = 0; n < num_cases; n++) {
         new_line();
         kread = read_int(&caseid, 1);
         if (kread) {

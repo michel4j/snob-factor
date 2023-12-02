@@ -45,7 +45,6 @@ EXT AVinst *CurAttr;
 EXT PVinst *pvi;
 EXT SVinst *CurVar;
 EXT VarType *CurVType;
-EXT int NumCases; /* Number of cases */
 
 
 /*    re Classes  */
