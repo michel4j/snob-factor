@@ -107,8 +107,8 @@ void initialize(int lib, int debug) {
 
 void show_population() {
     Class *root;
-    Population *popln = CurPopln;
-    Sample *sample = CurSample;
+    Population *popln = CurCtx.popln;
+    Sample *sample = CurCtx.sample;
 
     root = popln->classes[popln->root];
     printf("\n--------------------------------------------------------------------------------\n");
@@ -131,7 +131,7 @@ void cleanup_population() {
     Control = DControl;
     tidy(1);
     track_best(1);
-    CurPopln = CurCtx.popln;
+    CurCtx.popln = CurCtx.popln;
 }
 
 void print_progress(size_t count, size_t max) {
@@ -159,7 +159,7 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
     init_population();
     cleanup_population();
     print_class(CurRoot, 0);
-    root = CurPopln->classes[CurPopln->root];
+    root = CurCtx.popln->classes[CurCtx.popln->root];
 
     double cost = root->best_cost, delta = 0.0;
     do {
@@ -171,13 +171,13 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
         try_moves(move_steps);
         //cleanup_population();
         show_population();
-        root = CurPopln->classes[CurPopln->root];
+        root = CurCtx.popln->classes[CurCtx.popln->root];
         delta = 100.0 * (cost - root->best_cost) / cost;
-        if ((prev_classes == CurPopln->num_classes) && (prev_leaves == CurPopln->num_leaves) && (delta < tol)) {
+        if ((prev_classes == CurCtx.popln->num_classes) && (prev_leaves == CurCtx.popln->num_leaves) && (delta < tol)) {
             no_change_count++;
         }
-        prev_classes = CurPopln->num_classes;
-        prev_leaves = CurPopln->num_leaves;
+        prev_classes = CurCtx.popln->num_classes;
+        prev_leaves = CurCtx.popln->num_leaves;
         cost = root->best_cost;
         cycle++;
         if (no_change_count > 2) {
@@ -193,8 +193,8 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
     }
 
     //  Prepare return structure
-    result.num_classes = CurPopln->num_classes;
-    result.num_leaves = CurPopln->num_leaves;
+    result.num_classes = CurCtx.popln->num_classes;
+    result.num_leaves = CurCtx.popln->num_leaves;
     result.model_length = root->best_par_cost;
     result.data_length = root->best_case_cost;
     result.message_length = root->best_cost;

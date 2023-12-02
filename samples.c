@@ -50,6 +50,7 @@ int load_vset(const char *filename) {
     int kread;
     Buf bufst, *buf;
     char *vaux;
+    VarSet *vset;
 
     buf = &bufst;
     for (i = 0; i < MAX_VSETS; i++) {
@@ -63,28 +64,28 @@ int load_vset(const char *filename) {
     }
 
     while (indx >= 0) {
-        CurVSet = VarSets[i] = (VarSet *)malloc(sizeof(VarSet));
-        if (!CurVSet) {
+        vset = VarSets[i] = (VarSet *)malloc(sizeof(VarSet));
+        if (!vset) {
             indx = -10;
             break;
         }
-        CurVSet->id = indx;
-        CurCtx.vset = CurVSet;
-        CurVSet->attrs = 0;
-        CurVSet->blocks = 0;
+        vset->id = indx;
+        CurCtx.vset = vset;
+        vset->attrs = 0;
+        vset->blocks = 0;
 
-        strcpy(CurVSet->filename, filename);
-        strcpy(buf->cname, CurVSet->filename);
+        strcpy(vset->filename, filename);
+        strcpy(buf->cname, vset->filename);
         CurCtx.buffer = buf;
         if (open_buffer()) {
-            log_msg(2, "Cant open variable-set file %s", CurVSet->filename);
+            log_msg(2, "Cant open variable-set file %s", vset->filename);
             indx = -2;
             break;
         }
 
         /*    Begin to read variable-set file. First entry is its name   */
         new_line();
-        kread = read_str(CurVSet->name, 1);
+        kread = read_str(vset->name, 1);
         if (kread < 0) {
             log_msg(2, "Error in name of variable-set");
             indx = -9;
@@ -98,8 +99,8 @@ int load_vset(const char *filename) {
             indx = -4;
             break;
         }
-        CurVSet->num_vars = NumVars;
-        CurVSet->num_active = CurVSet->num_vars;
+        vset->num_vars = NumVars;
+        vset->num_active = vset->num_vars;
 
         /*    Make a vec of nv AVinst blocks  */
         CurAttrList = (AVinst *)alloc_blocks(3, NumVars * sizeof(AVinst));
@@ -108,7 +109,7 @@ int load_vset(const char *filename) {
             indx = -3;
             break;
         }
-        CurVSet->attrs = CurAttrList;
+        vset->attrs = CurAttrList;
 
         /*    Read in the info for each variable into vlist   */
         for (i = 0; i < NumVars; i++) {
@@ -187,6 +188,7 @@ int load_sample(const char *fname) {
     Context oldctx;
     char *saux, *field, vstnam[80], sampname[80];
     size_t rec_len;
+    Sample *sample;
 
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     buf = &bufst;
@@ -227,7 +229,7 @@ int load_sample(const char *fname) {
         i = -8;
         goto error;
     }
-    CurVSet = CurCtx.vset = VarSets[kread];
+    CurCtx.vset = VarSets[kread];
 
     /*    Find a vacant sample slot  */
     for (i = 0; i < MAX_SAMPLES; i++) {
@@ -237,19 +239,19 @@ int load_sample(const char *fname) {
     goto nospace;
 
 gotit:
-    CurSample = Samples[i] = (Sample *)malloc(sizeof(Sample));
-    if (!CurSample)
+    sample = Samples[i] = (Sample *)malloc(sizeof(Sample));
+    if (!sample)
         goto nospace;
-    CurCtx.sample = CurSample;
-    CurSample->blocks = 0;
-    CurSample->id = i;
-    strcpy(CurSample->filename, buf->cname);
-    strcpy(CurSample->name, sampname);
+    CurCtx.sample = sample;
+    CurCtx.sample->blocks = 0;
+    CurCtx.sample->id = i;
+    strcpy(CurCtx.sample->filename, buf->cname);
+    strcpy(CurCtx.sample->name, sampname);
     /*    Set variable-set name in sample  */
-    strcpy(CurSample->vset_name, CurVSet->name);
+    strcpy(CurCtx.sample->vset_name, CurCtx.vset->name);
     /*    Num of variables   */
-    NumVars = CurVSet->num_vars;
-    CurAttrList = CurVSet->attrs;
+    NumVars = CurCtx.vset->num_vars;
+    CurAttrList = CurCtx.vset->attrs;
 
     /*    Make a vec of nv SVinst blocks  */
     CurVarList = (SVinst *)alloc_blocks(0, NumVars * sizeof(SVinst));
@@ -258,7 +260,7 @@ gotit:
         i = -3;
         goto error;
     }
-    CurSample->variables = CurVarList;
+    CurCtx.sample->variables = CurVarList;
 
     /*    Read in the info for each variable into svars   */
     for (i = 0; i < NumVars; i++) {
@@ -303,16 +305,16 @@ gotit:
         i = -11;
         goto error;
     }
-    CurSample->num_cases = NumCases;
-    CurSample->num_active = 0;
+    CurCtx.sample->num_cases = NumCases;
+    CurCtx.sample->num_active = 0;
     /*    Make a vector of nc records each of size reclen  */
-    CurRecords = CurSample->records = field = (char *)alloc_blocks(0, NumCases * rec_len);
+    CurRecords = CurCtx.sample->records = field = (char *)alloc_blocks(0, NumCases * rec_len);
     if (!field) {
         log_msg(0, "No space for data");
         i = -8;
         goto error;
     }
-    CurSample->record_length = rec_len;
+    CurCtx.sample->record_length = rec_len;
 
     /*    Read in the data cases, each preceded by an active flag and ident   */
     for (n = 0; n < NumCases; n++) {
@@ -329,7 +331,7 @@ gotit:
             *field = 0;
         } else {
             *field = 1;
-            CurSample->num_active++;
+            CurCtx.sample->num_active++;
         }
         field++;
         memcpy(field, &caseid, sizeof(int));
@@ -354,14 +356,14 @@ gotit:
             field += (CurVType->data_size + 1);
         }
     }
-    log_msg(0, "Number of active cases = %d", CurSample->num_active);
+    log_msg(0, "Number of active cases = %d", CurCtx.sample->num_active);
     close_buffer();
     CurCtx.buffer = CurSource;
-    if (sort_sample(CurSample)) {
+    if (sort_sample(CurCtx.sample)) {
         log_msg(0, "Sort failure on sample");
         return (-1);
     }
-    return (CurSample->id);
+    return (CurCtx.sample->id);
 
 nospace:
     log_msg(0, "No space for another sample");
@@ -536,13 +538,13 @@ int find_sample_index(int id) {
     int iu, il, ic, cid, len;
     char *recs;
 
-    if ((!CurSample) || (CurSample->num_cases == 0)) {
+    if ((!CurCtx.sample) || (CurCtx.sample->num_cases == 0)) {
         printf("No defined sample\n");
         return (-1);
     }
-    recs = CurSample->records + 1;
-    len = CurSample->record_length;
-    iu = CurSample->num_cases;
+    recs = CurCtx.sample->records + 1;
+    len = CurCtx.sample->record_length;
+    iu = CurCtx.sample->num_cases;
     il = 0;
 chop:
     ic = (iu + il) >> 1;
@@ -568,7 +570,7 @@ int item_list(char *tlstname) {
     FILE *tlst;
     int nn, dadser, i, bc, bl, tid;
     double bw, bs;
-    Class *clp;
+    Class *clp, *root;
     char *record;
 
     /*    Check we have an attched sample and model  */
@@ -577,22 +579,24 @@ int item_list(char *tlstname) {
     if (!CurCtx.sample)
         return (-2);
     set_population();
-    if (!CurSample->num_cases)
+    if (!CurCtx.sample->num_cases)
         return (-3);
+
+    root = CurCtx.popln->classes[CurCtx.popln->root];
 
     /*    Open a file  */
     tlst = fopen(tlstname, "w");
     if (!tlst)
         return (-4);
     /*    Output a tree list in a primitive form  */
-    clp = CurRootClass;
+    clp = root;
 
 treeloop:
     if (clp->type == Sub)
         goto nextcl1;
     fprintf(tlst, "%8d", clp->serial >> 2);
     if (clp->dad_id >= 0)
-        dadser = CurPopln->classes[clp->dad_id]->serial;
+        dadser = CurCtx.popln->classes[clp->dad_id]->serial;
     else
         dadser = -4;
     fprintf(tlst, "%8d\n", dadser >> 2);
@@ -604,11 +608,11 @@ nextcl1:
 
     find_all(Dad + Leaf);
 
-    for (nn = 0; nn < CurSample->num_cases; nn++) {
+    for (nn = 0; nn < CurCtx.sample->num_cases; nn++) {
         do_case(nn, Leaf + Dad, 0);
         bl = bc = -1;
         bw = 0.0;
-        bs = CurSample->num_cases + 1;
+        bs = CurCtx.sample->num_cases + 1;
         for (i = 0; i < NumSon; i++) {
             clp = Sons[i];
             if ((clp->case_weight > 0.5) && (clp->weights_sum < bs)) {
@@ -621,7 +625,7 @@ nextcl1:
             }
         }
 
-        record = CurRecords + nn * CurSample->record_length;
+        record = CurRecords + nn * CurCtx.sample->record_length;
         memcpy(&tid, record + 1, sizeof(int));
         fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, Sons[bc]->serial >> 2, Sons[bl]->serial >> 2, ScoreRscale * Sons[bl]->factor_scores[nn]);
     }

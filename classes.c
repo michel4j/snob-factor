@@ -10,8 +10,8 @@ int serial_to_id(int ss) {
     set_population();
 
     if (ss >= 1) {
-        for (k = 0; k <= CurPopln->hi_class; k++) {
-            clp = CurPopln->classes[k];
+        for (k = 0; k <= CurCtx.popln->hi_class; k++) {
+            clp = CurCtx.popln->classes[k];
             if (clp && (clp->type != Vacant) && (clp->serial == ss))
                 return (k);
         }
@@ -30,7 +30,7 @@ int serial_to_id(int ss) {
 void set_class(Class *cls) {
     CurClass = cls;
     CurDadID = cls->dad_id;
-    CurDad = (CurDadID >= 0) ? CurPopln->classes[CurDadID] : 0;
+    CurDad = (CurDadID >= 0) ? CurCtx.popln->classes[CurDadID] : 0;
 }
 
 /*    ---------------------  set_class_with_scores --------------------------   */
@@ -61,23 +61,23 @@ int make_class() {
     NumCases = CurCtx.popln->sample_size;
     /*    If nc, check that popln has an attached sample  */
     if (NumCases) {
-        i = find_sample(CurPopln->sample_name, 1);
+        i = find_sample(CurCtx.popln->sample_name, 1);
         if (i < 0) {
             return (-2);
         }
         CurCtx.sample = CurSample = Samples[i];
     }
 
-    NumVars = CurVSet->num_vars;
-    pvars = CurPopln->pvars;
+    NumVars = CurCtx.vset->num_vars;
+    pvars = CurCtx.popln->pvars;
     /*    Find a vacant slot in the popln's classes vec   */
-    for (kk = 0; kk < CurPopln->cls_vec_len; kk++) {
-        if (!CurPopln->classes[kk]) {
+    for (kk = 0; kk < CurCtx.popln->cls_vec_len; kk++) {
+        if (!CurCtx.popln->classes[kk]) {
             found = 1;
             break;
         }
         /*    Also test for a vacated class   */
-        if (CurPopln->classes[kk]->type == Vacant) {
+        if (CurCtx.popln->classes[kk]->type == Vacant) {
             vacant = 1;
             break;
         }
@@ -91,8 +91,8 @@ int make_class() {
             return error_and_message("No space for new class");
         }
 
-        CurPopln->classes[kk] = CurClass;
-        CurPopln->hi_class = kk; /* Highest used index in population->classes */
+        CurCtx.popln->classes[kk] = CurClass;
+        CurCtx.popln->hi_class = kk; /* Highest used index in population->classes */
         CurClass->id = kk;
 
         /*    Make vector of ptrs to CVinsts   */
@@ -134,7 +134,7 @@ int make_class() {
 
     } else if (vacant) { /* Vacant type shows structure set up but vacated.
           Use, but set new (Vacant) type,  */
-        CurClass = CurPopln->classes[kk];
+        CurClass = CurCtx.popln->classes[kk];
         cvars = CurClass->basics;
         evars = CurClass->stats;
         CurClass->type = Vacant;
@@ -148,9 +148,9 @@ int make_class() {
     for (i = 0; i < NumVars; i++) {
         cvars[i]->signif = 1;
     }
-    CurPopln->num_classes++;
-    if (kk > CurPopln->hi_class) {
-        CurPopln->hi_class = kk;
+    CurCtx.popln->num_classes++;
+    if (kk > CurCtx.popln->hi_class) {
+        CurCtx.popln->hi_class = kk;
     }
     if (CurClass->type != Vacant) {
         /* If nc = 0, this completes the make. */
@@ -189,7 +189,7 @@ void print_one_class(Class *cls, int full) {
     if (cls->dad_id < 0)
         printf("    Root");
     else
-        printf(" Dad%s", serial_to_str(CurPopln->classes[((int)cls->dad_id)]));
+        printf(" Dad%s", serial_to_str(CurCtx.popln->classes[((int)cls->dad_id)]));
     printf(" Age%4d  Sz%6.1f  Use %s", cls->age, cls->weights_sum, usestr[((int)cls->use)]);
     printf("%c", (cls->use == Fac) ? ' ' : '(');
     vrms = sqrt(cls->sum_score_sq / cls->weights_sum);
@@ -207,7 +207,7 @@ void print_one_class(Class *cls, int full) {
     printf("Vcost     ---------  F:%9.2f\n", cls->cfvcost);
     printf("totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", cls->nofac_cost, cls->fac_cost, cls->dad_cost, cls->best_cost);
     if (full) {
-        for (i = 0; i < CurVSet->num_vars; i++) {
+        for (i = 0; i < CurCtx.vset->num_vars; i++) {
             CurVType = CurAttrList[i].vtype;
             (*CurVType->show)(cls, i);
         }
@@ -218,7 +218,7 @@ void print_one_class(Class *cls, int full) {
 void print_class(int kk, int full) {
     Class *cls;
     if (kk >= 0) {
-        cls = CurPopln->classes[kk];
+        cls = CurCtx.popln->classes[kk];
         print_one_class(cls, full);
     } else if (kk < -2) {
         log_msg(0, "%d passed to print_class", kk);
@@ -249,7 +249,7 @@ void clear_costs(Class *cls) {
     cls->factor_score_sum = 0.0;
     if (!SeeAll)
         cls->scancnt = 0;
-    for (i = 0; i < CurVSet->num_vars; i++) {
+    for (i = 0; i < CurCtx.vset->num_vars; i++) {
         CurVType = CurAttrList[i].vtype;
         (*CurVType->clear_stats)(i);
     }
@@ -274,7 +274,7 @@ void set_best_costs(Class *cls) {
         cls->best_par_cost = cls->fac_par_cost;
         cls->best_case_cost = cls->cftcost;
     }
-    for (i = 0; i < CurVSet->num_vars; i++) {
+    for (i = 0; i < CurCtx.vset->num_vars; i++) {
         CurVType = CurAttrList[i].vtype;
         (*CurVType->set_best_pars)(i);
     }
@@ -320,7 +320,7 @@ void score_all_vars_alt(Class *cls, int item) {
 
             CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
             CaseFacScoreD1 = CaseFacScoreD2 = EstFacScoreD2 = CaseFacScoreD3 = 0.0;
-            for (int i = 0; i < CurVSet->num_vars; i++) {
+            for (int i = 0; i < CurCtx.vset->num_vars; i++) {
                 CurAttr = CurAttrList + i;
                 if (!CurAttr->inactive) {
                     CurVType = CurAttr->vtype;
@@ -394,7 +394,7 @@ void score_all_vars(Class *cls, int item) {
 
         CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
         CaseFacScoreD1 = CaseFacScoreD2 = EstFacScoreD2 = CaseFacScoreD3 = 0.0;
-        for (i = 0; i < CurVSet->num_vars; i++) {
+        for (i = 0; i < CurCtx.vset->num_vars; i++) {
             CurAttr = CurAttrList + i;
             if (!CurAttr->inactive) {
                 CurVType = CurAttr->vtype;
@@ -449,7 +449,7 @@ void cost_all_vars(Class *cls, int item) {
         CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
     }
     ncasecost = scasecost = fcasecost = cls->mlogab; /* Abundance cost */
-    for (int iv = 0; iv < CurVSet->num_vars; iv++) {
+    for (int iv = 0; iv < CurCtx.vset->num_vars; iv++) {
         CurAttr = CurAttrList + iv;
         if (!(CurAttr->inactive)) {
             CurVType = CurAttr->vtype;
@@ -557,7 +557,7 @@ void adjust_class(Class *cls, int dod) {
 
     /*    Set npars to show if class may be treated as a dad  */
     npars = 1;
-    if ((cls->age < MinAge) || (cls->num_sons < 2) || (CurPopln->classes[cls->son_id]->age < MinSubAge))
+    if ((cls->age < MinAge) || (cls->num_sons < 2) || (CurCtx.popln->classes[cls->son_id]->age < MinSubAge))
         npars = 0;
     if (cls->type == Dad)
         npars = 1;
@@ -566,7 +566,7 @@ void adjust_class(Class *cls, int dod) {
     of cls's sons, so we don't zero it here. 'parent_cost_all_vars' will add to it.  */
     cls->nofac_par_cost = cls->fac_par_cost = 0.0;
 
-    for (iv = 0; iv < CurVSet->num_vars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->num_vars; iv++) {
         attr = CurAttrList + iv;
         if (!(attr->inactive)) {
             //CurVType = CurAttr->vtype;
@@ -654,9 +654,9 @@ void adjust_class(Class *cls, int dod) {
                 CurDad->hold_type += 3;
 
             for (int i = 0; i < 2; i++) {
-                son = CurPopln->classes[i == 0 ? cls->son_id : son->sib_id];
+                son = CurCtx.popln->classes[i == 0 ? cls->son_id : son->sib_id];
                 son->type = Leaf;
-                son->serial = 4 * CurPopln->next_serial++;
+                son->serial = 4 * CurCtx.popln->next_serial++;
             }
         }
     }
@@ -678,7 +678,7 @@ void parent_cost_all_vars(Class *cls, int valid) {
 
     set_class(cls);
     abcost = 0.0;
-    for (int i = 0; i < CurVSet->num_vars; i++) {
+    for (int i = 0; i < CurCtx.vset->num_vars; i++) {
         CurAttr = CurAttrList + i;
         CurVType = CurAttr->vtype;
         (*CurVType->cost_var_nonleaf)(i, valid);
@@ -703,7 +703,7 @@ void parent_cost_all_vars(Class *cls, int valid) {
             */
         rrelab = 1.0 / cls->relab;
         for (ison = cls->son_id; ison >= 0; ison = son->sib_id) {
-            son = CurPopln->classes[ison];
+            son = CurCtx.popln->classes[ison];
             abcost -= 0.5 * log(son->relab * rrelab);
         }
         /*    Add other terms from Fisher  */
@@ -722,11 +722,11 @@ void delete_sons(int index) {
     Class *clp, *son;
 
     if (Control & AdjTr) {
-        clp = CurPopln->classes[index];
+        clp = CurCtx.popln->classes[index];
         if (clp->num_sons > 0) {
             SeeAll = 4;
             for (int k = clp->son_id; k > 0; k = son->sib_id) {
-                son = CurPopln->classes[k];
+                son = CurCtx.popln->classes[k];
                 son->type = Vacant;
                 son->dad_id = Deadkilled;
                 delete_sons(k);
@@ -746,15 +746,15 @@ its subs into leaves.  Returns 0 if successful.  */
 int split_leaf(int index) {
     Class *son, *cls;
 
-    cls = CurPopln->classes[index];
+    cls = CurCtx.popln->classes[index];
     if ((cls->type == Leaf) && (cls->num_sons > 1) && !cls->hold_type) {
         cls->type = Dad;
         cls->hold_type = HoldTime;
         for (int k = cls->son_id; k >= 0; k = son->sib_id) {
-            son = CurPopln->classes[k];
+            son = CurCtx.popln->classes[k];
             son->type = Leaf;
-            son->serial = 4 * CurPopln->next_serial;
-            CurPopln->next_serial++;
+            son->serial = 4 * CurCtx.popln->next_serial;
+            CurCtx.popln->next_serial++;
         }
         SeeAll = 4;
         return (0);
@@ -768,23 +768,23 @@ int split_leaf(int index) {
 void delete_all_classes() {
     int k;
     Class *cls;
-    CurPopln = CurCtx.popln;
-    CurRoot = CurPopln->root;
-    for (k = 0; k <= CurPopln->hi_class; k++) {
-        cls = CurPopln->classes[k];
+    CurCtx.popln = CurCtx.popln;
+    CurRoot = CurCtx.popln->root;
+    for (k = 0; k <= CurCtx.popln->hi_class; k++) {
+        cls = CurCtx.popln->classes[k];
         if (cls->id != CurRoot) {
             cls->type = Vacant;
             cls->dad_id = Deadkilled;
         }
     }
-    CurPopln->num_classes = 1;
-    CurPopln->hi_class = CurRoot;
-    CurRootClass = cls = CurPopln->classes[CurRoot];
+    CurCtx.popln->num_classes = 1;
+    CurCtx.popln->hi_class = CurRoot;
+    CurRootClass = cls = CurCtx.popln->classes[CurRoot];
     cls->son_id = -1;
     cls->sib_id = -1;
     cls->num_sons = 0;
     cls->serial = 4;
-    CurPopln->next_serial = 2;
+    CurCtx.popln->next_serial = 2;
     cls->age = 0;
     cls->hold_type = cls->hold_use = 0;
     cls->type = Leaf;

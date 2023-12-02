@@ -880,7 +880,7 @@ void cost_var_nonleaf(iv) int iv;
     'pr[]' to accumulate the sum of the sons' bap[]s, in place of the 'tstn' of
     the reals code. */
     for (ison = CurClass->son_id; ison > 0; ison = son->sib_id) {
-        son = CurPopln->classes[ison];
+        son = CurCtx.popln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         Fork {
             pr[k] += soncvi->bap[k];

@@ -36,7 +36,8 @@ if __name__ == '__main__':
     result = snob.classify(20, 50, 2, 0.01)
        
     snob.print_tree()
-    #snob.print_class(-2, 1)
-    #snob.show_population()
+    snob.print_class(-2, 1)
+    snob.show_population()
+    snob.item_list(b'./examples/phi.rep');
     
 

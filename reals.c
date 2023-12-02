@@ -720,7 +720,7 @@ ploop:
     tssn = 0.0;  /* Total sons' s_n */
 
     for (ison = CurClass->son_id; ison > 0; ison = son->sib_id) {
-        son = CurPopln->classes[ison];
+        son = CurCtx.popln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         spp = *(&soncvi->bmu + k);
         sppsprd = *(&soncvi->bmusprd + k);

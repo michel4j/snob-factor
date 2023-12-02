@@ -41,9 +41,8 @@ EXT int Control, DControl;
 EXT int DFix, Fix;
 
 /*    re Poplns  */
-EXT VarSet *CurVSet;
 EXT Sample *CurSample;
-EXT Population *CurPopln;
+
 EXT AVinst *CurAttr;
 EXT PVinst *pvi;
 EXT SVinst *CurVar;

@@ -608,7 +608,7 @@ void cost_var_nonleaf(int iv) {
     apsprd = cvi->napsprd;
     /*    The calculation is like that in reals.c (q.v.)   */
     for (ison = CurClass->son_id; ison > 0; ison = son->sib_id) {
-        son = CurPopln->classes[ison];
+        son = CurCtx.popln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         tap += soncvi->bap;
         tstvn += soncvi->bap * soncvi->bap;

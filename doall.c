@@ -56,7 +56,7 @@ void find_all(int class_type) {
                 if (cls->dad_id < 0) {
                     break;
                 }
-                cls = CurPopln->classes[cls->dad_id];
+                cls = CurCtx.popln->classes[cls->dad_id];
             }
             if (cls->dad_id < 0) {
                 break;
@@ -73,7 +73,7 @@ void sort_sons(int kk) {
     Class *cls, *cls1, *cls2;
     int js, *prev, nsw;
 
-    cls = CurPopln->classes[kk];
+    cls = CurCtx.popln->classes[kk];
     if (cls->num_sons < 2) {
         return;
     }
@@ -82,9 +82,9 @@ void sort_sons(int kk) {
         prev = &(cls->son_id);
         nsw = 0;
 
-        cls1 = CurPopln->classes[*prev];
+        cls1 = CurCtx.popln->classes[*prev];
         while (cls1->sib_id >= 0) {
-            cls2 = CurPopln->classes[cls1->sib_id];
+            cls2 = CurCtx.popln->classes[cls1->sib_id];
             if (cls1->serial > cls2->serial) {
                 *prev = cls2->id;
                 cls1->sib_id = cls2->sib_id;
@@ -94,12 +94,12 @@ void sort_sons(int kk) {
             } else {
                 prev = &cls1->sib_id;
             }
-            cls1 = CurPopln->classes[*prev];
+            cls1 = CurCtx.popln->classes[*prev];
         }
     } while (nsw);
     /*    Now sort sons  */
 
-    for (js = cls->son_id; js >= 0; js = CurPopln->classes[js]->sib_id) {
+    for (js = cls->son_id; js >= 0; js = CurCtx.popln->classes[js]->sib_id) {
         sort_sons(js);
     }
 }
@@ -114,13 +114,13 @@ void tidy(int hit) {
     int i, kkd, ndead, newhicl, cause;
 
     Deaded = 0;
-    if (!CurPopln->sample_size)
+    if (!CurCtx.popln->sample_size)
         hit = 0;
 
     do {
         ndead = 0;
-        for (i = 0; i <= CurPopln->hi_class; i++) {
-            cls = CurPopln->classes[i];
+        for (i = 0; i <= CurCtx.popln->hi_class; i++) {
+            cls = CurCtx.popln->classes[i];
             if ((!cls) || (cls->type == Vacant) || (i == CurRoot)) {
                 if (i == CurRoot) {
                     cls->num_sons = 0;
@@ -143,7 +143,7 @@ void tidy(int hit) {
             } else if (hit && (cls->type == Sub) && ((cls->age > MaxSubAge) || NoSubs)) {
                 cause = Dead;
                 hard = 2;
-            } else if (CurPopln->classes[kkd]->type == Vacant) {
+            } else if (CurCtx.popln->classes[kkd]->type == Vacant) {
                 cause = Deadorphan;
                 hard = 2;
             }
@@ -162,27 +162,27 @@ void tidy(int hit) {
             continue;
 
         /*    No more classes to kill for the moment.  Relink everyone  */
-        CurPopln->num_classes = 0;
+        CurCtx.popln->num_classes = 0;
         kkd = 0;
-        for (i = 0; i <= CurPopln->hi_class; i++) {
-            cls = CurPopln->classes[i];
+        for (i = 0; i <= CurCtx.popln->hi_class; i++) {
+            cls = CurCtx.popln->classes[i];
             if ((cls->type == Vacant) || (i == CurRoot)) {
                 continue;
             }
-            dad = CurPopln->classes[cls->dad_id];
+            dad = CurCtx.popln->classes[cls->dad_id];
             cls->sib_id = dad->son_id;
             dad->son_id = i;
             dad->num_sons++;
         }
 
         /*    Check for singleton sons   */
-        for (kkd = 0; kkd <= CurPopln->hi_class; kkd++) {
-            dad = CurPopln->classes[kkd];
+        for (kkd = 0; kkd <= CurCtx.popln->hi_class; kkd++) {
+            dad = CurCtx.popln->classes[kkd];
             if ((dad->type == Vacant) || (dad->num_sons != 1)) {
                 continue;
             }
 
-            cls = CurPopln->classes[dad->son_id];
+            cls = CurCtx.popln->classes[dad->son_id];
             /*    Clp is dad's only son. If a sub, kill it   */
             /*    If not, make dad inherit clp's role, then kill clp  */
             if (cls->type == Sub) {
@@ -198,7 +198,7 @@ void tidy(int hit) {
                 dad->son_id = cls->son_id;
                 /* Change the dad in clp's sons */
                 for (i = dad->son_id; i >= 0; i = son->sib_id) {
-                    son = CurPopln->classes[i];
+                    son = CurCtx.popln->classes[i];
                     son->dad_id = kkd;
                 }
                 cause = Deadsing;
@@ -213,8 +213,8 @@ void tidy(int hit) {
     // Check conditions directly and proceed if true
     if (hit && (Control & AdjTr) && NewSubs) {
         /* Add subclasses to large-enough leaves */
-        for (i = 0; i <= CurPopln->hi_class; i++) {
-            dad = CurPopln->classes[i];
+        for (i = 0; i <= CurCtx.popln->hi_class; i++) {
+            dad = CurCtx.popln->classes[i];
             // Check if conditions are met to make subclasses
             if (dad->type == Leaf && !dad->num_sons && dad->weights_sum >= (2.1 * MinSize) && dad->age >= MinAge) {
                 make_subclasses(i);
@@ -225,21 +225,21 @@ void tidy(int hit) {
 
     Deaded = 0;
     // Re-count classes, leaves etc.
-    CurPopln->num_classes = CurPopln->num_leaves = newhicl = kkd = 0;
-    for (i = 0; i <= CurPopln->hi_class; i++) {
-        cls = CurPopln->classes[i];
+    CurCtx.popln->num_classes = CurCtx.popln->num_leaves = newhicl = kkd = 0;
+    for (i = 0; i <= CurCtx.popln->hi_class; i++) {
+        cls = CurCtx.popln->classes[i];
         if (cls && cls->type != Vacant) {
             if (cls->type == Leaf)
-                CurPopln->num_leaves++;
-            CurPopln->num_classes++;
+                CurCtx.popln->num_leaves++;
+            CurCtx.popln->num_classes++;
             newhicl = i;
             if (cls->serial > kkd)
                 kkd = cls->serial;
         }
     }
-    CurPopln->hi_class = newhicl;
-    CurPopln->next_serial = (kkd >> 2) + 1;
-    sort_sons(CurPopln->root); 
+    CurCtx.popln->hi_class = newhicl;
+    CurCtx.popln->next_serial = (kkd >> 2) + 1;
+    sort_sons(CurCtx.popln->root); 
 }
 
 /*    ------------------------  do_all  --------------------------   */
@@ -349,17 +349,17 @@ void update_all_classes(double *oldcost, int *nfail) {
         cls->dad_par_cost = 0.0;
         if (cls->num_sons >= 2) {
             dad = cls;
-            cls = CurPopln->classes[cls->son_id];
+            cls = CurCtx.popln->classes[cls->son_id];
             repeat = 1;
             continue;
         }
         while (1) {
             adjust_class(cls, 1);
             if (cls->dad_id >= 0) {
-                dad = CurPopln->classes[cls->dad_id];
+                dad = CurCtx.popln->classes[cls->dad_id];
                 dad->dad_par_cost += cls->best_par_cost;
                 if (cls->sib_id >= 0) {
-                    cls = CurPopln->classes[cls->sib_id];
+                    cls = CurCtx.popln->classes[cls->sib_id];
                     repeat = 1;
                     break;
                 }
@@ -391,8 +391,8 @@ int count_score_changes() {
         score changes.  */
     int scorechanges = 0;
     Class *cls;
-    for (int k = 0; k <= CurPopln->hi_class; k++) {
-        cls = CurPopln->classes[k];
+    for (int k = 0; k <= CurCtx.popln->hi_class; k++) {
+        cls = CurCtx.popln->classes[k];
         if (cls && (cls->type == Leaf) && (cls->use == Fac))
             scorechanges += cls->score_change_count;
     }
@@ -506,7 +506,7 @@ int do_dads(int ncy) {
         cls->dad_par_cost = 0.0;
         cls->relab = cls->weights_sum = 0.0;
         dad = cls;
-        cls = CurPopln->classes[cls->son_id];
+        cls = CurCtx.popln->classes[cls->son_id];
         goto newdad;
 
     complete:
@@ -521,12 +521,12 @@ int do_dads(int ncy) {
         }
         if (cls->dad_id < 0)
             goto alladjusted;
-        dad = CurPopln->classes[cls->dad_id];
+        dad = CurCtx.popln->classes[cls->dad_id];
         dad->dad_par_cost += cls->best_par_cost;
         dad->weights_sum += cls->weights_sum;
         dad->relab += cls->relab;
         if (cls->sib_id >= 0) {
-            cls = CurPopln->classes[cls->sib_id];
+            cls = CurCtx.popln->classes[cls->sib_id];
             goto newdad;
         }
         cls = dad;
@@ -747,8 +747,8 @@ void do_case(int item, int all, int derivs) {
             if ((!(all & Sub)) || (cls->num_sons != 2) || (cls->case_weight == 0.0)) {
                 continue;
             }
-            sub1 = CurPopln->classes[cls->son_id];
-            sub2 = CurPopln->classes[sub1->sib_id];
+            sub1 = CurCtx.popln->classes[cls->son_id];
+            sub2 = CurCtx.popln->classes[sub1->sib_id];
 
             /*    Test subclass ignore flags unless seeall   */
             if (!(SeeAll)) {
@@ -825,7 +825,7 @@ void do_case(int item, int all, int derivs) {
                 else
                     cls->factor_scores[item] &= -2;
                 if (cls->dad_id >= 0)
-                    CurPopln->classes[cls->dad_id]->case_weight += cls->case_weight;
+                    CurCtx.popln->classes[cls->dad_id]->case_weight += cls->case_weight;
                 if (cls->type == Dad) {
                     /*    casecost for the completed dad is root's cost - log
                      * dad's wt
