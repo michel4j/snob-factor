@@ -163,13 +163,13 @@ void vonm_define(int typindx) {
 
 /*    -------------------  set_var -----------------------------  */
 void set_var(int iv) {
-    CurAttr = CurCtx.vset->attrs + iv;
-    CurVType = CurAttr->vtype;
-    pvi = CurCtx.popln->variables + iv;
-    paux = (Paux *)pvi->paux;
-    CurVar = CurCtx.sample->variables + iv;
-    vaux = (Vaux *)CurAttr->vaux;
-    saux = (Saux *)CurVar->saux;
+    CurVSetVar = CurCtx.vset->variables + iv;
+    CurVType = CurVSetVar->vtype;
+    CurPopVar = CurCtx.popln->variables + iv;
+    paux = (Paux *)CurPopVar->paux;
+    CurSmplVar = CurCtx.sample->variables + iv;
+    vaux = (Vaux *)CurVSetVar->vaux;
+    saux = (Saux *)CurSmplVar->saux;
     cvi = (Basic *)CurClass->basics[iv];
     stats = (Stats *)CurClass->stats[iv];
     if (CurDad)
@@ -223,9 +223,9 @@ int read_datum(char *loc, int iv) {
     i = read_double(&(xn.xx), 1);
     if (!i) {
         /*    Get the unit code from Saux   */
-        unit = ((Saux *)(CurVar->saux))->unit;
+        unit = ((Saux *)(CurSmplVar->saux))->unit;
         /*    Get quantization effect from Saux  */
-        epsfac = ((Saux *)(CurVar->saux))->epsfac;
+        epsfac = ((Saux *)(CurSmplVar->saux))->epsfac;
         if (unit)
             xn.xx *= (PI / 180.0);
         xn.sinxx = epsfac * sin(xn.xx);
@@ -245,9 +245,9 @@ void print_datum(char *loc) {
 
 /*    ---------------------  set_sizes  -----------------------   */
 void set_sizes(int iv) {
-    CurAttr = CurCtx.vset->attrs + iv;
-    CurAttr->basic_size = sizeof(Basic);
-    CurAttr->stats_size = sizeof(Stats);
+    CurVSetVar = CurCtx.vset->variables + iv;
+    CurVSetVar->basic_size = sizeof(Basic);
+    CurVSetVar->stats_size = sizeof(Stats);
     return;
 }
 
@@ -332,7 +332,7 @@ void score_var(int iv) {
     double dwdt, dwdv, r2, dr2dw;
 
     set_var(iv);
-    if (CurAttr->inactive)
+    if (CurVSetVar->inactive)
         return;
 
     if (saux->missing)
@@ -864,7 +864,7 @@ void cost_var_nonleaf(iv, vald) int iv, vald;
         cvi->nhsprd = cvi->shsprd * stats->cnt;
         return;
     }
-    if (CurAttr->inactive) {
+    if (CurVSetVar->inactive) {
         stats->npcost = stats->ntcost = 0.0;
         return;
     }

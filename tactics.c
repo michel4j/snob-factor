@@ -134,7 +134,7 @@ configok:
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
         fcvi = odad->basics[iv];
         cvi = ndad->basics[iv];
-        nch = CurCtx.vset->attrs[iv].basic_size;
+        nch = CurCtx.vset->variables[iv].basic_size;
         memcpy(cvi, fcvi, nch);
     }
 
@@ -142,7 +142,7 @@ configok:
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
         fevi = odad->stats[iv];
         stats = ndad->stats[iv];
-        nch = CurCtx.vset->attrs[iv].stats_size;
+        nch = CurCtx.vset->variables[iv].stats_size;
         memcpy(stats, fevi, nch);
     }
 

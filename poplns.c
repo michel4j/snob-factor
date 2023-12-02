@@ -90,12 +90,12 @@ gotit:
         goto nospace;
     /*    Copy from variable-set AVinsts to PVinsts  */
     for (i = 0; i < CurCtx.vset->length; i++) {
-        CurAttr = CurCtx.vset->attrs + i;
-        CurVType = CurAttr->vtype;
-        pvi = pvars + i;
-        pvi->id = CurAttr->id;
-        pvi->paux = (char *)alloc_blocks(1, CurVType->pop_aux_size);
-        if (!pvi->paux)
+        CurVSetVar = CurCtx.vset->variables + i;
+        CurVType = CurVSetVar->vtype;
+        CurPopVar = pvars + i;
+        CurPopVar->id = CurVSetVar->id;
+        CurPopVar->paux = (char *)alloc_blocks(1, CurVType->pop_aux_size);
+        if (!CurPopVar->paux)
             goto nospace;
     }
 
@@ -217,7 +217,7 @@ void make_subclasses(int kk) {
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
         cvi = CurClass->basics[iv];
         scvi = clsa->basics[iv];
-        nch = CurCtx.vset->attrs[iv].basic_size;
+        nch = CurCtx.vset->variables[iv].basic_size;
         memcpy(scvi, cvi, nch);
         scvi = clsb->basics[iv];
         memcpy(scvi, cvi, nch);
@@ -401,7 +401,7 @@ newclass:
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
         fcvi = fcls->basics[iv];
         cvi = cls->basics[iv];
-        nch = CurCtx.vset->attrs[iv].basic_size;
+        nch = CurCtx.vset->variables[iv].basic_size;
         memcpy(cvi, fcvi, nch);
     }
 
@@ -409,7 +409,7 @@ newclass:
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
         fevi = fcls->stats[iv];
         stats = cls->stats[iv];
-        nch = CurCtx.vset->attrs[iv].stats_size;
+        nch = CurCtx.vset->variables[iv].stats_size;
         memcpy(stats, fevi, nch);
     }
     if (fill == 0)
@@ -760,7 +760,7 @@ newclass:
     /*    Copy Basics..  */
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
         cvi = cls->basics[iv];
-        nch = CurCtx.vset->attrs[iv].basic_size;
+        nch = CurCtx.vset->variables[iv].basic_size;
         save_to_file(fl, cvi, nch);
         leng += nch;
     }
@@ -768,7 +768,7 @@ newclass:
     /*    Copy stats  */
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
         stats = cls->stats[iv];
-        nch = CurCtx.vset->attrs[iv].stats_size;
+        nch = CurCtx.vset->variables[iv].stats_size;
         save_to_file(fl, stats, nch);
         leng += nch;
     }
@@ -884,7 +884,7 @@ haveclass:
     }
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
         cvi = cls->basics[iv];
-        nch = CurCtx.vset->attrs[iv].basic_size;
+        nch = CurCtx.vset->variables[iv].basic_size;
         jp = (char *)cvi;
         for (k = 0; k < nch; k++) {
             *jp = fgetc(fl);
@@ -893,7 +893,7 @@ haveclass:
     }
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
         stats = cls->stats[iv];
-        nch = CurCtx.vset->attrs[iv].stats_size;
+        nch = CurCtx.vset->variables[iv].stats_size;
         jp = (char *)stats;
         for (k = 0; k < nch; k++) {
             *jp = fgetc(fl);

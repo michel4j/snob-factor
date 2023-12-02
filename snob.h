@@ -91,12 +91,12 @@ typedef struct VarTypeStruct {
 
 /*    -------------------  Files ----------------------------------  */
 
-typedef struct BufStruct {
+typedef struct BufferStruct {
     FILE *cfile;
     int line, nch;
     char cname[80];
     char inl[INPUT_BUFFER_SIZE];
-} Buf;
+} Buffer;
 
 /*    ------------------  Allocation blocks  --------------------  */
 typedef struct BlockStruct Block;
@@ -107,7 +107,7 @@ struct BlockStruct {
 
 /*    -------------------  Attributes  -------------------------   */
 
-typedef struct AVinstStruct {
+typedef struct VSetVarStruct {
     int id;
     int type;
     int inactive;   /* Inactive attribute flag */
@@ -116,7 +116,7 @@ typedef struct AVinstStruct {
     VarType *vtype;
     char *vaux;
     char name[80];
-} AVinst;
+} VSetVar;
 
 typedef struct VarSetStruct {
     int id;
@@ -125,17 +125,17 @@ typedef struct VarSetStruct {
     char name[80];
     int length;   /* Number of variables */
     int num_active; /* Number of active variables */
-    AVinst *attrs;
+    VSetVar *variables;
 } VarSet;
 
 /*    --------------------  Samples  ---------------------------   */
 
-typedef struct SVinstStruct {
+typedef struct SampleVarStruct {
     int id;
     int nval;
     char *saux;
     int offset; /*  offset of (missing, value) in record  */
-} SVinst;
+} SampleVar;
 
 /*    Sample data is packed into a block of 'records' addressed by
 the 'recs' pointer in a Sample structure. There is one record per item in the
@@ -156,7 +156,7 @@ typedef struct SampleStruct {
     char vset_name[80]; /* Name of variable-set */
     int num_cases;      /* Num of cases */
     int num_active;     /* Num of active cases */
-    SVinst *variables;  /* Ptr to vector of SVinsts, one per variable */
+    SampleVar *variables;  /* Ptr to vector of SVinsts, one per variable */
     char *records;      /*  vector of records  */
     int record_length;  /*  Length in chars of a data record  */
     double best_cost;   /*  Cost of best model */
@@ -276,7 +276,7 @@ typedef struct ContextStruct {
     VarSet *vset;
     Sample *sample;
     Population *popln;
-    Buf *buffer;
+    Buffer *buffer;
 } Context;
 
 /* Classification Result */

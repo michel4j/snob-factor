@@ -131,13 +131,13 @@ void reals_define(typindx) int typindx;
 
 /*    -------------------  set_var -----------------------------  */
 void set_var(int iv) {
-    CurAttr = CurCtx.vset->attrs + iv;
-    CurVType = CurAttr->vtype;
-    pvi = CurCtx.popln->variables + iv;
-    paux = (Paux *)pvi->paux;
-    CurVar = CurCtx.sample->variables + iv;
-    vaux = (Vaux *)CurAttr->vaux;
-    saux = (Saux *)CurVar->saux;
+    CurVSetVar = CurCtx.vset->variables + iv;
+    CurVType = CurVSetVar->vtype;
+    CurPopVar = CurCtx.popln->variables + iv;
+    paux = (Paux *)CurPopVar->paux;
+    CurSmplVar = CurCtx.sample->variables + iv;
+    vaux = (Vaux *)CurVSetVar->vaux;
+    saux = (Saux *)CurSmplVar->saux;
     cvi = (Basic *)CurClass->basics[iv];
     stats = (Stats *)CurClass->stats[iv];
     if (CurDad)
@@ -192,9 +192,9 @@ void print_datum(char *loc) {
 
 /*    ---------------------  set_sizes  -----------------------   */
 void set_sizes(int iv) {
-    CurAttr = CurCtx.vset->attrs + iv;
-    CurAttr->basic_size = sizeof(Basic);
-    CurAttr->stats_size = sizeof(Stats);
+    CurVSetVar = CurCtx.vset->variables + iv;
+    CurVSetVar->basic_size = sizeof(Basic);
+    CurVSetVar->stats_size = sizeof(Stats);
     return;
 }
 
@@ -262,7 +262,7 @@ void score_var(int iv) {
     double del, md2;
 
     set_var(iv);
-    if (CurAttr->inactive)
+    if (CurVSetVar->inactive)
         return;
 
     if (saux->missing)
@@ -688,7 +688,7 @@ void cost_var_nonleaf(int iv, int vald) {
         cvi->nsdlsprd = cvi->ssdlsprd * stats->cnt;
         return;
     }
-    if (CurAttr->inactive) {
+    if (CurVSetVar->inactive) {
         stats->npcost = stats->ntcost = 0.0;
         return;
     }

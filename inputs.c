@@ -17,13 +17,13 @@ name.
 /*    Routines to read an item dont consume the character which terminates
 the item   */
 
-Buf cfilebuf, commsbuf; /* Buffers for command input */
+Buffer cfilebuf, commsbuf; /* Buffers for command input */
 int terminator;
 
 /*    --------------------------- open_buffer() --------------------------  */
-/*    Given a Buf with a name in it, sets up and initializes the named file*/
+/*    Given a Buffer with a name in it, sets up and initializes the named file*/
 int open_buffer() {
-    Buf *buf;
+    Buffer *buf;
 
     buf = CurCtx.buffer;
     buf->cfile = fopen(buf->cname, "r");
@@ -41,7 +41,7 @@ int open_buffer() {
 /*    ------------------------  new_line () ------------------   */
 /*    To skip to next line  */
 int new_line() {
-    Buf *buf;
+    Buffer *buf;
     /*    Discard anything in inl and read in a new line, to '\n'  */
     int i, j;
 
@@ -165,7 +165,7 @@ line if cnl not zero, but will return 2 if cnl = 0 and EOL is reached before
 the read is satisfied  */
 /*    To read an integer into x   */
 int read_int(int *x, int cnl) {
-    Buf *buf;
+    Buffer *buf;
     int sign, i, v;
 
     buf = CurCtx.buffer;
@@ -224,7 +224,7 @@ miss: /* An '=' signifies missing value  */
 /*    --------------------  read_double ()  --------------------------- */
 /*    To read a float into (double) x   */
 int read_double(double *x, int cnl) {
-    Buf *buf;
+    Buffer *buf;
     int sign, i;
     double v, pow;
     buf = CurCtx.buffer;
@@ -299,7 +299,7 @@ miss: /* An '=' signifies missing value  */
 /*    --------------------  read_str () ------------------------   */
 /*    To read a string of characters  */
 int read_str(char *str, int cnl) {
-    Buf *buf;
+    Buffer *buf;
     int i, n;
 
     buf = CurCtx.buffer;
@@ -358,7 +358,7 @@ err:
 /*    ---------------------- read_char () -----------------------  */
 /*    Returns next char, or -1 if error, or 2 if EOL and not cnl  */
 int read_char(int cnl) {
-    Buf *buf;
+    Buffer *buf;
     int i;
 
     buf = CurCtx.buffer;
@@ -379,7 +379,7 @@ skip:
 /*    --------------------------  swallow ()    --------------------- */
 /*    To swallow an erroneus field, stopping at blank, newline or tab */
 void swallow() {
-    Buf *buf;
+    Buffer *buf;
     int i;
 
     buf = CurCtx.buffer;

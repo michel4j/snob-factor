@@ -646,7 +646,7 @@ void do_case(int item, int all, int derivs) {
             psaux->missing = 1;
         } else {
             psaux->missing = 0;
-            memcpy(&(psaux->xn), field + 1, CurCtx.vset->attrs[i].vtype->data_size);
+            memcpy(&(psaux->xn), field + 1, CurCtx.vset->variables[i].vtype->data_size);
         }
     }
 

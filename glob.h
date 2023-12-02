@@ -23,7 +23,7 @@ EXT Population *Populations[MAX_POPULATIONS];
 EXT int NSamples;
 
 /*    re inputs for main  */
-EXT Buf *CurSource; /* Ptr to command source buffer */
+EXT Buffer *CurSource; /* Ptr to command source buffer */
 
 /*    re Sample records  */
 EXT char *CurRecords; /*  Common ptr to data records block of a sample */
@@ -41,9 +41,9 @@ EXT int Control, DControl;
 EXT int DFix, Fix;
 
 /*    re Poplns  */
-EXT AVinst *CurAttr;
-EXT PVinst *pvi;
-EXT SVinst *CurVar;
+EXT VSetVar *CurVSetVar;
+EXT PVinst *CurPopVar;
+EXT SampleVar *CurSmplVar;
 EXT VarType *CurVType;
 
 
@@ -96,5 +96,5 @@ EXT int BadKey[BadSize];
 /*    In inputs.c  */
 #ifndef INPUTS
 extern int terminator;
-extern Buf cfilebuf, commsbuf;
+extern Buffer cfilebuf, commsbuf;
 #endif

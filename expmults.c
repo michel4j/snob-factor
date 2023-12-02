@@ -187,13 +187,13 @@ void expmults_define(typindx) int typindx;
 /*    ----------------------- set_var --------------------------  */
 void set_var(iv) int iv;
 {
-    CurAttr = CurCtx.vset->attrs + iv;
-    CurVType = CurAttr->vtype;
-    pvi = CurCtx.popln->variables + iv;
-    paux = (Paux *)pvi->paux;
-    CurVar = CurCtx.sample->variables + iv;
-    vaux = (Vaux *)CurAttr->vaux;
-    saux = (Saux *)CurVar->saux;
+    CurVSetVar = CurCtx.vset->variables + iv;
+    CurVType = CurVSetVar->vtype;
+    CurPopVar = CurCtx.popln->variables + iv;
+    paux = (Paux *)CurPopVar->paux;
+    CurSmplVar = CurCtx.sample->variables + iv;
+    vaux = (Vaux *)CurVSetVar->vaux;
+    saux = (Saux *)CurSmplVar->saux;
     cvi = (Basic *)CurClass->basics[iv];
     stats = (Stats *)CurClass->stats[iv];
     states = vaux->states;
@@ -268,7 +268,7 @@ int read_datum(char *loc, int iv) {
     int i;
     Datum xn;
 
-    vaux = (Vaux *)(CurCtx.vset->attrs[iv].vaux);
+    vaux = (Vaux *)(CurCtx.vset->variables[iv].vaux);
     states = vaux->states;
     /*    Read datum into xn, return error.  */
     i = read_int(&xn, 1);
@@ -294,19 +294,19 @@ void print_datum(loc) Datum *loc;
 
 /*    ---------------------  set_sizes  -----------------------   */
 /*    To use info in ctx.vset to set sizes of basic and stats
-blocks for variable, and place in AVinst basicsize, statssize.
+blocks for variable, and place in VSetVar basicsize, statssize.
     */
 void set_sizes(iv) int iv;
 {
 
-    CurAttr = CurCtx.vset->attrs + iv;
-    vaux = (Vaux *)CurAttr->vaux;
+    CurVSetVar = CurCtx.vset->variables + iv;
+    vaux = (Vaux *)CurVSetVar->vaux;
     states = vaux->states;
 
-    /*    Set sizes of CVinst (basic) and EVinst (stats) in AVinst  */
+    /*    Set sizes of CVinst (basic) and EVinst (stats) in VSetVar  */
     /*    Each inst has a number of vectors appended, of length 'states' */
-    CurAttr->basic_size = sizeof(Basic) + (5 * states - 1) * sizeof(double);
-    CurAttr->stats_size = sizeof(Stats) + (5 * states - 1) * sizeof(double);
+    CurVSetVar->basic_size = sizeof(Basic) + (5 * states - 1) * sizeof(double);
+    CurVSetVar->stats_size = sizeof(Stats) + (5 * states - 1) * sizeof(double);
     return;
 }
 
@@ -446,7 +446,7 @@ void score_var(iv) int iv;
 {
     double t1d1, t2d1, t3d1;
     set_var(iv);
-    if (CurAttr->inactive)
+    if (CurVSetVar->inactive)
         return;
     if (saux->missing)
         return;
@@ -856,7 +856,7 @@ void cost_var_nonleaf(iv) int iv;
     int n, k, ison, nson, nints;
 
     set_var(iv);
-    if (CurAttr->inactive) {
+    if (CurVSetVar->inactive) {
         stats->npcost = stats->ntcost = 0.0;
         return;
     }
