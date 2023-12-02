@@ -41,8 +41,6 @@ EXT int Control, DControl;
 EXT int DFix, Fix;
 
 /*    re Poplns  */
-EXT Sample *CurSample;
-
 EXT AVinst *CurAttr;
 EXT PVinst *pvi;
 EXT SVinst *CurVar;
@@ -52,8 +50,6 @@ EXT int NumVars;  /* Number of variables */
 EXT int CurRoot;
 EXT Class *CurRootClass;
 EXT AVinst *CurAttrList;
-EXT PVinst *pvars;
-EXT SVinst *CurVarList;
 
 /*    re Classes  */
 EXT Class *CurClass, *CurDad;

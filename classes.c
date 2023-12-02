@@ -65,11 +65,11 @@ int make_class() {
         if (i < 0) {
             return (-2);
         }
-        CurCtx.sample = CurSample = Samples[i];
+        CurCtx.sample = Samples[i];
     }
 
     NumVars = CurCtx.vset->num_vars;
-    pvars = CurCtx.popln->pvars;
+    pvars = CurCtx.popln->variables;
     /*    Find a vacant slot in the popln's classes vec   */
     for (kk = 0; kk < CurCtx.popln->cls_vec_len; kk++) {
         if (!CurCtx.popln->classes[kk]) {
@@ -224,7 +224,7 @@ void print_class(int kk, int full) {
         log_msg(0, "%d passed to print_class", kk);
     } else {
         set_population();
-        cls = CurRootClass;      
+        cls = CurCtx.popln->classes[CurCtx.popln->root];      
         do {
             if ((kk == -2) || (cls->type != Sub))
                 print_one_class(cls, full);
@@ -766,20 +766,20 @@ int split_leaf(int index) {
 /*    ---------------  delete_all_classes  ------------ */
 /*    To remove all classes of a popln except its root  */
 void delete_all_classes() {
-    int k;
+    int k, root_id;
     Class *cls;
-    CurCtx.popln = CurCtx.popln;
-    CurRoot = CurCtx.popln->root;
+    root_id = CurCtx.popln->root;
     for (k = 0; k <= CurCtx.popln->hi_class; k++) {
         cls = CurCtx.popln->classes[k];
-        if (cls->id != CurRoot) {
+        if (cls->id != root_id) {
             cls->type = Vacant;
             cls->dad_id = Deadkilled;
         }
     }
     CurCtx.popln->num_classes = 1;
-    CurCtx.popln->hi_class = CurRoot;
-    CurRootClass = cls = CurCtx.popln->classes[CurRoot];
+    CurCtx.popln->hi_class = root_id;
+    
+    cls = CurCtx.popln->classes[root_id];
     cls->son_id = -1;
     cls->sib_id = -1;
     cls->num_sons = 0;

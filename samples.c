@@ -189,6 +189,7 @@ int load_sample(const char *fname) {
     char *saux, *field, vstnam[80], sampname[80];
     size_t rec_len;
     Sample *sample;
+    SVinst *var_list;
 
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     buf = &bufst;
@@ -254,24 +255,24 @@ gotit:
     CurAttrList = CurCtx.vset->attrs;
 
     /*    Make a vec of nv SVinst blocks  */
-    CurVarList = (SVinst *)alloc_blocks(0, NumVars * sizeof(SVinst));
-    if (!CurVarList) {
+    var_list = (SVinst *)alloc_blocks(0, NumVars * sizeof(SVinst));
+    if (!var_list) {
         log_msg(0, "Cannot allocate memory for variables blocks");
         i = -3;
         goto error;
     }
-    CurCtx.sample->variables = CurVarList;
+    CurCtx.sample->variables = var_list;
 
     /*    Read in the info for each variable into svars   */
     for (i = 0; i < NumVars; i++) {
-        CurVarList[i].id = -1;
-        CurVarList[i].saux = 0;
-        CurVarList[i].offset = 0;
-        CurVarList[i].nval = 0;
+        var_list[i].id = -1;
+        var_list[i].saux = 0;
+        var_list[i].offset = 0;
+        var_list[i].nval = 0;
     }
     rec_len = 1 + sizeof(int); /* active flag and ident  */
     for (i = 0; i < NumVars; i++) {
-        CurVar = CurVarList + i;
+        CurVar = var_list + i;
         CurVar->id = i;
         CurAttr = CurAttrList + i;
         CurVType = CurAttr->vtype;
@@ -339,7 +340,7 @@ gotit:
         /*    Posn now points to where the (missing, val) pair for the
         attribute should start.  */
         for (i = 0; i < NumVars; i++) {
-            CurVar = CurVarList + i;
+            CurVar = var_list + i;
             CurAttr = CurAttrList + i;
             CurVType = CurAttr->vtype;
             kread = (*CurVType->read_datum)(field + 1, i);

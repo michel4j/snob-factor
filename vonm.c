@@ -165,9 +165,9 @@ void vonm_define(int typindx) {
 void set_var(int iv) {
     CurAttr = CurAttrList + iv;
     CurVType = CurAttr->vtype;
-    pvi = pvars + iv;
+    pvi = CurCtx.popln->variables + iv;
     paux = (Paux *)pvi->paux;
-    CurVar = CurVarList + iv;
+    CurVar = CurCtx.sample->variables + iv;
     vaux = (Vaux *)CurAttr->vaux;
     saux = (Saux *)CurVar->saux;
     cvi = (Basic *)CurClass->basics[iv];

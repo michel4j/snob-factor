@@ -441,6 +441,7 @@ int main() {
     double drop;
     Context oldctx;
     Population *popln;
+    Class * root;
 
     initialize(0, 1); // initialize menu
     setup_menu();  // Clear vectors of pointers to Poplns, Samples
@@ -497,6 +498,8 @@ loop:
         revert(1);
         Heard = 0;
     }
+
+    root = CurCtx.popln->classes[CurCtx.popln->root];
     if (NoSubs || (Control != AdjAll)) {
         if (NoSubs)
             printf("NOSUBS  ");
@@ -509,7 +512,7 @@ loop:
             if (!(Control & AdjTr))
                 printf(" TREE");
         }
-        printf("  Cost%8.1f\n", CurRootClass->best_cost);
+        printf("  Cost%8.1f\n", root->best_cost);
     }
     if (!CurCtx.popln) {
         kk = 13;
@@ -972,7 +975,7 @@ loop:
         if (CurCtx.popln)
             destroy_population(CurCtx.popln->id);
         popln = CurCtx.popln = 0;
-        CurSample = CurCtx.sample = Samples[k];
+        CurCtx.sample = Samples[k];
         i = init_population();
         if (i < 0) {
             printf("Cannot make first population for sample\n");

@@ -10,16 +10,12 @@ void set_population() {
     CurAttrList = CurCtx.vset->attrs;
     if (CurCtx.sample) {
         NumCases = CurCtx.sample->num_cases;
-        CurVarList = CurCtx.sample->variables;
         CurRecords = CurCtx.sample->records;
     } else {
         NumCases = 0;
-        CurVarList = 0;
         CurRecords = 0;
     }
-    pvars = CurCtx.popln->pvars;
     CurRoot = CurCtx.popln->root;
-    CurRootClass = CurCtx.popln->classes[CurRoot];
 }
 
 /*    -----------------------  next_class  ---------------------  */
@@ -94,7 +90,7 @@ gotit:
     CurCtx.popln->num_classes = 0; /*  Initially no class  */
 
     /*    Make vector of PVinsts    */
-    pvars = CurCtx.popln->pvars = (PVinst *)alloc_blocks(1, NumVars * sizeof(PVinst));
+    pvars = CurCtx.popln->variables = (PVinst *)alloc_blocks(1, NumVars * sizeof(PVinst));
     if (!pvars)
         goto nospace;
     /*    Copy from variable-set AVinsts to PVinsts  */

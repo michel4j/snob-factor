@@ -259,7 +259,7 @@ typedef struct PoplnStruct {
     int sample_size;              /*  Size of sample attached, or 0 */
     int num_cases;                /*  num of active cases in sample used for training */
     Class **classes;              /* ptr to vec of ptrs to classes  */
-    PVinst *pvars;                /* Ptr to vector of PVinsts, one per variable */
+    PVinst *variables;                /* Ptr to vector of PVinsts, one per variable */
     char filename[80];            /*  Popln file name  */
     char name[80];
     int next_serial; /*  Next serial number for a new class */
