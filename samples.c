@@ -15,7 +15,7 @@ void print_var_datum(int i, int n) {
 
     smpl = CurCtx.sample;
     svi = smpl->variables + i;
-    avi = CurAttrList + i;
+    avi = CurCtx.vset->attrs + i;
     var_t = avi->vtype;
     field = (char *)smpl->records;
     field += n * smpl->record_length;
@@ -93,31 +93,31 @@ int load_vset(const char *filename) {
         }
         /*    Num of variables   */
         new_line();
-        kread = read_int(&NumVars, 1);
+        kread = read_int(&CurCtx.vset->length, 1);
         if (kread) {
             log_msg(2, "Cant read number of variables");
             indx = -4;
             break;
         }
-        vset->num_vars = NumVars;
-        vset->num_active = vset->num_vars;
+        vset->length = CurCtx.vset->length;
+        vset->num_active = vset->length;
 
         /*    Make a vec of nv AVinst blocks  */
-        CurAttrList = (AVinst *)alloc_blocks(3, NumVars * sizeof(AVinst));
-        if (!CurAttrList) {
+        CurCtx.vset->attrs = (AVinst *)alloc_blocks(3, CurCtx.vset->length * sizeof(AVinst));
+        if (!CurCtx.vset->attrs) {
             log_msg(2, "Cannot allocate memory for variables blocks");
             indx = -3;
             break;
         }
-        vset->attrs = CurAttrList;
+        vset->attrs = CurCtx.vset->attrs;
 
         /*    Read in the info for each variable into vlist   */
-        for (i = 0; i < NumVars; i++) {
-            CurAttrList[i].id = -1;
-            CurAttrList[i].vaux = 0;
+        for (i = 0; i < CurCtx.vset->length; i++) {
+            CurCtx.vset->attrs[i].id = -1;
+            CurCtx.vset->attrs[i].vaux = 0;
         }
-        for (i = 0; i < NumVars; i++) {
-            CurAttr = CurAttrList + i;
+        for (i = 0; i < CurCtx.vset->length; i++) {
+            CurAttr = CurCtx.vset->attrs + i;
             CurAttr->id = i;
 
             /*    Read name  */
@@ -251,11 +251,9 @@ gotit:
     /*    Set variable-set name in sample  */
     strcpy(CurCtx.sample->vset_name, CurCtx.vset->name);
     /*    Num of variables   */
-    NumVars = CurCtx.vset->num_vars;
-    CurAttrList = CurCtx.vset->attrs;
 
     /*    Make a vec of nv SVinst blocks  */
-    var_list = (SVinst *)alloc_blocks(0, NumVars * sizeof(SVinst));
+    var_list = (SVinst *)alloc_blocks(0, CurCtx.vset->length * sizeof(SVinst));
     if (!var_list) {
         log_msg(0, "Cannot allocate memory for variables blocks");
         i = -3;
@@ -264,17 +262,17 @@ gotit:
     CurCtx.sample->variables = var_list;
 
     /*    Read in the info for each variable into svars   */
-    for (i = 0; i < NumVars; i++) {
+    for (i = 0; i < CurCtx.vset->length; i++) {
         var_list[i].id = -1;
         var_list[i].saux = 0;
         var_list[i].offset = 0;
         var_list[i].nval = 0;
     }
     rec_len = 1 + sizeof(int); /* active flag and ident  */
-    for (i = 0; i < NumVars; i++) {
+    for (i = 0; i < CurCtx.vset->length; i++) {
         CurVar = var_list + i;
         CurVar->id = i;
-        CurAttr = CurAttrList + i;
+        CurAttr = CurCtx.vset->attrs + i;
         CurVType = CurAttr->vtype;
 
         /*    Make the saux block  */
@@ -339,9 +337,9 @@ gotit:
         field += sizeof(int);
         /*    Posn now points to where the (missing, val) pair for the
         attribute should start.  */
-        for (i = 0; i < NumVars; i++) {
+        for (i = 0; i < CurCtx.vset->length; i++) {
             CurVar = var_list + i;
-            CurAttr = CurAttrList + i;
+            CurAttr = CurCtx.vset->attrs + i;
             CurVType = CurAttr->vtype;
             kread = (*CurVType->read_datum)(field + 1, i);
             if (kread < 0) {

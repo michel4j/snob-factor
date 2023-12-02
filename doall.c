@@ -121,8 +121,8 @@ void tidy(int hit) {
         ndead = 0;
         for (i = 0; i <= CurCtx.popln->hi_class; i++) {
             cls = CurCtx.popln->classes[i];
-            if ((!cls) || (cls->type == Vacant) || (i == CurRoot)) {
-                if (i == CurRoot) {
+            if ((!cls) || (cls->type == Vacant) || (i == CurCtx.popln->root)) {
+                if (i == CurCtx.popln->root) {
                     cls->num_sons = 0;
                     cls->son_id = cls->sib_id = -1;
                 }
@@ -166,7 +166,7 @@ void tidy(int hit) {
         kkd = 0;
         for (i = 0; i <= CurCtx.popln->hi_class; i++) {
             cls = CurCtx.popln->classes[i];
-            if ((cls->type == Vacant) || (i == CurRoot)) {
+            if ((cls->type == Vacant) || (i == CurCtx.popln->root)) {
                 continue;
             }
             dad = CurCtx.popln->classes[cls->dad_id];
@@ -639,14 +639,14 @@ void do_case(int item, int all, int derivs) {
 
     /*    Unpack data into 'xn' fields of the Saux for each variable. The
     'xn' field is at the beginning of the Saux. Also the "missing" flag. */
-    for (i = 0; i < NumVars; i++) {
+    for (i = 0; i < CurCtx.vset->length ; i++) {
         field = record + CurCtx.sample->variables[i].offset;
         psaux = (PSaux *)CurCtx.sample->variables[i].saux;
         if (*field == 1) {
             psaux->missing = 1;
         } else {
             psaux->missing = 0;
-            memcpy(&(psaux->xn), field + 1, CurAttrList[i].vtype->data_size);
+            memcpy(&(psaux->xn), field + 1, CurCtx.vset->attrs[i].vtype->data_size);
         }
     }
 

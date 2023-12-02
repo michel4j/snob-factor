@@ -6,8 +6,6 @@
 /*    -----------------------  set_population  --------------------------    */
 void set_population() {
     CurCtx.sample = CurCtx.sample;
-    NumVars = CurCtx.vset->num_vars;
-    CurAttrList = CurCtx.vset->attrs;
     if (CurCtx.sample) {
         NumCases = CurCtx.sample->num_cases;
         CurRecords = CurCtx.sample->records;
@@ -15,7 +13,6 @@ void set_population() {
         NumCases = 0;
         CurRecords = 0;
     }
-    CurRoot = CurCtx.popln->root;
 }
 
 /*    -----------------------  next_class  ---------------------  */
@@ -90,12 +87,12 @@ gotit:
     CurCtx.popln->num_classes = 0; /*  Initially no class  */
 
     /*    Make vector of PVinsts    */
-    pvars = CurCtx.popln->variables = (PVinst *)alloc_blocks(1, NumVars * sizeof(PVinst));
+    pvars = CurCtx.popln->variables = (PVinst *)alloc_blocks(1, CurCtx.vset->length * sizeof(PVinst));
     if (!pvars)
         goto nospace;
     /*    Copy from variable-set AVinsts to PVinsts  */
-    for (i = 0; i < NumVars; i++) {
-        CurAttr = CurAttrList + i;
+    for (i = 0; i < CurCtx.vset->length; i++) {
+        CurAttr = CurCtx.vset->attrs + i;
         CurVType = CurAttr->vtype;
         pvi = pvars + i;
         pvi->id = CurAttr->id;
@@ -117,10 +114,10 @@ gotit:
         strcpy(CurCtx.popln->sample_name, CurCtx.sample->name);
         CurCtx.popln->sample_size = NumCases;
     }
-    CurRoot = CurCtx.popln->root = make_class();
-    if (CurRoot < 0)
+    CurCtx.popln->root = make_class();
+    if (CurCtx.popln->root < 0)
         goto nospace;
-    cls = CurCtx.popln->classes[CurRoot];
+    cls = CurCtx.popln->classes[CurCtx.popln->root];
     cls->serial = 4;
     CurCtx.popln->next_serial = 2;
     cls->dad_id = -2; /* root has no dad */
@@ -219,10 +216,10 @@ void make_subclasses(int kk) {
     clsb->sib_id = -1;
 
     /*    Copy kk's Basics into both subs  */
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         cvi = CurClass->basics[iv];
         scvi = clsa->basics[iv];
-        nch = CurAttrList[iv].basic_size;
+        nch = CurCtx.vset->attrs[iv].basic_size;
         memcpy(scvi, cvi, nch);
         scvi = clsb->basics[iv];
         memcpy(scvi, cvi, nch);
@@ -375,7 +372,7 @@ sampfound:
     hiser = 0;
 
     /*    We must begin copying classes, begining with fpop's root  */
-    fcls = fpop->classes[CurRoot];
+    fcls = fpop->classes[CurCtx.popln->root];
     jdad = -1;
     /*    In case the pop is unattached (fpop->nc = 0), prepare a nominal
     count to insert in leaf classes  */
@@ -403,18 +400,18 @@ newclass:
         hiser = cls->serial;
 
     /*    Copy Basics. the structures should have been made.  */
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         fcvi = fcls->basics[iv];
         cvi = cls->basics[iv];
-        nch = CurAttrList[iv].basic_size;
+        nch = CurCtx.vset->attrs[iv].basic_size;
         memcpy(cvi, fcvi, nch);
     }
 
     /*    Copy stats  */
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         fevi = fcls->stats[iv];
         stats = cls->stats[iv];
-        nch = CurAttrList[iv].stats_size;
+        nch = CurCtx.vset->attrs[iv].stats_size;
         memcpy(stats, fevi, nch);
     }
     if (fill == 0)
@@ -568,9 +565,9 @@ int get_best_pop() {
     if (i < 0)
         goto gotit;
     /*    Set bestcost in samp from current cost  */
-    CurCtx.sample->best_cost = CurCtx.popln->classes[CurRoot]->best_cost;
+    CurCtx.sample->best_cost = CurCtx.popln->classes[CurCtx.popln->root]->best_cost;
     /*    Set goodtime as current pop age  */
-    CurCtx.sample->best_time = CurCtx.popln->classes[CurRoot]->age;
+    CurCtx.sample->best_time = CurCtx.popln->classes[CurCtx.popln->root]->age;
 
 gotit:
     return (i);
@@ -601,7 +598,7 @@ void track_best(int verify) {
     bstpop = Populations[bstid];
     bstroot = bstpop->root;
     bstcst = bstpop->classes[bstroot]->best_cost;
-    if (CurCtx.popln->classes[CurRoot]->best_cost >= bstcst)
+    if (CurCtx.popln->classes[CurCtx.popln->root]->best_cost >= bstcst)
         return;
     /*    Current looks better, but do a doall to ensure cost is correct */
     /*    But only bother if 'verify'  */
@@ -610,15 +607,15 @@ void track_best(int verify) {
         Control = 0;
         do_all(1, 1);
         Control = kk;
-        if (CurCtx.popln->classes[CurRoot]->best_cost >= (bstcst))
+        if (CurCtx.popln->classes[CurCtx.popln->root]->best_cost >= (bstcst))
             return;
     }
 
     /*    Seems better, so kill old 'bestmodel' and make a new one */
     set_population();
     kk = copy_population(CurCtx.popln->id, 0, BSTname);
-    CurCtx.sample->best_cost = CurCtx.popln->classes[CurRoot]->best_cost;
-    CurCtx.sample->best_time = CurCtx.popln->classes[CurRoot]->age;
+    CurCtx.sample->best_cost = CurCtx.popln->classes[CurCtx.popln->root]->best_cost;
+    CurCtx.sample->best_time = CurCtx.popln->classes[CurCtx.popln->root]->age;
     return;
 }
 
@@ -763,17 +760,17 @@ newclass:
     leng += nch;
 
     /*    Copy Basics..  */
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         cvi = cls->basics[iv];
-        nch = CurAttrList[iv].basic_size;
+        nch = CurCtx.vset->attrs[iv].basic_size;
         save_to_file(fl, cvi, nch);
         leng += nch;
     }
 
     /*    Copy stats  */
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         stats = cls->stats[iv];
-        nch = CurAttrList[iv].stats_size;
+        nch = CurCtx.vset->attrs[iv].stats_size;
         save_to_file(fl, stats, nch);
         leng += nch;
     }
@@ -829,7 +826,7 @@ int load_population(char *nam) {
         goto error;
     }
     CurCtx.vset = VarSets[j];
-    NumVars = CurCtx.vset->num_vars;
+    CurCtx.vset->length = CurCtx.vset->length;
     fscanf(fl, "%s", name);          /* Reading sample name */
     fscanf(fl, "%d%d", &fncl, &fnc); /* num of classes, cases */
                                      /*    Advance to real data */
@@ -887,18 +884,18 @@ haveclass:
         *jp = fgetc(fl);
         jp++;
     }
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         cvi = cls->basics[iv];
-        nch = CurAttrList[iv].basic_size;
+        nch = CurCtx.vset->attrs[iv].basic_size;
         jp = (char *)cvi;
         for (k = 0; k < nch; k++) {
             *jp = fgetc(fl);
             jp++;
         }
     }
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         stats = cls->stats[iv];
-        nch = CurAttrList[iv].stats_size;
+        nch = CurCtx.vset->attrs[iv].stats_size;
         jp = (char *)stats;
         for (k = 0; k < nch; k++) {
             *jp = fgetc(fl);

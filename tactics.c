@@ -15,17 +15,18 @@
 
 */
 int flatten(const int show) {
-    int i, out = 0;
+    int i, out = 0, root_id;
     Class *root;
 
-    root = CurCtx.popln->classes[CurCtx.popln->root];
+    root_id = CurCtx.popln->root;
+    root = CurCtx.popln->classes[root_id];
     set_population();
     tidy(0);
     if (root->num_sons == 0) {
         return -1;
     }
     for (i = 0; i <= CurCtx.popln->hi_class; i++) {
-        if (i == CurRoot)
+        if (i == CurCtx.popln->root)
             continue;
         CurClass = CurCtx.popln->classes[i];
         if (CurClass->type != Vacant) {
@@ -40,7 +41,7 @@ int flatten(const int show) {
                     CurClass->serial = CurCtx.popln->next_serial << 2;
                     CurCtx.popln->next_serial++;
                 }
-                CurClass->dad_id = CurRoot;
+                CurClass->dad_id = CurCtx.popln->root;
             }
         }
     }
@@ -130,18 +131,18 @@ configok:
     ndad->age = MinFacAge - 3;
     ndad->hold_type = 0;
     /*      Copy Basics. the structures should have been made.  */
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         fcvi = odad->basics[iv];
         cvi = ndad->basics[iv];
-        nch = CurAttrList[iv].basic_size;
+        nch = CurCtx.vset->attrs[iv].basic_size;
         memcpy(cvi, fcvi, nch);
     }
 
     /*      Copy stats  */
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         fevi = odad->stats[iv];
         stats = ndad->stats[iv];
-        nch = CurAttrList[iv].stats_size;
+        nch = CurCtx.vset->attrs[iv].stats_size;
         memcpy(stats, fevi, nch);
     }
 
@@ -207,7 +208,7 @@ int best_insert_dad(int force) {
 
     i1 = 0;
 outer:
-    if (i1 == CurRoot)
+    if (i1 == CurCtx.popln->root)
         goto i1done;
     cls1 = CurCtx.popln->classes[i1];
     if (!cls1)
@@ -217,7 +218,7 @@ outer:
     ser1 = cls1->serial;
     i2 = i1 + 1;
 inner:
-    if (i2 == CurRoot)
+    if (i2 == CurCtx.popln->root)
         goto i2done;
     cls2 = CurCtx.popln->classes[i2];
     if (!cls2)
@@ -341,7 +342,7 @@ double splice_dad(int ser) {
     set_class(CurCtx.popln->classes[kk]);
     if (CurClass->type != Dad)
         goto finish;
-    if (kk == CurRoot)
+    if (kk == CurCtx.popln->root)
         goto finish;
     kkd = CurClass->dad_id;
     if (kkd < 0)
@@ -390,7 +391,7 @@ int best_remove_dad() {
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     i1 = 0;
 loop:
-    if (i1 == CurRoot)
+    if (i1 == CurCtx.popln->root)
         goto i1done;
     cls = CurCtx.popln->classes[i1];
     if (!cls)
@@ -705,7 +706,7 @@ int best_move_class(int force) {
 
     i1 = 0;
 outer:
-    if (i1 == CurRoot)
+    if (i1 == CurCtx.popln->root)
         goto i1done;
     cls1 = CurCtx.popln->classes[i1];
     if (!cls1)

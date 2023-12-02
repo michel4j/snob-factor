@@ -46,10 +46,7 @@ EXT PVinst *pvi;
 EXT SVinst *CurVar;
 EXT VarType *CurVType;
 EXT int NumCases; /* Number of cases */
-EXT int NumVars;  /* Number of variables */
-EXT int CurRoot;
-EXT Class *CurRootClass;
-EXT AVinst *CurAttrList;
+
 
 /*    re Classes  */
 EXT Class *CurClass, *CurDad;
@@ -61,7 +58,6 @@ EXT double ncasecost, scasecost, fcasecost;
 EXT double CaseFacScoreD1, CaseFacScoreD2; /* derivs of case cost wrt score  */
 EXT double EstFacScoreD2;                     /* An over-estimate of CaseFacScoreD2 used in score ajust */
 EXT double CaseFacScoreD3;                    /*  derivative of CaseFacScoreD2 wrt score  */
-EXT int CurDadID;
 
 /*    re Doall   */
 EXT int RSeed; /*    Seed for random routines */

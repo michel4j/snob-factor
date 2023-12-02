@@ -483,7 +483,7 @@ int main() {
     printf("Firstpop returns %d\n", kk);
     cspace = report_space(1);
 
-    print_class(CurRoot, 0);
+    print_class(CurCtx.popln->root, 0);
 error:
     reset_input();
 loop:
@@ -570,7 +570,7 @@ loop:
         goto loop;
     case 3: /* killclass */
         k = readserial(kk);
-        if (k == CurRoot) {
+        if (k == CurCtx.popln->root) {
             printf("Won't kill Root\n");
             goto loop;
         }

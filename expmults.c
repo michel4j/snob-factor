@@ -187,7 +187,7 @@ void expmults_define(typindx) int typindx;
 /*    ----------------------- set_var --------------------------  */
 void set_var(iv) int iv;
 {
-    CurAttr = CurAttrList + iv;
+    CurAttr = CurCtx.vset->attrs + iv;
     CurVType = CurAttr->vtype;
     pvi = CurCtx.popln->variables + iv;
     paux = (Paux *)pvi->paux;
@@ -268,7 +268,7 @@ int read_datum(char *loc, int iv) {
     int i;
     Datum xn;
 
-    vaux = (Vaux *)(CurAttrList[iv].vaux);
+    vaux = (Vaux *)(CurCtx.vset->attrs[iv].vaux);
     states = vaux->states;
     /*    Read datum into xn, return error.  */
     i = read_int(&xn, 1);
@@ -299,7 +299,7 @@ blocks for variable, and place in AVinst basicsize, statssize.
 void set_sizes(iv) int iv;
 {
 
-    CurAttr = CurAttrList + iv;
+    CurAttr = CurCtx.vset->attrs + iv;
     vaux = (Vaux *)CurAttr->vaux;
     states = vaux->states;
 

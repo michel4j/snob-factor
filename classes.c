@@ -29,8 +29,7 @@ int serial_to_id(int ss) {
 /*    ---------------------  set_class --------------------------   */
 void set_class(Class *cls) {
     CurClass = cls;
-    CurDadID = cls->dad_id;
-    CurDad = (CurDadID >= 0) ? CurCtx.popln->classes[CurDadID] : 0;
+    CurDad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;
 }
 
 /*    ---------------------  set_class_with_scores --------------------------   */
@@ -58,9 +57,8 @@ int make_class() {
     EVinst **evars, *stats;
     int i, kk, found = 0, vacant = 0;
 
-    NumCases = CurCtx.popln->sample_size;
     /*    If nc, check that popln has an attached sample  */
-    if (NumCases) {
+    if (CurCtx.popln->sample_size) {
         i = find_sample(CurCtx.popln->sample_name, 1);
         if (i < 0) {
             return (-2);
@@ -68,7 +66,6 @@ int make_class() {
         CurCtx.sample = Samples[i];
     }
 
-    NumVars = CurCtx.vset->num_vars;
     pvars = CurCtx.popln->variables;
     /*    Find a vacant slot in the popln's classes vec   */
     for (kk = 0; kk < CurCtx.popln->cls_vec_len; kk++) {
@@ -96,15 +93,15 @@ int make_class() {
         CurClass->id = kk;
 
         /*    Make vector of ptrs to CVinsts   */
-        cvars = CurClass->basics = (CVinst **)alloc_blocks(1, NumVars * sizeof(CVinst *));
+        cvars = CurClass->basics = (CVinst **)alloc_blocks(1, CurCtx.vset->length * sizeof(CVinst *));
         if (!cvars) {
             return error_and_message("No space for new class");
         }
 
         /*    Now make the CVinst blocks, which are of varying size   */
-        for (i = 0; i < NumVars; i++) {
+        for (i = 0; i < CurCtx.vset->length; i++) {
             pvi = pvars + i;
-            CurAttr = CurAttrList + i;
+            CurAttr = CurCtx.vset->attrs + i;
             cvi = cvars[i] = (CVinst *)alloc_blocks(1, CurAttr->basic_size);
             if (!cvi) {
                 return error_and_message("No space for new class");
@@ -114,13 +111,13 @@ int make_class() {
         }
 
         /*    Make EVinst blocks and vector of pointers  */
-        evars = CurClass->stats = (EVinst **)alloc_blocks(1, NumVars * sizeof(EVinst *));
+        evars = CurClass->stats = (EVinst **)alloc_blocks(1, CurCtx.vset->length * sizeof(EVinst *));
         if (!evars) {
             return error_and_message("No space for new class");
         }
-        for (i = 0; i < NumVars; i++) {
+        for (i = 0; i < CurCtx.vset->length; i++) {
             pvi = pvars + i;
-            CurAttr = CurAttrList + i;
+            CurAttr = CurCtx.vset->attrs + i;
             stats = evars[i] = (EVinst *)alloc_blocks(1, CurAttr->stats_size);
             if (!stats) {
                 return error_and_message("No space for new class");
@@ -145,7 +142,7 @@ int make_class() {
     /*    Invalidate hierarchy links  */
     CurClass->dad_id = CurClass->sib_id = CurClass->son_id = -1;
     CurClass->num_sons = 0;
-    for (i = 0; i < NumVars; i++) {
+    for (i = 0; i < CurCtx.vset->length; i++) {
         cvars[i]->signif = 1;
     }
     CurCtx.popln->num_classes++;
@@ -154,17 +151,17 @@ int make_class() {
     }
     if (CurClass->type != Vacant) {
         /* If nc = 0, this completes the make. */
-        if (NumCases != 0) {
-            CurClass->factor_scores = (short *)alloc_blocks(2, NumCases * sizeof(short));
+        if (CurCtx.popln->sample_size != 0) {
+            CurClass->factor_scores = (short *)alloc_blocks(2, CurCtx.popln->sample_size * sizeof(short));
 
-            for (int i = 0; i < NumVars; i++) {
+            for (int i = 0; i < CurCtx.vset->length; i++) {
                 evars[i]->num_values = 0.0;
             }
         }
     } else {
         CurClass->type = 0;
 
-        for (int i = 0; i < NumVars; i++) {
+        for (int i = 0; i < CurCtx.vset->length; i++) {
             evars[i]->num_values = 0.0;
         }
     }
@@ -207,8 +204,8 @@ void print_one_class(Class *cls, int full) {
     printf("Vcost     ---------  F:%9.2f\n", cls->cfvcost);
     printf("totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", cls->nofac_cost, cls->fac_cost, cls->dad_cost, cls->best_cost);
     if (full) {
-        for (i = 0; i < CurCtx.vset->num_vars; i++) {
-            CurVType = CurAttrList[i].vtype;
+        for (i = 0; i < CurCtx.vset->length; i++) {
+            CurVType = CurCtx.vset->attrs[i].vtype;
             (*CurVType->show)(cls, i);
         }
     }
@@ -249,8 +246,8 @@ void clear_costs(Class *cls) {
     cls->factor_score_sum = 0.0;
     if (!SeeAll)
         cls->scancnt = 0;
-    for (i = 0; i < CurCtx.vset->num_vars; i++) {
-        CurVType = CurAttrList[i].vtype;
+    for (i = 0; i < CurCtx.vset->length; i++) {
+        CurVType = CurCtx.vset->attrs[i].vtype;
         (*CurVType->clear_stats)(i);
     }
 }
@@ -274,8 +271,8 @@ void set_best_costs(Class *cls) {
         cls->best_par_cost = cls->fac_par_cost;
         cls->best_case_cost = cls->cftcost;
     }
-    for (i = 0; i < CurCtx.vset->num_vars; i++) {
-        CurVType = CurAttrList[i].vtype;
+    for (i = 0; i < CurCtx.vset->length; i++) {
+        CurVType = CurCtx.vset->attrs[i].vtype;
         (*CurVType->set_best_pars)(i);
     }
 }
@@ -300,7 +297,7 @@ void score_all_vars_alt(Class *cls, int item) {
         if (cls->sum_score_sq <= 0.0) {
             //    Generate a fake score to get started.
             cls->boost_count = 0;
-            cvvsprd = 0.1 / NumVars;
+            cvvsprd = 0.1 / CurCtx.vset->length;
             oldicvv = igbit = 0;
             CurCaseFacScore = (rand_int() < 0) ? 1.0 : -1.0;
         } else {
@@ -320,8 +317,8 @@ void score_all_vars_alt(Class *cls, int item) {
 
             CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
             CaseFacScoreD1 = CaseFacScoreD2 = EstFacScoreD2 = CaseFacScoreD3 = 0.0;
-            for (int i = 0; i < CurCtx.vset->num_vars; i++) {
-                CurAttr = CurAttrList + i;
+            for (int i = 0; i < CurCtx.vset->length; i++) {
+                CurAttr = CurCtx.vset->attrs + i;
                 if (!CurAttr->inactive) {
                     CurVType = CurAttr->vtype;
                     (*CurVType->score_var)(i); // score_var should add to CaseFacScoreD1, CaseFacScoreD2, CaseFacScoreD3, EstFacScoreD2.
@@ -371,7 +368,7 @@ void score_all_vars(Class *cls, int item) {
         if (cls->sum_score_sq <= 0.0) {
             // Generate a fake score to get started.
             cls->boost_count = 0;
-            cvvsprd = 0.1 / NumVars;
+            cvvsprd = 0.1 / CurCtx.vset->length;
             oldicvv = igbit = 0;
             CurCaseFacScore = (rand_int() < 0) ? 1.0 : -1.0;
         } else {
@@ -394,8 +391,8 @@ void score_all_vars(Class *cls, int item) {
 
         CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
         CaseFacScoreD1 = CaseFacScoreD2 = EstFacScoreD2 = CaseFacScoreD3 = 0.0;
-        for (i = 0; i < CurCtx.vset->num_vars; i++) {
-            CurAttr = CurAttrList + i;
+        for (i = 0; i < CurCtx.vset->length; i++) {
+            CurAttr = CurCtx.vset->attrs + i;
             if (!CurAttr->inactive) {
                 CurVType = CurAttr->vtype;
                 (*CurVType->score_var)(i); // score_var should add to CaseFacScoreD1, CaseFacScoreD2, CaseFacScoreD3, EstFacScoreD2.
@@ -449,8 +446,8 @@ void cost_all_vars(Class *cls, int item) {
         CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
     }
     ncasecost = scasecost = fcasecost = cls->mlogab; /* Abundance cost */
-    for (int iv = 0; iv < CurCtx.vset->num_vars; iv++) {
-        CurAttr = CurAttrList + iv;
+    for (int iv = 0; iv < CurCtx.vset->length; iv++) {
+        CurAttr = CurCtx.vset->attrs + iv;
         if (!(CurAttr->inactive)) {
             CurVType = CurAttr->vtype;
             (*CurVType->cost_var)(iv, fac); /*    will add to scasecost, fcasecost  */
@@ -502,8 +499,8 @@ void deriv_all_vars(Class *cls, int item) {
         cls->factor_score_sum += CurCaseFacScore * CurCaseWeight;
     }
 
-    for (int iv = 0; iv < NumVars; iv++) {
-        attr = CurAttrList + iv;
+    for (int iv = 0; iv < CurCtx.vset->length; iv++) {
+        attr = CurCtx.vset->attrs + iv;
         if (!(attr->inactive)) {
             (*attr->vtype->deriv_var)(iv, fac);
         }
@@ -566,8 +563,8 @@ void adjust_class(Class *cls, int dod) {
     of cls's sons, so we don't zero it here. 'parent_cost_all_vars' will add to it.  */
     cls->nofac_par_cost = cls->fac_par_cost = 0.0;
 
-    for (iv = 0; iv < CurCtx.vset->num_vars; iv++) {
-        attr = CurAttrList + iv;
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
+        attr = CurCtx.vset->attrs + iv;
         if (!(attr->inactive)) {
             //CurVType = CurAttr->vtype;
             (*attr->vtype->adjust)(iv, fac);
@@ -610,8 +607,8 @@ void adjust_class(Class *cls, int dod) {
             /*    Add up the number of data values  */
             small = 0;
             leafcost = 0.0; /* Used to add up stats->cnts */
-            for (iv = 0; iv < NumVars; iv++) {
-                if (!(CurAttrList[iv].inactive)) {
+            for (iv = 0; iv < CurCtx.vset->length; iv++) {
+                if (!(CurCtx.vset->attrs[iv].inactive)) {
                     small++;
                     leafcost += cls->stats[iv]->num_values;
                 }
@@ -678,8 +675,8 @@ void parent_cost_all_vars(Class *cls, int valid) {
 
     set_class(cls);
     abcost = 0.0;
-    for (int i = 0; i < CurCtx.vset->num_vars; i++) {
-        CurAttr = CurAttrList + i;
+    for (int i = 0; i < CurCtx.vset->length; i++) {
+        CurAttr = CurCtx.vset->attrs + i;
         CurVType = CurAttr->vtype;
         (*CurVType->cost_var_nonleaf)(i, valid);
         stats = (EVinst *)cls->stats[i];

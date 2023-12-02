@@ -123,7 +123,7 @@ typedef struct VarSetStruct {
     Block *blocks;     /* Ptr to chain of blocks allocated */
     char filename[80]; /* file name of vset */
     char name[80];
-    int num_vars;   /* Number of variables */
+    int length;   /* Number of variables */
     int num_active; /* Number of active variables */
     AVinst *attrs;
 } VarSet;

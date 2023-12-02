@@ -163,7 +163,7 @@ void vonm_define(int typindx) {
 
 /*    -------------------  set_var -----------------------------  */
 void set_var(int iv) {
-    CurAttr = CurAttrList + iv;
+    CurAttr = CurCtx.vset->attrs + iv;
     CurVType = CurAttr->vtype;
     pvi = CurCtx.popln->variables + iv;
     paux = (Paux *)pvi->paux;
@@ -245,7 +245,7 @@ void print_datum(char *loc) {
 
 /*    ---------------------  set_sizes  -----------------------   */
 void set_sizes(int iv) {
-    CurAttr = CurAttrList + iv;
+    CurAttr = CurCtx.vset->attrs + iv;
     CurAttr->basic_size = sizeof(Basic);
     CurAttr->stats_size = sizeof(Stats);
     return;

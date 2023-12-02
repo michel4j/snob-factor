@@ -158,7 +158,7 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
 
     init_population();
     cleanup_population();
-    print_class(CurRoot, 0);
+    print_class(CurCtx.popln->root, 0);
     root = CurCtx.popln->classes[CurCtx.popln->root];
 
     double cost = root->best_cost, delta = 0.0;

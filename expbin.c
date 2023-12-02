@@ -130,7 +130,7 @@ void expbinary_define(typindx) int typindx;
 /*    ----------------------- set_var --------------------------  */
 void set_var(iv) int iv;
 {
-    CurAttr = CurAttrList + iv;
+    CurAttr = CurCtx.vset->attrs + iv;
     CurVType = CurAttr->vtype;
     pvi = CurCtx.popln->variables + iv;
     paux = (Paux *)pvi->paux;
@@ -192,7 +192,7 @@ blocks for variable, and place in AVinst basicsize, statssize.
     */
 void set_sizes(int iv) {
 
-    CurAttr = CurAttrList + iv;
+    CurAttr = CurCtx.vset->attrs + iv;
 
     /*    Set sizes of CVinst (basic) and EVinst (stats) in AVinst  */
     CurAttr->basic_size = sizeof(Basic);
