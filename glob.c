@@ -83,9 +83,11 @@ void log_msg(int level, const char *format, ...) {
     }
 }
 
-/**
-    Initialize SNOB
-*/
+
+/// @brief Initialize SNOB parameters
+/// @param lib integer specifying if running from a library or not 1 = library, 0 = interactive
+/// @param debug turn on verbose printing of progress 
+/// @param threads number of threads to use during parallel portions, 0 = use OpenMP environment variables instead
 void initialize(int lib, int debug, int threads) {
     int k;
     RSeed = 1234567;
@@ -111,6 +113,7 @@ void initialize(int lib, int debug, int threads) {
     do_types();
 }
 
+/// @brief Print the details about the number of classes, leaves, and the associated costs for the current population
 void show_population() {
     Class *root;
     Population *popln = CurCtx.popln;
@@ -137,7 +140,6 @@ void cleanup_population() {
     Control = DControl;
     tidy(1);
     track_best(1);
-    CurCtx.popln = CurCtx.popln;
 }
 
 void print_progress(size_t count, size_t max) {
@@ -157,6 +159,12 @@ void print_progress(size_t count, size_t max) {
     fflush(stdout);
 }
 
+/// @brief Run f full classification sequence
+/// @param max_cycles Maximum number of full cycles of doall followed by trymoves
+/// @param do_steps Number of doall steps of assignment and estimation
+/// @param move_steps Number of trymoves steps to fix the classification tree
+/// @param tol  Convergence tolerance as a percentage. Classification stops if the cost improvement is less than the tolerance
+/// @return Classification Result Structure containing number of classes and cost
 Result classify(const int max_cycles, const int do_steps, const int move_steps, const double tol) {
     Result result;
     Class *root;
