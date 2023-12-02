@@ -11,6 +11,7 @@ files. The declarations herein then become converted to "EXT" declarations.
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <omp.h>
 
 #define MAX_SAMPLES 10 /* Max number of samples */
 #define MAX_VSETS 3
@@ -431,7 +432,7 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
 /*
     In main.c
 */
-void initialize(int lib, int debug);
+void initialize(int lib, int debug, int threads);
 void show_pop_names();
 void show_smpl_names();
 void log_msg(int level, const char *format, ...) __attribute__((format(printf, 2, 3)));

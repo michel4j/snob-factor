@@ -86,7 +86,7 @@ void log_msg(int level, const char *format, ...) {
 /**
     Initialize SNOB
 */
-void initialize(int lib, int debug) {
+void initialize(int lib, int debug, int threads) {
     int k;
     RSeed = 1234567;
     SeeAll = 2;
@@ -96,12 +96,18 @@ void initialize(int lib, int debug) {
     Debug = debug;
 
     defaulttune();
+
+    if (threads > 0) {
+        omp_set_num_threads(4);
+    }
+
     for (k = 0; k < MAX_POPULATIONS; k++)
         Populations[k] = 0;
     for (k = 0; k < MAX_SAMPLES; k++)
         Samples[k] = 0;
     for (k = 0; k < MAX_VSETS; k++)
         VarSets[k] = 0;
+    
     do_types();
 }
 

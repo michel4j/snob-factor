@@ -1,6 +1,5 @@
 /*    ---------------------  MAIN FILE -----------------  */
 #include "glob.h"
-#include <omp.h>
 #include <stdarg.h>
 #include <time.h>
 
@@ -443,7 +442,7 @@ int main() {
     Population *popln;
     Class * root;
 
-    initialize(0, 1); // initialize 
+    initialize(0, 1, 0); // initialize 
     setup_menu();  // Clear vectors of pointers to Poplns, Samples
 
     /*    Set source to commsbuf and initialize  */

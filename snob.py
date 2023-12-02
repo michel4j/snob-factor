@@ -14,7 +14,7 @@ class Classification(ct.Structure):
     ] 
     
 snob = ct.cdll.LoadLibrary('./libsnob.so')
-snob.initialize.argtypes = [ct.c_int]
+snob.initialize.argtypes = [ct.c_int, ct.c_int, ct.c_int]
 snob.load_vset.argtypes = [ct.c_char_p]
 snob.load_vset.restype = ct.c_int
 snob.load_sample.argtypes = [ct.c_char_p]
@@ -28,7 +28,7 @@ snob.item_list.argtypes = [ct.c_char_p]
 
                 
 if __name__ == '__main__':
-    snob.initialize(1, 0)
+    snob.initialize(1, 0, 16)
 
     snob.load_vset(b'./examples/phi.v')
     snob.load_sample(b'./examples/phi.s')

@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
         exit(2);
     }
 
-    initialize(1, 0);   
+    initialize(1, 0, 8);   
 
     index = load_vset(argv[1]);
     if (index < 0) {

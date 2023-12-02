@@ -1,7 +1,6 @@
 
 #define DOALL 1
 #include "glob.h"
-#include <omp.h>
 
 /*    -------------------- rand_int, rand_float, -------------------------- */
 static double rcons = (1.0 / (2048.0 * 1024.0 * 1024.0));
