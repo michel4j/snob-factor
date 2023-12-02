@@ -12,6 +12,6 @@ trymoves 2
 
 tree
 
-prclass -1 1
+prclass -2 1
 trep phi.rep
 stop

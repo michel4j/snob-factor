@@ -443,7 +443,7 @@ int main() {
     Population *popln;
     Class * root;
 
-    initialize(0, 1); // initialize menu
+    initialize(0, 1); // initialize 
     setup_menu();  // Clear vectors of pointers to Poplns, Samples
 
     /*    Set source to commsbuf and initialize  */
