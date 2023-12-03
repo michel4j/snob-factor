@@ -25,19 +25,35 @@ snob.print_class.argtypes = [ct.c_int, ct.c_int]
 snob.item_list.argtypes = [ct.c_char_p]
 
 
+EXAMPLES = [
+    '5m1c',
+    '5r8c',
+    '6m1c',
+    '6m2r2c',
+    '6r1c',
+    'd2',
+    'phi',
+    'sd1',
+    'vm',
+]
 
+from pathlib import Path
                 
 if __name__ == '__main__':
-    snob.initialize(1, 0, 16)
+    for name in EXAMPLES:
+        vset_file = str(Path('./examples') / f'{name}.v')
+        sample_file = str(Path('./examples') / f'{name}.s')
+    
+        print(f"Classifying: {name}")
+        
+        snob.initialize(1, 0, 16)
+        snob.load_vset(vset_file.encode('utf-8'))
+        snob.load_sample(sample_file.encode('utf-8'))
 
-    snob.load_vset(b'./examples/6m1c.v')
-    snob.load_sample(b'./examples/6m1c.s')
-
-    result = snob.classify(3, 50, 2, 0)
-       
-    snob.print_tree()
-    snob.print_class(-2, 1)
-    snob.show_population()
-    snob.item_list(b'./examples/6m1c.rep')
+        result = snob.classify(3, 50, 2, 0)
+        
+        snob.print_tree()
+        snob.print_class(-2, 1)
+        snob.show_population()
     
 
