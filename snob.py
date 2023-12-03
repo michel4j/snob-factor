@@ -33,7 +33,7 @@ if __name__ == '__main__':
     snob.load_vset(b'./examples/6m1c.v')
     snob.load_sample(b'./examples/6m1c.s')
 
-    result = snob.classify(1, 50, 2, 0)
+    result = snob.classify(3, 50, 2, 0)
        
     snob.print_tree()
     snob.print_class(-2, 1)

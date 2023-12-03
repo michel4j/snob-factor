@@ -80,11 +80,11 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
 } Stats;
 
 /*    Static variables useful for many types of variable    */
-static Saux *saux;
-static Paux *paux;
-static Vaux *vaux;
-static Basic *cvi, *dcvi;
-static Stats *stats;
+// static Saux *saux;
+// static Paux *paux;
+// static Vaux *vaux;
+// static Basic *cvi, *dcvi;
+// static Stats *stats;
 
 /*    Static variables specific to this type   */
 static double dadnap;
@@ -126,17 +126,14 @@ void expbinary_define(int typindx) {
 
 /*    ----------------------- set_var --------------------------  */
 void set_var(int iv) {
-    SampleVar *smpl_var;
-    PVinst *pop_var;
-    VSetVar *vset_var;
-    vset_var = CurCtx.vset->variables + iv;
-    pop_var = CurCtx.popln->variables + iv;
-    paux = (Paux *)pop_var->paux;
-    smpl_var = CurCtx.sample->variables + iv;
-    vaux = (Vaux *)vset_var->vaux;
-    saux = (Saux *)smpl_var->saux;
-    cvi = (Basic *)CurClass->basics[iv];
-    stats = (Stats *)CurClass->stats[iv];
+    // VSetVar *vset_var = CurCtx.vset->variables + iv;
+    // PVinst *pop_var = CurCtx.popln->variables + iv;
+    // Paux *paux = (Paux *)pop_var->paux;
+    // SampleVar *smpl_var = CurCtx.sample->variables + iv;
+    // Vaux *vaux = (Vaux *)vset_var->vaux;
+    // Saux *saux = (Saux *)smpl_var->saux;
+    // Basic *cvi = (Basic *)CurClass->basics[iv];
+    // Stats *stats = (Stats *)CurClass->stats[iv];
 }
 
 /*    ---------------------  read_aux_attr ---------------------------   */
@@ -199,8 +196,8 @@ void set_sizes(int iv) {
 
 /*    ----------------------- set_best_pars -----------------------  */
 void set_best_pars(int iv) {
-
-    set_var(iv);
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
 
     if (CurClass->type == Dad) {
         cvi->bap = cvi->nap;
@@ -227,7 +224,9 @@ of basic params   */
 void clear_stats(int iv) {
     double round, pr0, pr1;
 
-    set_var(iv);
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
+
     stats->cnt = 0.0;
     stats->stcost = stats->ftcost = 0.0;
     stats->vsq = 0.0;
@@ -260,10 +259,13 @@ void clear_stats(int iv) {
  */
 void score_var(int iv) {
     double cc, pr0, pr1, ff, ft, dbyv, hdffbydv, hdftbydv;
-    VSetVar *vset_var;
-    
-    set_var(iv);
-    vset_var = CurCtx.vset->variables + iv;
+
+    VSetVar *vset_var = CurCtx.vset->variables + iv;
+    SampleVar *smpl_var = CurCtx.sample->variables + iv;
+    Saux *saux = (Saux *)smpl_var->saux;
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
+
     if (vset_var->inactive)
         return;
     if (saux->missing)
@@ -314,7 +316,11 @@ void cost_var(int iv, int fac) {
     double cost;
     double cc, ff, ft, hdffbydc, hdftbydc, pr0, pr1, small;
 
-    set_var(iv);
+    SampleVar *smpl_var = CurCtx.sample->variables + iv;
+    Saux *saux = (Saux *)smpl_var->saux;
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
+
     if (saux->missing)
         return;
     if (CurClass->age == 0) {
@@ -376,7 +382,10 @@ facdone:
 params and accumulates in paramd1, paramd2  */
 void deriv_var(int iv, int fac) {
 
-    set_var(iv);
+    SampleVar *smpl_var = CurCtx.sample->variables + iv;
+    Saux *saux = (Saux *)smpl_var->saux;
+    Stats *stats = (Stats *)CurClass->stats[iv];
+
     if (saux->missing)
         return;
     /*    Do no-fac first  */
@@ -409,7 +418,9 @@ void adjust(int iv, int fac) {
     double adj, apd2, cnt, vara, del, tt, spcost, fpcost;
     int n;
 
-    set_var(iv);
+    Basic *dcvi, *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
+
     cnt = stats->cnt;
 
     if (CurDad) { /* Not root */
@@ -557,13 +568,14 @@ adjdone:
 }
 
 /*    ------------------------  show  -----------------------   */
-void show(Class *ccl, int iv) {
+void show(Class *cls, int iv) {
 
-    set_class(ccl);
-    set_var(iv);
+    Basic *cvi = (Basic *)cls->basics[iv];
+    Stats *stats = (Stats *)cls->stats[iv];
+
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, stats->cnt, (cvi->infac) ? " In" : "Out", stats->adj);
 
-    if (CurClass->num_sons < 2)
+    if (cls->num_sons < 2)
         goto skipn;
     printf(" N: AP ");
     printf("%6.3f", cvi->nap);
@@ -586,10 +598,11 @@ void cost_var_nonleaf(int iv) {
     double del, co0, co1, co2, tstvn, tssn;
     double apsprd, pcost, map, tap;
     int n, ison, nson, nints;
-    VSetVar *vset_var;
-    
-    set_var(iv);
-    vset_var = CurCtx.vset->variables + iv;
+
+    VSetVar *vset_var = CurCtx.vset->variables + iv;
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
+
     if (vset_var->inactive) {
         stats->npcost = stats->ntcost = 0.0;
         return;

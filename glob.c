@@ -178,11 +178,13 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
     do {
         log_msg(1, "Cycle %d", 1 + cycle);
         log_msg(1, "DOALL:   Doing %d steps of re-estimation and assignment.", do_steps);
+        cleanup_population();
         do_all(do_steps, 1);
-
+        
+        cleanup_population();
         log_msg(1, "TRYMOVE: Attempting class moves until %d successive failures", move_steps);
         try_moves(move_steps);
-        cleanup_population();
+
         show_population();
         root = CurCtx.popln->classes[CurCtx.popln->root];
         delta = 100.0 * (cost - root->best_cost) / cost;

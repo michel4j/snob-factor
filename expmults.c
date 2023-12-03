@@ -107,12 +107,6 @@ static double *scst;          /*  vector of non-fac state costs  */
 static double *pr;            /* vec. of factor state probs  */
 static double *fapd1, *fbpd1; /*  vectors of derivs of cost wrt params */
 
-/*    Static variables useful for many types of variable    */
-static Saux *saux;
-static Paux *paux;
-static Vaux *vaux;
-static Basic *cvi, *dcvi;
-static Stats *stats;
 
 /*    Static variables specific to this type   */
 static int states;
@@ -181,17 +175,12 @@ void expmults_define(int typindx) {
 }
 
 /*    ----------------------- set_var --------------------------  */
-void set_var(int iv)
-{
-    SampleVar *smpl_var;
+void set_var(int iv) {
     VSetVar *vset_var = CurCtx.vset->variables + iv;
-    PVinst *pop_var = CurCtx.popln->variables + iv;
-    paux = (Paux *)pop_var->paux;
-    smpl_var = CurCtx.sample->variables + iv;
-    vaux = (Vaux *)vset_var->vaux;
-    saux = (Saux *)smpl_var->saux;
-    cvi = (Basic *)CurClass->basics[iv];
-    stats = (Stats *)CurClass->stats[iv];
+    Vaux *vaux = (Vaux *)vset_var->vaux;
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
+
     states = vaux->states;
     statesm = states - 1;
     rstates = 1.0 / states;
@@ -212,9 +201,7 @@ void set_var(int iv)
 /*    To read any auxiliary info about a variable of this type in some
 sample.
     */
-int read_aux_attr(vax)
-Vaux *vax;
-{
+int read_aux_attr(Vaux *vax) {
     int i;
     double lstates;
 
@@ -250,9 +237,7 @@ Vaux *vax;
 
 /*    -------------------  read_aux_smpl ------------------------------  */
 /*    To read auxilliary info re sample for this attribute   */
-int read_aux_smpl(sax)
-Saux *sax;
-{
+int read_aux_smpl(Saux *sax) {
     /*    Multistate has no auxilliary info re sample  */
     return (0);
 }
@@ -263,7 +248,9 @@ int read_datum(char *loc, int iv) {
     int i;
     Datum xn;
 
-    vaux = (Vaux *)(CurCtx.vset->variables[iv].vaux);
+    VSetVar *vset_var = CurCtx.vset->variables + iv;
+    Vaux *vaux = (Vaux *)vset_var->vaux;
+
     states = vaux->states;
     /*    Read datum into xn, return error.  */
     i = read_int(&xn, 1);
@@ -280,8 +267,7 @@ int read_datum(char *loc, int iv) {
 
 /*    ---------------------  print_datum --------------------------  */
 /*    To print a Datum value   */
-void print_datum(loc) Datum *loc;
-{
+void print_datum(Datum *loc) {
     /*    Print datum from address loc   */
     printf("%3d", (*((Datum *)loc) + 1));
     return;
@@ -291,24 +277,22 @@ void print_datum(loc) Datum *loc;
 /*    To use info in ctx.vset to set sizes of basic and stats
 blocks for variable, and place in VSetVar basicsize, statssize.
     */
-void set_sizes(iv) int iv;
-{
-
+void set_sizes(int iv) {
     VSetVar *vset_var = CurCtx.vset->variables + iv;
-    vaux = (Vaux *)vset_var->vaux;
+    Vaux *vaux = (Vaux *)vset_var->vaux;
     states = vaux->states;
 
     /*    Set sizes of CVinst (basic) and EVinst (stats) in VSetVar  */
     /*    Each inst has a number of vectors appended, of length 'states' */
     vset_var->basic_size = sizeof(Basic) + (5 * states - 1) * sizeof(double);
     vset_var->stats_size = sizeof(Stats) + (5 * states - 1) * sizeof(double);
-    return;
 }
 
 /*    ----------------------- set_best_pars -----------------------  */
 void set_best_pars(iv) int iv;
 {
-
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
     set_var(iv);
 
     if (CurClass->type == Dad) {
@@ -327,7 +311,6 @@ void set_best_pars(iv) int iv;
         stats->btcost = stats->stcost;
         stats->bpcost = stats->spcost;
     }
-    return;
 }
 
 /*    --------------------  setprobs -------------------------------- */
@@ -369,7 +352,6 @@ void setprobs() {
     ff = exp(rstatesm * log(ff + 1.0e-6));
     b1p2 = b1p * b1p;
     gg = b2p - b1p2;
-    return;
 }
 
 /*    ---------------------------  clear_stats  --------------------   */
@@ -380,22 +362,31 @@ void clear_stats(iv) int iv;
     double sum, tt;
     int k;
 
+    VSetVar *vset_var = CurCtx.vset->variables + iv;
+    Vaux *vaux = (Vaux *)vset_var->vaux;
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
     set_var(iv);
+
     stats->cnt = 0.0;
     stats->stcost = stats->ftcost = 0.0;
     stats->vsq = 0.0;
-    for (k = 0; k < states; k++) { scnt[k] = fapd1[k] = fbpd1[k] = 0.0; }
+    for (k = 0; k < states; k++) {
+        scnt[k] = fapd1[k] = fbpd1[k] = 0.0;
+    }
     stats->apd2 = stats->bpd2 = 0.0;
     if (CurClass->age == 0) {
         /*    Set nominal state costs in scst[]  */
         sum = log((double)states) + 1.0;
-        for (k = 0; k < states; k++) scst[k] = sum;
+        for (k = 0; k < states; k++)
+            scst[k] = sum;
         return;
     }
     /*    Some useful functions  */
     /*    Calc a maximum? for gg  */
     sum = 0.0;
-    for (k = 0; k < states; k++) sum += fbp[k] * fbp[k];
+    for (k = 0; k < states; k++)
+        sum += fbp[k] * fbp[k];
     stats->mgg = 0.5 * sum * rstates;
 
     /*    Set up non-fac case costs in scst[]  */
@@ -421,7 +412,8 @@ void clear_stats(iv) int iv;
     tt = exp(rstatesm * tt); /* 2nd deriv of cost wrt sap[] */
     tt = 0.5 * cvi->sapsprd * tt;
     /*    Set state case costs  */
-    for (k = 0; k < states; k++) scst[k] = qr[k] + tt;
+    for (k = 0; k < states; k++)
+        scst[k] = qr[k] + tt;
 
     /*jjj*/
     sum = 0.0;
@@ -430,19 +422,23 @@ void clear_stats(iv) int iv;
         sum += frate[k];
     }
     sum = 1.0 / sum;
-    for (k = 0; k < states; k++) frate[k] *= sum;
+    for (k = 0; k < states; k++)
+        frate[k] *= sum;
     return;
 }
 
 /*    -------------------------  score_var  ------------------------   */
 /*    To eval derivs of a case wrt score, scorespread. Adds to CaseFacScoreD1,vvd2.
  */
-void score_var(iv) int iv;
-{
+void score_var(int iv) {
     double t1d1, t2d1, t3d1;
-    set_var(iv);
 
     VSetVar *vset_var = CurCtx.vset->variables + iv;
+    SampleVar *smpl_var = CurCtx.sample->variables + iv;
+    Saux *saux = (Saux *)smpl_var->saux;
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
+    set_var(iv);
 
     if (vset_var->inactive)
         return;
@@ -459,16 +455,19 @@ void score_var(iv) int iv;
     EstFacScoreD2 += (gg > stats->mgg) ? gg : stats->mgg;
     /*    Since we don't know vsprd, just calc and accumulate deriv of 'gg' */
     CaseFacScoreD3 += b3p - b1p * (3.0 * gg + b1p2);
-    return;
 }
 
 /*    ---------------------  cost_var  ---------------------------  */
 /*    Accumulate item cost into scasecost, fcasecost  */
-void cost_var(iv, fac) int iv, fac;
-{
+void cost_var(int iv, int fac) {
     double cost;
 
+    SampleVar *smpl_var = CurCtx.sample->variables + iv;
+    Saux *saux = (Saux *)smpl_var->saux;
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
     set_var(iv);
+
     if (saux->missing)
         return;
     if (CurClass->age == 0) {
@@ -495,18 +494,20 @@ void cost_var(iv, fac) int iv, fac;
 facdone:
     fcasecost += cost;
     stats->parkftcost = cost;
-    return;
 }
 
 /*    ------------------  deriv_var  ------------------------------  */
 /*    Given item weight in cwt, calcs derivs of item cost wrt basic
 params and accumulates in paramd1, paramd2  */
-void deriv_var(iv, fac) int iv, fac;
-{
+void deriv_var(int iv, int fac) {
     double cons1, cons2, inc;
     int k;
 
+    SampleVar *smpl_var = CurCtx.sample->variables + iv;
+    Saux *saux = (Saux *)smpl_var->saux;
+    Stats *stats = (Stats *)CurClass->stats[iv];
     set_var(iv);
+
     if (saux->missing)
         return;
     /*    Do no-fac first  */
@@ -562,13 +563,17 @@ facdone:
 
 /*    -------------------  adjust  ---------------------------    */
 /*    To adjust parameters of a multistate variable     */
-void adjust(iv, fac) int iv, fac;
-{
+void adjust(int iv, int fac) {
 
     double adj, apd2, cnt, vara, del, tt, sum, spcost, fpcost;
     int k, n;
 
+    VSetVar *vset_var = CurCtx.vset->variables + iv;
+    Vaux *vaux = (Vaux *)vset_var->vaux;
+    Basic *dcvi, *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
     set_var(iv);
+
     cnt = stats->cnt;
 
     if (CurDad) { /* Not root */
@@ -617,7 +622,8 @@ void adjust(iv, fac) int iv, fac;
     }
     /*    Make a stab at item cost   */
     sum = 0.0;
-    for (k = 0; k < states; k++) sum += scnt[k] * qr[k];
+    for (k = 0; k < states; k++)
+        sum += scnt[k] * qr[k];
     CurClass->cstcost -= sum + 0.5 * statesm;
     CurClass->cftcost = CurClass->cstcost + 100.0 * cnt;
 
@@ -660,7 +666,8 @@ hasage:
 
     /*    And for fbp[]:  (N(0,1) prior)  */
     vara = 0.0;
-    for (k = 0; k < states; k++) vara += fbp[k] * fbp[k];
+    for (k = 0; k < states; k++)
+        vara += fbp[k] * fbp[k];
     vara += cvi->bpsprd;  /* Additional variance from roundoff */
     fpcost += 0.5 * vara; /* The squared deviations term */
     fpcost += statesm * (HALF_LOG_2PI + LATTICE);
@@ -798,10 +805,11 @@ adjdone:
 
 /*    ------------------------  prprint  -------------------  */
 /*    prints the exponential params in 'ap' converted to probs   */
-void prprint(ap) double *ap;
-{
+void prprint(double *ap, int iv) {
     int k;
     double max, sum;
+
+    set_var(iv);
 
     max = ap[0];
     for (k = 0; k < states; k++) {
@@ -814,30 +822,32 @@ void prprint(ap) double *ap;
         sum += pr[k];
     }
     sum = 1.0 / sum;
-    for (k = 0; k < states; k++) printf("%7.3f", pr[k] * sum);
+    for (k = 0; k < states; k++)
+        printf("%7.3f", pr[k] * sum);
     return;
 }
 
 /*    ------------------------  show  -----------------------   */
-void show(ccl, iv) Class *ccl;
-int iv;
-{
+void show(Class *cls, int iv) {
     int k;
 
-    set_class(ccl);
+    set_class(cls);
     set_var(iv);
+    Basic *cvi = (Basic *)cls->basics[iv];
+    Stats *stats = (Stats *)cls->stats[iv];
+
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, stats->cnt, (cvi->infac) ? " In" : "Out", stats->adj);
 
-    if (CurClass->num_sons < 2)
+    if (cls->num_sons < 2)
         goto skipn;
     printf(" NR: ");
-    prprint(nap);
+    prprint(nap, iv);
     printf(" +-%7.3f\n", sqrt(cvi->napsprd));
 skipn:
     printf(" PR: ");
-    prprint(sap);
+    prprint(sap, iv);
     printf("\n");
-    if (CurClass->use == Tiny)
+    if (cls->use == Tiny)
         goto skipf;
     printf(" FR: ");
     for (k = 0; k < states; k++)
@@ -851,8 +861,7 @@ skipf:;
 }
 
 /*    ----------------------  cost_var_nonleaf -----------------------------  */
-void cost_var_nonleaf(iv) int iv;
-{
+void cost_var_nonleaf(int iv) {
     Basic *soncvi;
     Class *son;
     double del, co0, co1, co2, tstvn, tssn;
@@ -861,7 +870,8 @@ void cost_var_nonleaf(iv) int iv;
     int n, k, ison, nson, nints;
 
     VSetVar *vset_var = CurCtx.vset->variables + iv;
-
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
     set_var(iv);
     if (vset_var->inactive) {
         stats->npcost = stats->ntcost = 0.0;
@@ -870,15 +880,17 @@ void cost_var_nonleaf(iv) int iv;
     nson = CurClass->num_sons;
     if (nson < 2) { /* cannot define parameters */
         stats->npcost = stats->ntcost = 0.0;
-        for (k = 0; k < states; k++) nap[k] = sap[k];
+        for (k = 0; k < states; k++)
+            nap[k] = sap[k];
         cvi->napsprd = 1.0;
         return;
     }
     /*      We need to accumlate things over sons. We need:   */
-    nints = 0;        /* Number of internal sons (M) */
-    for (k = 0; k < states; k++) pr[k] = 0.0; /* Total of sons' bap[] vectors */
-    tstvn = 0.0;      /* Total variance of sons' vectors */
-    tssn = 0.0;       /* Total internal sons' bapsprd  */
+    nints = 0; /* Number of internal sons (M) */
+    for (k = 0; k < states; k++)
+        pr[k] = 0.0; /* Total of sons' bap[] vectors */
+    tstvn = 0.0;     /* Total variance of sons' vectors */
+    tssn = 0.0;      /* Total internal sons' bapsprd  */
 
     apsprd = cvi->napsprd;
     /*    The calculation is like that in reals.c (q.v.) but now we have
