@@ -52,9 +52,10 @@ int error_and_message(const char *message) {
     return -1;
 }
 int make_class() {
-    PVinst *pvars;
+    PVinst *pop_var_list, *pop_var;
     CVinst **cvars, *cvi;
     EVinst **evars, *stats;
+    VSetVar *vset_var;
     int i, kk, found = 0, vacant = 0;
 
     /*    If nc, check that popln has an attached sample  */
@@ -66,7 +67,7 @@ int make_class() {
         CurCtx.sample = Samples[i];
     }
 
-    pvars = CurCtx.popln->variables;
+    pop_var_list = CurCtx.popln->variables;
     /*    Find a vacant slot in the popln's classes vec   */
     for (kk = 0; kk < CurCtx.popln->cls_vec_len; kk++) {
         if (!CurCtx.popln->classes[kk]) {
@@ -100,14 +101,14 @@ int make_class() {
 
         /*    Now make the CVinst blocks, which are of varying size   */
         for (i = 0; i < CurCtx.vset->length; i++) {
-            CurPopVar = pvars + i;
-            CurVSetVar = CurCtx.vset->variables + i;
-            cvi = cvars[i] = (CVinst *)alloc_blocks(1, CurVSetVar->basic_size);
+            pop_var = pop_var_list + i;
+            vset_var = CurCtx.vset->variables + i;
+            cvi = cvars[i] = (CVinst *)alloc_blocks(1, vset_var->basic_size);
             if (!cvi) {
                 return error_and_message("No space for new class");
             }
             /*    Fill in standard stuff  */
-            cvi->id = CurVSetVar->id;
+            cvi->id = vset_var->id;
         }
 
         /*    Make EVinst blocks and vector of pointers  */
@@ -116,13 +117,13 @@ int make_class() {
             return error_and_message("No space for new class");
         }
         for (i = 0; i < CurCtx.vset->length; i++) {
-            CurPopVar = pvars + i;
-            CurVSetVar = CurCtx.vset->variables + i;
-            stats = evars[i] = (EVinst *)alloc_blocks(1, CurVSetVar->stats_size);
+            pop_var = pop_var_list + i;
+            vset_var = CurCtx.vset->variables + i;
+            stats = evars[i] = (EVinst *)alloc_blocks(1, vset_var->stats_size);
             if (!stats) {
                 return error_and_message("No space for new class");
             }
-            stats->id = CurPopVar->id;
+            stats->id = pop_var->id;
         }
 
         /*    Stomp on ptrs as yet undefined  */
@@ -179,7 +180,6 @@ char *typstr[] = {"typ?", " DAD", "LEAF", "typ?", " Sub"};
 char *usestr[] = {"Tny", "Pln", "Fac"};
 void print_one_class(Class *cls, int full) {
     double vrms;
-    
 
     printf("\n--------------------------------------------------------------------------------\n");
     printf("S%s", serial_to_str(cls));
@@ -223,7 +223,7 @@ void print_class(int kk, int full) {
         log_msg(0, "%d passed to print_class", kk);
     } else {
         set_population();
-        cls = CurCtx.popln->classes[CurCtx.popln->root];      
+        cls = CurCtx.popln->classes[CurCtx.popln->root];
         do {
             if ((kk == -2) || (cls->type != Sub))
                 print_one_class(cls, full);
@@ -287,6 +287,7 @@ young. If class age = MinFacAge, will guess scores but not cost them */
 void score_all_vars(Class *cls, int item) {
     int i, igbit = 0, oldicvv = 0;
     double del;
+    VSetVar *vset_var;
 
     set_class_with_scores(cls, item);
     if ((cls->age < MinFacAge) || (cls->use == Tiny)) {
@@ -321,9 +322,9 @@ void score_all_vars(Class *cls, int item) {
         CaseFacScoreD1 = CaseFacScoreD2 = EstFacScoreD2 = CaseFacScoreD3 = 0.0;
         VarType *var_type;
         for (i = 0; i < CurCtx.vset->length; i++) {
-            CurVSetVar = CurCtx.vset->variables + i;
-            if (!CurVSetVar->inactive) {
-                var_type = CurVSetVar->vtype;
+            vset_var = CurCtx.vset->variables + i;
+            if (!vset_var->inactive) {
+                var_type = vset_var->vtype;
                 (*var_type->score_var)(i); // score_var should add to CaseFacScoreD1, CaseFacScoreD2, CaseFacScoreD3, EstFacScoreD2.
             }
         }
@@ -368,6 +369,7 @@ cls->casecost according to use of class  */
 void cost_all_vars(Class *cls, int item) {
     int fac = 0;
     double tmp;
+    VSetVar *vset_var;
 
     set_class_with_scores(cls, item);
     if ((cls->age >= MinFacAge) && (cls->use != Tiny)) {
@@ -377,9 +379,9 @@ void cost_all_vars(Class *cls, int item) {
     ncasecost = scasecost = fcasecost = cls->mlogab; /* Abundance cost */
     VarType *var_type;
     for (int iv = 0; iv < CurCtx.vset->length; iv++) {
-        CurVSetVar = CurCtx.vset->variables + iv;
-        if (!(CurVSetVar->inactive)) {
-            var_type = CurVSetVar->vtype;
+        vset_var = CurCtx.vset->variables + iv;
+        if (!(vset_var->inactive)) {
+            var_type = vset_var->vtype;
             (*var_type->cost_var)(iv, fac); /*    will add to scasecost, fcasecost  */
         }
     }
@@ -415,7 +417,7 @@ void cost_all_vars(Class *cls, int item) {
 /*    To collect derivative statistics for all vars of a class   */
 void deriv_all_vars(Class *cls, int item) {
     int fac = 0;
-    VSetVar *attr;
+    VSetVar *vset_var;
 
     set_class_with_scores(cls, item);
     cls->newcnt += CurCaseWeight;
@@ -430,9 +432,9 @@ void deriv_all_vars(Class *cls, int item) {
     }
 
     for (int iv = 0; iv < CurCtx.vset->length; iv++) {
-        attr = CurCtx.vset->variables + iv;
-        if (!(attr->inactive)) {
-            (*attr->vtype->deriv_var)(iv, fac);
+        vset_var = CurCtx.vset->variables + iv;
+        if (!(vset_var->inactive)) {
+            (*vset_var->vtype->deriv_var)(iv, fac);
         }
     }
 
@@ -449,7 +451,8 @@ void deriv_all_vars(Class *cls, int item) {
 void adjust_class(Class *cls, int dod) {
     int iv, fac, npars, small;
     Class *son;
-    VSetVar *attr;
+    VSetVar *vset_var;
+    VarType *var_type;
     double leafcost;
 
     set_class(cls);
@@ -494,10 +497,10 @@ void adjust_class(Class *cls, int dod) {
     cls->nofac_par_cost = cls->fac_par_cost = 0.0;
 
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
-        attr = CurCtx.vset->variables + iv;
-        if (!(attr->inactive)) {
-            //CurVType = CurVSetVar->vtype;
-            (*attr->vtype->adjust)(iv, fac);
+        vset_var = CurCtx.vset->variables + iv;
+        if (!(vset_var->inactive)) {
+            var_type = vset_var->vtype;
+            (*var_type->adjust)(iv, fac);
         }
     }
 
@@ -553,8 +556,7 @@ void adjust_class(Class *cls, int dod) {
                 cls->use = Plain;
                 cls->sum_score_sq = 0.0;
             } else if (cls->age >= MinFacAge) {
-                if ((cls->use == Plain && cls->fac_cost < cls->nofac_cost) ||
-                    (cls->use != Plain && cls->nofac_cost < cls->fac_cost)) {
+                if ((cls->use == Plain && cls->fac_cost < cls->nofac_cost) || (cls->use != Plain && cls->nofac_cost < cls->fac_cost)) {
                     cls->use = (cls->use == Plain) ? Fac : Plain;
                     if (cls->use == Fac) {
                         cls->boost_count = 0;
@@ -707,7 +709,7 @@ void delete_all_classes() {
     }
     CurCtx.popln->num_classes = 1;
     CurCtx.popln->hi_class = root_id;
-    
+
     cls = CurCtx.popln->classes[root_id];
     cls->son_id = -1;
     cls->sib_id = -1;

@@ -40,10 +40,6 @@ EXT int Control, DControl;
 /*    To determine how weights are distributed  */
 EXT int DFix, Fix;
 
-/*    re Poplns  */
-EXT VSetVar *CurVSetVar;
-EXT PVinst *CurPopVar;
-
 /*    re Classes  */
 EXT Class *CurClass, *CurDad;
 EXT double CurCaseWeight; /*  weight of case in class  */

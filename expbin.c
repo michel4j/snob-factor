@@ -127,15 +127,16 @@ void expbinary_define(int typindx) {
 /*    ----------------------- set_var --------------------------  */
 void set_var(int iv) {
     SampleVar *smpl_var;
-    CurVSetVar = CurCtx.vset->variables + iv;
-    CurPopVar = CurCtx.popln->variables + iv;
-    paux = (Paux *)CurPopVar->paux;
+    PVinst *pop_var;
+    VSetVar *vset_var;
+    vset_var = CurCtx.vset->variables + iv;
+    pop_var = CurCtx.popln->variables + iv;
+    paux = (Paux *)pop_var->paux;
     smpl_var = CurCtx.sample->variables + iv;
-    vaux = (Vaux *)CurVSetVar->vaux;
+    vaux = (Vaux *)vset_var->vaux;
     saux = (Saux *)smpl_var->saux;
     cvi = (Basic *)CurClass->basics[iv];
     stats = (Stats *)CurClass->stats[iv];
-    return;
 }
 
 /*    ---------------------  read_aux_attr ---------------------------   */
@@ -187,12 +188,12 @@ void print_datum(Datum *loc) {
 blocks for variable, and place in VSetVar basicsize, statssize.
     */
 void set_sizes(int iv) {
-
-    CurVSetVar = CurCtx.vset->variables + iv;
+    VSetVar *vset_var;
+    vset_var = CurCtx.vset->variables + iv;
 
     /*    Set sizes of CVinst (basic) and EVinst (stats) in VSetVar  */
-    CurVSetVar->basic_size = sizeof(Basic);
-    CurVSetVar->stats_size = sizeof(Stats);
+    vset_var->basic_size = sizeof(Basic);
+    vset_var->stats_size = sizeof(Stats);
     return;
 }
 
@@ -259,8 +260,11 @@ void clear_stats(int iv) {
  */
 void score_var(int iv) {
     double cc, pr0, pr1, ff, ft, dbyv, hdffbydv, hdftbydv;
+    VSetVar *vset_var;
+    
     set_var(iv);
-    if (CurVSetVar->inactive)
+    vset_var = CurCtx.vset->variables + iv;
+    if (vset_var->inactive)
         return;
     if (saux->missing)
         return;
@@ -582,9 +586,11 @@ void cost_var_nonleaf(int iv) {
     double del, co0, co1, co2, tstvn, tssn;
     double apsprd, pcost, map, tap;
     int n, ison, nson, nints;
-
+    VSetVar *vset_var;
+    
     set_var(iv);
-    if (CurVSetVar->inactive) {
+    vset_var = CurCtx.vset->variables + iv;
+    if (vset_var->inactive) {
         stats->npcost = stats->ntcost = 0.0;
         return;
     }

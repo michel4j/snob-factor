@@ -114,10 +114,6 @@ static Vaux *vaux;
 static Basic *cvi, *dcvi;
 static Stats *stats;
 
-/*    The macro below abbreviates a scan over states  */
-#define Fork for (k = 0; k < states; k++)
-#define Forj for (j = 0; j < states; j++)
-
 /*    Static variables specific to this type   */
 static int states;
 static double statesm; /*  states - 1.0 */
@@ -185,14 +181,14 @@ void expmults_define(int typindx) {
 }
 
 /*    ----------------------- set_var --------------------------  */
-void set_var(iv) int iv;
+void set_var(int iv)
 {
     SampleVar *smpl_var;
-    CurVSetVar = CurCtx.vset->variables + iv;
-    CurPopVar = CurCtx.popln->variables + iv;
-    paux = (Paux *)CurPopVar->paux;
+    VSetVar *vset_var = CurCtx.vset->variables + iv;
+    PVinst *pop_var = CurCtx.popln->variables + iv;
+    paux = (Paux *)pop_var->paux;
     smpl_var = CurCtx.sample->variables + iv;
-    vaux = (Vaux *)CurVSetVar->vaux;
+    vaux = (Vaux *)vset_var->vaux;
     saux = (Saux *)smpl_var->saux;
     cvi = (Basic *)CurClass->basics[iv];
     stats = (Stats *)CurClass->stats[iv];
@@ -210,7 +206,6 @@ void set_var(iv) int iv;
     pr = scst + states;
     fapd1 = pr + states;
     fbpd1 = fapd1 + states;
-    return;
 }
 
 /*    ---------------------  read_aux_attr ---------------------------   */
@@ -299,14 +294,14 @@ blocks for variable, and place in VSetVar basicsize, statssize.
 void set_sizes(iv) int iv;
 {
 
-    CurVSetVar = CurCtx.vset->variables + iv;
-    vaux = (Vaux *)CurVSetVar->vaux;
+    VSetVar *vset_var = CurCtx.vset->variables + iv;
+    vaux = (Vaux *)vset_var->vaux;
     states = vaux->states;
 
     /*    Set sizes of CVinst (basic) and EVinst (stats) in VSetVar  */
     /*    Each inst has a number of vectors appended, of length 'states' */
-    CurVSetVar->basic_size = sizeof(Basic) + (5 * states - 1) * sizeof(double);
-    CurVSetVar->stats_size = sizeof(Stats) + (5 * states - 1) * sizeof(double);
+    vset_var->basic_size = sizeof(Basic) + (5 * states - 1) * sizeof(double);
+    vset_var->stats_size = sizeof(Stats) + (5 * states - 1) * sizeof(double);
     return;
 }
 
@@ -345,7 +340,7 @@ void setprobs() {
 
     b3p = b2p = b1p = 0.0; /* For calculating dispersion of bp[] */
     sum = 0.0;
-    Fork {
+    for (k = 0; k < states; k++) {
         tt = fabs(CurCaseFacScore - fbp[k]);
         /*    Do table interpolation in gausorg   */
         tt = tt * Gns;
@@ -361,7 +356,7 @@ void setprobs() {
     sum = 1.0 / sum;
     ff = states * states;
 
-    Fork {
+    for (k = 0; k < states; k++) {
         pr[k] *= sum;
         ff *= pr[k];
         tt = pr[k] * fbp[k];
@@ -389,18 +384,18 @@ void clear_stats(iv) int iv;
     stats->cnt = 0.0;
     stats->stcost = stats->ftcost = 0.0;
     stats->vsq = 0.0;
-    Fork { scnt[k] = fapd1[k] = fbpd1[k] = 0.0; }
+    for (k = 0; k < states; k++) { scnt[k] = fapd1[k] = fbpd1[k] = 0.0; }
     stats->apd2 = stats->bpd2 = 0.0;
     if (CurClass->age == 0) {
         /*    Set nominal state costs in scst[]  */
         sum = log((double)states) + 1.0;
-        Fork scst[k] = sum;
+        for (k = 0; k < states; k++) scst[k] = sum;
         return;
     }
     /*    Some useful functions  */
     /*    Calc a maximum? for gg  */
     sum = 0.0;
-    Fork sum += fbp[k] * fbp[k];
+    for (k = 0; k < states; k++) sum += fbp[k] * fbp[k];
     stats->mgg = 0.5 * sum * rstates;
 
     /*    Set up non-fac case costs in scst[]  */
@@ -411,13 +406,13 @@ void clear_stats(iv) int iv;
             tt = sap[k];
     }
     sum = 0.0;
-    Fork {
+    for (k = 0; k < states; k++) {
         pr[k] = exp(sap[k] - tt);
         sum += pr[k];
     }
     sum = 1.0 / sum;
     tt = 0.0;
-    Fork {
+    for (k = 0; k < states; k++) {
         qr[k] = -log(pr[k] * sum + 0.0000001);
         tt -= qr[k];
     }
@@ -426,16 +421,16 @@ void clear_stats(iv) int iv;
     tt = exp(rstatesm * tt); /* 2nd deriv of cost wrt sap[] */
     tt = 0.5 * cvi->sapsprd * tt;
     /*    Set state case costs  */
-    Fork scst[k] = qr[k] + tt;
+    for (k = 0; k < states; k++) scst[k] = qr[k] + tt;
 
     /*jjj*/
     sum = 0.0;
-    Fork {
+    for (k = 0; k < states; k++) {
         frate[k] = exp(fap[k] + 0.5 * fbp[k] * fbp[k]);
         sum += frate[k];
     }
     sum = 1.0 / sum;
-    Fork frate[k] *= sum;
+    for (k = 0; k < states; k++) frate[k] *= sum;
     return;
 }
 
@@ -446,7 +441,10 @@ void score_var(iv) int iv;
 {
     double t1d1, t2d1, t3d1;
     set_var(iv);
-    if (CurVSetVar->inactive)
+
+    VSetVar *vset_var = CurCtx.vset->variables + iv;
+
+    if (vset_var->inactive)
         return;
     if (saux->missing)
         return;
@@ -529,7 +527,7 @@ void deriv_var(iv, fac) int iv, fac;
     /*    From 1st cost term:  */
     fapd1[saux->xn] -= CurCaseWeight;
     fbpd1[saux->xn] -= CurCaseWeight * CurCaseFacScore;
-    Fork {
+    for (k = 0; k < states; k++) {
         fapd1[k] += CurCaseWeight * pr[k];
         fbpd1[k] += CurCaseWeight * pr[k] * CurCaseFacScore;
     }
@@ -537,7 +535,7 @@ void deriv_var(iv, fac) int iv, fac;
     /*    Second cost term :  */
     cons1 = CurCaseWeight * stats->conff * rstatesm;
     cons2 = states * cons1;
-    Fork {
+    for (k = 0; k < states; k++) {
         inc = cons1 - pr[k] * cons2;
         fapd1[k] += inc;
         fbpd1[k] += CurCaseFacScore * inc;
@@ -546,7 +544,7 @@ void deriv_var(iv, fac) int iv, fac;
     /*    Third cost term:  */
     cons1 = 2.0 * b1p2 - b2p;
     cons2 = CurCaseWeight * cvvsprd * Mbeta * rstates;
-    Fork {
+    for (k = 0; k < states; k++) {
         inc = 0.5 * CurCaseWeight * cvvsprd * pr[k] * (fbp[k] * fbp[k] - 2.0 * fbp[k] * b1p + cons1);
         fapd1[k] += inc;
         fbpd1[k] += CurCaseFacScore * inc;
@@ -585,7 +583,7 @@ void adjust(iv, fac) int iv, fac;
 
     /*    If too few data, use dad's n-paras   */
     if ((Control & AdjPr) && (cnt < MinSize)) {
-        Fork {
+        for (k = 0; k < states; k++) {
             nap[k] = sap[k] = fap[k] = dadnap[k];
             fbp[k] = 0.0;
         }
@@ -601,7 +599,7 @@ void adjust(iv, fac) int iv, fac;
     stats->oldftcost = 0.0;
     stats->adj = 1.0;
     sum = 0.0;
-    Fork {
+    for (k = 0; k < states; k++) {
         sap[k] = log((scnt[k] + 0.5) / (cnt + 0.5 * states));
         qr[k] = -sap[k];
         sum += sap[k]; /* Gives sum of log probs */
@@ -612,21 +610,21 @@ void adjust(iv, fac) int iv, fac;
     cvi->fapsprd = cvi->bpsprd = cvi->sapsprd = statesm / apd2;
 
     sum = -sum / states;
-    Fork {
+    for (k = 0; k < states; k++) {
         sap[k] += sum;
         fap[k] = sap[k];
         fbp[k] = 0.0;
     }
     /*    Make a stab at item cost   */
     sum = 0.0;
-    Fork sum += scnt[k] * qr[k];
+    for (k = 0; k < states; k++) sum += scnt[k] * qr[k];
     CurClass->cstcost -= sum + 0.5 * statesm;
     CurClass->cftcost = CurClass->cstcost + 100.0 * cnt;
 
 hasage:
     /*    Calculate spcost for non-fac params  */
     vara = 0.0;
-    Fork {
+    for (k = 0; k < states; k++) {
         del = sap[k] - dadnap[k];
         vara += del * del;
     }
@@ -647,7 +645,7 @@ hasage:
     }
     /*    Get factor pcost  */
     vara = 0.0;
-    Fork {
+    for (k = 0; k < states; k++) {
         del = fap[k] - dadnap[k];
         vara += del * del;
     }
@@ -662,7 +660,7 @@ hasage:
 
     /*    And for fbp[]:  (N(0,1) prior)  */
     vara = 0.0;
-    Fork vara += fbp[k] * fbp[k];
+    for (k = 0; k < states; k++) vara += fbp[k] * fbp[k];
     vara += cvi->bpsprd;  /* Additional variance from roundoff */
     fpcost += 0.5 * vara; /* The squared deviations term */
     fpcost += statesm * (HALF_LOG_2PI + LATTICE);
@@ -691,13 +689,13 @@ adjloop:
             tt = sap[k];
     }
     sum = 0.0;
-    Fork {
+    for (k = 0; k < states; k++) {
         pr[k] = exp(sap[k] - tt);
         sum += pr[k];
     }
     tt = 0.0;
     sum = 1.0 / sum;
-    Fork {
+    for (k = 0; k < states; k++) {
         pr[k] *= sum;
         tt += log(pr[k]);
     }
@@ -806,17 +804,17 @@ void prprint(ap) double *ap;
     double max, sum;
 
     max = ap[0];
-    Fork {
+    for (k = 0; k < states; k++) {
         if (ap[k] > max)
             max = ap[k];
     }
     sum = 0.0;
-    Fork {
+    for (k = 0; k < states; k++) {
         pr[k] = exp(ap[k] - max);
         sum += pr[k];
     }
     sum = 1.0 / sum;
-    Fork printf("%7.3f", pr[k] * sum);
+    for (k = 0; k < states; k++) printf("%7.3f", pr[k] * sum);
     return;
 }
 
@@ -862,21 +860,23 @@ void cost_var_nonleaf(iv) int iv;
     double apsprd;
     int n, k, ison, nson, nints;
 
+    VSetVar *vset_var = CurCtx.vset->variables + iv;
+
     set_var(iv);
-    if (CurVSetVar->inactive) {
+    if (vset_var->inactive) {
         stats->npcost = stats->ntcost = 0.0;
         return;
     }
     nson = CurClass->num_sons;
     if (nson < 2) { /* cannot define parameters */
         stats->npcost = stats->ntcost = 0.0;
-        Fork nap[k] = sap[k];
+        for (k = 0; k < states; k++) nap[k] = sap[k];
         cvi->napsprd = 1.0;
         return;
     }
     /*      We need to accumlate things over sons. We need:   */
     nints = 0;        /* Number of internal sons (M) */
-    Fork pr[k] = 0.0; /* Total of sons' bap[] vectors */
+    for (k = 0; k < states; k++) pr[k] = 0.0; /* Total of sons' bap[] vectors */
     tstvn = 0.0;      /* Total variance of sons' vectors */
     tssn = 0.0;       /* Total internal sons' bapsprd  */
 
@@ -889,7 +889,7 @@ void cost_var_nonleaf(iv) int iv;
     for (ison = CurClass->son_id; ison > 0; ison = son->sib_id) {
         son = CurCtx.popln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
-        Fork {
+        for (k = 0; k < states; k++) {
             pr[k] += soncvi->bap[k];
             tstvn += soncvi->bap[k] * soncvi->bap[k];
         }

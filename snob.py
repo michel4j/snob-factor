@@ -30,14 +30,14 @@ snob.item_list.argtypes = [ct.c_char_p]
 if __name__ == '__main__':
     snob.initialize(1, 0, 16)
 
-    snob.load_vset(b'./examples/phi.v')
-    snob.load_sample(b'./examples/phi.s')
+    snob.load_vset(b'./examples/6m1c.v')
+    snob.load_sample(b'./examples/6m1c.s')
 
-    result = snob.classify(20, 10, 2, 0.01)
+    result = snob.classify(1, 50, 2, 0)
        
     snob.print_tree()
     snob.print_class(-2, 1)
     snob.show_population()
-    snob.item_list(b'./examples/phi.rep');
+    snob.item_list(b'./examples/6m1c.rep')
     
 

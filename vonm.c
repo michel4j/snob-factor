@@ -118,11 +118,13 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
     double fwd2; /* Total coeff of Fmu in item costs */
 } Stats;
 
+/*
 static Saux *saux;
 static Paux *paux;
 static Vaux *vaux;
 static Basic *cvi, *dcvi;
 static Stats *stats;
+*/
 
 /*--------------------------  define ------------------------------- */
 /*    This routine is used to set up a VarType entry in the global "types"
@@ -163,20 +165,17 @@ void vonm_define(int typindx) {
 
 /*    -------------------  set_var -----------------------------  */
 void set_var(int iv) {
-    SampleVar *smpl_var;
-    CurVSetVar = CurCtx.vset->variables + iv;
-    CurPopVar = CurCtx.popln->variables + iv;
-    paux = (Paux *)CurPopVar->paux;
-    smpl_var = CurCtx.sample->variables + iv;
-    vaux = (Vaux *)CurVSetVar->vaux;
+/*     
+    SampleVar *smpl_var = CurCtx.sample->variables + iv;
+    PVinst *pop_var = CurCtx.popln->variables + iv;
+    VSetVar *vset_var =CurCtx.vset->variables + iv;
+    paux = (Paux *)pop_var->paux;
+    vaux = (Vaux *)vset_var->vaux;
     saux = (Saux *)smpl_var->saux;
     cvi = (Basic *)CurClass->basics[iv];
     stats = (Stats *)CurClass->stats[iv];
-    if (CurDad)
-        dcvi = (Basic *)CurDad->basics[iv];
-    else
-        dcvi = 0;
-    return;
+    dcvi = (CurDad) ? (Basic *)CurDad->basics[iv]: 0;
+*/
 }
 
 /*    --------------------  read_aux_attr  ----------------------------  */
@@ -247,16 +246,20 @@ void print_datum(char *loc) {
 
 /*    ---------------------  set_sizes  -----------------------   */
 void set_sizes(int iv) {
-    CurVSetVar = CurCtx.vset->variables + iv;
-    CurVSetVar->basic_size = sizeof(Basic);
-    CurVSetVar->stats_size = sizeof(Stats);
+    VSetVar *vset_var;
+    vset_var = CurCtx.vset->variables + iv;
+    vset_var->basic_size = sizeof(Basic);
+    vset_var->stats_size = sizeof(Stats);
     return;
 }
 
 /*    ----------------------  set_best_pars --------------------------  */
 void set_best_pars(int iv) {
+    Basic *cvi;
+    Stats *stats;
 
-    set_var(iv);
+    cvi = (Basic *)CurClass->basics[iv];
+    stats = (Stats *)CurClass->stats[iv];
 
     if (CurClass->type == Dad) {
         cvi->bhx = cvi->nhx;
@@ -284,7 +287,12 @@ void set_best_pars(int iv) {
 /*    Clears stats to accumulate in cost_var, and derives useful functions
 of basic params  */
 void clear_stats(int iv) {
-    set_var(iv);
+    Basic *cvi;
+    Stats *stats;
+
+    cvi = (Basic *)CurClass->basics[iv];
+    stats = (Stats *)CurClass->stats[iv];
+
     stats->cnt = 0.0;
     stats->stcost = stats->ftcost = 0.0;
     stats->vsq = 0.0;
@@ -292,19 +300,15 @@ void clear_stats(int iv) {
     stats->tfsin = stats->tfcos = 0.0;
     stats->ldd2 = stats->ldd1 = stats->fwd2 = 0.0;
 
-    if (CurClass->age > 0)
-        return;
-
-    /*    Set some plausible values for initial pass  */
-    if ((CurDad) && (CurClass->age == 0))
-        return;
-    cvi->shx = cvi->shy = cvi->fhx = cvi->fhy = 0.0;
-    cvi->shsprd = cvi->fhsprd = 1.0;
-    cvi->ld = cvi->fkappa = 0.0;
-    cvi->fmufish = cvi->ldsq = 0.0;
-    cvi->slgi0 = cvi->flgi0 = 1.8379; /* about log 2 Pi */
-    cvi->ldsq = cvi->ld * cvi->ld;
-    return;
+    if ((CurClass->age <= 0) && (!CurDad || (CurClass->age != 0))) {
+        /*    Set some plausible values for initial pass  */
+        cvi->shx = cvi->shy = cvi->fhx = cvi->fhy = 0.0;
+        cvi->shsprd = cvi->fhsprd = 1.0;
+        cvi->ld = cvi->fkappa = 0.0;
+        cvi->fmufish = cvi->ldsq = 0.0;
+        cvi->slgi0 = cvi->flgi0 = 1.8379; /* about log 2 Pi */
+        cvi->ldsq = cvi->ld * cvi->ld;
+    }
 }
 
 /*    -------------------------  score_var  ------------------------   */
@@ -329,21 +333,22 @@ mc3 = 0.5 * Fmu * wsprd
     Score prior cost are accounted in score_all_vars.
     */
 void score_var(int iv) {
-
     double cosw, sinw, tt, wd1;
     double dwdt, dwdv, r2, dr2dw;
 
-    set_var(iv);
-    if (CurVSetVar->inactive)
-        return;
+    VSetVar *vset_var = CurCtx.vset->variables + iv;
+    SampleVar *smpl_var = CurCtx.sample->variables + iv;
+    Saux *saux = (Saux *)smpl_var->saux;
+    Basic *cvi = (Basic *)CurClass->basics[iv];
 
-    if (saux->missing)
+    vset_var = CurCtx.vset->variables + iv;
+    if ((vset_var->inactive) || (saux->missing)) {
         return;
+    }
 
     /*    Get t  */
     tt = cvi->ld * CurCaseFacScore;
-    /*    tt is tan of w/2.  Use the formulae for cos and sin in terms of
-        tan of half-angle.  */
+    /*    tt is tan of w/2.  Use the formulae for cos and sin in terms of tan of half-angle.  */
     r2 = 1.0 / (1.0 + tt * tt);
     cosw = (1.0 - tt * tt) * r2; /* (1-t^2) / (1+t^2) */
     dwdt = 2.0 * r2;
@@ -359,8 +364,7 @@ void score_var(int iv) {
         with deriv wrt w given by:
         wd1 = -{(hy.cx + hx.sx) (-sin(w)) - (hx.cx - hy.sx) cos (w)}
             =  {(hy.cx + hx.sx) sin (w) + (hx.cx - hy.sx) cos (w)}
-        */
-
+    */
     wd1 = ((cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * sinw + (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * cosw);
 
     /*    The mc3 term 0.5 * Fmu * r2 * (vsq * ldsprd + ldsq * vsprd)
@@ -380,7 +384,6 @@ void score_var(int iv) {
 
     /*    The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
     /*    and so to deriv wrt factor_scores of:  wd1 * dwdv  */
-
     CaseFacScoreD1 += wd1 * dwdv;
 
     /*    Now for contribution to CaseFacScoreD2. This is 2 * the coeff of vsprd in
@@ -388,14 +391,18 @@ void score_var(int iv) {
     CaseFacScoreD2 += cvi->fmufish * cvi->ldsq * r2;
     EstFacScoreD2 += cvi->fmufish * cvi->ldsq * 4.0;
     /*        Note, the max value of r2 is 4  */
-    return;
 }
 
 /*    -----------------------  cost_var  --------------------------   */
 /*    Accumulates item cost into scasecost, fcasecost    */
 void cost_var(int iv, int fac) {
     double del, cost, tt, tsprd, cosw, sinw, r2;
-    set_var(iv);
+
+    SampleVar *smpl_var = CurCtx.sample->variables + iv;
+    Saux *saux = (Saux *)smpl_var->saux;
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
+
     if (saux->missing)
         return;
     if (CurClass->age == 0) {
@@ -436,7 +443,6 @@ facdone:
     fcasecost += cost;
     stats->parkftcost = cost;
 
-    return;
 }
 
 /*    --------------------  deriv_var  --------------------------  */
@@ -446,7 +452,12 @@ Factor derivs done only if fac.  */
 void deriv_var(int iv, int fac) {
     double tt, tsprd, r2, cosw, sinw, wtr2, wd1, dwdt, dr2dw;
     double coser, siner;
-    set_var(iv);
+
+    SampleVar *smpl_var = CurCtx.sample->variables + iv;
+    Saux *saux = (Saux *)smpl_var->saux;
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
+
     if (saux->missing)
         return;
     /*    Do non-fac first  */
@@ -461,7 +472,6 @@ void deriv_var(int iv, int fac) {
 
     /*    Now for factor form  */
     if (fac) {
-
         tt = cvi->ld * CurCaseFacScore;
         /*    Hence cos(w), sin(w)  */
         r2 = 1.0 / (1.0 + tt * tt);
@@ -473,7 +483,6 @@ void deriv_var(int iv, int fac) {
 
         /*    First, we get the cos and sin of the "error" angle xx-w for
             accumulation as tfcos, tssin  */
-
         coser = saux->xn.cosxx * cosw + saux->xn.sinxx * sinw;
         stats->tfcos += CurCaseWeight * coser;
         siner = saux->xn.sinxx * cosw - saux->xn.cosxx * sinw;
@@ -515,7 +524,12 @@ void adjust(int iv, int fac) {
     double dadhx, dadhy, dhsprd;
     double hxd1, hyd1, hkd1, hkd2;
 
-    set_var(iv);
+    SampleVar *smpl_var = CurCtx.sample->variables + iv;
+    Saux *saux = (Saux *)smpl_var->saux;
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
+    Basic *dcvi = (CurDad) ? (Basic *)CurDad->basics[iv]: 0;
+    
     adj = InitialAdj;
     cnt = stats->cnt;
 
@@ -725,7 +739,11 @@ void show(Class *ccl, int iv) {
     double mu, kappa;
 
     set_class(ccl);
-    set_var(iv);
+
+    SampleVar *smpl_var = CurCtx.sample->variables + iv;
+    Saux *saux = (Saux *)smpl_var->saux;
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
 
     printf("V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv + 1, stats->cnt, (cvi->infac) ? " In" : "Out", stats->adj);
     if (CurClass->num_sons > 1) {
@@ -848,8 +866,7 @@ Writing the quadratic as    a*s^2 + b*s -c = 0,   we want the root
 
     */
 
-void cost_var_nonleaf(iv, vald) int iv, vald;
-{
+void cost_var_nonleaf(int iv, int vald) {
     Basic *soncvi;
     Class *son;
     double pcost;
@@ -858,7 +875,13 @@ void cost_var_nonleaf(iv, vald) int iv, vald;
     double tsxn, tsyn, tsvn, tssn, sbhx, sbhy, sbhsprd;
     int nints, nson, ison, n;
 
-    set_var(iv);
+    VSetVar *vset_var =CurCtx.vset->variables + iv;
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)CurClass->stats[iv];
+    Basic *dcvi = (CurDad) ? (Basic *)CurDad->basics[iv]: 0;
+
+    vset_var = CurCtx.vset->variables + iv;
+
     if (!vald) { /* Cannot define as-dad params, so fake it */
         stats->npcost = 0.0;
         cvi->nhx = cvi->shx;
@@ -866,7 +889,7 @@ void cost_var_nonleaf(iv, vald) int iv, vald;
         cvi->nhsprd = cvi->shsprd * stats->cnt;
         return;
     }
-    if (CurVSetVar->inactive) {
+    if (vset_var->inactive) {
         stats->npcost = stats->ntcost = 0.0;
         return;
     }

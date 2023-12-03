@@ -52,6 +52,7 @@ int load_vset(const char *filename) {
     char *vaux;
     VarSet *vset;
     VarType *var_type;
+    VSetVar *vset_var;
 
     buf = &bufst;
     for (i = 0; i < MAX_VSETS; i++) {
@@ -118,12 +119,12 @@ int load_vset(const char *filename) {
             CurCtx.vset->variables[i].vaux = 0;
         }
         for (i = 0; i < CurCtx.vset->length; i++) {
-            CurVSetVar = CurCtx.vset->variables + i;
-            CurVSetVar->id = i;
+            vset_var = CurCtx.vset->variables + i;
+            vset_var->id = i;
 
             /*    Read name  */
             new_line();
-            kread = read_str(CurVSetVar->name, 1);
+            kread = read_str(vset_var->name, 1);
             if (kread < 0) {
                 log_msg(2, "Error in name of variable %d", i + 1);
                 indx = -10;
@@ -137,9 +138,9 @@ int load_vset(const char *filename) {
                 indx = -5;
                 break;
             }
-            CurVSetVar->inactive = 0;
+            vset_var->inactive = 0;
             if (itype < 0) {
-                CurVSetVar->inactive = 1;
+                vset_var->inactive = 1;
                 itype = -itype;
             }
             if ((itype < 1) || (itype > Ntypes)) {
@@ -148,8 +149,8 @@ int load_vset(const char *filename) {
                 break;
             }
             itype = itype - 1; /*  Convert types to start at 0  */
-            var_type = CurVSetVar->vtype = Types + itype;
-            CurVSetVar->type = itype;
+            var_type = vset_var->vtype = Types + itype;
+            vset_var->type = itype;
 
             /*    Make the vaux block  */
             vaux = (char *)alloc_blocks(3, var_type->attr_aux_size);
@@ -158,7 +159,7 @@ int load_vset(const char *filename) {
                 indx = -6;
                 break;
             }
-            CurVSetVar->vaux = vaux;
+            vset_var->vaux = vaux;
 
             /*    Read auxilliary information   */
             if ((*var_type->read_aux_attr)(vaux)) {
@@ -190,8 +191,9 @@ int load_sample(const char *fname) {
     char *saux, *field, vstnam[80], sampname[80];
     size_t rec_len;
     Sample *sample;
-    SampleVar *var_list, *CurSmplVar;
+    SampleVar *var_list, *smpl_var;
     VarType *var_type;
+    VSetVar *vset_var;
 
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     buf = &bufst;
@@ -272,10 +274,10 @@ gotit:
     }
     rec_len = 1 + sizeof(int); /* active flag and ident  */
     for (i = 0; i < CurCtx.vset->length; i++) {
-        CurSmplVar = var_list + i;
-        CurSmplVar->id = i;
-        CurVSetVar = CurCtx.vset->variables + i;
-        var_type = CurVSetVar->vtype;
+        smpl_var = var_list + i;
+        smpl_var->id = i;
+        vset_var = CurCtx.vset->variables + i;
+        var_type = vset_var->vtype;
 
         /*    Make the saux block  */
         saux = (char *)alloc_blocks(0, var_type->smpl_aux_size);
@@ -284,7 +286,7 @@ gotit:
             i = -6;
             goto error;
         }
-        CurSmplVar->saux = saux;
+        smpl_var->saux = saux;
 
         /*    Read auxilliary information   */
         if ((*var_type->read_aux_smpl)(saux)) {
@@ -294,7 +296,7 @@ gotit:
         }
 
         /*    Set the offset of the (missing, value) pair  */
-        CurSmplVar->offset = rec_len;
+        smpl_var->offset = rec_len;
         rec_len += (1 + var_type->data_size); /* missing flag and value */
     }                                           /* End of variables loop */
 
@@ -340,9 +342,9 @@ gotit:
         /*    Posn now points to where the (missing, val) pair for the
         attribute should start.  */
         for (i = 0; i < CurCtx.vset->length; i++) {
-            CurSmplVar = var_list + i;
-            CurVSetVar = CurCtx.vset->variables + i;
-            var_type = CurVSetVar->vtype;
+            smpl_var = var_list + i;
+            vset_var = CurCtx.vset->variables + i;
+            var_type = vset_var->vtype;
             kread = (*var_type->read_datum)(field + 1, i);
             if (kread < 0) {
                 log_msg(0, "Data error case %d var %d", n + 1, i + 1);
@@ -352,7 +354,7 @@ gotit:
                 *field = 1; /* Data missing */
             else {
                 *field = 0;
-                CurSmplVar->nval++;
+                smpl_var->nval++;
             }
             field += (var_type->data_size + 1);
         }

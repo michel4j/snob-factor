@@ -35,7 +35,7 @@ clean:
 	rm -f *.o snob-factor pro libsnob.so snob-factor-small
 
 test:
-	cd ./examples && time ../snob-factor < phi.cmd | tee phi.out
+	cd ./examples && time ../snob-factor < 6m1c.cmd | tee 6m1c.out
 
 small-test:
 	cd ./examples && time ../snob-factor-small phi.v phi.s phi.rep 
