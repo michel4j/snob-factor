@@ -65,11 +65,11 @@ typedef struct Basicst { /* Basic parameter info about var in class.
                */
 } Basic;
 
-/*    Pointers to vectors in Basic  */
-static double *nap;       /* Log odds as dad */
-static double *sap;       /*  Log odds without factor  */
-static double *fap, *fbp; /* Const and load params for logodds */
-static double *frate;
+// /*    Pointers to vectors in Basic  */
+// static double *nap;       /* Log odds as dad */
+// static double *sap;       /*  Log odds without factor  */
+// static double *fap, *fbp; /* Const and load params for logodds */
+// static double *frate;
 /*    The factor model is that prob of state k for a case with score v
     is proportional to
         exp (fap[k] + fbp[k] * v)
@@ -102,11 +102,10 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
 } Stats;
 
 /*    Pointers to vectors in stats  */
-static double *scnt;          /*  vector of counts in states  */
-static double *scst;          /*  vector of non-fac state costs  */
-static double *pr;            /* vec. of factor state probs  */
-static double *fapd1, *fbpd1; /*  vectors of derivs of cost wrt params */
-
+// static double *scnt;          /*  vector of counts in states  */
+// static double *scst;          /*  vector of non-fac state costs  */
+// static double *pr;            /* vec. of factor state probs  */
+// static double *fapd1, *fbpd1; /*  vectors of derivs of cost wrt params */
 
 /*    Static variables specific to this type   */
 static int states;
@@ -178,23 +177,11 @@ void expmults_define(int typindx) {
 void set_var(int iv) {
     VSetVar *vset_var = CurCtx.vset->variables + iv;
     Vaux *vaux = (Vaux *)vset_var->vaux;
-    Basic *cvi = (Basic *)CurClass->basics[iv];
-    Stats *stats = (Stats *)CurClass->stats[iv];
 
     states = vaux->states;
     statesm = states - 1;
     rstates = 1.0 / states;
     rstatesm = 1.0 / statesm;
-    nap = &(cvi->origin);
-    sap = nap + states;
-    fap = sap + states;
-    fbp = fap + states;
-    frate = fbp + states;
-    scnt = &(stats->origin);
-    scst = scnt + states;
-    pr = scst + states;
-    fapd1 = pr + states;
-    fbpd1 = fapd1 + states;
 }
 
 /*    ---------------------  read_aux_attr ---------------------------   */
@@ -294,6 +281,9 @@ void set_best_pars(iv) int iv;
     Basic *cvi = (Basic *)CurClass->basics[iv];
     Stats *stats = (Stats *)CurClass->stats[iv];
     set_var(iv);
+    double *nap = &(cvi->origin);
+    double *sap = nap + states;
+    double *fap = sap + states;
 
     if (CurClass->type == Dad) {
         cvi->bap = nap;
@@ -317,9 +307,25 @@ void set_best_pars(iv) int iv;
 /*    Routine to set state probs for a item using fap, fbp, CurCaseFacScore */
 /*    Sets probs in pr[], -log probs in qr[].  */
 /*    Also calcs b1p, b2p, b3p, b1p2, gg  */
-void setprobs() {
+void setprobs(int iv) {
     double sum, tt, lsum;
     int k, ig;
+
+    VSetVar *vset_var = CurCtx.vset->variables + iv;
+    Vaux *vaux = (Vaux *)vset_var->vaux;
+    Stats *stats = (Stats *)CurClass->stats[iv];
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+
+    states = vaux->states;
+
+    double *scnt = &(stats->origin);
+    double *scst = scnt + states;
+    double *pr = scst + states;
+    double *nap = &(cvi->origin);
+    double *sap = nap + states;
+    double *fap = sap + states;
+    double *fbp = fap + states;
+    double *frate = fbp + states;
 
     b3p = b2p = b1p = 0.0; /* For calculating dispersion of bp[] */
     sum = 0.0;
@@ -366,7 +372,20 @@ void clear_stats(iv) int iv;
     Vaux *vaux = (Vaux *)vset_var->vaux;
     Basic *cvi = (Basic *)CurClass->basics[iv];
     Stats *stats = (Stats *)CurClass->stats[iv];
+
     set_var(iv);
+
+    double *scnt = &(stats->origin);
+    double *scst = scnt + states;
+    double *pr = scst + states;
+    double *fapd1 = pr + states;
+    double *fbpd1 = fapd1 + states;
+
+    double *nap = &(cvi->origin);
+    double *sap = nap + states;
+    double *fap = sap + states;
+    double *fbp = fap + states;
+    double *frate = fbp + states;
 
     stats->cnt = 0.0;
     stats->stcost = stats->ftcost = 0.0;
@@ -440,11 +459,16 @@ void score_var(int iv) {
     Stats *stats = (Stats *)CurClass->stats[iv];
     set_var(iv);
 
+    double *nap = &(cvi->origin);
+    double *sap = nap + states;
+    double *fap = sap + states;
+    double *fbp = fap + states;
+
     if (vset_var->inactive)
         return;
     if (saux->missing)
         return;
-    setprobs(); /* Will calc pr[], qr[], gg, ff  */
+    setprobs(iv); /* Will calc pr[], qr[], gg, ff  */
     t1d1 = b1p - fbp[saux->xn];
     t2d1 = -(0.5 * states * rstatesm) * (cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd) * ff * b1p;
     t3d1 = CurCaseFacScore * cvi->bpsprd * ff;
@@ -462,11 +486,16 @@ void score_var(int iv) {
 void cost_var(int iv, int fac) {
     double cost;
 
+    set_var(iv);
+
     SampleVar *smpl_var = CurCtx.sample->variables + iv;
     Saux *saux = (Saux *)smpl_var->saux;
     Basic *cvi = (Basic *)CurClass->basics[iv];
     Stats *stats = (Stats *)CurClass->stats[iv];
-    set_var(iv);
+
+    double *scnt = &(stats->origin);
+    double *scst = scnt + states;
+    double *pr = scst + states;
 
     if (saux->missing)
         return;
@@ -481,7 +510,7 @@ void cost_var(int iv, int fac) {
     /*    Only do faccost if fac  */
     if (!fac)
         goto facdone;
-    setprobs();
+    setprobs(iv);
     cost = -log(pr[saux->xn]); /* -log prob of xn */
     stats->conff = 0.5 * ff * (cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd);
     stats->ff = ff;
@@ -506,7 +535,19 @@ void deriv_var(int iv, int fac) {
     SampleVar *smpl_var = CurCtx.sample->variables + iv;
     Saux *saux = (Saux *)smpl_var->saux;
     Stats *stats = (Stats *)CurClass->stats[iv];
+    Basic *cvi = (Basic *)CurClass->basics[iv];
+
     set_var(iv);
+    double *scnt = &(stats->origin);
+    double *scst = scnt + states;
+    double *pr = scst + states;
+    double *fapd1 = pr + states;
+    double *fbpd1 = fapd1 + states;
+
+    double *nap = &(cvi->origin);
+    double *sap = nap + states;
+    double *fap = sap + states;
+    double *fbp = fap + states;
 
     if (saux->missing)
         return;
@@ -568,11 +609,24 @@ void adjust(int iv, int fac) {
     double adj, apd2, cnt, vara, del, tt, sum, spcost, fpcost;
     int k, n;
 
+
+    set_var(iv);
+
     VSetVar *vset_var = CurCtx.vset->variables + iv;
     Vaux *vaux = (Vaux *)vset_var->vaux;
     Basic *dcvi, *cvi = (Basic *)CurClass->basics[iv];
     Stats *stats = (Stats *)CurClass->stats[iv];
-    set_var(iv);
+
+    double *scnt = &(stats->origin);
+    double *scst = scnt + states;
+    double *pr = scst + states;
+    double *fapd1 = pr + states;
+    double *fbpd1 = fapd1 + states;
+
+    double *nap = &(cvi->origin);
+    double *sap = nap + states;
+    double *fap = sap + states;
+    double *fbp = fap + states;
 
     cnt = stats->cnt;
 
@@ -749,7 +803,7 @@ adjloop:
     stats->bpd2 += 1.0;
     /*    Stabilization  */
     CurCaseFacScore = 0.0;
-    setprobs();
+    setprobs(iv);
     for (k = 0; k < states; k++)
         fapd1[k] += 0.5 * pr[k];
     stats->apd2 += 0.5 * states * ff;
@@ -811,6 +865,11 @@ void prprint(double *ap, int iv) {
 
     set_var(iv);
 
+    Stats *stats = (Stats *)CurClass->stats[iv];     
+    double *scnt = &(stats->origin);
+    double *scst = scnt + states;
+    double *pr = scst + states;
+
     max = ap[0];
     for (k = 0; k < states; k++) {
         if (ap[k] > max)
@@ -835,6 +894,12 @@ void show(Class *cls, int iv) {
     set_var(iv);
     Basic *cvi = (Basic *)cls->basics[iv];
     Stats *stats = (Stats *)cls->stats[iv];
+
+    double *nap = &(cvi->origin);
+    double *sap = nap + states;
+    double *fap = sap + states;
+    double *fbp = fap + states;
+    double *frate = fbp + states;
 
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, stats->cnt, (cvi->infac) ? " In" : "Out", stats->adj);
 
@@ -869,10 +934,19 @@ void cost_var_nonleaf(int iv) {
     double apsprd;
     int n, k, ison, nson, nints;
 
+
+    set_var(iv);
+
     VSetVar *vset_var = CurCtx.vset->variables + iv;
     Basic *cvi = (Basic *)CurClass->basics[iv];
     Stats *stats = (Stats *)CurClass->stats[iv];
-    set_var(iv);
+    double *scnt = &(stats->origin);
+    double *scst = scnt + states;
+    double *pr = scst + states;
+
+    double *nap = &(cvi->origin);
+    double *sap = nap + states;
+
     if (vset_var->inactive) {
         stats->npcost = stats->ntcost = 0.0;
         return;
