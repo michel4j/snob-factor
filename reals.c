@@ -86,7 +86,7 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
     double var;
 } Stats;
 
-/* 
+/*
 static Saux *saux;
 static Paux *paux;
 static Vaux *vaux;
@@ -132,24 +132,11 @@ void reals_define(typindx) int typindx;
 }
 
 /*    -------------------  set_var -----------------------------  */
-void set_var(int iv) {
-/*     
-    SampleVar *smpl_var = CurCtx.sample->variables + iv;
-    PVinst *pop_var = CurCtx.popln->variables + iv;
-    VSetVar *vset_var = CurCtx.vset->variables + iv;
-    paux = (Paux *)pop_var->paux;
-    vaux = (Vaux *)vset_var->vaux;
-    saux = (Saux *)smpl_var->saux;
-    cvi = (Basic *)CurClass->basics[iv];
-    stats = (Stats *)CurClass->stats[iv];
-    dcvi = (CurDad) ? (Basic *)CurDad->basics[iv] : 0;
-
- */
-}
+void set_var(int iv) {}
 
 /*    --------------------  read_aux_attr  ----------------------------  */
 /*      Read in auxiliary info into vaux, return 0 if OK else 1  */
-int read_aux_attr(Vaux *vax) { return (0); }
+int read_aux_attr(VSetVar *vset_var) { return (0); }
 
 /*    ---------------------  read_aux_smpl ---------------------------   */
 /*    To read any auxiliary info about a variable of this type in some
@@ -284,7 +271,7 @@ void score_var(int iv) {
 /*    Accumulates item cost into scasecost, fcasecost    */
 void cost_var(int iv, int fac) {
     double del, var, cost;
-    
+
     SampleVar *smpl_var = CurCtx.sample->variables + iv;
     Saux *saux = (Saux *)smpl_var->saux;
     Basic *cvi = (Basic *)CurClass->basics[iv];
@@ -368,7 +355,7 @@ void adjust(int iv, int fac) {
     Saux *saux = (Saux *)smpl_var->saux;
     Basic *cvi = (Basic *)CurClass->basics[iv];
     Stats *stats = (Stats *)CurClass->stats[iv];
-    Basic *dcvi = (CurDad) ? (Basic *)CurDad->basics[iv]: 0;
+    Basic *dcvi = (CurDad) ? (Basic *)CurDad->basics[iv] : 0;
 
     del3 = del4 = 0.0;
     adj = InitialAdj;
@@ -699,10 +686,10 @@ void cost_var_nonleaf(int iv, int vald) {
     double spp, sppsprd;
     int nints, nson, ison, k, n;
 
-    VSetVar *vset_var =CurCtx.vset->variables + iv;
+    VSetVar *vset_var = CurCtx.vset->variables + iv;
     Basic *cvi = (Basic *)CurClass->basics[iv];
     Stats *stats = (Stats *)CurClass->stats[iv];
-    Basic *dcvi = (CurDad) ? (Basic *)CurDad->basics[iv]: 0;
+    Basic *dcvi = (CurDad) ? (Basic *)CurDad->basics[iv] : 0;
 
     vset_var = CurCtx.vset->variables + iv;
     if (!vald) { /* Cannot define as-dad params, so fake it */

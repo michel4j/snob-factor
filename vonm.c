@@ -180,7 +180,7 @@ void set_var(int iv) {
 
 /*    --------------------  read_aux_attr  ----------------------------  */
 /*      Read in auxiliary info into vaux, return 0 if OK else 1  */
-int read_aux_attr(Vaux *vax) { return (0); }
+int read_aux_attr(VSetVar *vset_var) { return (0); }
 
 /*    ---------------------  read_aux_smpl ---------------------------   */
 /*    To read any auxiliary info about a variable of this type in some

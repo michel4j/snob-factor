@@ -125,22 +125,13 @@ void expbinary_define(int typindx) {
 }
 
 /*    ----------------------- set_var --------------------------  */
-void set_var(int iv) {
-    // VSetVar *vset_var = CurCtx.vset->variables + iv;
-    // PVinst *pop_var = CurCtx.popln->variables + iv;
-    // Paux *paux = (Paux *)pop_var->paux;
-    // SampleVar *smpl_var = CurCtx.sample->variables + iv;
-    // Vaux *vaux = (Vaux *)vset_var->vaux;
-    // Saux *saux = (Saux *)smpl_var->saux;
-    // Basic *cvi = (Basic *)CurClass->basics[iv];
-    // Stats *stats = (Stats *)CurClass->stats[iv];
-}
+void set_var(int iv) {}
 
 /*    ---------------------  read_aux_attr ---------------------------   */
 /*    To read any auxiliary info about a variable of this type in some
 sample.
     */
-int read_aux_attr(Vaux *vax) { return (0); }
+int read_aux_attr(VSetVar *vset_var) { return (0); }
 
 /*    -------------------  read_aux_smpl ------------------------------  */
 /*    To read auxilliary info re sample for this attribute   */

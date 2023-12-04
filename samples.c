@@ -162,7 +162,7 @@ int load_vset(const char *filename) {
             vset_var->vaux = vaux;
 
             /*    Read auxilliary information   */
-            if ((*var_type->read_aux_attr)(vaux)) {
+            if ((*var_type->read_aux_attr)(vset_var)) {
                 log_msg(2, "Error in reading auxilliary info var %d", i + 1);
                 indx = -7;
                 break;

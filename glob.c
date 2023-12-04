@@ -95,6 +95,7 @@ void initialize(int lib, int debug, int threads) {
     Fix = DFix = Partial;
     DControl = Control = AdjAll;
     Debug = debug;
+    UseBin = 0;
 
     defaulttune();
 

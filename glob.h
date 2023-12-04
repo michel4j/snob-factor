@@ -33,6 +33,7 @@ EXT int Heard;    /* Flag showing a new command line has been detected */
 EXT int UseStdIn; /* Flag showing input from sdtdin */
 EXT int UseLib;   // Flag showing if snob is being called as a library
 EXT int Debug;    // Flag to turn toggle debug messages
+EXT int UseBin;
 
 /*    To control what is adjusted  */
 EXT int Control, DControl;

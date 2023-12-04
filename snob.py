@@ -37,7 +37,7 @@ EXAMPLES = [
     'sd1',
     'vm',
 ]
-EXAMPLES = ['6m1c']
+#EXAMPLES = ['6m1c']
 
 from pathlib import Path
                 
