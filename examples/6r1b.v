@@ -1,6 +1,6 @@
 6Reals1bin
 7
-VB	4	2
+VB	3	2
 V1	1
 V2	1
 V3	1

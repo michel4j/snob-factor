@@ -87,8 +87,8 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
 // static Stats *stats;
 
 /*    Static variables specific to this type   */
-static double dadnap;
-static double dapsprd; /* Dad's napsprd */
+// static double dadnap;
+//  static double dapsprd; /* Dad's napsprd */
 
 /*--------------------------  define ------------------------------- */
 /*    This routine is used to set up a VarType entry in the global "types"
@@ -140,15 +140,11 @@ void set_var(int iv) {
 /*    To read any auxiliary info about a variable of this type in some
 sample.
     */
-int read_aux_attr(vax)
-Vaux *vax;
-{ return (0); }
+int read_aux_attr(Vaux *vax) { return (0); }
 
 /*    -------------------  read_aux_smpl ------------------------------  */
 /*    To read auxilliary info re sample for this attribute   */
-int read_aux_smpl(sax)
-Saux *sax;
-{
+int read_aux_smpl(Saux *sax) {
     /*    Multistate has no auxilliary info re sample  */
     return (0);
 }
@@ -423,6 +419,8 @@ void adjust(int iv, int fac) {
 
     cnt = stats->cnt;
 
+    double dadnap;
+    double dapsprd;
     if (CurDad) { /* Not root */
         dcvi = (Basic *)CurDad->basics[iv];
         dadnap = dcvi->nap;
@@ -600,8 +598,21 @@ void cost_var_nonleaf(int iv) {
     int n, ison, nson, nints;
 
     VSetVar *vset_var = CurCtx.vset->variables + iv;
-    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Basic *dcvi, *cvi = (Basic *)CurClass->basics[iv];
     Stats *stats = (Stats *)CurClass->stats[iv];
+
+    double dadnap;
+    double dapsprd;
+
+    if (CurDad) { /* Not root */
+        dcvi = (Basic *)CurDad->basics[iv];
+        dadnap = dcvi->nap;
+        dapsprd = dcvi->napsprd;
+    } else { /* Root */
+        dcvi = 0;
+        dadnap = 0.0;
+        dapsprd = 1.0;
+    }
 
     if (vset_var->inactive) {
         stats->npcost = stats->ntcost = 0.0;
@@ -672,6 +683,3 @@ void cost_var_nonleaf(int iv) {
     stats->npcost = pcost;
     return;
 }
-/*zzzz*/
-#ifdef JJ
-#endif
