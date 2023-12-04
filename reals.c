@@ -563,8 +563,9 @@ void show(Class *cls, int iv) {
 
     Basic *cvi = (Basic *)cls->basics[iv];
     Stats *stats = (Stats *)cls->stats[iv];
-
-    printf("V%3d  Cnt%6.1f  %s\n", iv + 1, stats->cnt, (cvi->infac) ? " In" : "Out");
+    VSetVar *vset_var = CurCtx.vset->variables + iv;
+    
+    printf("V%3d  Cnt%6.1f  %s               Type: %s\n", iv + 1, stats->cnt, (cvi->infac) ? " In" : "Out", vset_var->vtype->name);
     if (cls->num_sons > 1) {
         printf(" N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", stats->npcost, cvi->nmu, sqrt(cvi->nmusprd), exp(cvi->nsdl),
                exp(cvi->nsdl) * sqrt(cvi->nsdlsprd));

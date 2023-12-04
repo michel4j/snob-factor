@@ -127,7 +127,7 @@ void expmults_define(int typindx) {
     var_type = Types + typindx;
     var_type->id = typindx;
     /*     Set type name as string up to 59 chars  */
-    var_type->name = "ExpMultiState";
+    var_type->name = "Multistate";
     var_type->data_size = sizeof(Datum);
     var_type->attr_aux_size = sizeof(Vaux);
     var_type->pop_aux_size = sizeof(Paux);

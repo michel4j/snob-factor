@@ -23,8 +23,8 @@ typedef struct Vauxst {
     double lstatessq; /*  log (states^2) */
     double mff;       /* a max value for ff */
 } Vaux;
-/*    The Vaux structure matches that of Multistate, although not all
-    used for Binary  */
+
+/*    The Vaux structure matches that of Multistate, although not all used for Binary  */
 
 typedef int Datum;
 
@@ -103,7 +103,7 @@ void expbinary_define(int typindx) {
     VarType *var_type;
     var_type = Types + typindx;
     var_type->id = typindx;
-    var_type->name = "ExpBinary"; /*     Set type name as string up to 59 chars  */
+    var_type->name = "Binary"; /*     Set type name as string up to 59 chars  */
     var_type->data_size = sizeof(Datum);
     var_type->attr_aux_size = sizeof(Vaux);
     var_type->pop_aux_size = sizeof(Paux);
@@ -563,7 +563,8 @@ void show(Class *cls, int iv) {
     Basic *cvi = (Basic *)cls->basics[iv];
     Stats *stats = (Stats *)cls->stats[iv];
 
-    printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, stats->cnt, (cvi->infac) ? " In" : "Out", stats->adj);
+    VSetVar *vset_var = CurCtx.vset->variables + iv;
+    printf("V%3d  Cnt%6.1f  %s  Adj%8.2f  Type: %s\n", iv + 1, stats->cnt, (cvi->infac) ? " In" : "Out", stats->adj, vset_var->vtype->name);
 
     if (cls->num_sons < 2)
         goto skipn;

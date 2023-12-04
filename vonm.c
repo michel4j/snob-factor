@@ -729,12 +729,14 @@ adjdone:
 void show(Class *cls, int iv) {
     double mu, kappa;
 
+    
     SampleVar *smpl_var = CurCtx.sample->variables + iv;
     Saux *saux = (Saux *)smpl_var->saux;
     Basic *cvi = (Basic *)cls->basics[iv];
     Stats *stats = (Stats *)cls->stats[iv];
 
-    printf("V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv + 1, stats->cnt, (cvi->infac) ? " In" : "Out", stats->adj);
+    VSetVar *vset_var = CurCtx.vset->variables + iv;
+    printf("V%3d  Cnt%6.1f  %s  Adj%8.2f  Type: %s\n", iv + 1, stats->cnt, (cvi->infac) ? " In" : "Out", stats->adj, vset_var->vtype->name);
     if (cls->num_sons > 1) {
         printf(" N: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", stats->npcost, cvi->nhx, cvi->nhy, sqrt(cvi->nhsprd));
     }
