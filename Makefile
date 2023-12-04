@@ -1,4 +1,4 @@
-CC = gcc -g -Wall -fPIC -fopenmp -O3 -flto=auto
+CC = gcc -g -Wall -fPIC -fopenmp #-O3 -flto=auto
 #CC = gcc -pg -Wall -fopenmp
 
 SRC = main.c dotypes.c glob.c reals.c samples.c inputs.c poplns.c \
@@ -38,4 +38,4 @@ test:
 	cd ./examples && time ../snob-factor < 6m1c.cmd | tee 6m1c.out
 
 small-test:
-	cd ./examples && time ../snob-factor-small phi.v phi.s phi.rep 
+	cd ./examples && ../snob-factor-small phi.v phi.s phi.rep 
