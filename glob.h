@@ -25,9 +25,6 @@ EXT int NSamples;
 /*    re inputs for main  */
 EXT Buffer *CurSource; /* Ptr to command source buffer */
 
-/*    re Sample records  */
-EXT char *CurRecords; /*  Common ptr to data records block of a sample */
-
 /*    re hark  */
 EXT int Heard;    /* Flag showing a new command line has been detected */
 EXT int UseStdIn; /* Flag showing input from sdtdin */

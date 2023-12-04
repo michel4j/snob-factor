@@ -33,7 +33,6 @@ void find_all(int class_type) {
     int i, j;
     Class *cls;
 
-    set_population();
     tidy(1);
     j = 0;
     cls = CurCtx.popln->classes[CurCtx.popln->root];
@@ -626,12 +625,13 @@ void do_case(int item, int all, int derivs) {
     double mincost, sum, rootcost, low, diff, w1, w2;
     Class *sub1, *sub2, *cls;
     PSaux *psaux;
-    char *record, *field;
+    char *record, *field, *records;
     int clc, i;
     Class *root;
 
     root = CurCtx.popln->classes[CurCtx.popln->root];
-    record = CurRecords + item * CurCtx.sample->record_length; //  Set ptr to case record
+    records = (CurCtx.sample) ? CurCtx.sample->records: 0;
+    record = records + item * CurCtx.sample->record_length; //  Set ptr to case record
     if (!*record) {                                            // Inactive item
         return;
     }

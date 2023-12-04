@@ -311,7 +311,7 @@ gotit:
     CurCtx.sample->num_cases = num_cases;
     CurCtx.sample->num_active = 0;
     /*    Make a vector of nc records each of size reclen  */
-    CurRecords = CurCtx.sample->records = field = (char *)alloc_blocks(0, num_cases * rec_len);
+    CurCtx.sample->records = field = (char *)alloc_blocks(0, num_cases * rec_len);
     if (!field) {
         log_msg(0, "No space for data");
         i = -8;
@@ -574,14 +574,15 @@ int item_list(char *tlstname) {
     int nn, dadser, i, bc, bl, tid;
     double bw, bs;
     Class *clp, *root;
-    char *record;
+    char *record, *records;
 
     /*    Check we have an attched sample and model  */
     if (!CurCtx.popln)
         return (-1);
     if (!CurCtx.sample)
         return (-2);
-    set_population();
+
+    records = (CurCtx.sample) ? CurCtx.sample->records: 0;
     if (!CurCtx.sample->num_cases)
         return (-3);
 
@@ -628,7 +629,7 @@ nextcl1:
             }
         }
 
-        record = CurRecords + nn * CurCtx.sample->record_length;
+        record = records + nn * CurCtx.sample->record_length;
         memcpy(&tid, record + 1, sizeof(int));
         fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, Sons[bc]->serial >> 2, Sons[bl]->serial >> 2, ScoreRscale * Sons[bl]->factor_scores[nn]);
     }

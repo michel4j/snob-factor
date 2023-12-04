@@ -107,7 +107,7 @@ void reset() {
     SeeAll = 2;
     Fix = DFix = Partial;
     DControl = Control = AdjAll;
-    
+
     for (k = 0; k < MAX_POPULATIONS; k++)
         Populations[k] = 0;
     for (k = 0; k < MAX_SAMPLES; k++)
@@ -138,7 +138,7 @@ void cleanup_population() {
     if (index >= 0) {
         destroy_population(index);
     }
-    set_population();
+
     Fix = DFix;
     Control = DControl;
     tidy(1);

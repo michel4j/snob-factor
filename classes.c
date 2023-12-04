@@ -6,13 +6,11 @@
 /*    Finds class index (id) from serial, or -3 if error    */
 int serial_to_id(int ss) {
     int k;
-    Class *clp;
-    set_population();
-
+    Class *cls;
     if (ss >= 1) {
         for (k = 0; k <= CurCtx.popln->hi_class; k++) {
-            clp = CurCtx.popln->classes[k];
-            if (clp && (clp->type != Vacant) && (clp->serial == ss))
+            cls = CurCtx.popln->classes[k];
+            if (cls && (cls->type != Vacant) && (cls->serial == ss))
                 return (k);
         }
     }
@@ -215,7 +213,6 @@ void print_class(int kk, int full) {
     } else if (kk < -2) {
         log_msg(0, "%d passed to print_class", kk);
     } else {
-        set_population();
         cls = CurCtx.popln->classes[CurCtx.popln->root];
         do {
             if ((kk == -2) || (cls->type != Sub))

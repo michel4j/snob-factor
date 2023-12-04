@@ -5,12 +5,7 @@
 
 /*    -----------------------  set_population  --------------------------    */
 void set_population() {
-    CurCtx.sample = CurCtx.sample;
-    if (CurCtx.sample) {
-        CurRecords = CurCtx.sample->records;
-    } else {
-        CurRecords = 0;
-    }
+    // CurRecords = (CurCtx.sample) ? CurCtx.sample->records: 0;
 }
 
 /*    -----------------------  next_class  ---------------------  */
@@ -127,8 +122,6 @@ gotit:
     cls->type = Leaf;
     cls->use = Plain;
     cls->weights_sum = 0.0;
-
-    set_population();
     return (indx);
 
 nospace:
@@ -145,8 +138,6 @@ int init_population() {
     int ipop;
 
     clr_bad_move();
-    CurCtx.sample = CurCtx.sample;
-    CurCtx.vset = CurCtx.vset;
     ipop = -1;
 
     if (!CurCtx.sample) {
@@ -155,7 +146,6 @@ int init_population() {
         ipop = make_population(1); // Makes a configured popln
         if (ipop >= 0) {
             strcpy(CurCtx.popln->name, "work");
-            set_population();
             do_all(5, 0); //    Run doall on the root alone
         }
     }
@@ -258,8 +248,6 @@ void destroy_population(int px) {
     if (!CurCtx.popln)
         return;
 
-    CurCtx.popln = CurCtx.popln;
-    set_population();
     free_blocks(2);
     free_blocks(1);
     free(CurCtx.popln);
@@ -270,7 +258,6 @@ void destroy_population(int px) {
     if (prev < 0)
         return;
     CurCtx.popln = Populations[prev];
-    set_population();
     return;
 }
 
@@ -358,7 +345,6 @@ sampfound:
     }
 
     CurCtx.popln = Populations[indx];
-    set_population();
     if (CurCtx.sample) {
         strcpy(CurCtx.popln->sample_name, CurCtx.sample->name);
         CurCtx.popln->sample_size = CurCtx.sample->num_cases;
@@ -460,7 +446,6 @@ finish:
     /*    Unless newname = "work", revert to old context  */
     if (strcmp(newname, "work") || (indx < 0))
         memcpy(&CurCtx, &oldctx, sizeof(Context));
-    set_population();
     return (indx);
 }
 
@@ -511,7 +496,6 @@ void print_tree() {
         return;
     }
     
-    set_population();
     printf("Popln%3d on sample%3d,%4d classes,%6d things", popln->id + 1, CurCtx.sample->id + 1, popln->num_classes, CurCtx.sample->num_cases);
     printf("  Cost %10.2f\n", popln->classes[popln->root]->best_cost);
     printf("\n  Assign mode ");
@@ -550,7 +534,6 @@ int get_best_pop() {
         goto gotit;
     if (!CurCtx.sample)
         goto gotit;
-    set_population();
 
     strcpy(BSTname, "BST_");
     strcpy(BSTname + 4, CurCtx.sample->name);
@@ -610,7 +593,6 @@ void track_best(int verify) {
     }
 
     /*    Seems better, so kill old 'bestmodel' and make a new one */
-    set_population();
     kk = copy_population(CurCtx.popln->id, 0, BSTname);
     CurCtx.sample->best_cost = CurCtx.popln->classes[CurCtx.popln->root]->best_cost;
     CurCtx.sample->best_time = CurCtx.popln->classes[CurCtx.popln->root]->age;
@@ -713,7 +695,6 @@ namefixed:
         have id-s from 0 up, starting with root  */
     /*    switch context to TrialPop  */
     CurCtx.popln = Populations[i];
-    set_population();
     CurCtx.vset = VarSets[find_vset(CurCtx.popln->vst_name)];
     nc = CurCtx.popln->sample_size;
     if (!fill)
@@ -788,7 +769,6 @@ finish:
     fclose(fl);
     printf("\nModel %s  Cost %10.2f  saved in file %s\n", oldname, CurCtx.popln->classes[0]->best_cost, newname);
     memcpy(&CurCtx, &oldctx, sizeof(Context));
-    set_population();
     return (leng);
 }
 
@@ -862,7 +842,6 @@ int load_population(char *nam) {
     strcpy(CurCtx.popln->name, "TrialPop");
     if (!num_cases)
         strcpy(CurCtx.popln->sample_name, "??");
-    set_population();
     CurCtx.popln->num_leaves = 0;
     /*    Popln has a root class set up. We read into it.  */
     j = 0;
@@ -941,7 +920,6 @@ pickwork:
     if (j >= 0)
         destroy_population(j);
 finish:
-    set_population();
     return (indx);
 }
 
@@ -1013,7 +991,6 @@ finish:
     /*    Restore 'nc' of copied popln  */
     if (fpop)
         fpop->sample_size = fpopnc;
-    set_population();
     if (windx >= 0)
         print_tree();
     return (windx);
@@ -1033,9 +1010,8 @@ void correlpops(int xid) {
     Population *xpop, *wpop;
     double fnact, wwt;
     int wic, xic, n, pcw, wnl, xnl;
-    char *record;
+    char *record, *records;
 
-    set_population();
     wpop = CurCtx.popln;
     xpop = Populations[xid];
     if (!xpop) {
@@ -1067,7 +1043,6 @@ void correlpops(int xid) {
         wsons[wic] = Sons[wic];
     /*    Switch to xpop  */
     CurCtx.popln = xpop;
-    set_population();
     SeeAll = 4;
     do_all(3, 1);
     /*    Find all leaves of xpop  */
@@ -1089,15 +1064,14 @@ void correlpops(int xid) {
     SeeAll = 2;
     for (n = 0; n < CurCtx.sample->num_cases; n++) {
         CurCtx.popln = wpop;
-        set_population();
-        record = CurRecords + n * CurCtx.sample->record_length;
+        records = (CurCtx.sample) ? CurCtx.sample->records: 0;
+        record = records + n * CurCtx.sample->record_length;
         if (!*record) {
             continue;
         }
         find_all(Leaf);
         do_case(n, Leaf, 0);
         CurCtx.popln = xpop;
-        set_population();
         find_all(Leaf);
         do_case(n, Leaf, 0);
         /*    Should now have caseweights set in leaves of both poplns  */
@@ -1133,7 +1107,6 @@ finish:
     if (NoSubs > 0)
         NoSubs--;
     CurCtx.popln = wpop;
-    set_population();
     Control = DControl;
     return;
 }
