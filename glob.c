@@ -87,10 +87,19 @@ void log_msg(int level, const char *format, ...) {
 /// @param lib integer specifying if running from a library or not 1 = library, 0 = interactive
 /// @param debug turn on verbose printing of progress
 /// @param threads number of threads to use during parallel portions, 0 = use OpenMP environment variables instead
+
+static int Initialized = 0;
+
 void initialize(int lib, int debug, int threads) {
+    int k;
     UseLib = lib;
     Debug = debug;
     UseBin = 0;
+
+    RSeed = 1234567;
+    SeeAll = 2;
+    Fix = DFix = Partial;
+    DControl = Control = AdjAll;
 
     if (threads > 0) {
         omp_set_num_threads(4);
@@ -98,22 +107,33 @@ void initialize(int lib, int debug, int threads) {
 
     defaulttune();
     do_types();
-    reset();
-}
-
-void reset() {
-    int k;
-    RSeed = 1234567;
-    SeeAll = 2;
-    Fix = DFix = Partial;
-    DControl = Control = AdjAll;
-
+    
     for (k = 0; k < MAX_POPULATIONS; k++)
         Populations[k] = 0;
     for (k = 0; k < MAX_SAMPLES; k++)
         Samples[k] = 0;
     for (k = 0; k < MAX_VSETS; k++)
         VarSets[k] = 0;
+
+    Initialized = 1;
+}
+
+void reset() {  
+    int k;
+    RSeed = 1234567;
+    SeeAll = 2;
+    Fix = DFix = Partial;
+    DControl = Control = AdjAll;
+
+    if (Initialized) {
+        for (k = 0; k < MAX_POPULATIONS; k++)
+            destroy_population(k);
+        for (k = 0; k < MAX_SAMPLES; k++)
+            Samples[k] = 0;
+        for (k = 0; k < MAX_VSETS; k++)
+            VarSets[k] = 0;
+    }
+
 }
 
 /// @brief Print the details about the number of classes, leaves, and the associated costs for the current population

@@ -19,6 +19,8 @@ snob.load_vset.argtypes = [ct.c_char_p]
 snob.load_vset.restype = ct.c_int
 snob.load_sample.argtypes = [ct.c_char_p]
 snob.load_sample.restype = ct.c_int
+snob.report_space.argtypes = [ct.c_int]
+snob.report_space.restype = ct.c_int
 snob.classify.argtypes = [ct.c_int, ct.c_int, ct.c_int, ct.c_double]
 snob.classify.restype = Classification
 snob.print_class.argtypes = [ct.c_int, ct.c_int]
@@ -49,6 +51,7 @@ if __name__ == '__main__':
         sample_file = str(Path('./examples') / f'{name}.s')
     
         print('#'*80)
+        snob.report_space(1);
         print(f"Classifying: {name}")
         
         snob.load_vset(vset_file.encode('utf-8'))
