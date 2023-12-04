@@ -290,6 +290,16 @@ typedef struct ResultStruct {
 } Result;
 
 
+/* Structur for calculating factor scores */
+typedef struct ScoreStruct {
+    double CurCaseFacScore, CurCaseFacScoreSq, cvvsprd;
+    int CaseFacInt; /*  integer form of case_fac_score*4096 */
+    double ncasecost, scasecost, fcasecost;
+    double CaseFacScoreD1, CaseFacScoreD2; /* derivs of case cost wrt score  */
+    double EstFacScoreD2;                     /* An over-estimate of CaseFacScoreD2 used in score ajust */
+    double CaseFacScoreD3;
+} Score;
+
 /*    --------- Functions -------------------------------   */
 
 /*
