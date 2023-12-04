@@ -42,7 +42,6 @@ EXT int Control, DControl;
 EXT int DFix, Fix;
 
 /*    re Classes  */
-EXT double CurCaseWeight; /*  weight of case in class  */
 EXT double CurCaseFacScore, CurCaseFacScoreSq, cvvsprd;
 EXT double ctv, ctvsq, ctvd1, ctvd1sq, ctvd1cu, ctvsprd, ctd1d2;
 EXT int CaseFacInt; /*  integer form of case_fac_score*4096 */

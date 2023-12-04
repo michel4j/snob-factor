@@ -29,7 +29,6 @@ int serial_to_id(int ss) {
 /*    ---------------------  set_class_with_scores --------------------------   */
 void set_class_with_scores(Class *cls, int item) {
     cls->case_score = CaseFacInt = cls->factor_scores[item];
-    CurCaseWeight = cls->case_weight;
 }
 
 /*    ---------------------   make_class  -------------------------   */
