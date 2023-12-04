@@ -5046,8 +5046,7 @@ static double atab[] = {
     a small correction quadratic in (1/kappa).
     */
 
-void kapcode(kappa, logi0, aaa, log_i0_d2) double kappa, *logi0, *aaa, *log_i0_d2;
-{
+void kapcode(double kappa, double *logi0, double *aaa, double *log_i0_d2) {
     double del, skap, c2, c3;
     double va, vb, da, db;
     int ik;
@@ -5095,8 +5094,7 @@ asymp:
 
     del = 1.0 / kappa;
 
-    *logi0 = kappa + 0.5 * log(twopi * del) +
-             ((0.067 * del + 0.0625) * del + 0.125) * del;
+    *logi0 = kappa + 0.5 * log(twopi * del) + ((0.067 * del + 0.0625) * del + 0.125) * del;
 
     *aaa = 1.0 - 0.5 * del - del * del * (0.125 + del * (0.125 + del * 0.201));
 
@@ -5118,15 +5116,11 @@ asymp:
     AA = 2*Int_{0..PI} {cos (x) exp (kappa * cos (x)) dx} / LI0
 
     */
-#define Sf double
-#define Sw int
 
 double PI;
 
 /*    ----------------  calc (ka, *li0, *log_i0_d1, ni) -------------  */
-void calc(ka, li0, log_i0_d1, ni) double ka, *li0, *log_i0_d1;
-int ni;
-{
+void calc(double ka, double *li0, double *log_i0_d1, int ni) {
     double xx, hh, cx, sum1, sum2, pp;
     int ii;
 
