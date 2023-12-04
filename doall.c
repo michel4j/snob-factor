@@ -111,7 +111,6 @@ void tidy(int hit) {
     Class *cls, *dad, *son;
     int i, kkd, ndead, newhicl, cause;
 
-    Deaded = 0;
     if (!CurCtx.popln->sample_size)
         hit = 0;
 
@@ -155,7 +154,6 @@ void tidy(int hit) {
             }
         }
 
-        Deaded += ndead;
         if (ndead)
             continue;
 
@@ -221,7 +219,6 @@ void tidy(int hit) {
         }
     }
 
-    Deaded = 0;
     // Re-count classes, leaves etc.
     CurCtx.popln->num_classes = CurCtx.popln->num_leaves = newhicl = kkd = 0;
     for (i = 0; i <= CurCtx.popln->hi_class; i++) {
