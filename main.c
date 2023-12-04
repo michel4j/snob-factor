@@ -440,7 +440,7 @@ int main() {
     double drop;
     Context oldctx;
     Population *popln;
-    Class * root;
+    Class * root, *cls;
 
     initialize(0, 1, 0); // initialize 
     setup_menu();  // Clear vectors of pointers to Poplns, Samples
@@ -525,10 +525,10 @@ loop:
     if (!CurSource->cfile) {
         flp();
         popln = CurCtx.popln;
-        CurClass = popln->classes[popln->root];
-        printf("P%1d  %4d classes, %4d leaves,  Pcost%8.1f", popln->id + 1, popln->num_classes, popln->num_leaves, CurClass->best_par_cost);
+        cls = popln->classes[popln->root];
+        printf("P%1d  %4d classes, %4d leaves,  Pcost%8.1f", popln->id + 1, popln->num_classes, popln->num_leaves, cls->best_par_cost);
         if (popln->sample_size)
-            printf("  Tcost%10.1f,  Cost%10.1f", CurClass->best_case_cost, CurClass->best_cost);
+            printf("  Tcost%10.1f,  Cost%10.1f", cls->best_case_cost, cls->best_cost);
         printf("\n");
         printf("Sample %2d %s\n", (CurCtx.sample) ? CurCtx.sample->id + 1 : 0, (CurCtx.sample) ? CurCtx.sample->name : "NULL");
     }

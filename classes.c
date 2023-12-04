@@ -26,15 +26,8 @@ int serial_to_id(int ss) {
     return (-3);
 }
 
-/*    ---------------------  set_class --------------------------   */
-void set_class(Class *cls) {
-    CurClass = cls;
-    CurDad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;
-}
-
 /*    ---------------------  set_class_with_scores --------------------------   */
 void set_class_with_scores(Class *cls, int item) {
-    set_class(cls);
     cls->case_score = CaseFacInt = cls->factor_scores[item];
     CurCaseWeight = cls->case_weight;
 }
@@ -56,6 +49,7 @@ int make_class() {
     CVinst **cvars, *cvi;
     EVinst **evars, *stats;
     VSetVar *vset_var;
+    Class *cls;
     int i, kk, found = 0, vacant = 0;
 
     /*    If nc, check that popln has an attached sample  */
@@ -84,17 +78,17 @@ int make_class() {
         return error_and_message("Popln full of classes");
     } else if (found) {
 
-        CurClass = (Class *)alloc_blocks(1, sizeof(Class));
-        if (!CurClass) {
+        cls = (Class *)alloc_blocks(1, sizeof(Class));
+        if (!cls) {
             return error_and_message("No space for new class");
         }
 
-        CurCtx.popln->classes[kk] = CurClass;
+        CurCtx.popln->classes[kk] = cls;
         CurCtx.popln->hi_class = kk; /* Highest used index in population->classes */
-        CurClass->id = kk;
+        cls->id = kk;
 
         /*    Make vector of ptrs to CVinsts   */
-        cvars = CurClass->basics = (CVinst **)alloc_blocks(1, CurCtx.vset->length * sizeof(CVinst *));
+        cvars = cls->basics = (CVinst **)alloc_blocks(1, CurCtx.vset->length * sizeof(CVinst *));
         if (!cvars) {
             return error_and_message("No space for new class");
         }
@@ -112,7 +106,7 @@ int make_class() {
         }
 
         /*    Make EVinst blocks and vector of pointers  */
-        evars = CurClass->stats = (EVinst **)alloc_blocks(1, CurCtx.vset->length * sizeof(EVinst *));
+        evars = cls->stats = (EVinst **)alloc_blocks(1, CurCtx.vset->length * sizeof(EVinst *));
         if (!evars) {
             return error_and_message("No space for new class");
         }
@@ -127,22 +121,22 @@ int make_class() {
         }
 
         /*    Stomp on ptrs as yet undefined  */
-        CurClass->factor_scores = 0;
-        CurClass->type = 0;
+        cls->factor_scores = 0;
+        cls->type = 0;
 
     } else if (vacant) { /* Vacant type shows structure set up but vacated.
           Use, but set new (Vacant) type,  */
-        CurClass = CurCtx.popln->classes[kk];
-        cvars = CurClass->basics;
-        evars = CurClass->stats;
-        CurClass->type = Vacant;
+        cls = CurCtx.popln->classes[kk];
+        cvars = cls->basics;
+        evars = cls->stats;
+        cls->type = Vacant;
     }
 
-    CurClass->best_cost = CurClass->nofac_cost = CurClass->fac_cost = 0.0;
-    CurClass->weights_sum = 0.0;
+    cls->best_cost = cls->nofac_cost = cls->fac_cost = 0.0;
+    cls->weights_sum = 0.0;
     /*    Invalidate hierarchy links  */
-    CurClass->dad_id = CurClass->sib_id = CurClass->son_id = -1;
-    CurClass->num_sons = 0;
+    cls->dad_id = cls->sib_id = cls->son_id = -1;
+    cls->num_sons = 0;
     for (i = 0; i < CurCtx.vset->length; i++) {
         cvars[i]->signif = 1;
     }
@@ -150,26 +144,26 @@ int make_class() {
     if (kk > CurCtx.popln->hi_class) {
         CurCtx.popln->hi_class = kk;
     }
-    if (CurClass->type != Vacant) {
+    if (cls->type != Vacant) {
         /* If nc = 0, this completes the make. */
         if (CurCtx.popln->sample_size != 0) {
-            CurClass->factor_scores = (short *)alloc_blocks(2, CurCtx.popln->sample_size * sizeof(short));
+            cls->factor_scores = (short *)alloc_blocks(2, CurCtx.popln->sample_size * sizeof(short));
 
             for (int i = 0; i < CurCtx.vset->length; i++) {
                 evars[i]->num_values = 0.0;
             }
         }
     } else {
-        CurClass->type = 0;
+        cls->type = 0;
 
         for (int i = 0; i < CurCtx.vset->length; i++) {
             evars[i]->num_values = 0.0;
         }
     }
 
-    CurClass->age = 0;
-    CurClass->hold_type = CurClass->hold_use = 0;
-    CurClass->weights_sum = 0.0;
+    cls->age = 0;
+    cls->hold_type = cls->hold_use = 0;
+    cls->weights_sum = 0.0;
     return (kk);
 }
 
@@ -237,8 +231,6 @@ void print_class(int kk, int full) {
 newvsq, and calls clear_stats for all variables   */
 void clear_costs(Class *cls) {
     int i;
-
-    set_class(cls);
     cls->mlogab = -log(cls->relab);
     cls->cstcost = cls->cftcost = cls->cntcost = 0.0;
     cls->cfvcost = 0.0;
@@ -249,7 +241,7 @@ void clear_costs(Class *cls) {
     if (!SeeAll)
         cls->scancnt = 0;
     for (i = 0; i < CurCtx.vset->length; i++) {
-        (*(CurCtx.vset->variables[i].vtype)->clear_stats)(i);
+        (*(CurCtx.vset->variables[i].vtype)->clear_stats)(i, cls);
     }
 }
 
@@ -257,8 +249,6 @@ void clear_costs(Class *cls) {
 /*    To set 'b' params, costs to reflect current use   */
 void set_best_costs(Class *cls) {
     int i;
-
-    set_class(cls);
     if (cls->type == Dad) {
         cls->best_cost = cls->dad_cost;
         cls->best_par_cost = cls->dad_par_cost;
@@ -273,7 +263,7 @@ void set_best_costs(Class *cls) {
         cls->best_case_cost = cls->cftcost;
     }
     for (i = 0; i < CurCtx.vset->length; i++) {
-        (*(CurCtx.vset->variables[i].vtype)->set_best_pars)(i);
+        (*(CurCtx.vset->variables[i].vtype)->set_best_pars)(i, cls);
     }
 }
 
@@ -325,7 +315,7 @@ void score_all_vars(Class *cls, int item) {
             vset_var = CurCtx.vset->variables + i;
             if (!vset_var->inactive) {
                 var_type = vset_var->vtype;
-                (*var_type->score_var)(i); // score_var should add to CaseFacScoreD1, CaseFacScoreD2, CaseFacScoreD3, EstFacScoreD2.
+                (*var_type->score_var)(i, cls); // score_var should add to CaseFacScoreD1, CaseFacScoreD2, CaseFacScoreD3, EstFacScoreD2.
             }
         }
 
@@ -382,7 +372,7 @@ void cost_all_vars(Class *cls, int item) {
         vset_var = CurCtx.vset->variables + iv;
         if (!(vset_var->inactive)) {
             var_type = vset_var->vtype;
-            (*var_type->cost_var)(iv, fac); /*    will add to scasecost, fcasecost  */
+            (*var_type->cost_var)(iv, fac, cls); /*    will add to scasecost, fcasecost  */
         }
     }
 
@@ -420,29 +410,30 @@ void deriv_all_vars(Class *cls, int item) {
     VSetVar *vset_var;
 
     set_class_with_scores(cls, item);
-    cls->newcnt += CurCaseWeight;
+    double case_weight = cls->case_weight;
+    cls->newcnt += case_weight;
     if ((cls->age >= MinFacAge) && (cls->use != Tiny)) {
         fac = 1;
         CurCaseFacScore = cls->case_fac_score;
         CurCaseFacScoreSq = cls->case_fac_score_sq;
         cvvsprd = cls->cvvsprd;
-        cls->newvsq += CurCaseWeight * CurCaseFacScoreSq;
-        cls->vav += CurCaseWeight * cls->clvsprd;
-        cls->factor_score_sum += CurCaseFacScore * CurCaseWeight;
+        cls->newvsq += case_weight * CurCaseFacScoreSq;
+        cls->vav += case_weight * cls->clvsprd;
+        cls->factor_score_sum += CurCaseFacScore * case_weight;
     }
 
     for (int iv = 0; iv < CurCtx.vset->length; iv++) {
         vset_var = CurCtx.vset->variables + iv;
         if (!(vset_var->inactive)) {
-            (*vset_var->vtype->deriv_var)(iv, fac);
+            (*vset_var->vtype->deriv_var)(iv, fac, cls);
         }
     }
 
     /*    Collect case item costs   */
-    cls->cstcost += CurCaseWeight * cls->nofac_case_cost;
-    cls->cftcost += CurCaseWeight * cls->fac_case_cost;
-    cls->cntcost += CurCaseWeight * cls->dad_case_cost;
-    cls->cfvcost += CurCaseWeight * cls->coding_case_cost;
+    cls->cstcost += case_weight * cls->nofac_case_cost;
+    cls->cftcost += case_weight * cls->fac_case_cost;
+    cls->cntcost += case_weight * cls->dad_case_cost;
+    cls->cfvcost += case_weight * cls->coding_case_cost;
 }
 
 /*    --------------------  adjust_class  -----------------------   */
@@ -454,8 +445,8 @@ void adjust_class(Class *cls, int dod) {
     VSetVar *vset_var;
     VarType *var_type;
     double leafcost;
-
-    set_class(cls);
+    Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;
+    
     /*    Get root (logarithmic average of vvsprds)  */
     cls->vav = exp(0.5 * cls->vav / (cls->newcnt + 0.1));
     if (Control & AdjSc)
@@ -467,8 +458,8 @@ void adjust_class(Class *cls, int dod) {
             cls->hold_type--;
         if ((cls->hold_use) && (cls->hold_use < Forever))
             cls->hold_use--;
-        if (CurDad) {
-            cls->relab = (CurDad->relab * (cls->weights_sum + 0.5)) / (CurDad->weights_sum + 0.5 * CurDad->num_sons);
+        if (dad) {
+            cls->relab = (dad->relab * (cls->weights_sum + 0.5)) / (dad->weights_sum + 0.5 * dad->num_sons);
             cls->mlogab = -log(cls->relab);
         } else {
             cls->relab = 1.0;
@@ -477,7 +468,7 @@ void adjust_class(Class *cls, int dod) {
     }
     /*    But if a young subclass, make relab half of dad's  */
     if ((cls->type == Sub) && (cls->age < MinSubAge)) {
-        cls->relab = 0.5 * CurDad->relab;
+        cls->relab = 0.5 * dad->relab;
     }
 
     if ((cls->age < MinFacAge) || (cls->use == Tiny))
@@ -500,7 +491,7 @@ void adjust_class(Class *cls, int dod) {
         vset_var = CurCtx.vset->variables + iv;
         if (!(vset_var->inactive)) {
             var_type = vset_var->vtype;
-            (*var_type->adjust)(iv, fac);
+            (*var_type->adjust)(iv, fac, cls);
         }
     }
 
@@ -579,8 +570,8 @@ void adjust_class(Class *cls, int dod) {
             log_msg(0, "\nChanging type of class %s from LEAF to DAD", serial_to_str(cls));
             SeeAll = 4;
             cls->type = Dad;
-            if (CurDad)
-                CurDad->hold_type += 3;
+            if (dad)
+                dad->hold_type += 3;
 
             for (int i = 0; i < 2; i++) {
                 son = CurCtx.popln->classes[i == 0 ? cls->son_id : son->sib_id];
@@ -607,12 +598,11 @@ void parent_cost_all_vars(Class *cls, int valid) {
     VarType *var_type;
     VSetVar *vset_var;
 
-    set_class(cls);
     abcost = 0.0;
     for (int i = 0; i < CurCtx.vset->length; i++) {
         vset_var = CurCtx.vset->variables + i;
         var_type = vset_var->vtype;
-        (*var_type->cost_var_nonleaf)(i, valid);
+        (*var_type->cost_var_nonleaf)(i, valid, cls);
         stats = (EVinst *)cls->stats[i];
         if (!vset_var->inactive) {
             abcost += stats->npcost;

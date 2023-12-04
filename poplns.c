@@ -165,30 +165,29 @@ int init_population() {
 /*    Given a class index kk, makes two subclasses  */
 
 void make_subclasses(int kk) {
-    Class *clp, *clsa, *clsb;
+    Class *cls, *clsa, *clsb;
     CVinst *cvi, *scvi;
     double cntk;
     int i, kka, kkb, iv, nch;
 
     if (NoSubs)
         return;
-    clp = CurCtx.popln->classes[kk];
-    set_class(clp);
+    cls = CurCtx.popln->classes[kk];
     clsa = clsb = 0;
     /*    Check that class has no subs   */
-    if (CurClass->num_sons > 0) {
+    if (cls->num_sons > 0) {
         i = 0;
         goto finish;
     }
     /*    And that it is big enough to support subs    */
-    cntk = CurClass->weights_sum;
+    cntk = cls->weights_sum;
     if (cntk < (2 * MinSize + 2.0)) {
         i = 1;
         goto finish;
     }
     /*    Ensure clp's as-dad params set to plain values  */
     Control = 0;
-    adjust_class(clp, 0);
+    adjust_class(cls, 0);
     Control = DControl;
     kka = make_class();
     if (kka < 0) {
@@ -203,14 +202,12 @@ void make_subclasses(int kk) {
         goto finish;
     }
     clsb = CurCtx.popln->classes[kkb];
-    clsa->serial = clp->serial + 1;
-    clsb->serial = clp->serial + 2;
-
-    set_class(clp);
+    clsa->serial = cls->serial + 1;
+    clsb->serial = cls->serial + 2;
 
     /*    Fix hierarchy links.  */
-    CurClass->num_sons = 2;
-    CurClass->son_id = kka;
+    cls->num_sons = 2;
+    cls->son_id = kka;
     clsa->dad_id = clsb->dad_id = kk;
     clsa->num_sons = clsb->num_sons = 0;
     clsa->sib_id = kkb;
@@ -218,7 +215,7 @@ void make_subclasses(int kk) {
 
     /*    Copy kk's Basics into both subs  */
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
-        cvi = CurClass->basics[iv];
+        cvi = cls->basics[iv];
         scvi = clsa->basics[iv];
         nch = CurCtx.vset->variables[iv].basic_size;
         memcpy(scvi, cvi, nch);
@@ -230,9 +227,9 @@ void make_subclasses(int kk) {
     clsb->age = 0;
     clsa->type = clsb->type = Sub;
     clsa->use = clsb->use = Plain;
-    clsa->relab = clsb->relab = 0.5 * CurClass->relab;
+    clsa->relab = clsb->relab = 0.5 * cls->relab;
     clsa->mlogab = clsb->mlogab = -log(clsa->relab);
-    clsa->weights_sum = clsb->weights_sum = 0.5 * CurClass->weights_sum;
+    clsa->weights_sum = clsb->weights_sum = 0.5 * cls->weights_sum;
     i = 3;
 
 finish:

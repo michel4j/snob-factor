@@ -254,24 +254,23 @@ void set_sizes(int iv) {
 }
 
 /*    ----------------------- set_best_pars -----------------------  */
-void set_best_pars(iv) int iv;
-{
+void set_best_pars(int iv, Class *cls) {
     VSetVar *vset_var = CurCtx.vset->variables + iv;
     Vaux *vaux = (Vaux *)vset_var->vaux;
-    Basic *cvi = (Basic *)CurClass->basics[iv];
-    Stats *stats = (Stats *)CurClass->stats[iv];
+    Basic *cvi = (Basic *)cls->basics[iv];
+    Stats *stats = (Stats *)cls->stats[iv];
 
     int states = vaux->states;
     double *nap = &(cvi->origin);
     double *sap = nap + states;
     double *fap = sap + states;
 
-    if (CurClass->type == Dad) {
+    if (cls->type == Dad) {
         cvi->bap = nap;
         cvi->bapsprd = cvi->napsprd;
         stats->btcost = stats->ntcost;
         stats->bpcost = stats->npcost;
-    } else if ((CurClass->use == Fac) && cvi->infac) {
+    } else if ((cls->use == Fac) && cvi->infac) {
         cvi->bap = fap;
         cvi->bapsprd = cvi->fapsprd;
         stats->btcost = stats->ftcost;
@@ -288,7 +287,7 @@ void set_best_pars(iv) int iv;
 /*    Routine to set state probs for a item using fap, fbp, CurCaseFacScore */
 /*    Sets probs in pr[], -log probs in qr[].  */
 /*    Also calcs b1p, b2p, b3p, b1p2, gg  */
-void setprobs(int iv, Prob *probs) {
+void setprobs(int iv, Prob *probs, Class* cls) {
     double sum, tt, lsum;
     int k, ig;
 
@@ -296,8 +295,8 @@ void setprobs(int iv, Prob *probs) {
 
     VSetVar *vset_var = CurCtx.vset->variables + iv;
     Vaux *vaux = (Vaux *)vset_var->vaux;
-    Stats *stats = (Stats *)CurClass->stats[iv];
-    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)cls->stats[iv];
+    Basic *cvi = (Basic *)cls->basics[iv];
 
     int states = vaux->states;
     double statesm = states - 1; /*  states - 1.0 */
@@ -355,14 +354,14 @@ void setprobs(int iv, Prob *probs) {
 /*    ---------------------------  clear_stats  --------------------   */
 /*    Clears stats to accumulate in cost_var, and derives useful functions
 of basic params   */
-void clear_stats(int iv) {
+void clear_stats(int iv, Class* cls) {
     double sum, tt;
     int k;
 
     VSetVar *vset_var = CurCtx.vset->variables + iv;
     Vaux *vaux = (Vaux *)vset_var->vaux;
-    Basic *cvi = (Basic *)CurClass->basics[iv];
-    Stats *stats = (Stats *)CurClass->stats[iv];
+    Basic *cvi = (Basic *)cls->basics[iv];
+    Stats *stats = (Stats *)cls->stats[iv];
 
     int states = vaux->states;
     double statesm = states - 1;
@@ -390,7 +389,7 @@ void clear_stats(int iv) {
         scnt[k] = fapd1[k] = fbpd1[k] = 0.0;
     }
     stats->apd2 = stats->bpd2 = 0.0;
-    if (CurClass->age == 0) {
+    if (cls->age == 0) {
         /*    Set nominal state costs in scst[]  */
         sum = log((double)states) + 1.0;
         for (k = 0; k < states; k++)
@@ -445,15 +444,15 @@ void clear_stats(int iv) {
 /*    -------------------------  score_var  ------------------------   */
 /*    To eval derivs of a case wrt score, scorespread. Adds to CaseFacScoreD1,vvd2.
  */
-void score_var(int iv) {
+void score_var(int iv, Class *cls) {
     double t1d1, t2d1, t3d1;
 
     VSetVar *vset_var = CurCtx.vset->variables + iv;
     SampleVar *smpl_var = CurCtx.sample->variables + iv;
     Saux *saux = (Saux *)smpl_var->saux;
     Vaux *vaux = (Vaux *)vset_var->vaux;
-    Basic *cvi = (Basic *)CurClass->basics[iv];
-    Stats *stats = (Stats *)CurClass->stats[iv];
+    Basic *cvi = (Basic *)cls->basics[iv];
+    Stats *stats = (Stats *)cls->stats[iv];
 
     int states = vaux->states;
     double statesm = states - 1;
@@ -470,7 +469,7 @@ void score_var(int iv) {
         return;
 
     Prob probs;
-    setprobs(iv, &probs); /* Will calc pr[], qr[], gg, ff  */
+    setprobs(iv, &probs, cls); /* Will calc pr[], qr[], gg, ff  */
 
     t1d1 = probs.b1p - fbp[saux->xn];
     t2d1 = -(0.5 * states * rstatesm) * (cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd) * probs.ff * probs.b1p;
@@ -486,15 +485,15 @@ void score_var(int iv) {
 
 /*    ---------------------  cost_var  ---------------------------  */
 /*    Accumulate item cost into scasecost, fcasecost  */
-void cost_var(int iv, int fac) {
+void cost_var(int iv, int fac, Class *cls) {
     double cost;
 
     VSetVar *vset_var = CurCtx.vset->variables + iv;
     SampleVar *smpl_var = CurCtx.sample->variables + iv;
     Saux *saux = (Saux *)smpl_var->saux;
     Vaux *vaux = (Vaux *)vset_var->vaux;
-    Basic *cvi = (Basic *)CurClass->basics[iv];
-    Stats *stats = (Stats *)CurClass->stats[iv];
+    Basic *cvi = (Basic *)cls->basics[iv];
+    Stats *stats = (Stats *)cls->stats[iv];
 
     int states = vaux->states;
     double *scnt = &(stats->origin);
@@ -503,7 +502,7 @@ void cost_var(int iv, int fac) {
 
     if (saux->missing)
         return;
-    if (CurClass->age == 0) {
+    if (cls->age == 0) {
         stats->parkftcost = 0.0;
         return;
     }
@@ -516,7 +515,7 @@ void cost_var(int iv, int fac) {
         goto facdone;
 
     Prob probs;
-    setprobs(iv, &probs);
+    setprobs(iv, &probs, cls);
     cost = -log(pr[saux->xn]); /* -log prob of xn */
     stats->conff = 0.5 * probs.ff * (cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd);
     stats->ff = probs.ff;
@@ -534,15 +533,15 @@ facdone:
 /*    ------------------  deriv_var  ------------------------------  */
 /*    Given item weight in cwt, calcs derivs of item cost wrt basic
 params and accumulates in paramd1, paramd2  */
-void deriv_var(int iv, int fac) {
+void deriv_var(int iv, int fac, Class* cls) {
     double cons1, cons2, inc;
     int k;
     VSetVar *vset_var = CurCtx.vset->variables + iv;
     Vaux *vaux = (Vaux *)vset_var->vaux;
     SampleVar *smpl_var = CurCtx.sample->variables + iv;
     Saux *saux = (Saux *)smpl_var->saux;
-    Stats *stats = (Stats *)CurClass->stats[iv];
-    Basic *cvi = (Basic *)CurClass->basics[iv];
+    Stats *stats = (Stats *)cls->stats[iv];
+    Basic *cvi = (Basic *)cls->basics[iv];
 
     int states = vaux->states;
     double statesm = states - 1;
@@ -617,15 +616,16 @@ facdone:
 
 /*    -------------------  adjust  ---------------------------    */
 /*    To adjust parameters of a multistate variable     */
-void adjust(int iv, int fac) {
+void adjust(int iv, int fac, Class *cls) {
 
     double adj, apd2, cnt, vara, del, tt, sum, spcost, fpcost;
     int k, n;
 
     VSetVar *vset_var = CurCtx.vset->variables + iv;
     Vaux *vaux = (Vaux *)vset_var->vaux;
-    Basic *dcvi, *cvi = (Basic *)CurClass->basics[iv];
-    Stats *stats = (Stats *)CurClass->stats[iv];
+    Basic *dcvi, *cvi = (Basic *)cls->basics[iv];
+    Stats *stats = (Stats *)cls->stats[iv];
+    Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;
 
     int states = vaux->states;
     double statesm = states - 1;
@@ -652,8 +652,8 @@ void adjust(int iv, int fac) {
     double *dadnap; // Pointer to Dad's nap[]
     double dapsprd; // Dad's napsprd
 
-    if (CurDad) { /* Not root */
-        dcvi = (Basic *)CurDad->basics[iv];
+    if (dad) { /* Not root */
+        dcvi = (Basic *)dad->basics[iv];
         dadnap = &(dcvi->origin);
         dapsprd = dcvi->napsprd;
     } else { /* Root */
@@ -675,7 +675,7 @@ void adjust(int iv, int fac) {
     }
 
     /*    If class age zero, make some preliminary estimates  */
-    if (CurClass->age)
+    if (cls->age)
         goto hasage;
     stats->oldftcost = 0.0;
     stats->adj = 1.0;
@@ -700,8 +700,8 @@ void adjust(int iv, int fac) {
     sum = 0.0;
     for (k = 0; k < states; k++)
         sum += scnt[k] * qr[k];
-    CurClass->cstcost -= sum + 0.5 * statesm;
-    CurClass->cftcost = CurClass->cstcost + 100.0 * cnt;
+    cls->cstcost -= sum + 0.5 * statesm;
+    cls->cftcost = cls->cstcost + 100.0 * cnt;
 
 hasage:
     /*    Calculate spcost for non-fac params  */
@@ -755,8 +755,8 @@ facdone1:
     stats->spcost = spcost;
     stats->fpcost = fpcost;
     /*    Add to class param costs  */
-    CurClass->nofac_par_cost += spcost;
-    CurClass->fac_par_cost += fpcost;
+    cls->nofac_par_cost += spcost;
+    cls->fac_par_cost += fpcost;
     if (!(Control & AdjPr))
         goto adjdone;
     if (cnt < MinSize)
@@ -827,7 +827,7 @@ adjloop:
     CurCaseFacScore = 0.0;
 
     Prob probs;
-    setprobs(iv, &probs);
+    setprobs(iv, &probs, cls);
     for (k = 0; k < states; k++)
         fapd1[k] += 0.5 * pr[k];
     stats->apd2 += 0.5 * states * probs.ff;
@@ -870,7 +870,7 @@ adjloop:
 
 facdone2:
     /*    If no sons, set as-dad params from non-fac params  */
-    if (CurClass->num_sons < 2) {
+    if (cls->num_sons < 2) {
         for (k = 0; k < states; k++)
             nap[k] = sap[k];
         cvi->napsprd = cvi->sapsprd;
@@ -883,7 +883,7 @@ adjdone:
 
 /*    ------------------------  prprint  -------------------  */
 /*    prints the exponential params in 'ap' converted to probs   */
-void prprint(double *ap, int iv) {
+void prprint(double *ap, int iv, Class* cls) {
     int k;
     double max, sum;
 
@@ -891,7 +891,7 @@ void prprint(double *ap, int iv) {
     Vaux *vaux = (Vaux *)vset_var->vaux;
     int states = vaux->states;
 
-    Stats *stats = (Stats *)CurClass->stats[iv];
+    Stats *stats = (Stats *)cls->stats[iv];
     double *scnt = &(stats->origin);
     double *scst = scnt + states;
     double *pr = scst + states;
@@ -916,7 +916,6 @@ void prprint(double *ap, int iv) {
 void show(Class *cls, int iv) {
     int k;
 
-    set_class(cls);
     VSetVar *vset_var = CurCtx.vset->variables + iv;
     Vaux *vaux = (Vaux *)vset_var->vaux;
     Basic *cvi = (Basic *)cls->basics[iv];
@@ -936,11 +935,11 @@ void show(Class *cls, int iv) {
 
     if (cls->num_sons >= 2) {
         printf(" NR: ");
-        prprint(nap, iv);
+        prprint(nap, iv, cls);
         printf(" +-%7.3f\n", sqrt(cvi->napsprd));
     }
     printf(" PR: ");
-    prprint(sap, iv);
+    prprint(sap, iv, cls);
     printf("\n");
     if (cls->use != Tiny) {
         printf(" FR: ");
@@ -954,7 +953,7 @@ void show(Class *cls, int iv) {
 }
 
 /*    ----------------------  cost_var_nonleaf -----------------------------  */
-void cost_var_nonleaf(int iv) {
+void cost_var_nonleaf(int iv, int vald, Class *cls) {
     Basic *soncvi;
     Class *son;
     double del, co0, co1, co2, tstvn, tssn;
@@ -962,9 +961,10 @@ void cost_var_nonleaf(int iv) {
     double apsprd;
     int n, k, ison, nson, nints;
 
+    Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;
     VSetVar *vset_var = CurCtx.vset->variables + iv;
-    Basic *dcvi, *cvi = (Basic *)CurClass->basics[iv];
-    Stats *stats = (Stats *)CurClass->stats[iv];
+    Basic *dcvi, *cvi = (Basic *)cls->basics[iv];
+    Stats *stats = (Stats *)cls->stats[iv];
     Vaux *vaux = (Vaux *)vset_var->vaux;
 
     int states = vaux->states;
@@ -981,8 +981,8 @@ void cost_var_nonleaf(int iv) {
     double *dadnap; // Pointer to Dad's nap[]
     double dapsprd;
 
-    if (CurDad) { /* Not root */
-        dcvi = (Basic *)CurDad->basics[iv];
+    if (dad) { /* Not root */
+        dcvi = (Basic *)dad->basics[iv];
         dadnap = &(dcvi->origin);
         dapsprd = dcvi->napsprd;
     } else { /* Root */
@@ -995,7 +995,7 @@ void cost_var_nonleaf(int iv) {
         stats->npcost = stats->ntcost = 0.0;
         return;
     }
-    nson = CurClass->num_sons;
+    nson = cls->num_sons;
     if (nson < 2) { /* cannot define parameters */
         stats->npcost = stats->ntcost = 0.0;
         for (k = 0; k < states; k++)
@@ -1016,7 +1016,7 @@ void cost_var_nonleaf(int iv) {
     sometimes becomes (statesm * nson) in this case. We use the static vector
     'pr[]' to accumulate the sum of the sons' bap[]s, in place of the 'tstn' of
     the reals code. */
-    for (ison = CurClass->son_id; ison > 0; ison = son->sib_id) {
+    for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
         son = CurCtx.popln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         for (k = 0; k < states; k++) {

@@ -16,7 +16,7 @@
 */
 int flatten(const int show) {
     int i, out = 0, root_id;
-    Class *root;
+    Class *root, *cls;
 
     root_id = CurCtx.popln->root;
     root = CurCtx.popln->classes[root_id];
@@ -28,20 +28,20 @@ int flatten(const int show) {
     for (i = 0; i <= CurCtx.popln->hi_class; i++) {
         if (i == CurCtx.popln->root)
             continue;
-        CurClass = CurCtx.popln->classes[i];
-        if (CurClass->type != Vacant) {
+        cls = CurCtx.popln->classes[i];
+        if (cls->type != Vacant) {
 
-            if (CurClass->num_sons) { /*  Kill it  */
-                CurClass->type = Vacant;
-                CurClass->dad_id = Deadkilled;
+            if (cls->num_sons) { /*  Kill it  */
+                cls->type = Vacant;
+                cls->dad_id = Deadkilled;
                 CurCtx.popln->num_classes--;
             } else {
-                if (CurClass->type == Sub) {
-                    CurClass->type = Leaf;
-                    CurClass->serial = CurCtx.popln->next_serial << 2;
+                if (cls->type == Sub) {
+                    cls->type = Leaf;
+                    cls->serial = CurCtx.popln->next_serial << 2;
                     CurCtx.popln->next_serial++;
                 }
-                CurClass->dad_id = CurCtx.popln->root;
+                cls->dad_id = CurCtx.popln->root;
             }
         }
     }
@@ -176,7 +176,7 @@ int best_insert_dad(int force) {
     int i1, i2, hiid, succ;
     int bser1, bser2, ser1, ser2, newp, newid, newser;
     double res, bestdrop, origcost;
-        Class * root;
+    Class *root;
 
     root = CurCtx.popln->classes[CurCtx.popln->root];
 
@@ -333,30 +333,30 @@ double splice_dad(int ser) {
     Class *son;
     int kk, kkd, kks;
     double drop, origcost, newcost;
-        Class * root;
+    Class *root;
 
     root = CurCtx.popln->classes[CurCtx.popln->root];
-
+    
     drop = -1.0e20;
     kk = serial_to_id(ser);
-    set_class(CurCtx.popln->classes[kk]);
-    if (CurClass->type != Dad)
+    Class *cls = CurCtx.popln->classes[kk];
+    if (cls->type != Dad)
         goto finish;
     if (kk == CurCtx.popln->root)
         goto finish;
-    kkd = CurClass->dad_id;
+    kkd = cls->dad_id;
     if (kkd < 0)
         goto finish;
-    if (CurClass->num_sons <= 0)
+    if (cls->num_sons <= 0)
         goto finish;
     /*    All seems OK. Fix idads in kk's sons  */
     origcost = root->best_par_cost;
-    for (kks = CurClass->son_id; kks >= 0; kks = son->sib_id) {
+    for (kks = cls->son_id; kks >= 0; kks = son->sib_id) {
         son = CurCtx.popln->classes[kks];
         son->dad_id = kkd;
     }
     /*    Now kill off class kk  */
-    CurClass->type = Vacant;
+    cls->type = Vacant;
     CurCtx.popln->num_classes--;
     /*    Fix linkages  */
     tidy(0);
@@ -377,7 +377,7 @@ int best_remove_dad() {
     int i1, hiid, newp;
     int bser, ser;
     double res, bestdrop, origcost;
-    Class * root;
+    Class *root;
 
     root = CurCtx.popln->classes[CurCtx.popln->root];
     NoSubs++;
@@ -524,7 +524,7 @@ kicked:
 void ranclass(int nn) {
     int n, ic, ib;
     double bs;
-    Class *sub, *dad,* root;
+    Class *sub, *dad, *root, *cls;
 
     root = CurCtx.popln->classes[CurCtx.popln->root];
     set_population();
@@ -555,14 +555,14 @@ again:
     ib = -1;
     bs = 0.0;
     for (ic = 0; ic < NumSon; ic++) {
-        CurClass = Sons[ic];
-        if (CurClass->num_sons < 2)
+        cls = Sons[ic];
+        if (cls->num_sons < 2)
             goto icdone;
-        sub = CurCtx.popln->classes[CurClass->son_id];
+        sub = CurCtx.popln->classes[cls->son_id];
         if (sub->age < MinAge)
             goto icdone;
-        if (CurClass->weights_sum > bs) {
-            bs = CurClass->weights_sum;
+        if (cls->weights_sum > bs) {
+            bs = cls->weights_sum;
             ib = ic;
         }
     icdone:;
@@ -601,7 +601,7 @@ double move_class(int ser1, int ser2) {
     Class *cls1, *cls2, *odad;
     int k1, k2, od2;
     double origcost, newcost, drop;
-    Class * root;
+    Class *root;
 
     root = CurCtx.popln->classes[CurCtx.popln->root];
     origcost = root->best_par_cost;
@@ -676,7 +676,7 @@ int best_move_class(int force) {
     int i1, i2, hiid;
     int bser1, bser2, ser1, ser2, od2, newp, succ;
     double res, bestdrop, origcost;
-    Class * root;
+    Class *root;
 
     root = CurCtx.popln->classes[CurCtx.popln->root];
     /*    We look for all pairs ser1,ser2 of serials where:
