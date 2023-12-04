@@ -101,22 +101,22 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
     double origin; /* First element of states vectors */
 } Stats;
 
-/*    Pointers to vectors in stats  */
+/* Pointers to vectors in stats  */
 // static double *scnt;          /*  vector of counts in states  */
 // static double *scst;          /*  vector of non-fac state costs  */
 // static double *pr;            /* vec. of factor state probs  */
 // static double *fapd1, *fbpd1; /*  vectors of derivs of cost wrt params */
 
-/*    Static variables specific to this type   */
+/* Static variables specific to this type   */
 // static int states;
 // static double statesm; /*  states - 1.0 */
 // static double rstates; /*  1.0 / states  */
 // static double rstatesm;
 
-static double qr[MaxState]; /*  - logs of state probs  */
+// static double qr[MaxState]; /*  - logs of state probs  */
 static double b1p, b2p, b3p, b1p2, gg, ff;
-//static double *dadnap; /* To dad's nap[] */
-static double dapsprd; /* Dad's napsprd */
+// static double *dadnap; /* To dad's nap[] */
+// static double dapsprd; /* Dad's napsprd */
 
 /*    Stuff for a table of the function exp (-0.5 * x * x)
     for x in the range 0 to Grange in Gns steps per unit of x  */
@@ -370,8 +370,7 @@ void setprobs(int iv) {
 /*    ---------------------------  clear_stats  --------------------   */
 /*    Clears stats to accumulate in cost_var, and derives useful functions
 of basic params   */
-void clear_stats(iv) int iv;
-{
+void clear_stats(int iv) {
     double sum, tt;
     int k;
 
@@ -396,6 +395,8 @@ void clear_stats(iv) int iv;
     double *fap = sap + states;
     double *fbp = fap + states;
     double *frate = fbp + states;
+
+    double qr[MaxState];
 
     stats->cnt = 0.0;
     stats->stcost = stats->ftcost = 0.0;
@@ -649,10 +650,14 @@ void adjust(int iv, int fac) {
     double *fap = sap + states;
     double *fbp = fap + states;
 
+    double qr[MaxState];
+
     cnt = stats->cnt;
 
     double *dadnap; // Pointer to Dad's nap[]
-    if (CurDad) { /* Not root */
+    double dapsprd;
+
+    if (CurDad) {   /* Not root */
         dcvi = (Basic *)CurDad->basics[iv];
         dadnap = &(dcvi->origin);
         dapsprd = dcvi->napsprd;
@@ -833,7 +838,7 @@ adjloop:
      */
     /*    In an attempt to speed things, fiddle adjustment multiple   */
     sum = stats->ftcost / cnt;
-    adj = (sum < stats->oldftcost) ? stats->adj * 1.1: InitialAdj;
+    adj = (sum < stats->oldftcost) ? stats->adj * 1.1 : InitialAdj;
     adj = fmin(adj, MaxAdj);
     stats->adj = adj;
     stats->oldftcost = sum;
@@ -923,7 +928,7 @@ void show(Class *cls, int iv) {
     int states = vaux->states;
     double statesm = states - 1;
     double rstatesm = 1.0 / statesm;
-    
+
     double *nap = &(cvi->origin);
     double *sap = nap + states;
     double *fap = sap + states;
@@ -974,13 +979,19 @@ void cost_var_nonleaf(int iv) {
     double *nap = &(cvi->origin);
     double *sap = nap + states;
 
+    double qr[MaxState];
+
     double *dadnap; // Pointer to Dad's nap[]
-    if (CurDad) { /* Not root */
+    double dapsprd;
+
+    if (CurDad) {   /* Not root */
         dcvi = (Basic *)CurDad->basics[iv];
         dadnap = &(dcvi->origin);
+        dapsprd = dcvi->napsprd;
     } else { /* Root */
         dcvi = 0;
         dadnap = ZeroVec;
+        dapsprd = 1.0;
     }
 
     if (vset_var->inactive) {

@@ -37,7 +37,7 @@ EXAMPLES = [
     'sd1',
     'vm',
 ]
-EXAMPLES = ['6r1b']
+EXAMPLES = ['6m1c']
 
 from pathlib import Path
                 
@@ -52,7 +52,7 @@ if __name__ == '__main__':
         snob.load_vset(vset_file.encode('utf-8'))
         snob.load_sample(sample_file.encode('utf-8'))
 
-        result = snob.classify(20, 50, 2, 0)
+        result = snob.classify(20, 50, 2, -1)
         
         snob.print_tree()
         snob.print_class(-2, 1)
