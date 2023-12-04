@@ -28,7 +28,7 @@ int serial_to_id(int ss) {
 
 /*    ---------------------  set_class_with_scores --------------------------   */
 void set_class_with_scores(Class *cls, int item) {
-    cls->case_score = CaseFacInt = cls->factor_scores[item];
+    cls->case_score = Scores.CaseFacInt = cls->factor_scores[item];
 }
 
 /*    ---------------------   make_class  -------------------------   */
@@ -280,76 +280,75 @@ void score_all_vars(Class *cls, int item) {
 
     set_class_with_scores(cls, item);
     if ((cls->age < MinFacAge) || (cls->use == Tiny)) {
-        CurCaseFacScore = cls->avg_factor_scores = cls->sum_score_sq = 0.0;
-        CaseFacInt = 0;
+        Scores.CurCaseFacScore = cls->avg_factor_scores = cls->sum_score_sq = 0.0;
+        Scores.CaseFacInt = 0;
     } else {
         if (cls->sum_score_sq <= 0.0) {
             // Generate a fake score to get started.
             cls->boost_count = 0;
-            cvvsprd = 0.1 / CurCtx.vset->length;
+            Scores.cvvsprd = 0.1 / CurCtx.vset->length;
             oldicvv = igbit = 0;
-            CurCaseFacScore = (rand_int() < 0) ? 1.0 : -1.0;
+            Scores.CurCaseFacScore = (rand_int() < 0) ? 1.0 : -1.0;
         } else {
             // Get current score
-            oldicvv = CaseFacInt;
-            igbit = CaseFacInt & 1;
-            CurCaseFacScore = CaseFacInt * ScoreRscale;
+            oldicvv = Scores.CaseFacInt;
+            igbit = Scores.CaseFacInt & 1;
+            Scores.CurCaseFacScore = Scores.CaseFacInt * ScoreRscale;
             // Additional logic if cls has boost_count and AdjSP is set
             if (cls->boost_count && ((Control & AdjSP) == AdjSP)) {
-                CurCaseFacScore *= cls->score_boost;
-                CurCaseFacScore = fmax(fmin(CurCaseFacScore, Maxv), -Maxv);
-                del = CurCaseFacScore * HScoreScale;
+                Scores.CurCaseFacScore *= cls->score_boost;
+                Scores.CurCaseFacScore = fmax(fmin(Scores.CurCaseFacScore, Maxv), -Maxv);
+                del = Scores.CurCaseFacScore * HScoreScale;
                 del -= (del < 0.0) ? 1.0 : 0.0;
-                CaseFacInt = del + 0.5;
-                CaseFacInt <<= 1; // Round to nearest even times ScoreScale
+                Scores.CaseFacInt = del + 0.5;
+                Scores.CaseFacInt <<= 1; // Round to nearest even times ScoreScale
                 igbit = 0;
-                CurCaseFacScore = CaseFacInt * ScoreRscale;
+                Scores.CurCaseFacScore = Scores.CaseFacInt * ScoreRscale;
             }
         }
 
-        CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
-        CaseFacScoreD1 = CaseFacScoreD2 = EstFacScoreD2 = CaseFacScoreD3 = 0.0;
+        Scores.CurCaseFacScoreSq = Scores.CurCaseFacScore * Scores.CurCaseFacScore;
+        Scores.CaseFacScoreD1 = Scores.CaseFacScoreD2 = Scores.EstFacScoreD2 = Scores.CaseFacScoreD3 = 0.0;
         VarType *var_type;
         for (i = 0; i < CurCtx.vset->length; i++) {
             vset_var = CurCtx.vset->variables + i;
             if (!vset_var->inactive) {
                 var_type = vset_var->vtype;
-                (*var_type->score_var)(i, cls); // score_var should add to CaseFacScoreD1, CaseFacScoreD2, CaseFacScoreD3, EstFacScoreD2.
+                (*var_type->score_var)(i, cls); // score_var should add to Scores.CaseFacScoreD1, Scores.CaseFacScoreD2, Scores.CaseFacScoreD3, Scores.EstFacScoreD2.
             }
         }
 
-        CaseFacScoreD1 += CurCaseFacScore;
-        CaseFacScoreD2 += 1.0;
-        EstFacScoreD2 += 1.0; // From prior
-        cvvsprd = 1.0 / CaseFacScoreD2;
-        CaseFacScoreD1 += 0.5 * cvvsprd * CaseFacScoreD3;
-        del = CaseFacScoreD1 / EstFacScoreD2;
+        Scores.CaseFacScoreD1 += Scores.CurCaseFacScore;
+        Scores.CaseFacScoreD2 += 1.0;
+        Scores.EstFacScoreD2 += 1.0; // From prior
+        Scores.cvvsprd = 1.0 / Scores.CaseFacScoreD2;
+        Scores.CaseFacScoreD1 += 0.5 * Scores.cvvsprd * Scores.CaseFacScoreD3;
+        del = Scores.CaseFacScoreD1 / Scores.EstFacScoreD2;
         if (Control & AdjSc) {
-            CurCaseFacScore -= del;
+            Scores.CurCaseFacScore -= del;
         }
     }
 
     // Code from the 'fake' label
-    CurCaseFacScore = fmax(fmin(CurCaseFacScore, Maxv), -Maxv);
-    del = CurCaseFacScore * HScoreScale;
+    Scores.CurCaseFacScore = fmax(fmin(Scores.CurCaseFacScore, Maxv), -Maxv);
+    del = Scores.CurCaseFacScore * HScoreScale;
     // if (del < 0.0) del -= 1.0; else del -= 0.0;
     del -= (del < 0.0) ? 1.0 : 0.0;
-    CaseFacInt = del + rand_float();
-    CaseFacInt <<= 1;    // Round to nearest even times ScoreScale
-    CaseFacInt |= igbit; // Restore original ignore bit
+    Scores.CaseFacInt = del + rand_float();
+    Scores.CaseFacInt <<= 1;    // Round to nearest even times ScoreScale
+    Scores.CaseFacInt |= igbit; // Restore original ignore bit
 
     if (!igbit) {
-        oldicvv -= CaseFacInt;
+        oldicvv -= Scores.CaseFacInt;
         oldicvv = abs(oldicvv);
         if (oldicvv > SigScoreChange)
             cls->score_change_count++;
     }
 
-    cls->case_fac_score = CurCaseFacScore;
-    cls->case_fac_score_sq = CurCaseFacScoreSq;
-    cls->cvvsprd = cvvsprd;
-
-    cls->factor_scores[item] = cls->case_score = CaseFacInt;
+    cls->case_fac_score = Scores.CurCaseFacScore;
+    cls->case_fac_score_sq = Scores.CurCaseFacScoreSq;
+    cls->cvvsprd = Scores.cvvsprd;
+    cls->factor_scores[item] = cls->case_score = Scores.CaseFacInt;
 }
 
 /*    ----------------------  cost_all_vars  --------------------------  */
@@ -363,20 +362,20 @@ void cost_all_vars(Class *cls, int item) {
     set_class_with_scores(cls, item);
     if ((cls->age >= MinFacAge) && (cls->use != Tiny)) {
         fac = 1;
-        CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
+        Scores.CurCaseFacScoreSq = Scores.CurCaseFacScore * Scores.CurCaseFacScore;
     }
-    ncasecost = scasecost = fcasecost = cls->mlogab; /* Abundance cost */
+    Scores.ncasecost = Scores.scasecost = Scores.fcasecost = cls->mlogab; /* Abundance cost */
     VarType *var_type;
     for (int iv = 0; iv < CurCtx.vset->length; iv++) {
         vset_var = CurCtx.vset->variables + iv;
         if (!(vset_var->inactive)) {
             var_type = vset_var->vtype;
-            (*var_type->cost_var)(iv, fac, cls); /*    will add to scasecost, fcasecost  */
+            (*var_type->cost_var)(iv, fac, cls); /*    will add to scasecost, Scores.fcasecost  */
         }
     }
 
-    cls->total_case_cost = cls->nofac_case_cost = scasecost;
-    cls->fac_case_cost = scasecost + 10.0;
+    cls->total_case_cost = cls->nofac_case_cost = Scores.scasecost;
+    cls->fac_case_cost = Scores.scasecost + 10.0;
     if (cls->num_sons < 2)
         cls->dad_case_cost = 0.0;
     cls->coding_case_cost = 0.0;
@@ -387,18 +386,18 @@ void cost_all_vars(Class *cls, int item) {
         However, we appeal to the large number of score parameters, which gives a
         more negative 'LATTICE' ((log 12)/2 for one parameter) approaching -(1/2)
         log (2 Pi e) which results in the reduced cost :  */
-        cls->clvsprd = log(cvvsprd);
-        tmp = 0.5 * (CurCaseFacScoreSq + cvvsprd - cls->clvsprd - 1.0);
+        cls->clvsprd = log(Scores.cvvsprd);
+        tmp = 0.5 * (Scores.CurCaseFacScoreSq + Scores.cvvsprd - cls->clvsprd - 1.0);
         /*
             Over all scores for the class, the LATTICE effect will add approx
                 ( log (2 Pi cnt)) / 2  + 1
             to the class cost. This is added later, once cnt is known.
         */
-        fcasecost += tmp;
-        cls->fac_case_cost = fcasecost;
+        Scores.fcasecost += tmp;
+        cls->fac_case_cost = Scores.fcasecost;
         cls->coding_case_cost = tmp;
         if (cls->use == Fac)
-            cls->total_case_cost = fcasecost;
+            cls->total_case_cost = Scores.fcasecost;
     }
 }
 
@@ -413,12 +412,12 @@ void deriv_all_vars(Class *cls, int item) {
     cls->newcnt += case_weight;
     if ((cls->age >= MinFacAge) && (cls->use != Tiny)) {
         fac = 1;
-        CurCaseFacScore = cls->case_fac_score;
-        CurCaseFacScoreSq = cls->case_fac_score_sq;
-        cvvsprd = cls->cvvsprd;
-        cls->newvsq += case_weight * CurCaseFacScoreSq;
+        Scores.CurCaseFacScore = cls->case_fac_score;
+        Scores.CurCaseFacScoreSq = cls->case_fac_score_sq;
+        Scores.cvvsprd = cls->cvvsprd;
+        cls->newvsq += case_weight * Scores.CurCaseFacScoreSq;
         cls->vav += case_weight * cls->clvsprd;
-        cls->factor_score_sum += CurCaseFacScore * case_weight;
+        cls->factor_score_sum += Scores.CurCaseFacScore * case_weight;
     }
 
     for (int iv = 0; iv < CurCtx.vset->length; iv++) {

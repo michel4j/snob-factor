@@ -242,7 +242,7 @@ void clear_stats(int iv, Class* cls) {
 }
 
 /*    -------------------------  score_var  ------------------------   */
-/*    To eval derivs of a case wrt score, scorespread. Adds to CaseFacScoreD1,CaseFacScoreD2.
+/*    To eval derivs of a case wrt score, scorespread. Adds to Scores.CaseFacScoreD1,CaseFacScoreD2.
  */
 void score_var(int iv, Class *cls) {
     double cc, pr0, pr1, ff, ft, dbyv, hdffbydv, hdftbydv;
@@ -258,7 +258,7 @@ void score_var(int iv, Class *cls) {
     if (saux->missing)
         return;
     /*    Calc prob of val 1  */
-    cc = cvi->fap + CurCaseFacScore * cvi->fbp;
+    cc = cvi->fap + Scores.CurCaseFacScore * cvi->fbp;
     if (cc > 0.0) {
         pr1 = exp(-2.0 * cc);
         pr0 = pr1 / (1.0 + pr1);
@@ -286,14 +286,14 @@ void score_var(int iv, Class *cls) {
     else
         dbyv = 2.0 * cvi->fbp * pr1;
     /*    From cost term 0.5 * vvsq * bpsprd * ft: */
-    dbyv += CurCaseFacScore * cvi->bpsprd * ft;
+    dbyv += Scores.CurCaseFacScore * cvi->bpsprd * ft;
     /*    And via dftbydv, terms 0.5*(fapsprd * vvsq*bpsprd)*ft :   */
-    dbyv += (cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd) * hdftbydv;
-    CaseFacScoreD1 += dbyv;
-    CaseFacScoreD2 += stats->bsq * ff;
-    EstFacScoreD2 += stats->bsq * ff;
+    dbyv += (cvi->fapsprd + Scores.CurCaseFacScoreSq * cvi->bpsprd) * hdftbydv;
+    Scores.CaseFacScoreD1 += dbyv;
+    Scores.CaseFacScoreD2 += stats->bsq * ff;
+    Scores.EstFacScoreD2 += stats->bsq * ff;
     /*    Don't yet know cvvsprd, so just accum bsq * dffbydv  */
-    CaseFacScoreD3 += 2.0 * stats->bsq * hdffbydv;
+    Scores.CaseFacScoreD3 += 2.0 * stats->bsq * hdffbydv;
     return;
 }
 
@@ -316,12 +316,12 @@ void cost_var(int iv, int fac, Class *cls) {
     }
     /*    Do nofac costing first  */
     cost = stats->scst[saux->xn];
-    scasecost += cost;
+    Scores.scasecost += cost;
 
     /*    Only do faccost if fac  */
     if (!fac)
         goto facdone;
-    cc = cvi->fap + CurCaseFacScore * cvi->fbp;
+    cc = cvi->fap + Scores.CurCaseFacScore * cvi->fbp;
     if (cc > 0.0) {
         small = exp(-2.0 * cc);
         pr0 = small / (1.0 + small);
@@ -354,12 +354,12 @@ void cost_var(int iv, int fac, Class *cls) {
     ff = Bbeta * ff + (1.0 - Bbeta) * ft;
     /*    In calculating the cost, use ft for all spreads, rather than using
         ff for the v spread, but use ff in getting differentials  */
-    cost += 0.5 * ((cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd) * ft + stats->bsq * cvvsprd * ft);
-    stats->dbya += (cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd) * hdftbydc + stats->bsq * cvvsprd * hdffbydc;
-    stats->dbyb = CurCaseFacScore * stats->dbya + cvi->fbp * cvvsprd * ff;
+    cost += 0.5 * ((cvi->fapsprd + Scores.CurCaseFacScoreSq * cvi->bpsprd) * ft + stats->bsq * Scores.cvvsprd * ft);
+    stats->dbya += (cvi->fapsprd + Scores.CurCaseFacScoreSq * cvi->bpsprd) * hdftbydc + stats->bsq * Scores.cvvsprd * hdffbydc;
+    stats->dbyb = Scores.CurCaseFacScore * stats->dbya + cvi->fbp * Scores.cvvsprd * ff;
 
 facdone:
-    fcasecost += cost;
+    Scores.fcasecost += cost;
     stats->parkftcost = cost;
     return;
 }
@@ -387,12 +387,12 @@ void deriv_var(int iv, int fac, Class *cls) {
     /*    Now for factor form  */
     if (!fac)
         goto facdone;
-    stats->vsq += cls->case_weight * CurCaseFacScoreSq;
+    stats->vsq += cls->case_weight * Scores.CurCaseFacScoreSq;
     stats->fapd1 += cls->case_weight * stats->dbya;
     stats->fbpd1 += cls->case_weight * stats->dbyb;
     /*    Accum actual 2nd derivs  */
     stats->apd2 += cls->case_weight * stats->parkft;
-    stats->bpd2 += cls->case_weight * stats->parkft * CurCaseFacScoreSq;
+    stats->bpd2 += cls->case_weight * stats->parkft * Scores.CurCaseFacScoreSq;
 facdone:
     return;
 }

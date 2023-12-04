@@ -88,29 +88,32 @@ void log_msg(int level, const char *format, ...) {
 /// @param debug turn on verbose printing of progress
 /// @param threads number of threads to use during parallel portions, 0 = use OpenMP environment variables instead
 void initialize(int lib, int debug, int threads) {
-    int k;
-    RSeed = 1234567;
-    SeeAll = 2;
     UseLib = lib;
-    Fix = DFix = Partial;
-    DControl = Control = AdjAll;
     Debug = debug;
     UseBin = 0;
-
-    defaulttune();
 
     if (threads > 0) {
         omp_set_num_threads(4);
     }
 
+    defaulttune();
+    do_types();
+    reset();
+}
+
+void reset() {
+    int k;
+    RSeed = 1234567;
+    SeeAll = 2;
+    Fix = DFix = Partial;
+    DControl = Control = AdjAll;
+    
     for (k = 0; k < MAX_POPULATIONS; k++)
         Populations[k] = 0;
     for (k = 0; k < MAX_SAMPLES; k++)
         Samples[k] = 0;
     for (k = 0; k < MAX_VSETS; k++)
         VarSets[k] = 0;
-
-    do_types();
 }
 
 /// @brief Print the details about the number of classes, leaves, and the associated costs for the current population

@@ -437,10 +437,7 @@ void show_smpl_names();
 void show_pop_names();
 void print_progress(size_t count, size_t max);
 Result classify(const int max_cycles, const int do_steps, const int move_steps, const double tol);
-
-/*
-    In main.c
-*/
+void reset();
 void initialize(int lib, int debug, int threads);
 void show_pop_names();
 void show_smpl_names();

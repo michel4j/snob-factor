@@ -245,7 +245,7 @@ void clear_stats(int iv, Class* cls) {
 
 /*    -------------------------  score_var  ------------------------   */
 /*    To eval derivs of a case cost wrt score, scorespread. Adds to
-CaseFacScoreD1, CaseFacScoreD2.
+Scores.CaseFacScoreD1, CaseFacScoreD2.
     */
 void score_var(int iv, Class *cls) {
 
@@ -260,15 +260,15 @@ void score_var(int iv, Class *cls) {
     vset_var = CurCtx.vset->variables + iv;
     if ((vset_var->inactive) || (saux->missing))
         return;
-    del = cvi->fmu + CurCaseFacScore * cvi->ld - saux->xn;
-    CaseFacScoreD1 += stats->frsds * (del * cvi->ld + CurCaseFacScore * cvi->ldsprd);
+    del = cvi->fmu + Scores.CurCaseFacScore * cvi->ld - saux->xn;
+    Scores.CaseFacScoreD1 += stats->frsds * (del * cvi->ld + Scores.CurCaseFacScore * cvi->ldsprd);
     md2 = stats->frsds * (stats->ldsq + cvi->ldsprd);
-    CaseFacScoreD2 += md2;
-    EstFacScoreD2 += 1.1 * md2;
+    Scores.CaseFacScoreD2 += md2;
+    Scores.EstFacScoreD2 += 1.1 * md2;
 }
 
 /*    -----------------------  cost_var  --------------------------   */
-/*    Accumulates item cost into scasecost, fcasecost    */
+/*    Accumulates item cost into scasecost, Scores.fcasecost    */
 void cost_var(int iv, int fac, Class *cls) {
     double del, var, cost;
 
@@ -288,16 +288,16 @@ void cost_var(int iv, int fac, Class *cls) {
     var = del * del + cvi->smusprd + saux->epssq;
     cost = 0.5 * var * stats->srsds + cvi->ssdlsprd + HALF_LOG_2PI + cvi->ssdl - saux->leps;
     stats->parkstcost = cost;
-    scasecost += cost;
+    Scores.scasecost += cost;
 
     /*    Only do faccost if fac  */
     if (fac) {
-        del += CurCaseFacScore * cvi->ld;
-        var = del * del + cvi->fmusprd + saux->epssq + CurCaseFacScoreSq * cvi->ldsprd + cvvsprd * stats->ldsq;
+        del += Scores.CurCaseFacScore * cvi->ld;
+        var = del * del + cvi->fmusprd + saux->epssq + Scores.CurCaseFacScoreSq * cvi->ldsprd + Scores.cvvsprd * stats->ldsq;
         stats->var = var;
         cost = HALF_LOG_2PI + 0.5 * stats->frsds * var + cvi->fsdl + cvi->fsdlsprd * 2.0 - saux->leps;
     }
-    fcasecost += cost;
+    Scores.fcasecost += cost;
     stats->parkftcost = cost;
 }
 
@@ -327,7 +327,7 @@ void deriv_var(int iv, int fac, Class *cls) {
     // Processing for factor form
     if (fac) {
         frsds = stats->frsds;
-        del = cvi->fmu + CurCaseFacScore * cvi->ld - saux->xn;
+        del = cvi->fmu + Scores.CurCaseFacScore * cvi->ld - saux->xn;
         var = stats->var;
 
         // Pre-calculate common term
@@ -338,8 +338,8 @@ void deriv_var(int iv, int fac, Class *cls) {
         stats->fsdld2 += 2.0 * cls->case_weight;
         stats->fmud1 += curCaseWeightTimesFrsds * del;
         stats->fmud2 += curCaseWeightTimesFrsds;
-        stats->ldd1 += curCaseWeightTimesFrsds * (del * CurCaseFacScore + cvi->ld * cvvsprd);
-        stats->ldd2 += curCaseWeightTimesFrsds * (CurCaseFacScoreSq + cvvsprd);
+        stats->ldd1 += curCaseWeightTimesFrsds * (del * Scores.CurCaseFacScore + cvi->ld * Scores.cvvsprd);
+        stats->ldd2 += curCaseWeightTimesFrsds * (Scores.CurCaseFacScoreSq + Scores.cvvsprd);
     }
 }
 

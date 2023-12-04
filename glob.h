@@ -41,13 +41,7 @@ EXT int Control, DControl;
 /*    To determine how weights are distributed  */
 EXT int DFix, Fix;
 
-/*    re Classes  */
-EXT double CurCaseFacScore, CurCaseFacScoreSq, cvvsprd;
-EXT int CaseFacInt; /*  integer form of case_fac_score*4096 */
-EXT double ncasecost, scasecost, fcasecost;
-EXT double CaseFacScoreD1, CaseFacScoreD2; /* derivs of case cost wrt score  */
-EXT double EstFacScoreD2;                     /* An over-estimate of CaseFacScoreD2 used in score ajust */
-EXT double CaseFacScoreD3;                    /*  derivative of CaseFacScoreD2 wrt score  */
+EXT Score Scores;
 
 /*    re Doall   */
 EXT int RSeed; /*    Seed for random routines */
@@ -55,6 +49,7 @@ EXT int NoSubs;
 EXT int NewSubs;
 EXT int Deaded; /* Shows some class killed */
 EXT int NumSon;
+
 EXT Class *Sons[MAX_CLASSES];
 EXT int NextIc[MAX_CLASSES];
 

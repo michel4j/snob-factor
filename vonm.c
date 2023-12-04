@@ -302,7 +302,7 @@ void clear_stats(int iv, Class *cls) {
 
 /*    -------------------------  score_var  ------------------------   */
 /*    To eval derivs of a case cost wrt score, scorespread. Adds to
-CaseFacScoreD1, CaseFacScoreD2.
+Scores.CaseFacScoreD1, CaseFacScoreD2.
     The general form for VonMises message costs has the following
 components:
     Density cost:
@@ -336,7 +336,7 @@ void score_var(int iv, Class *cls) {
     }
 
     /*    Get t  */
-    tt = cvi->ld * CurCaseFacScore;
+    tt = cvi->ld * Scores.CurCaseFacScore;
     /*    tt is tan of w/2.  Use the formulae for cos and sin in terms of tan of half-angle.  */
     r2 = 1.0 / (1.0 + tt * tt);
     cosw = (1.0 - tt * tt) * r2; /* (1-t^2) / (1+t^2) */
@@ -359,31 +359,31 @@ void score_var(int iv, Class *cls) {
     /*    The mc3 term 0.5 * Fmu * r2 * (vsq * ldsprd + ldsq * vsprd)
         is treated in two parts, as we don't yet know vsprd. The part in
         (vsq * ldsprd) gives a contibution to wd1 via the r2 factor:  */
-    wd1 += 0.5 * cvi->fmufish * cvi->ldsprd * CurCaseFacScoreSq * dr2dw;
+    wd1 += 0.5 * cvi->fmufish * cvi->ldsprd * Scores.CurCaseFacScoreSq * dr2dw;
 
-    /*    This part also directly contributes to CaseFacScoreD1 via the vsq factor: */
-    CaseFacScoreD1 += cvi->fmufish * cvi->ldsprd * r2 * CurCaseFacScore;
+    /*    This part also directly contributes to Scores.CaseFacScoreD1 via the vsq factor: */
+    Scores.CaseFacScoreD1 += cvi->fmufish * cvi->ldsprd * r2 * Scores.CurCaseFacScore;
 
-    /*    This gives a term in EstFacScoreD2 :  */
-    EstFacScoreD2 += cvi->fmufish * cvi->ldsprd * r2;
+    /*    This gives a term in Scores.EstFacScoreD2 :  */
+    Scores.EstFacScoreD2 += cvi->fmufish * cvi->ldsprd * r2;
 
     /*    The second part, involving vsprd, is treated by accumulating
-        in CaseFacScoreD3 the deriv wrt factor_scores of the multiplier of half vsprd.   */
-    CaseFacScoreD3 += cvi->fmufish * cvi->ldsq * dr2dw * dwdv;
+        in Scores.CaseFacScoreD3 the deriv wrt factor_scores of the multiplier of half vsprd.   */
+    Scores.CaseFacScoreD3 += cvi->fmufish * cvi->ldsq * dr2dw * dwdv;
 
     /*    The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
     /*    and so to deriv wrt factor_scores of:  wd1 * dwdv  */
-    CaseFacScoreD1 += wd1 * dwdv;
+    Scores.CaseFacScoreD1 += wd1 * dwdv;
 
     /*    Now for contribution to CaseFacScoreD2. This is 2 * the coeff of vsprd in
         the item cost.  */
-    CaseFacScoreD2 += cvi->fmufish * cvi->ldsq * r2;
-    EstFacScoreD2 += cvi->fmufish * cvi->ldsq * 4.0;
+    Scores.CaseFacScoreD2 += cvi->fmufish * cvi->ldsq * r2;
+    Scores.EstFacScoreD2 += cvi->fmufish * cvi->ldsq * 4.0;
     /*        Note, the max value of r2 is 4  */
 }
 
 /*    -----------------------  cost_var  --------------------------   */
-/*    Accumulates item cost into scasecost, fcasecost    */
+/*    Accumulates item cost into scasecost, Scores.fcasecost    */
 void cost_var(int iv, int fac, Class *cls) {
     double del, cost, tt, tsprd, cosw, sinw, r2;
 
@@ -405,7 +405,7 @@ void cost_var(int iv, int fac, Class *cls) {
     cost = cvi->slgi0 - del - saux->leps;
     /*    slgi0 contains the roundoff costs from shsprd   */
     stats->parkstcost = cost;
-    scasecost += cost;
+    Scores.scasecost += cost;
 
     /*    Only do faccost if fac  */
     if (!fac)
@@ -415,7 +415,7 @@ void cost_var(int iv, int fac, Class *cls) {
     /*    flgi0 already contains the mc2 term hsprd * Fh */
 
     /*    And we need -kappa * cos (mu + w - xx)   */
-    tt = cvi->ld * CurCaseFacScore;
+    tt = cvi->ld * Scores.CurCaseFacScore;
     r2 = 1.0 / (1.0 + tt * tt);
     cosw = (1.0 - tt * tt) * r2;
     r2 = 2.0 * r2;
@@ -425,11 +425,11 @@ void cost_var(int iv, int fac, Class *cls) {
     cost -= (cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * cosw - (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * sinw;
 
     /*    And cost term mc3, depending on tsprd:  */
-    tsprd = CurCaseFacScoreSq * cvi->ldsprd + cvi->ldsq * cvvsprd;
+    tsprd = Scores.CurCaseFacScoreSq * cvi->ldsprd + cvi->ldsq * Scores.cvvsprd;
     cost += 0.5 * cvi->fmufish * tsprd * r2;
 
 facdone:
-    fcasecost += cost;
+    Scores.fcasecost += cost;
     stats->parkftcost = cost;
 }
 
@@ -460,7 +460,7 @@ void deriv_var(int iv, int fac, Class *cls) {
 
     /*    Now for factor form  */
     if (fac) {
-        tt = cvi->ld * CurCaseFacScore;
+        tt = cvi->ld * Scores.CurCaseFacScore;
         /*    Hence cos(w), sin(w)  */
         r2 = 1.0 / (1.0 + tt * tt);
         cosw = (1.0 - tt * tt) * r2; /* (1-t^2) / (1+t^2) */
@@ -480,7 +480,7 @@ void deriv_var(int iv, int fac, Class *cls) {
             also derivs of mc2, but there remains mc3, and load. */
 
         /*    Cost mc3 = 0.5 * Fmu * tsprd * r2  */
-        tsprd = CurCaseFacScoreSq * cvi->ldsprd + cvi->ldsq * cvvsprd;
+        tsprd = Scores.CurCaseFacScoreSq * cvi->ldsprd + cvi->ldsq * Scores.cvvsprd;
         wtr2 = cls->case_weight * r2;
         /*    Accumulate wsprd = tsprd * r2  */
         stats->fwd2 += tsprd * wtr2;
@@ -494,13 +494,13 @@ void deriv_var(int iv, int fac, Class *cls) {
 
         /*    The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
         /*    and so to a deriv wrt ld of: (factor_scores * wd1 * dwdt)  */
-        stats->ldd1 += cls->case_weight * CurCaseFacScore * wd1 * dwdt;
+        stats->ldd1 += cls->case_weight * Scores.CurCaseFacScore * wd1 * dwdt;
 
         /*    There is also a deriv wrt ld via tsprd.  */
-        stats->ldd1 += cvi->fmufish * wtr2 * cvi->ld * cvvsprd;
+        stats->ldd1 += cvi->fmufish * wtr2 * cvi->ld * Scores.cvvsprd;
 
         /*    Accum as ldd2 twice the multiplier of ldsprd in mc3  */
-        stats->ldd2 += 0.5 * cvi->fmufish * r2 * CurCaseFacScoreSq;
+        stats->ldd2 += 0.5 * cvi->fmufish * r2 * Scores.CurCaseFacScoreSq;
     }
 }
 
@@ -648,9 +648,9 @@ facdone1:
         cost = N * (-leps + LI0 - fhsprd * Fh) - kappa*Sum{cos(mu-x)}
             + 0.5 * Fmu * Sum { wsprd }
         where:
-            x = datum - atan (CurCaseFacScore * ld),  Fmu = kappa * log_i0_d1
-            wsprd = (cvvsprd * ldsq + ldsprd * CurCaseFacScoreSq) * (dwdt)^2
-            w = atan (CurCaseFacScore * ld),
+            x = datum - atan (Scores.CurCaseFacScore * ld),  Fmu = kappa * log_i0_d1
+            wsprd = (cvvsprd * ldsq + ldsprd * Scores.CurCaseFacScoreSq) * (dwdt)^2
+            w = atan (Scores.CurCaseFacScore * ld),
             Sum {wsprd} is in stats->fwd2
 
         Must get kappa, Sum, LI0, Fh etc  */
