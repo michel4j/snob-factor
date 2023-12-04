@@ -20,7 +20,7 @@ EXT Context CurCtx; /* current context */
 EXT VarSet *VarSets[MAX_VSETS];
 EXT Sample *Samples[MAX_SAMPLES];
 EXT Population *Populations[MAX_POPULATIONS];
-EXT int NSamples;
+//EXT int NSamples;
 
 /*    re inputs for main  */
 EXT Buffer *CurSource; /* Ptr to command source buffer */

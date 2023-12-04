@@ -275,7 +275,7 @@ void score_all_vars(Class *cls, int item) {
     double del;
     VSetVar *vset_var;
 
-    set_class_with_scores(cls, item);
+    cls->case_score = Scores.CaseFacInt = cls->factor_scores[item];
     if ((cls->age < MinFacAge) || (cls->use == Tiny)) {
         Scores.CurCaseFacScore = cls->avg_factor_scores = cls->sum_score_sq = 0.0;
         Scores.CaseFacInt = 0;
@@ -356,7 +356,7 @@ void cost_all_vars(Class *cls, int item) {
     double tmp;
     VSetVar *vset_var;
 
-    set_class_with_scores(cls, item);
+    cls->case_score = Scores.CaseFacInt = cls->factor_scores[item];
     if ((cls->age >= MinFacAge) && (cls->use != Tiny)) {
         fac = 1;
         Scores.CurCaseFacScoreSq = Scores.CurCaseFacScore * Scores.CurCaseFacScore;
@@ -404,7 +404,7 @@ void deriv_all_vars(Class *cls, int item) {
     int fac = 0;
     VSetVar *vset_var;
 
-    set_class_with_scores(cls, item);
+    cls->case_score = Scores.CaseFacInt = cls->factor_scores[item];
     double case_weight = cls->case_weight;
     cls->newcnt += case_weight;
     if ((cls->age >= MinFacAge) && (cls->use != Tiny)) {
