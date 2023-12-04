@@ -364,13 +364,13 @@ int next_leaf(Population *cpop, int iss);
     In doall.c
 */
 int do_all(int ncy, int all);
-void find_all(int typ);
+int find_all(int typ);
 int do_dads(int ncy);
 int do_good(int ncy, double target);
 void tidy(int hit);
 int rand_int();
 double rand_float();
-void do_case(int cse, int all, int derivs);
+void do_case(int cse, int all, int derivs, int num_son);
 void sort_sons(int kk);
 
 /*

@@ -42,10 +42,8 @@ EXT Score Scores;
 
 /*    re Doall   */
 EXT int RSeed; /*    Seed for random routines */
-EXT int NoSubs;  // turn subclasses on/off
-EXT int NewSubs;
-EXT int Deaded; /* Shows some class killed */
-EXT int NumSon;
+EXT int NoSubs;  // turn subclasses on/off  Changes within routines
+EXT int NewSubs; // two changes within routines
 
 EXT Class *Sons[MAX_CLASSES];
 EXT int NextIc[MAX_CLASSES];

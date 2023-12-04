@@ -571,7 +571,7 @@ chopped:
  */
 int item_list(char *tlstname) {
     FILE *tlst;
-    int nn, dadser, i, bc, bl, tid;
+    int nn, dadser, i, bc, bl, tid, num_son;
     double bw, bs;
     Class *clp, *root;
     char *record, *records;
@@ -610,14 +610,14 @@ nextcl1:
         goto treeloop;
     fprintf(tlst, "0 0\n");
 
-    find_all(Dad + Leaf);
+    num_son = find_all(Dad + Leaf);
 
     for (nn = 0; nn < CurCtx.sample->num_cases; nn++) {
-        do_case(nn, Leaf + Dad, 0);
+        do_case(nn, Leaf + Dad, 0, num_son);
         bl = bc = -1;
         bw = 0.0;
         bs = CurCtx.sample->num_cases + 1;
-        for (i = 0; i < NumSon; i++) {
+        for (i = 0; i < num_son; i++) {
             clp = Sons[i];
             if ((clp->case_weight > 0.5) && (clp->weights_sum < bs)) {
                 bc = i;

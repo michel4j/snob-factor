@@ -1009,7 +1009,7 @@ void correlpops(int xid) {
     Class *wsons[MAX_CLASSES], *xsons[MAX_CLASSES];
     Population *xpop, *wpop;
     double fnact, wwt;
-    int wic, xic, n, pcw, wnl, xnl;
+    int wic, xic, n, pcw, wnl, xnl, num_son;
     char *record, *records;
 
     wpop = CurCtx.popln;
@@ -1037,8 +1037,7 @@ void correlpops(int xid) {
     NoSubs++;
     do_all(3, 1);
     wpop = CurCtx.popln;
-    find_all(Leaf);
-    wnl = NumSon;
+    wnl = find_all(Leaf);
     for (wic = 0; wic < wnl; wic++)
         wsons[wic] = Sons[wic];
     /*    Switch to xpop  */
@@ -1046,8 +1045,7 @@ void correlpops(int xid) {
     SeeAll = 4;
     do_all(3, 1);
     /*    Find all leaves of xpop  */
-    find_all(Leaf);
-    xnl = NumSon;
+    xnl = find_all(Leaf);
     if ((wnl < 2) || (xnl < 2)) {
         printf("Need at least 2 classes in each model.\n");
         goto finish;
@@ -1069,11 +1067,11 @@ void correlpops(int xid) {
         if (!*record) {
             continue;
         }
-        find_all(Leaf);
-        do_case(n, Leaf, 0);
+        num_son = find_all(Leaf);
+        do_case(n, Leaf, 0, num_son);
         CurCtx.popln = xpop;
-        find_all(Leaf);
-        do_case(n, Leaf, 0);
+        num_son = find_all(Leaf);
+        do_case(n, Leaf, 0, num_son);
         /*    Should now have caseweights set in leaves of both poplns  */
         for (wic = 0; wic < wnl; wic++) {
             wwt = wsons[wic]->case_weight;

@@ -521,7 +521,7 @@ kicked:
 /*    ------------------  ranclass  --------------------------  */
 /*    To make nn random classes  */
 void ranclass(int nn) {
-    int n, ic, ib;
+    int n, ic, ib, num_son;
     double bs;
     Class *sub, *dad, *root, *cls;
 
@@ -549,11 +549,11 @@ void ranclass(int nn) {
 again:
     if (n >= nn)
         goto windup;
-    find_all(Leaf);
+    num_son = find_all(Leaf);
     /*    Locate biggest leaf with subs aged at least MinAge  */
     ib = -1;
     bs = 0.0;
-    for (ic = 0; ic < NumSon; ic++) {
+    for (ic = 0; ic < num_son; ic++) {
         cls = Sons[ic];
         if (cls->num_sons < 2)
             goto icdone;
