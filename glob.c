@@ -129,9 +129,9 @@ void reset() {
         for (k = 0; k < MAX_POPULATIONS; k++)
             destroy_population(k);
         for (k = 0; k < MAX_SAMPLES; k++)
-            Samples[k] = 0;
+            destroy_sample(k);
         for (k = 0; k < MAX_VSETS; k++)
-            VarSets[k] = 0;
+            destroy_vset(k);
     }
 
 }

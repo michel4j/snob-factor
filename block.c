@@ -3,14 +3,14 @@
 #define BLOCK 1
 #include "glob.h"
 
-static int allocated = 0; /*  Total block space allocated  */
+static int AllocatedBlockSpace = 0; /*  Total block space AllocatedBlockSpace  */
 #define SpUnit 16
 /*    ------------------------  alloc_blocks  ----------------------------  */
 /*    To allocate a block in a Popln chain  */
 /*    Provides a space of 'size' chars on a chain selected by 'gr'
         gr = 3:  variable-set chain.
         gr = 0: sample chain. gr = 1: popln chain. gr = 2:  chain for
-        (popln:sample) pair.  The actual space allocated is
+        (popln:sample) pair.  The actual space AllocatedBlockSpace is
         size + SpUnit, where SpUnit must be the smallest power of 2
         required for item alignment, or some larger power of 2.
         */
@@ -23,7 +23,7 @@ void *alloc_blocks(int gr, int size) {
         return (0);
     }
     blk->size = size;
-    allocated += size;
+    AllocatedBlockSpace += size;
 
     switch (gr) {
     case 0:
@@ -74,7 +74,7 @@ void free_blocks(int gr) {
     }
     while (blk) {
         nblk = blk->next;
-        allocated -= blk->size;
+        AllocatedBlockSpace -= blk->size;
         free(blk);
         blk = nblk;
     }
@@ -85,6 +85,6 @@ void free_blocks(int gr) {
 int report_space(int pp)
 {
     if (pp)
-        log_msg(1, "Allocated space %8d chars\n", allocated);
-    return (allocated);
+        log_msg(1, "Allocated space %8d chars\n", AllocatedBlockSpace);
+    return (AllocatedBlockSpace);
 }

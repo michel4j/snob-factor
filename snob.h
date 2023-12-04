@@ -426,7 +426,8 @@ int find_vset(char *nam);
 int sort_sample(Sample *samp);
 int find_sample_index(int id);
 int item_list(char *tlstname);
-
+void destroy_sample(int sx);
+void destroy_vset(int vx);
 /*
     In glob.c
 */

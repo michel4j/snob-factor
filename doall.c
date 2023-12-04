@@ -400,7 +400,7 @@ int count_score_changes() {
 
 int do_all(int ncycles, int all) {
     int niter, nfail, k, ncydone, ncyask;
-    double oldcost, oldleafsum;
+    double oldcost, oldleafsum = 0;
     int repeat;
     Class *root;
 
