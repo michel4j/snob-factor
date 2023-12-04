@@ -564,30 +564,30 @@ void deriv_var(int iv, int fac, Class* cls) {
     if (saux->missing)
         return;
     /*    Do no-fac first  */
-    stats->cnt += CurCaseWeight;
+    stats->cnt += cls->case_weight;
     /*    For non-fac, I just accumulate counts in scnt[]  */
-    scnt[saux->xn] += CurCaseWeight;
+    scnt[saux->xn] += cls->case_weight;
     /*    Accum. weighted item cost  */
-    stats->stcost += CurCaseWeight * scst[saux->xn];
-    stats->ftcost += CurCaseWeight * stats->parkftcost;
+    stats->stcost += cls->case_weight * scst[saux->xn];
+    stats->ftcost += cls->case_weight * stats->parkftcost;
 
     /*    Now for factor form  */
-    stats->vsq += CurCaseWeight * CurCaseFacScoreSq;
+    stats->vsq += cls->case_weight * CurCaseFacScoreSq;
     if (!fac)
         goto facdone;
     b1p = stats->parkb1p;
     b1p2 = b1p * b1p;
     b2p = stats->parkb2p;
     /*    From 1st cost term:  */
-    fapd1[saux->xn] -= CurCaseWeight;
-    fbpd1[saux->xn] -= CurCaseWeight * CurCaseFacScore;
+    fapd1[saux->xn] -= cls->case_weight;
+    fbpd1[saux->xn] -= cls->case_weight * CurCaseFacScore;
     for (k = 0; k < states; k++) {
-        fapd1[k] += CurCaseWeight * pr[k];
-        fbpd1[k] += CurCaseWeight * pr[k] * CurCaseFacScore;
+        fapd1[k] += cls->case_weight * pr[k];
+        fbpd1[k] += cls->case_weight * pr[k] * CurCaseFacScore;
     }
 
     /*    Second cost term :  */
-    cons1 = CurCaseWeight * stats->conff * rstatesm;
+    cons1 = cls->case_weight * stats->conff * rstatesm;
     cons2 = states * cons1;
     for (k = 0; k < states; k++) {
         inc = cons1 - pr[k] * cons2;
@@ -597,19 +597,19 @@ void deriv_var(int iv, int fac, Class* cls) {
 
     /*    Third cost term:  */
     cons1 = 2.0 * b1p2 - b2p;
-    cons2 = CurCaseWeight * cvvsprd * Mbeta * rstates;
+    cons2 = cls->case_weight * cvvsprd * Mbeta * rstates;
     for (k = 0; k < states; k++) {
-        inc = 0.5 * CurCaseWeight * cvvsprd * pr[k] * (fbp[k] * fbp[k] - 2.0 * fbp[k] * b1p + cons1);
+        inc = 0.5 * cls->case_weight * cvvsprd * pr[k] * (fbp[k] * fbp[k] - 2.0 * fbp[k] * b1p + cons1);
         fapd1[k] += inc;
         fbpd1[k] += CurCaseFacScore * inc;
         /*    Terms I forgot :  */
-        fbpd1[k] += CurCaseWeight * cvvsprd * pr[k] * (fbp[k] - b1p);
+        fbpd1[k] += cls->case_weight * cvvsprd * pr[k] * (fbp[k] - b1p);
         fbpd1[k] += cons2 * fbp[k];
     }
 
     /*    Second derivs (i.e. derivs wrt fapsprd, bpsprd)  */
-    stats->apd2 += CurCaseWeight * stats->ff;
-    stats->bpd2 += CurCaseWeight * stats->ff * CurCaseFacScoreSq;
+    stats->apd2 += cls->case_weight * stats->ff;
+    stats->bpd2 += cls->case_weight * stats->ff * CurCaseFacScoreSq;
 facdone:
     return;
 }

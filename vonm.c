@@ -449,14 +449,14 @@ void deriv_var(int iv, int fac, Class *cls) {
     if (saux->missing)
         return;
     /*    Do non-fac first  */
-    stats->cnt += CurCaseWeight;
+    stats->cnt += cls->case_weight;
     /*    For non-fac, rather than getting derivatives I just collect
         the sufficient statistics, sum of xn.sinxx, xn.cosxx  */
-    stats->tssin += CurCaseWeight * saux->xn.sinxx;
-    stats->tscos += CurCaseWeight * saux->xn.cosxx;
+    stats->tssin += cls->case_weight * saux->xn.sinxx;
+    stats->tscos += cls->case_weight * saux->xn.cosxx;
     /*    Accumulate weighted item cost  */
-    stats->stcost += CurCaseWeight * stats->parkstcost;
-    stats->ftcost += CurCaseWeight * stats->parkftcost;
+    stats->stcost += cls->case_weight * stats->parkstcost;
+    stats->ftcost += cls->case_weight * stats->parkftcost;
 
     /*    Now for factor form  */
     if (fac) {
@@ -472,16 +472,16 @@ void deriv_var(int iv, int fac, Class *cls) {
         /*    First, we get the cos and sin of the "error" angle xx-w for
             accumulation as tfcos, tssin  */
         coser = saux->xn.cosxx * cosw + saux->xn.sinxx * sinw;
-        stats->tfcos += CurCaseWeight * coser;
+        stats->tfcos += cls->case_weight * coser;
         siner = saux->xn.sinxx * cosw - saux->xn.cosxx * sinw;
-        stats->tfsin += CurCaseWeight * siner;
+        stats->tfsin += cls->case_weight * siner;
 
         /*    These should be sufficient to get derivs of mc1 wrt hx, hy,
             also derivs of mc2, but there remains mc3, and load. */
 
         /*    Cost mc3 = 0.5 * Fmu * tsprd * r2  */
         tsprd = CurCaseFacScoreSq * cvi->ldsprd + cvi->ldsq * cvvsprd;
-        wtr2 = CurCaseWeight * r2;
+        wtr2 = cls->case_weight * r2;
         /*    Accumulate wsprd = tsprd * r2  */
         stats->fwd2 += tsprd * wtr2;
 
@@ -494,7 +494,7 @@ void deriv_var(int iv, int fac, Class *cls) {
 
         /*    The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
         /*    and so to a deriv wrt ld of: (factor_scores * wd1 * dwdt)  */
-        stats->ldd1 += CurCaseWeight * CurCaseFacScore * wd1 * dwdt;
+        stats->ldd1 += cls->case_weight * CurCaseFacScore * wd1 * dwdt;
 
         /*    There is also a deriv wrt ld via tsprd.  */
         stats->ldd1 += cvi->fmufish * wtr2 * cvi->ld * cvvsprd;

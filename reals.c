@@ -317,12 +317,12 @@ void deriv_var(int iv, int fac, Class *cls) {
         return;
 
     // Common operations for both fac and non-fac cases
-    double curCaseWeightTimesXn = CurCaseWeight * saux->xn;
-    stats->cnt += CurCaseWeight;
+    double curCaseWeightTimesXn = cls->case_weight * saux->xn;
+    stats->cnt += cls->case_weight;
     stats->tx += curCaseWeightTimesXn;
-    stats->txx += CurCaseWeight * (saux->xn * saux->xn + saux->epssq);
-    stats->stcost += CurCaseWeight * stats->parkstcost;
-    stats->ftcost += CurCaseWeight * stats->parkftcost;
+    stats->txx += cls->case_weight * (saux->xn * saux->xn + saux->epssq);
+    stats->stcost += cls->case_weight * stats->parkstcost;
+    stats->ftcost += cls->case_weight * stats->parkftcost;
 
     // Processing for factor form
     if (fac) {
@@ -331,11 +331,11 @@ void deriv_var(int iv, int fac, Class *cls) {
         var = stats->var;
 
         // Pre-calculate common term
-        double curCaseWeightTimesFrsds = CurCaseWeight * frsds;
+        double curCaseWeightTimesFrsds = cls->case_weight * frsds;
 
         // Accumulate derivatives
-        stats->fsdld1 += CurCaseWeight - curCaseWeightTimesFrsds * var;
-        stats->fsdld2 += 2.0 * CurCaseWeight;
+        stats->fsdld1 += cls->case_weight - curCaseWeightTimesFrsds * var;
+        stats->fsdld2 += 2.0 * cls->case_weight;
         stats->fmud1 += curCaseWeightTimesFrsds * del;
         stats->fmud2 += curCaseWeightTimesFrsds;
         stats->ldd1 += curCaseWeightTimesFrsds * (del * CurCaseFacScore + cvi->ld * cvvsprd);

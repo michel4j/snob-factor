@@ -376,23 +376,23 @@ void deriv_var(int iv, int fac, Class *cls) {
     if (saux->missing)
         return;
     /*    Do no-fac first  */
-    stats->cnt += CurCaseWeight;
+    stats->cnt += cls->case_weight;
     /*    For non-fac, just accum weight of 1s in cnt1  */
     if (saux->xn == 1)
-        stats->cnt1 += CurCaseWeight;
+        stats->cnt1 += cls->case_weight;
     /*    Accum. weighted item cost  */
-    stats->stcost += CurCaseWeight * stats->scst[saux->xn];
-    stats->ftcost += CurCaseWeight * stats->parkftcost;
+    stats->stcost += cls->case_weight * stats->scst[saux->xn];
+    stats->ftcost += cls->case_weight * stats->parkftcost;
 
     /*    Now for factor form  */
     if (!fac)
         goto facdone;
-    stats->vsq += CurCaseWeight * CurCaseFacScoreSq;
-    stats->fapd1 += CurCaseWeight * stats->dbya;
-    stats->fbpd1 += CurCaseWeight * stats->dbyb;
+    stats->vsq += cls->case_weight * CurCaseFacScoreSq;
+    stats->fapd1 += cls->case_weight * stats->dbya;
+    stats->fbpd1 += cls->case_weight * stats->dbyb;
     /*    Accum actual 2nd derivs  */
-    stats->apd2 += CurCaseWeight * stats->parkft;
-    stats->bpd2 += CurCaseWeight * stats->parkft * CurCaseFacScoreSq;
+    stats->apd2 += cls->case_weight * stats->parkft;
+    stats->bpd2 += cls->case_weight * stats->parkft * CurCaseFacScoreSq;
 facdone:
     return;
 }
