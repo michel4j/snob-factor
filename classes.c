@@ -25,9 +25,7 @@ int serial_to_id(int ss) {
 }
 
 /*    ---------------------  set_class_with_scores --------------------------   */
-void set_class_with_scores(Class *cls, int item) {
-    cls->case_score = Scores.CaseFacInt = cls->factor_scores[item];
-}
+void set_class_with_scores(Class *cls, int item) { cls->case_score = Scores.CaseFacInt = cls->factor_scores[item]; }
 
 /*    ---------------------   make_class  -------------------------   */
 /*    Makes the basic structure of a class (Class) with vector of
@@ -280,13 +278,7 @@ void score_all_vars(Class *cls, int item) {
         Scores.CurCaseFacScore = cls->avg_factor_scores = cls->sum_score_sq = 0.0;
         Scores.CaseFacInt = 0;
     } else {
-        if (cls->sum_score_sq <= 0.0) {
-            // Generate a fake score to get started.
-            cls->boost_count = 0;
-            Scores.cvvsprd = 0.1 / CurCtx.vset->length;
-            oldicvv = igbit = 0;
-            Scores.CurCaseFacScore = (rand_int() < 0) ? 1.0 : -1.0;
-        } else {
+        if (cls->sum_score_sq > 0.0) {
             // Get current score
             oldicvv = Scores.CaseFacInt;
             igbit = Scores.CaseFacInt & 1;
@@ -302,49 +294,55 @@ void score_all_vars(Class *cls, int item) {
                 igbit = 0;
                 Scores.CurCaseFacScore = Scores.CaseFacInt * ScoreRscale;
             }
-        }
 
-        Scores.CurCaseFacScoreSq = Scores.CurCaseFacScore * Scores.CurCaseFacScore;
-        Scores.CaseFacScoreD1 = Scores.CaseFacScoreD2 = Scores.EstFacScoreD2 = Scores.CaseFacScoreD3 = 0.0;
-        VarType *var_type;
-        for (i = 0; i < CurCtx.vset->length; i++) {
-            vset_var = CurCtx.vset->variables + i;
-            if (!vset_var->inactive) {
-                var_type = vset_var->vtype;
-                (*var_type->score_var)(i, cls); // score_var should add to Scores.CaseFacScoreD1, Scores.CaseFacScoreD2, Scores.CaseFacScoreD3, Scores.EstFacScoreD2.
+            Scores.CurCaseFacScoreSq = Scores.CurCaseFacScore * Scores.CurCaseFacScore;
+            Scores.CaseFacScoreD1 = Scores.CaseFacScoreD2 = Scores.EstFacScoreD2 = Scores.CaseFacScoreD3 = 0.0;
+            VarType *var_type;
+            for (i = 0; i < CurCtx.vset->length; i++) {
+                vset_var = CurCtx.vset->variables + i;
+                if (!vset_var->inactive) {
+                    var_type = vset_var->vtype;
+                    (*var_type->score_var)(i, cls);
+                    // score_var should add to Scores.CaseFacScoreD1, Scores.CaseFacScoreD2, Scores.CaseFacScoreD3, Scores.EstFacScoreD2.
+                }
             }
+
+            Scores.CaseFacScoreD1 += Scores.CurCaseFacScore;
+            Scores.CaseFacScoreD2 += 1.0;
+            Scores.EstFacScoreD2 += 1.0; // From prior
+            Scores.cvvsprd = 1.0 / Scores.CaseFacScoreD2;
+            Scores.CaseFacScoreD1 += 0.5 * Scores.cvvsprd * Scores.CaseFacScoreD3;
+            del = Scores.CaseFacScoreD1 / Scores.EstFacScoreD2;
+            if (Control & AdjSc) {
+                Scores.CurCaseFacScore -= del;
+            }
+        } else {
+            // Generate a fake score to get started.
+            cls->boost_count = 0;
+            Scores.cvvsprd = 0.1 / CurCtx.vset->length;
+            oldicvv = igbit = 0;
+            Scores.CurCaseFacScore = (rand_int() < 0) ? 1.0 : -1.0;
         }
 
-        Scores.CaseFacScoreD1 += Scores.CurCaseFacScore;
-        Scores.CaseFacScoreD2 += 1.0;
-        Scores.EstFacScoreD2 += 1.0; // From prior
-        Scores.cvvsprd = 1.0 / Scores.CaseFacScoreD2;
-        Scores.CaseFacScoreD1 += 0.5 * Scores.cvvsprd * Scores.CaseFacScoreD3;
-        del = Scores.CaseFacScoreD1 / Scores.EstFacScoreD2;
-        if (Control & AdjSc) {
-            Scores.CurCaseFacScore -= del;
+        // Code from the 'fake' label
+        Scores.CurCaseFacScore = fmax(fmin(Scores.CurCaseFacScore, Maxv), -Maxv);
+        del = Scores.CurCaseFacScore * HScoreScale;
+        del -= (del < 0.0) ? 1.0 : 0.0;
+        Scores.CaseFacInt = del + rand_float();
+        Scores.CaseFacInt <<= 1;    // Round to nearest even times ScoreScale
+        Scores.CaseFacInt |= igbit; // Restore original ignore bit
+
+        if (!igbit) {
+            oldicvv -= Scores.CaseFacInt;
+            oldicvv = abs(oldicvv);
+            if (oldicvv > SigScoreChange)
+                cls->score_change_count++;
         }
+
+        cls->case_fac_score = Scores.CurCaseFacScore;
+        cls->case_fac_score_sq = Scores.CurCaseFacScoreSq;
+        cls->cvvsprd = Scores.cvvsprd;
     }
-
-    // Code from the 'fake' label
-    Scores.CurCaseFacScore = fmax(fmin(Scores.CurCaseFacScore, Maxv), -Maxv);
-    del = Scores.CurCaseFacScore * HScoreScale;
-    // if (del < 0.0) del -= 1.0; else del -= 0.0;
-    del -= (del < 0.0) ? 1.0 : 0.0;
-    Scores.CaseFacInt = del + rand_float();
-    Scores.CaseFacInt <<= 1;    // Round to nearest even times ScoreScale
-    Scores.CaseFacInt |= igbit; // Restore original ignore bit
-
-    if (!igbit) {
-        oldicvv -= Scores.CaseFacInt;
-        oldicvv = abs(oldicvv);
-        if (oldicvv > SigScoreChange)
-            cls->score_change_count++;
-    }
-
-    cls->case_fac_score = Scores.CurCaseFacScore;
-    cls->case_fac_score_sq = Scores.CurCaseFacScoreSq;
-    cls->cvvsprd = Scores.cvvsprd;
     cls->factor_scores[item] = cls->case_score = Scores.CaseFacInt;
 }
 
@@ -442,7 +440,7 @@ void adjust_class(Class *cls, int dod) {
     VarType *var_type;
     double leafcost;
     Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;
-    
+
     /*    Get root (logarithmic average of vvsprds)  */
     cls->vav = exp(0.5 * cls->vav / (cls->newcnt + 0.1));
     if (Control & AdjSc)
