@@ -3,19 +3,19 @@
 
 static char *movestr[] = {" ", "Insert", "Delete", "Move"};
 
-/*	---------------  clear_bad_move  --------------------------------  */
+/*	---------------  clr_bad_move  --------------------------------  */
 /*	To clear the badmoves table  */
-void clear_bad_move() {
+void clr_bad_move() {
     for (int i = 0; i < BadSize; i++)
         badkey[i] = 0;
     return;
 }
 
-/*	-----------------  check_bad_move  -----------------------------  */
+/*	-----------------  chk_bad_move  -----------------------------  */
 /*	To test a move for known recent fail  */
 /*	code 1 means insert ,code 2 means delete  */
 /*	code 3 means move */
-int check_bad_move(int code, int w1, int w2) {
+int chk_bad_move(int code, int w1, int w2) {
     int hi, key, bad, s1, s2;
 
     set_population();

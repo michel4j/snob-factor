@@ -151,7 +151,7 @@ void expmults_define(typindx) int typindx;
     int ig;
     double xg;
 
-    vtp = types + typindx;
+    vtp = Types + typindx;
     vtp->id = typindx;
     /* 	Set type name as string up to 59 chars  */
     vtp->name = "ExpMultiState";
@@ -295,7 +295,7 @@ void printdat(loc) Datum *loc;
 
 /*	---------------------  setsizes  -----------------------   */
 /*	To use info in CurCtx.vset to set sizes of basic and stats
-blocks for variable, and place in AVinst basicsize, statssize.
+blocks for variable, and place in VSetVar basicsize, statssize.
     */
 void setsizes(iv) int iv;
 {
@@ -304,7 +304,7 @@ void setsizes(iv) int iv;
     vaux = (Vaux *)avi->vaux;
     states = vaux->states;
 
-    /*	Set sizes of CVinst (basic) and EVinst (stats) in AVinst  */
+    /*	Set sizes of CVinst (basic) and EVinst (stats) in VSetVar  */
     /*	Each inst has a number of vectors appended, of length 'states' */
     avi->basic_size = sizeof(Basic) + (5 * states - 1) * sizeof(double);
     avi->stats_size = sizeof(Stats) + (5 * states - 1) * sizeof(double);

@@ -15,16 +15,16 @@ EXT double faclog[MAX_CLASSES + 1];
 
 /*	general:	*/
 EXT int Ntypes;     /* The number of different attribute types */
-EXT VarType *types; /* a vector of Ntypes type definitions,
+EXT VarType *Types; /* a vector of Ntypes type definitions,
          created in do_types */
 EXT Context CurCtx;    /* current context */
 EXT VarSet *VarSets[MAX_VSETS];
 EXT Sample *Samples[MAX_SAMPLES];
 EXT Population *Populations[MAX_POPULATIONS];
-EXT int nsamples;
+EXT int NSamples;
 
 /*	re inputs for main  */
-EXT Buffer *source; /* Ptr to command source buffer */
+EXT Buffer *CurSource; /* Ptr to command source buffer */
 
 /*	re Sample records  */
 EXT char *record; /*  Common ptr to a data record  */
@@ -52,17 +52,17 @@ EXT int DFix, Fix;
 EXT VarSet *VSet;
 EXT Sample *Smpl;
 EXT Population *Popln;
-EXT AVinst *avi;
+EXT VSetVar *avi;
 EXT PVinst *pvi;
-EXT SVinst *svi;
+EXT SampleVar *svi;
 EXT VarType *vtp;
 EXT int nc; /* Number of cases */
 EXT int nv; /* Number of variables */
 EXT int root;
 EXT Class *rootcl;
-EXT AVinst *vlist;
+EXT VSetVar *vlist;
 EXT PVinst *pvars;
-EXT SVinst *svars;
+EXT SampleVar *svars;
 
 /*	re Classes  */
 EXT Class *cls, *dad;
@@ -79,12 +79,12 @@ EXT int idad;
 
 /*	re Doall   */
 EXT int RSeed; /*	Seed for random routines */
-EXT int nosubs;
-EXT int newsubs;
-EXT int deaded; /* Shows some class killed */
-EXT int numson;
-EXT Class *sons[MAX_CLASSES];
-EXT int nextic[MAX_CLASSES];
+EXT int NoSubs;
+EXT int NewSubs;
+EXT int Deaded; /* Shows some class killed */
+EXT int NumSon;
+EXT Class *Sons[MAX_CLASSES];
+EXT int NextIc[MAX_CLASSES];
 
 /*	re Tuning  */
 EXT int MinAge;         /* Min class age for creation of subs */

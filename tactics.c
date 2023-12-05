@@ -37,7 +37,7 @@ void flatten() {
         }
     donecls:;
     }
-    nosubs++;
+    NoSubs++;
     tidy(0);
     rootcl->type = Dad;
     rootcl->hold_type = Forever;
@@ -46,8 +46,8 @@ void flatten() {
     do_all(3, 0);
     if (Heard)
         printf("Flatten ends prematurely\n");
-    if (nosubs > 0)
-        nosubs--;
+    if (NoSubs > 0)
+        NoSubs--;
     print_tree();
     return;
 }
@@ -174,7 +174,7 @@ int best_insert_dad(int force) {
     /*	To get all pairs, we need a double loop over class indexes. I use
     i1, i2 as the indices. i1 runs from 0 to population->hicl-1, i2 from i1+1 to
     population->hicl	*/
-    nosubs++;
+    NoSubs++;
     /*	Do one pass over population to set costs   */
     do_all(1, 1);
     bestdrop = -1.0e20;
@@ -213,7 +213,7 @@ inner:
     if (cls1->dad_id != cls2->dad_id)
         goto i2done;
     ser2 = cls2->serial;
-    if (check_bad_move(1, ser1, ser2))
+    if (chk_bad_move(1, ser1, ser2))
         goto i2done;
 
     /*	Copy population to TrialPop, unfilled  */
@@ -296,7 +296,7 @@ winner:
     flp();
     printf("%s\n", (succ) ? "ACCEPTED !!!" : "FORCED");
     print_tree();
-    clear_bad_move();
+    clr_bad_move();
     /*	Reverse roles of 'work' and TrialPop  */
     strcpy(oldctx.popln->name, "TrialPop");
     strcpy(Popln->name, "work");
@@ -304,8 +304,8 @@ winner:
         track_best(1);
 
 finish:
-    if (nosubs > 0)
-        nosubs--;
+    if (NoSubs > 0)
+        NoSubs--;
     return (newser);
 }
 
@@ -367,7 +367,7 @@ int best_remove_dad() {
     int bser, ser;
     double res, bestdrop, origcost;
 
-    nosubs++;
+    NoSubs++;
     bestdrop = -1.0e20;
     bser = -1;
     set_population();
@@ -386,7 +386,7 @@ loop:
     if (cls->type != Dad)
         goto i1done;
     ser = cls->serial;
-    if (check_bad_move(2, 0, ser))
+    if (chk_bad_move(2, 0, ser))
         goto i1done;
     newp = copy_population(Popln->id, 0, "TrialPop");
     if (newp < 0)
@@ -446,7 +446,7 @@ popfails:
 
 winner:
     flp();
-    clear_bad_move();
+    clr_bad_move();
     printf("ACCEPTED !!!\n");
     print_tree();
     strcpy(oldctx.popln->name, "TrialPop");
@@ -454,8 +454,8 @@ winner:
     track_best(1);
 
 finish:
-    if (nosubs > 0)
-        nosubs--;
+    if (NoSubs > 0)
+        NoSubs--;
     return (bser);
 }
 
@@ -468,10 +468,10 @@ void binary_hierarchy(int flat) {
     set_population();
     if (flat)
         flatten();
-    nosubs++;
+    NoSubs++;
     if (Heard)
         goto kicked;
-    clear_bad_move();
+    clr_bad_move();
 insloop:
     nn = best_insert_dad(1);
     if (Heard)
@@ -496,9 +496,9 @@ delloop:
 
 finish:
     print_tree();
-    if (nosubs > 0)
-        nosubs--;
-    clear_bad_move();
+    if (NoSubs > 0)
+        NoSubs--;
+    clr_bad_move();
     return;
 
 kicked:
@@ -530,7 +530,7 @@ void ranclass(int nn) {
         goto finish;
     }
 
-    nosubs = 0;
+    NoSubs = 0;
     delete_all_classes();
     n = 1;
     if (nn < 2)
@@ -543,8 +543,8 @@ again:
     /*	Locate biggest leaf with subs aged at least MinAge  */
     ib = -1;
     bs = 0.0;
-    for (ic = 0; ic < numson; ic++) {
-        cls = sons[ic];
+    for (ic = 0; ic < NumSon; ic++) {
+        cls = Sons[ic];
         if (cls->num_sons < 2)
             goto icdone;
         sub = Popln->classes[cls->son_id];
@@ -562,7 +562,7 @@ again:
         goto again;
     }
     /*	Split sons[ib]  */
-    dad = sons[ib];
+    dad = Sons[ib];
     if (split_leaf(dad->id))
         goto windup;
     printf("Splitting %s size%8.1f\n", serial_to_str(dad), dad->weights_sum);
@@ -571,7 +571,7 @@ again:
     goto again;
 
 windup:
-    nosubs = 1;
+    NoSubs = 1;
     do_all(5, 1);
     flatten();
     do_all(6, 0);
@@ -674,7 +674,7 @@ int best_move_class(int force) {
 
     /*	To get all pairs, we need a double loop over class indexes. I use
     i1, i2 as the indices.   */
-    nosubs++;
+    NoSubs++;
     bestdrop = -1.0e20;
     bser1 = bser2 = -1;
     set_population();
@@ -717,7 +717,7 @@ inner:
         odad = Popln->classes[od2];
     }
     ser2 = cls2->serial;
-    if (check_bad_move(3, ser1, ser2))
+    if (chk_bad_move(3, ser1, ser2))
         goto i2done;
 
     /*	Copy pop to TrialPop, unfilled  */
@@ -791,7 +791,7 @@ winner:
     flp();
     printf("%s\n", (succ) ? "ACCEPTED !!!" : "FORCED");
     print_tree();
-    clear_bad_move();
+    clr_bad_move();
     /*	Reverse roles of 'work' and TrialPop  */
     strcpy(oldctx.popln->name, "TrialPop");
     strcpy(Popln->name, "work");
@@ -799,8 +799,8 @@ winner:
         track_best(1);
 
 finish:
-    if (nosubs > 0)
-        nosubs--;
+    if (NoSubs > 0)
+        NoSubs--;
     return (succ);
 }
 
@@ -810,9 +810,9 @@ succession have failed, or until all possible moves have been tried   */
 void try_moves(int ntry) {
     int nfail, succ;
 
-    nosubs++;
+    NoSubs++;
     do_all(1, 1);
-    clear_bad_move();
+    clr_bad_move();
     nfail = 0;
 
     while (nfail < ntry) {
@@ -829,7 +829,7 @@ void try_moves(int ntry) {
     }
 
 finish:
-    if (nosubs > 0)
-        nosubs--;
+    if (NoSubs > 0)
+        NoSubs--;
     return;
 }

@@ -106,7 +106,7 @@ struct BlockStruct {
 
 /*	-------------------  Attributes  -------------------------   */
 
-typedef struct AVinstStruct {
+typedef struct VSetVarStruct {
     int id;
     int type;
     int inactive;   /* Inactive attribute flag */
@@ -115,7 +115,7 @@ typedef struct AVinstStruct {
     VarType *vtype;
     char *vaux;
     char name[80];
-} AVinst;
+} VSetVar;
 
 typedef struct VarSetStruct {
     int id;
@@ -124,17 +124,17 @@ typedef struct VarSetStruct {
     char name[80];
     int length;     /* Number of variables */
     int num_active; /* Number of active variables */
-    AVinst *variables;
+    VSetVar *variables;
 } VarSet;
 
 /*	--------------------  Samples  ---------------------------   */
 
-typedef struct SVinstStruct {
+typedef struct SampleVarStruct {
     int id;
     int nval;
     char *saux;
     int offset; /*  offset of (missing, value) in record  */
-} SVinst;
+} SampleVar;
 
 /*	Sample data is packed into a block of 'records' addressed by
 the 'recs' pointer in a Sample structure. There is one record per item in the
@@ -155,7 +155,7 @@ typedef struct SampleStruct {
     char vset_name[80]; /* Name of variable-set */
     int num_cases;      /* Num of cases */
     int num_active;     /* Num of active cases */
-    SVinst *variables;  /* Ptr to vector of SVinsts, one per variable */
+    SampleVar *variables;  /* Ptr to vector of SVinsts, one per variable */
     char *records;      /*  vector of records  */
     int record_length;  /*  Length in chars of a data record  */
     double best_cost;   /*  Cost of best model */
@@ -392,8 +392,8 @@ void trial(int param);
 
 /*	In BADMOVES.c	*/
 #define BadSize 1013
-void clear_bad_move();
-int check_bad_move(int code, int w1, int w2);
+void clr_bad_move();
+int chk_bad_move(int code, int w1, int w2);
 void set_bad_move(int code, int s1, int s2);
 /*		end badmoves.c		*/
 
@@ -409,8 +409,9 @@ void do_types();
 
 /*	In SAMPLES.c	*/
 void print_var_datum(int i, int n);
-int load_vset();
-int load_sample(char *fname);
+int read_vset();
+int load_vset(const char *fname);
+int load_sample(const char *fname);
 int find_sample(char *nam, int expect);
 int find_vset(char *nam);
 int sort_sample(Sample *samp);

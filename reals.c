@@ -105,7 +105,7 @@ void reals_define(typindx) int typindx;
 {
     VarType *vtp;
 
-    vtp = types + typindx;
+    vtp = Types + typindx;
     vtp->id = typindx;
     /* 	Set type name as string up to 59 chars  */
     vtp->name = "Standard Gaussian";

@@ -157,7 +157,7 @@ and non-fac estimates done  */
 int init_population() {
     int ipop;
 
-    clear_bad_move();
+    clr_bad_move();
     Smpl = CurCtx.sample;
     VSet = CurCtx.vset;
     ipop = -1;
@@ -186,7 +186,7 @@ void make_subclasses(int kk){
     double cntk;
     int i, kka, kkb, iv, nch;
 
-    if (nosubs)
+    if (NoSubs)
         return;
     clp = Popln->classes[kk];
     set_class(clp);
@@ -1082,13 +1082,13 @@ void correlpops(int xid){
     fnact = Smpl->num_active;
     Control = AdjSc;
     SeeAll = 4;
-    nosubs++;
+    NoSubs++;
     do_all(3, 1);
     wpop = Popln;
     find_all(Leaf);
-    wnl = numson;
+    wnl = NumSon;
     for (wic = 0; wic < wnl; wic++)
-        wsons[wic] = sons[wic];
+        wsons[wic] = Sons[wic];
     /*	Switch to xpop  */
     CurCtx.popln = xpop;
     set_population();
@@ -1096,13 +1096,13 @@ void correlpops(int xid){
     do_all(3, 1);
     /*	Find all leaves of xpop  */
     find_all(Leaf);
-    xnl = numson;
+    xnl = NumSon;
     if ((wnl < 2) || (xnl < 2)) {
         printf("Need at least 2 classes in each model.\n");
         goto finish;
     }
     for (xic = 0; xic < xnl; xic++)
-        xsons[xic] = sons[xic];
+        xsons[xic] = Sons[xic];
     /*	Clear table   */
     for (wic = 0; wic < wnl; wic++) {
         for (xic = 0; xic < xnl; xic++)
@@ -1154,8 +1154,8 @@ void correlpops(int xid){
     }
 
 finish:
-    if (nosubs > 0)
-        nosubs--;
+    if (NoSubs > 0)
+        NoSubs--;
     CurCtx.popln = wpop;
     set_population();
     Control = DControl;

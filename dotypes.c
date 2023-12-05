@@ -31,7 +31,7 @@ void do_types() {
         zerov[i] = 0.0;
 
     /*	Make the 'types' vector  */
-    types = (VarType *)malloc(Ntypes * sizeof(VarType));
+    Types = (VarType *)malloc(Ntypes * sizeof(VarType));
 
     reals_define(0);
     expmults_define(1);

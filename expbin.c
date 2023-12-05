@@ -101,7 +101,7 @@ when installing a new type of variable. It is also necessary to change the
 void expbinary_define(typindx) int typindx;
 /*	typindx is the index in types[] of this type   */
 {
-    vtp = types + typindx;
+    vtp = Types + typindx;
     vtp->id = typindx;
     /* 	Set type name as string up to 59 chars  */
     vtp->name = "ExpBinary";
@@ -190,14 +190,14 @@ void printdat(Datum *loc)
 
 /*	---------------------  setsizes  -----------------------   */
 /*	To use info in CurCtx.vset to set sizes of basic and stats
-blocks for variable, and place in AVinst basicsize, statssize.
+blocks for variable, and place in VSetVar basicsize, statssize.
     */
 void setsizes( int iv)
 {
 
     avi = vlist + iv;
 
-    /*	Set sizes of CVinst (basic) and EVinst (stats) in AVinst  */
+    /*	Set sizes of CVinst (basic) and EVinst (stats) in VSetVar  */
     avi->basic_size = sizeof(Basic);
     avi->stats_size = sizeof(Stats);
     return;

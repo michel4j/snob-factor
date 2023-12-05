@@ -413,13 +413,13 @@ void close_buffer() {
 /*	If flag, revert due to an interrupt via hark, so use existing
 commsbuf line. Otherwise, get a new line  */
 void revert(int flag) {
-    if (source->cfile)
-        printf("Command file %s\n terminated at line %d\n", source->cname, source->line);
+    if (CurSource->cfile)
+        printf("Command file %s\n terminated at line %d\n", CurSource->cname, CurSource->line);
     close_buffer();
-    source = &commsbuf;
-    CurCtx.buffer = source;
+    CurSource = &commsbuf;
+    CurCtx.buffer = CurSource;
     if (flag)
-        source->nch = 0;
+        CurSource->nch = 0;
     else
         new_line(commsbuf.inl);
     return;

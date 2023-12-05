@@ -22,7 +22,7 @@ static char *keyw[MNkey] = {
     "help",     "copypop",   "killpop",       "pickpop",    "tree",
     "sto",      "file",      "readsamp",      "flatten",    "dodads",
     "samps",    "insdad",    "dogood",        "bestinsdad", "bestdeldad",
-    "rebuild",  "ranclass",  "savepop",       "restorepop", "nosubs",
+    "rebuild",  "ranclass",  "savepop",       "restorepop", "NoSubs",
     "binhier",  "moveclass", "bestmoveclass", "pops",       "crosstab",
     "trymoves", "thing",     "trep",          "select",     "zzzzzzzzzzzz"};
 
@@ -108,7 +108,7 @@ as childen. The new Dad is son of original Dad od S1, S2.",
   If model unattached, or attached to an unknown sample, it is attached to\
   the current sample if any.",
 
-    "nosubs <N> kills and prevents birth of subclasses if N > 0",
+    "NoSubs <N> kills and prevents birth of subclasses if N > 0",
 
     "binhier <N> inserts dads to convert tree to a binary hierarchy, then\n\
   deletes dads to improve. If N > 0, first flattens tree.",
@@ -467,11 +467,11 @@ int main() {
     do_types();
 
     /*	Set source to commsbuf and initialize  */
-    source = &commsbuf;
-    CurCtx.buffer = source;
-    source->cfile = 0;
-    source->nch = 0;
-    source->inl[0] = '\n';
+    CurSource = &commsbuf;
+    CurCtx.buffer = CurSource;
+    CurSource->cfile = 0;
+    CurSource->nch = 0;
+    CurSource->inl[0] = '\n';
     Heard = UseStdIn = 0;
 
     /*ddd
@@ -481,7 +481,7 @@ int main() {
     /*	Open a log file   */
     yxw = fopen("run.log", "w");
 
-    kk = load_vset();
+    kk = read_vset();
     printf("Readvset returns %d\n", kk);
     if (kk < 0)
         exit(2);
@@ -512,9 +512,9 @@ int main() {
 #endif
     print_class(root, 0);
 error:
-    printf("??? line %6d\n", source->line);
+    printf("??? line %6d\n", CurSource->line);
     new_line();
-    if (source->cfile)
+    if (CurSource->cfile)
         revert(0);
 loop:
     k = find_population("TrialPop");
@@ -528,9 +528,9 @@ loop:
         revert(1);
         Heard = 0;
     }
-    if (nosubs || (Control != AdjAll)) {
-        if (nosubs)
-            printf("NOSUBS  ");
+    if (NoSubs || (Control != AdjAll)) {
+        if (NoSubs)
+            printf("NoSubs  ");
         if (Control != AdjAll) {
             printf("FREEZE");
             if (!(Control & AdjPr))
@@ -551,7 +551,7 @@ loop:
     Control = DControl;
     tidy(1);
     track_best(1);
-    if (!source->cfile) {
+    if (!CurSource->cfile) {
         flp();
         Popln = CurCtx.popln;
         cls = Popln->classes[Popln->root];
@@ -563,7 +563,7 @@ loop:
         printf("Sample %2d %s\n", (CurCtx.sample) ? CurCtx.sample->id + 1 : 0,
                (CurCtx.sample) ? CurCtx.sample->name : "NULL");
     }
-    if ((source->nch) || (source->inl[0] == '\n')) {
+    if ((CurSource->nch) || (CurSource->inl[0] == '\n')) {
         if (new_line())
             goto error;
     }
@@ -767,11 +767,11 @@ loop:
         k = readsparam(kk);
         if (k < 0)
             goto error;
-        if (source->cfile)
+        if (CurSource->cfile)
             close_buffer();
         strcpy(cfilebuf.cname, sparam);
-        source = &cfilebuf;
-        CurCtx.buffer = source;
+        CurSource = &cfilebuf;
+        CurCtx.buffer = CurSource;
         if (open_buffer()) {
             printf("Cant open file %s\n", sparam);
             goto error;
@@ -838,7 +838,7 @@ loop:
         goto loop;
 
     case 23: /*  bestinsdad  */
-        clear_bad_move();
+        clr_bad_move();
         Log " " EL k = best_insert_dad(0);
         if (k < 0)
             printf("No good dad insertion found\n");
@@ -847,7 +847,7 @@ loop:
         goto loop;
 
     case 24: /*  best_remove_dad  */
-        clear_bad_move();
+        clr_bad_move();
         Log " " EL k = best_remove_dad();
         if (k < 0)
             printf("No good dad deletion found\n");
@@ -894,15 +894,15 @@ loop:
         printf("Model %s Index%3d\n", Populations[k]->name, k + 1);
         goto loop;
 
-    case 29: /* nosubs */
+    case 29: /* NoSubs */
         nn = readanint(kk);
         if (nn < 0)
             goto error;
         if (nn)
-            nosubs = 1;
+            NoSubs = 1;
         else
-            nosubs = 0;
-        Log "%d", nosubs EL goto loop;
+            NoSubs = 0;
+        Log "%d", NoSubs EL goto loop;
 
     case 30: /* binary_hierarchy */
         nn = readanint(kk);
@@ -926,7 +926,7 @@ loop:
         goto loop;
 
     case 32: /*  best_move_class  */
-        clear_bad_move();
+        clr_bad_move();
         Log " " EL best_move_class(0);
         goto loop;
 
