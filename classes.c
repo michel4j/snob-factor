@@ -355,6 +355,7 @@ void cost_all_vars(Class *cls, int item) {
     int fac = 0;
     double tmp;
     VSetVar *vset_var;
+    VarType *var_type;
 
     cls->case_score = Scores.CaseFacInt = cls->factor_scores[item];
     if ((cls->age >= MinFacAge) && (cls->use != Tiny)) {
@@ -362,7 +363,7 @@ void cost_all_vars(Class *cls, int item) {
         Scores.CurCaseFacScoreSq = Scores.CurCaseFacScore * Scores.CurCaseFacScore;
     }
     Scores.ncasecost = Scores.scasecost = Scores.fcasecost = cls->mlogab; /* Abundance cost */
-    VarType *var_type;
+
     for (int iv = 0; iv < CurCtx.vset->length; iv++) {
         vset_var = CurCtx.vset->variables + iv;
         if (!(vset_var->inactive)) {
