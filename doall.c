@@ -699,7 +699,17 @@ void do_case(int item, int all, int derivs, int num_son) {
         }
 
         sum = 0.0;
-        if (Fix != Most_likely) {
+        if (Fix == Most_likely) {
+            /*	Assign all weight to the most likely leaf, or split it if
+                more than one most likely. Count costs equal to mincost  */
+            for (clc = 0; clc < num_son; clc++) {
+                cls = Sons[clc];
+                if ((cls->type == Leaf) && (cls->total_case_cost == mincost)) {
+                    sum += 1.0;
+                    cls->case_weight = 1.0;
+                }
+            }
+        } else {
             /*    Minimum cost is in mincost. Compute unnormalized weights  */
             clc = 0;
             while (clc < num_son) {
@@ -714,14 +724,6 @@ void do_case(int item, int all, int derivs, int num_son) {
                 }
                 cls->case_weight = exp(mincost - cls->total_case_cost);
                 sum += cls->case_weight;
-            }
-        } else {
-            for (clc = 0; clc < num_son; clc++) {
-                cls = Sons[clc];
-                if ((cls->type == Leaf) && (cls->total_case_cost == mincost)) {
-                    sum += 1.0;
-                    cls->case_weight = 1.0;
-                }
             }
         }
 
@@ -823,7 +825,10 @@ void do_case(int item, int all, int derivs, int num_son) {
         if (root->type != Leaf) { /* skip when root is only leaf */
             for (clc = num_son - 1; clc >= 0; clc--) {
                 cls = Sons[clc];
-                if ((cls->type == Sub) || ((!SeeAll) && (cls->factor_scores[item] & 1))) {
+                if (cls->type == Sub)
+                    continue;
+
+                if ((!SeeAll) && (cls->factor_scores[item] & 1)) {
                     continue;
                 }
                 if (cls->case_weight < MinWt)
@@ -833,9 +838,7 @@ void do_case(int item, int all, int derivs, int num_son) {
                 if (cls->dad_id >= 0)
                     CurCtx.popln->classes[cls->dad_id]->case_weight += cls->case_weight;
                 if (cls->type == Dad) {
-                    /*    casecost for the completed dad is root's cost - log
-                     * dad's wt
-                     */
+                    /*    casecost for the completed dad is root's cost - log dad's wt */
                     if (cls->case_weight > 0.0)
                         cls->dad_case_cost = rootcost - log(cls->case_weight);
                     else
@@ -848,14 +851,12 @@ void do_case(int item, int all, int derivs, int num_son) {
     root->case_weight = 1.0;
     /*    Now all classes have casewt assigned, I hope. Can proceed to
     collect statistics from this case  */
-    if (!derivs) {
-        return;
-    }
-
-    for (clc = 0; clc < num_son; clc++) {
-        cls = Sons[clc];
-        if (cls->case_weight > 0.0) {
-            deriv_all_vars(cls, item);
+    if (derivs) {
+        for (clc = 0; clc < num_son; clc++) {
+            cls = Sons[clc];
+            if (cls->case_weight > 0.0) {
+                deriv_all_vars(cls, item);
+            }
         }
     }
 }
