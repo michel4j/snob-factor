@@ -93,7 +93,7 @@ static Basic *cvi, *dcvi;
 static Stats *evi;
 
 /*--------------------------  define ------------------------------- */
-/*	This routine is used to set up a Vtype entry in the global "types"
+/*	This routine is used to set up a VarType entry in the global "types"
 array.  It is the only function whose name needs to be altered for different
 types of variable, and this name must be copied into the file "definetypes.c"
 when installing a new type of variable. It is also necessary to change the
@@ -103,37 +103,37 @@ when installing a new type of variable. It is also necessary to change the
 void reals_define(typindx) int typindx;
 /*	typindx is the index in types[] of this type   */
 {
-    Vtype *vtp;
+    VarType *vtp;
 
     vtp = types + typindx;
     vtp->id = typindx;
     /* 	Set type name as string up to 59 chars  */
     vtp->name = "Standard Gaussian";
-    vtp->datsize = sizeof(Datum);
-    vtp->vauxsize = sizeof(Vaux);
-    vtp->pauxsize = sizeof(Paux);
-    vtp->sauxsize = sizeof(Saux);
-    vtp->readvaux = &readvaux;
-    vtp->readsaux = &readsaux;
-    vtp->readdat = &readdat;
-    vtp->printdat = &printdat;
-    vtp->setsizes = &setsizes;
-    vtp->setbestparam = &setbestparam;
-    vtp->clearstats = &clearstats;
-    vtp->scorevar = &scorevar;
-    vtp->costvar = &costvar;
-    vtp->derivvar = &derivvar;
-    vtp->ncostvar = &ncostvar;
+    vtp->data_size = sizeof(Datum);
+    vtp->attr_aux_size = sizeof(Vaux);
+    vtp->pop_aux_size = sizeof(Paux);
+    vtp->smpl_aux_size = sizeof(Saux);
+    vtp->read_aux_attr = &readvaux;
+    vtp->read_aux_smpl = &readsaux;
+    vtp->read_datum = &readdat;
+    vtp->print_datum = &printdat;
+    vtp->set_sizes = &setsizes;
+    vtp->set_best_pars = &setbestparam;
+    vtp->clear_stats = &clearstats;
+    vtp->score_var = &scorevar;
+    vtp->cost_var = &costvar;
+    vtp->deriv_var = &derivvar;
+    vtp->cost_var_nonleaf = &ncostvar;
     vtp->adjust = &adjust;
-    vtp->vprint = &vprint;
-    vtp->setvar = &setvar;
+    vtp->show = &vprint;
+    vtp->set_var = &setvar;
 }
 
 /*	-------------------  setvar -----------------------------  */
 void setvar(iv) int iv;
 {
     avi = vlist + iv;
-    vtp = avi->vtp;
+    vtp = avi->vtype;
     pvi = pvars + iv;
     paux = (Paux *)pvi->paux;
     svi = svars + iv;
@@ -164,7 +164,7 @@ Saux *sax;
     int i;
 
     /*	Read in auxiliary info into saux, return 0 if OK else 1  */
-    i = readdf(&(sax->eps), 1);
+    i = read_double(&(sax->eps), 1);
     if (i < 0) {
         sax->eps = sax->leps = 0.0;
         return (1);
@@ -181,9 +181,9 @@ int readdat(char *loc, int iv) {
     Datum xn;
 
     /*	Read datum into xn, return error.  */
-    i = readdf(&xn, 1);
+    i = read_double(&xn, 1);
     if (!i)
-        cmcpy(loc, &xn, sizeof(Datum));
+        memcpy(loc, &xn, sizeof(Datum));
     return (i);
 }
 
@@ -199,8 +199,8 @@ void printdat(char *loc) {
 void setsizes(iv) int iv;
 {
     avi = vlist + iv;
-    avi->basicsize = sizeof(Basic);
-    avi->statssize = sizeof(Stats);
+    avi->basic_size = sizeof(Basic);
+    avi->stats_size = sizeof(Stats);
     return;
 }
 
@@ -271,7 +271,7 @@ void scorevar(iv) int iv;
     double del, md2;
 
     setvar(iv);
-    if (avi->idle)
+    if (avi->inactive)
         return;
 
     if (saux->missing)
@@ -396,7 +396,7 @@ void adjust(iv, fac) int iv, fac;
     }
 
     /*	If too few data for this variable, use dad's n-paras  */
-    if ((control & AdjPr) && (cnt < MinSize)) {
+    if ((Control & AdjPr) && (cnt < MinSize)) {
         cvi->nmu = cvi->smu = cvi->fmu = dadmu;
         cvi->nsdl = cvi->ssdl = cvi->fsdl = dadsdl;
         cvi->ld = 0.0;
@@ -466,11 +466,11 @@ facdone1:
     evi->spcost = spcost;
     evi->fpcost = fpcost;
     /*	Add to class param costs  */
-    cls->cspcost += spcost;
-    cls->cfpcost += fpcost;
+    cls->nofac_par_cost += spcost;
+    cls->fac_par_cost += fpcost;
     if (cnt < MinSize)
         goto adjdone;
-    if (!(control & AdjPr))
+    if (!(Control & AdjPr))
         goto tweaks;
     /*	Adjust non-fac parameters.   */
     /*	From things, smud1 = (tx - cnt*mu) * srsds, from prior,
@@ -541,18 +541,18 @@ facdone2:
 
 tweaks: /* Come here if no adjustments made */
     /*	Deal only with sub-less leaves  */
-    if ((cls->type != Leaf) || (cls->nson < 2))
+    if ((cls->type != Leaf) || (cls->num_sons < 2))
         goto adjdone;
 
     /*	If Noprior, guess no-prior params, sprds and store instead of
         as-dad values. Actually store in nparsprd the val 1/bparsprd,
         and in npar the val bpar / bparsprd   */
-    if (control & Noprior) {
+    if (Control & Noprior) {
         cvi->nmusprd = (1.0 / cvi->bmusprd) - (1.0 / dmusprd);
         cvi->nmu = cvi->bmu / cvi->bmusprd - dadmu / dmusprd;
         cvi->nsdlsprd = (1.0 / cvi->bsdlsprd) - (1.0 / dsdlsprd);
         cvi->nsdl = cvi->bsdl / cvi->bsdlsprd - dadsdl / dsdlsprd;
-    } else if (control & Tweak) {
+    } else if (Control & Tweak) {
         /*	Adjust "best" params by applying effect of dad prior to
             the no-prior values  */
         cvi->bmusprd = 1.0 / (cvi->nmusprd + (1.0 / dmusprd));
@@ -583,12 +583,12 @@ void vprint(ccl, iv) Class *ccl;
 int iv;
 {
 
-    setclass1(ccl);
+    set_class(ccl);
     setvar(iv);
 
     printf("V%3d  Cnt%6.1f  %s\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out");
-    if (cls->nson < 2)
+    if (cls->num_sons < 2)
         goto skipn;
     printf(" N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", evi->npcost,
            cvi->nmu, sqrt(cvi->nmusprd), exp(cvi->nsdl),
@@ -725,15 +725,15 @@ void ncostvar(iv, vald) int iv, vald;
         cvi->nsdlsprd = cvi->ssdlsprd * evi->cnt;
         return;
     }
-    if (avi->idle) {
+    if (avi->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
-    nson = cls->nson;
+    nson = cls->num_sons;
     pcost = tcost = 0.0;
 
     /*	There are two independent parameters, nmu and nsdl, to fiddle.
-        As the info for these is stored in consecutive Sf words in Basic,
+        As the info for these is stored in consecutive double words in Basic,
     we can do the two params in a two-count loop. We use p... to mean mu... and
     sdl... in the two times round the loop  */
 
@@ -756,8 +756,8 @@ ploop:
     tstvn = 0.0; /* Total sum of sons' (t_n^2 + del_n)  */
     tssn = 0.0;  /* Total sons' s_n */
 
-    for (ison = cls->ison; ison > 0; ison = son->isib) {
-        son = population->classes[ison];
+    for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
+        son = Popln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         spp = *(&soncvi->bmu + k);
         sppsprd = *(&soncvi->bmusprd + k);
@@ -766,7 +766,7 @@ ploop:
         if (son->type == Dad) { /* used as parent */
             nints++;
             tssn += sppsprd;
-            tstvn += sppsprd / son->nson;
+            tstvn += sppsprd / son->num_sons;
         } else
             tstvn += sppsprd;
     }
@@ -778,7 +778,7 @@ ploop:
         the value of V  */
     mean = tstn / nson;   /* Mean of sons' param  */
     tstvn -= mean * tstn; /*	Variance around mean  */
-    if (!(control & AdjPr))
+    if (!(Control & AdjPr))
         goto adjdone;
 
     /*	Iterate the adjustment of param, spread  */

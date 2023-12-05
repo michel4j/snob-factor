@@ -4,13 +4,13 @@
 FILE *co;
 int i, j, k, m, seq, num;
 int rk1, rk2, rseq1, rseq2;
-char sline[LL], rline[LL];
+char sline[INPUT_BUFFER_SIZE], rline[INPUT_BUFFER_SIZE];
 char *stopp = "stop\n";
 
 /*	Format of message is:
     char sequence_number
     char action_code
-    char [LL] string
+    char [INPUT_BUFFER_SIZE] string
     char action_code
     char sequence_number
     CR/LF
@@ -24,7 +24,7 @@ main() {
 
     seq = '1';
     m = 0;
-    for (i = 0; i < LL; i++)
+    for (i = 0; i < INPUT_BUFFER_SIZE; i++)
         sline[i] = '.';
     sline[0] = '\n';
 
@@ -38,7 +38,7 @@ open1:
     }
     putc(seq, co);
     putc('I', co);
-    for (i = 0; i < LL; i++)
+    for (i = 0; i < INPUT_BUFFER_SIZE; i++)
         putc(sline[i], co);
     putc('I', co);
     putc(seq, co);
@@ -55,7 +55,7 @@ open2:
     }
     rseq1 = fgetc(co);
     rk1 = fgetc(co);
-    for (i = 0; i < LL; i++)
+    for (i = 0; i < INPUT_BUFFER_SIZE; i++)
         rline[i] = fgetc(co);
     rk2 = fgetc(co);
     rseq2 = fgetc(co);
@@ -100,7 +100,7 @@ open3:
     exit(1);
 
 firstch:
-    for (i = 0; i < LL - 1; i++)
+    for (i = 0; i < INPUT_BUFFER_SIZE - 1; i++)
         sline[i] = '.';
     sline[i] = '\n';
     i = 0;
@@ -113,7 +113,7 @@ gotchar:
     i++;
     if (j == '\n')
         goto gotline;
-    if (i < LL) {
+    if (i < INPUT_BUFFER_SIZE) {
         j = getchar();
         goto gotchar;
     }

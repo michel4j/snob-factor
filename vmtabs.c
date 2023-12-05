@@ -5118,8 +5118,8 @@ asymp:
     AA = 2*Int_{0..PI} {cos (x) exp (kappa * cos (x)) dx} / LI0
 
     */
-#define Sf double
-#define Sw int
+#define double double
+#define int int
 
 double pi;
 

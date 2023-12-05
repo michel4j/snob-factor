@@ -12,17 +12,17 @@
 #include "glob.c"
 
 typedef struct Vmpackst {
-	Sf kap;  Sf rkap;  Sf lgi0;  Sf aa; Sf daa;  Sf fh;  Sf dfh;
+	double kap;  double rkap;  double lgi0;  double aa; double daa;  double fh;  double dfh;
 		} Vmpack;
 
-void kapcode (Sf hx, Sf hy, Sf *vmst);
+void kapcode (double hx, double hy, double *vmst);
 
-#define NullSprd ((Sf) 10.0)  /* Root prior spread */
+#define NullSprd ((double) 10.0)  /* Root prior spread */
 
 static void setvar();
-static Sw readvaux();
-static Sw readsaux();
-static Sw readdat();
+static int readvaux();
+static int readsaux();
+static int readdat();
 static void printdat();
 static void setsizes ();
 static void setbestparam();
@@ -35,80 +35,80 @@ static void adjust();
 static void vprint();
 
 typedef struct Datumst	{
-	Sf xx;
-	Sf sinxx;
-	Sf cosxx;
+	double xx;
+	double sinxx;
+	double cosxx;
 	} Datum;
 
 typedef struct Sauxst {
-	Sw missing;
-	Sf dummy;
+	int missing;
+	double dummy;
 	Datum xn;
-	Sf parkfxx;	/* angle - vv*ld for thing n */
-	Sf eps;
-	Sf leps;  /* Log eps */
-	Sf epssq;	/*  eps^2 / 12  */
-	Sw unit;
+	double parkfxx;	/* angle - vv*ld for thing n */
+	double eps;
+	double leps;  /* Log eps */
+	double epssq;	/*  eps^2 / 12  */
+	int unit;
 	} Saux;
 
 typedef struct Pauxst {
-	Sw dummy;
+	int dummy;
 	} Paux;
 
 typedef struct Vauxst {
-	Sw dummy;
+	int dummy;
 	} Vaux;
 
 /*	***************  All of Basic should be distributed  */
 typedef struct Basicst {     /* Basic parameter info about var in class.
 				The first few fields are standard and hxst
 				appear in the order shown.  */
-	Sw id;	/* The variable number (index)  */
-	Sw signif;
-	Sw infac;	/* shows if affected by factor  */
+	int id;	/* The variable number (index)  */
+	int signif;
+	int infac;	/* shows if affected by factor  */
 	/********************  Following fields vary according to need ***/
-	Sf bhx, bhy;	/* current mean, log hy */
-	Sf nhx, nhy;	/* when dad */
-	Sf shx, shy;	/* when sansfac */
-	Sf fhx, fhy;	/* when confac */
-	Sf bhsprd, nhsprd, shsprd, fhsprd;
-	Sf ld;		/* factor load */
-	Sf ldsprd;
-	Sf samplesize;  /* Size of sample on which estimates based */
+	double bhx, bhy;	/* current mean, log hy */
+	double nhx, nhy;	/* when dad */
+	double shx, shy;	/* when sansfac */
+	double fhx, fhy;	/* when confac */
+	double bhsprd, nhsprd, shsprd, fhsprd;
+	double ld;		/* factor load */
+	double ldsprd;
+	double samplesize;  /* Size of sample on which estimates based */
 /*	Derived quantities calced in 'adjust'	*/
 /*	For Plain case:	*/
-	Sf skappa, rskappa;	/* Concentration param and reciprocal */
-	Sf slgi0;	/* Normalization constant */
-	Sf saa;		/* deriv of slgi0 wrt kappa */
-	Sf sdaa;	/* deriv of saa */
-	Sf sfh;		/* one-directional Fisher for hx, hy */
-	Sf sdfh;	/* deriv of sfh */
+	double skappa, rskappa;	/* Concentration param and reciprocal */
+	double slgi0;	/* Normalization constant */
+	double saa;		/* deriv of slgi0 wrt kappa */
+	double sdaa;	/* deriv of saa */
+	double sfh;		/* one-directional Fisher for hx, hy */
+	double sdfh;	/* deriv of sfh */
 /*	For Factor case:	*/
 /*	Note that fields fkappa ... fdfh match skappa ... sdfh  */
-	Sf fkappa, rfkappa;	/* Concentration param and reciprocal */
-	Sf flgi0;	/* Normalization constant */
-	Sf faa;		/* deriv of flgi0 wrt kappa */
-	Sf fdaa;	/* deriv of faa */
-	Sf ffh;		/* one-directional Fisher for hx, hy */
-	Sf fdfh;	/* deriv of ffh */
-	Sf fmufish;	/*	Fish wrt mu  */
-	Sf ldsq;	/* Square of load */
+	double fkappa, rfkappa;	/* Concentration param and reciprocal */
+	double flgi0;	/* Normalization constant */
+	double faa;		/* deriv of flgi0 wrt kappa */
+	double fdaa;	/* deriv of faa */
+	double ffh;		/* one-directional Fisher for hx, hy */
+	double fdfh;	/* deriv of ffh */
+	double fmufish;	/*	Fish wrt mu  */
+	double ldsq;	/* Square of load */
 	}   Basic;
 
 typedef struct Statsst  {	/* Stuff accumulated to revise Basic  */
 				/* First fields are standard  */
-	Sf cnt;		/* Weighted count  */
-	Sf btcost, ntcost, stcost, ftcost;
-	Sf bpcost, npcost, spcost, fpcost;
-	Sf vsq;		/*  weighted sum of squared scores for this var */
-	Sw id;		/* Variable number  */
+	double cnt;		/* Weighted count  */
+	double btcost, ntcost, stcost, ftcost;
+	double bpcost, npcost, spcost, fpcost;
+	double vsq;		/*  weighted sum of squared scores for this var */
+	int id;		/* Variable number  */
 	/********************  Following fields vary according to need ***/
-	Sf parkstcost, parkftcost;  /* Unweighted thing costs of xn */
-	Sf oldftcost, adj;
-	Sf tssin, tscos;  /* Sum of sines and cosines (no factor) */
-	Sf tfsin, tfcos;  /* Sum of sines and cosines (with factor) */
-	Sf ldd1, ldd2;
-	Sf fwd2;	/* Total coeff of Fmu in thing costs */
+	double parkstcost, parkftcost;  /* Unweighted thing costs of xn */
+	double oldftcost, adj;
+	double tssin, tscos;  /* Sum of sines and cosines (no factor) */
+	double tfsin, tfcos;  /* Sum of sines and cosines (with factor) */
+	double ldd1, ldd2;
+	double fwd2;	/* Total coeff of Fmu in thing costs */
 	}  Stats;
 
 static Saux *saux;   static Paux *paux;   static Vaux *vaux;
@@ -116,16 +116,16 @@ static Basic *cvi, *dcvi;
 static Stats *evi;
 
 #ifdef CHECK
-	Sf oldhx;
-	Sf oldtsx;
-	Sf oldld;
-	Sw oldivv[200];
-Sw junk;
-Sw check (k)
-	Sw k;
+	double oldhx;
+	double oldtsx;
+	double oldld;
+	int oldivv[200];
+int junk;
+int check (k)
+	int k;
 {
 	Basic *cvi;  Stats *evi;
-	Sw ch, del, n, wn, adel, mdel, vold, vnew;
+	int ch, del, n, wn, adel, mdel, vold, vnew;
 
 	if (rootcl->age < 380) return(0);
 	ch = 0;
@@ -176,7 +176,7 @@ when installing a new type of variable. It is also necessary to change the
 	*/
 
 void vonm_define(typindx)
-	Sw typindx;
+	int typindx;
 /*	typindx is the index in types[] of this type   */
 {
 	Vtype *vtp;
@@ -208,7 +208,7 @@ void vonm_define(typindx)
 
 /*	-------------------  setvar -----------------------------  */
 void setvar (iv)
-	Sw iv;
+	int iv;
 {
 	avi = vlist + iv;  vtp = avi->vtp;
 	pvi = pvars + iv;  paux = (Paux *) pvi->paux;
@@ -224,7 +224,7 @@ void setvar (iv)
 
 /*	--------------------  readvaux  ----------------------------  */
 /*      Read in auxiliary info into vaux, return 0 if OK else 1  */
-Sw readvaux (vax)
+int readvaux (vax)
 	Vaux *vax;
 {
 	return (0);
@@ -235,10 +235,10 @@ Sw readvaux (vax)
 /*	To read any auxiliary info about a variable of this type in some
 sample.
 	*/
-Sw readsaux (sax)
+int readsaux (sax)
 	Saux *sax;
 {
-	Sw i;
+	int i;
 
 /*	Read in auxiliary info into saux, return 0 if OK else 1  */
 	i = readint(&(sax->unit), 1);
@@ -253,12 +253,12 @@ Sw readsaux (sax)
 
 /*	-------------------  readdat -------------------------------  */
 /*	To read a value for this variable type	 */
-Sw readdat (loc, iv)
+int readdat (loc, iv)
 	char *loc;
-	Sw iv;
+	int iv;
 {
-	Sw i;
-	Sw unit;
+	int i;
+	int unit;
 	Datum xn;
 
 /*	Read datum into xn.xx, return error.  */
@@ -286,7 +286,7 @@ void printdat (loc)
 
 /*	---------------------  setsizes  -----------------------   */
 void setsizes (iv)
-	Sw iv;
+	int iv;
 {
 	avi = vlist + iv;
 	avi->basicsize = sizeof (Basic);
@@ -296,7 +296,7 @@ void setsizes (iv)
 
 /*	----------------------  setbestparam --------------------------  */
 void setbestparam (iv)
-	Sw iv;
+	int iv;
 {
 
 	setvar (iv);
@@ -324,7 +324,7 @@ void setbestparam (iv)
 /*	Clears stats to accumulate in costvar, and derives useful functions
 of basic params  */
 void clearstats (iv)
-	Sw iv;
+	int iv;
 {
 	setvar (iv);
 	evi->cnt = 0.0;
@@ -369,11 +369,11 @@ BUT	in this version I pretend wsprd = 4 * tsprd * cos^2 (w).
 	Score prior cost are accounted in scorevarall.
 	*/
 void scorevar (iv)
-	Sw iv;
+	int iv;
 {
 
-	Sf cos2w, cosw, sinw, tt, wd1, mvd2;
-	Sf dcos2dw, dwdv;
+	double cos2w, cosw, sinw, tt, wd1, mvd2;
+	double dcos2dw, dwdv;
 
 	setvar (iv);
 	if (avi->idle)	return;
@@ -433,9 +433,9 @@ void scorevar (iv)
 /*	-----------------------  costvar  --------------------------   */
 /*	Accumulates thing cost into scasecost, fcasecost    */
 void costvar (iv, fac)
-	Sw iv, fac;
+	int iv, fac;
 {
-	Sf del, cost, tt, tsprd, cosw, sinw, cos2w;
+	double del, cost, tt, tsprd, cosw, sinw, cos2w;
 	setvar (iv);
 	if (saux->missing) return;
 	if (cls->age == 0) { evi->parkftcost = evi->parkstcost = 0.0; return; }
@@ -480,10 +480,10 @@ facdone:
 params and accumulates in paramd1, paramd2.
 Factor derivs done only if fac.  */
 void derivvar (iv, fac)
-	Sw iv, fac;
+	int iv, fac;
 {
-	Sf tt, tsprd, cos2w, cosw, sinw, wtcos2w, wd1;
-	Sf coser, siner;
+	double tt, tsprd, cos2w, cosw, sinw, wtcos2w, wd1;
+	double coser, siner;
 	setvar (iv);
 	if (saux->missing) return;
 /*	Do non-fac first  */
@@ -546,12 +546,12 @@ facdone:
 /*	-------------------  adjust  ---------------------------    */
 /*	To adjust parameters of a vonmises variable     */
 void adjust (iv, fac)
-	Sw iv, fac;
+	int iv, fac;
 {
-	Sf adj, temp1, cnt, ldd2;
-	Sf del1, del2, spcost, fpcost;
-	Sf dadhx, dadhy, dhsprd;
-	Sf hxd1, hyd1, hkd1, hkd2;
+	double adj, temp1, cnt, ldd2;
+	double del1, del2, spcost, fpcost;
+	double dadhx, dadhy, dhsprd;
+	double hxd1, hyd1, hkd1, hkd2;
 
 	setvar (iv);
 	adj = InitialAdj;
@@ -740,9 +740,9 @@ adjdone:
 /*	------------------------  vprint  -----------------------   */
 void vprint (ccl, iv)
 	Class *ccl;
-	Sw iv;
+	int iv;
 {
-	Sf mu, kappa;
+	double mu, kappa;
 
 	setclass1 (ccl);  setvar(iv);
 
@@ -872,15 +872,15 @@ Writing the quadratic as    a*s^2 + b*s -c = 0,   we want the root
 	*/
 
 void ncostvar (iv, vald)
-	Sw iv, vald;
+	int iv, vald;
 {
 	Basic *soncvi;
 	Class *son;
-	Sf pcost;
-	Sf nhx, nhy, nhsprd, dadhx, dadhy, dadhsprd;
-	Sf del, co0, co1, co2, meanx, meany;
-	Sf tsxn, tsyn, tsvn, tssn, sbhx, sbhy, sbhsprd;
-	Sw nints, nson, ison, n;
+	double pcost;
+	double nhx, nhy, nhsprd, dadhx, dadhy, dadhsprd;
+	double del, co0, co1, co2, meanx, meany;
+	double tsxn, tsyn, tsvn, tssn, sbhx, sbhy, sbhsprd;
+	int nints, nson, ison, n;
 
 	setvar (iv);
 	if (! vald)	{  /* Cannot define as-dad params, so fake it */
@@ -6039,12 +6039,12 @@ Basic structure.
 	*/
 
 void kapcode (hx, hy, vmst)
-	Sf hx, hy;
-	Sf *vmst;
+	double hx, hy;
+	double *vmst;
 {
 	double del, skap, c2, c3;
 	double va, vb, da, db;
-	Sf kap;
+	double kap;
 	int ik;
 	Vmpack *vmp;
 

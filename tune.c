@@ -27,7 +27,7 @@ void defaulttune() {
 
     /*	Set table of log factorials  */
     faclog[0] = faclog[1] = 0.0;
-    for (i = 2; i <= MaxClasses; i++)
+    for (i = 2; i <= MAX_CLASSES; i++)
         faclog[i] = faclog[i - 1] + log((double)i);
     return;
 }

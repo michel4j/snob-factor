@@ -91,9 +91,9 @@ static double dadnap;
 static double dapsprd; /* Dad's napsprd */
 
 /*--------------------------  define ------------------------------- */
-/*	This routine is used to set up a Vtype entry in the global "types"
+/*	This routine is used to set up a VarType entry in the global "types"
 array.  It is the only function whose name needs to be altered for different
-types of variable, and this name must be copied into the file "dotypes.c"
+types of variable, and this name must be copied into the file "do_types.c"
 when installing a new type of variable. It is also necessary to change the
 "Ntypes" constant, and to decide on a type id (an integer) for the new type.
     */
@@ -105,24 +105,24 @@ void expbinary_define(typindx) int typindx;
     vtp->id = typindx;
     /* 	Set type name as string up to 59 chars  */
     vtp->name = "ExpBinary";
-    vtp->datsize = sizeof(Datum);
-    vtp->vauxsize = sizeof(Vaux);
-    vtp->pauxsize = sizeof(Paux);
-    vtp->sauxsize = sizeof(Saux);
-    vtp->readvaux = &readvaux;
-    vtp->readsaux = &readsaux;
-    vtp->readdat = &readdat;
-    vtp->printdat = &printdat;
-    vtp->setsizes = &setsizes;
-    vtp->setbestparam = &setbestparam;
-    vtp->clearstats = &clearstats;
-    vtp->scorevar = &scorevar;
-    vtp->costvar = &costvar;
-    vtp->derivvar = &derivvar;
-    vtp->ncostvar = &ncostvar;
+    vtp->data_size = sizeof(Datum);
+    vtp->attr_aux_size = sizeof(Vaux);
+    vtp->pop_aux_size = sizeof(Paux);
+    vtp->smpl_aux_size = sizeof(Saux);
+    vtp->read_aux_attr = &readvaux;
+    vtp->read_aux_smpl = &readsaux;
+    vtp->read_datum = &readdat;
+    vtp->print_datum = &printdat;
+    vtp->set_sizes = &setsizes;
+    vtp->set_best_pars = &setbestparam;
+    vtp->clear_stats = &clearstats;
+    vtp->score_var = &scorevar;
+    vtp->cost_var = &costvar;
+    vtp->deriv_var = &derivvar;
+    vtp->cost_var_nonleaf = &ncostvar;
     vtp->adjust = &adjust;
-    vtp->vprint = &vprint;
-    vtp->setvar = &setvar;
+    vtp->show = &vprint;
+    vtp->set_var = &setvar;
 
     return;
 }
@@ -131,7 +131,7 @@ void expbinary_define(typindx) int typindx;
 void setvar(iv) int iv;
 {
     avi = vlist + iv;
-    vtp = avi->vtp;
+    vtp = avi->vtype;
     pvi = pvars + iv;
     paux = (Paux *)pvi->paux;
     svi = svars + iv;
@@ -167,7 +167,7 @@ int readdat(char *loc, int iv)
     Datum xn;
 
     /*	Read datum into xn, return error.  */
-    i = readint(&xn, 1);
+    i = read_int(&xn, 1);
     if (i)
         return (i);
     if (!xn)
@@ -175,7 +175,7 @@ int readdat(char *loc, int iv)
     xn--;
     if ((xn < 0) || (xn >= 2))
         return (2);
-    cmcpy(loc, &xn, sizeof(Datum));
+    memcpy(loc, &xn, sizeof(Datum));
     return (0);
 }
 
@@ -189,7 +189,7 @@ void printdat(Datum *loc)
 }
 
 /*	---------------------  setsizes  -----------------------   */
-/*	To use info in ctx.vset to set sizes of basic and stats
+/*	To use info in CurCtx.vset to set sizes of basic and stats
 blocks for variable, and place in AVinst basicsize, statssize.
     */
 void setsizes( int iv)
@@ -198,8 +198,8 @@ void setsizes( int iv)
     avi = vlist + iv;
 
     /*	Set sizes of CVinst (basic) and EVinst (stats) in AVinst  */
-    avi->basicsize = sizeof(Basic);
-    avi->statssize = sizeof(Stats);
+    avi->basic_size = sizeof(Basic);
+    avi->stats_size = sizeof(Stats);
     return;
 }
 
@@ -270,7 +270,7 @@ void scorevar(int iv)
 {
     double cc, pr0, pr1, ff, ft, dbyv, hdffbydv, hdftbydv;
     setvar(iv);
-    if (avi->idle)
+    if (avi->inactive)
         return;
     if (saux->missing)
         return;
@@ -434,7 +434,7 @@ void adjust(int iv, int fac)
     }
 
     /*	If too few data, use dad's n-paras   */
-    if ((control & AdjPr) && (cnt < MinSize)) {
+    if ((Control & AdjPr) && (cnt < MinSize)) {
         cvi->nap = cvi->sap = cvi->fap = dadnap;
         cvi->fbp = 0.0;
         cvi->napsprd = cvi->fapsprd = cvi->sapsprd = dapsprd;
@@ -496,9 +496,9 @@ facdone1:
     evi->spcost = spcost;
     evi->fpcost = fpcost;
     /*	Add to class param costs  */
-    cls->cspcost += spcost;
-    cls->cfpcost += fpcost;
-    if (!(control & AdjPr))
+    cls->nofac_par_cost += spcost;
+    cls->fac_par_cost += fpcost;
+    if (!(Control & AdjPr))
         goto adjdone;
     if (cnt < MinSize)
         goto adjdone;
@@ -557,7 +557,7 @@ adjloop:
 
 facdone2:
     /*	If no sons, set as-dad params from non-fac params  */
-    if (cls->nson < 2) {
+    if (cls->num_sons < 2) {
         cvi->nap = cvi->sap;
         cvi->napsprd = cvi->sapsprd;
     }
@@ -570,12 +570,12 @@ adjdone:
 /*	------------------------  vprint  -----------------------   */
 void vprint(Class* ccl, int iv){
 
-    setclass1(ccl);
+    set_class(ccl);
     setvar(iv);
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out", evi->adj);
 
-    if (cls->nson < 2)
+    if (cls->num_sons < 2)
         goto skipn;
     printf(" N: AP ");
     printf("%6.3f", cvi->nap);
@@ -600,11 +600,11 @@ void ncostvar(int iv) {
     int n, ison, nson, nints;
 
     setvar(iv);
-    if (avi->idle) {
+    if (avi->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
-    nson = cls->nson;
+    nson = cls->num_sons;
     if (nson < 2) { /* cannot define parameters */
         evi->npcost = evi->ntcost = 0.0;
         cvi->nap = cvi->sap;
@@ -619,15 +619,15 @@ void ncostvar(int iv) {
 
     apsprd = cvi->napsprd;
     /*	The calculation is like that in reals.c (q.v.)   */
-    for (ison = cls->ison; ison > 0; ison = son->isib) {
-        son = population->classes[ison];
+    for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
+        son = Popln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         tap += soncvi->bap;
         tstvn += soncvi->bap * soncvi->bap;
         if (son->type == Dad) { /* used as parent */
             nints++;
             tssn += soncvi->bapsprd;
-            tstvn += soncvi->bapsprd / son->nson;
+            tstvn += soncvi->bapsprd / son->num_sons;
         } else
             tstvn += soncvi->bapsprd;
     }

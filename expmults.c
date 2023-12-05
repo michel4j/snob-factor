@@ -138,7 +138,7 @@ static double gaustab[Gnt];
 static double *gausorg; /* ptr to gaustab[1] */
 
 /*--------------------------  define ------------------------------- */
-/*	This routine is used to set up a Vtype entry in the global "types"
+/*	This routine is used to set up a VarType entry in the global "types"
 array.  It is the only function whose name needs to be altered for different
 types of variable, and this name must be copied into the file "definetypes.c"
 when installing a new type of variable. It is also necessary to change the
@@ -155,24 +155,24 @@ void expmults_define(typindx) int typindx;
     vtp->id = typindx;
     /* 	Set type name as string up to 59 chars  */
     vtp->name = "ExpMultiState";
-    vtp->datsize = sizeof(Datum);
-    vtp->vauxsize = sizeof(Vaux);
-    vtp->pauxsize = sizeof(Paux);
-    vtp->sauxsize = sizeof(Saux);
-    vtp->readvaux = &readvaux;
-    vtp->readsaux = &readsaux;
-    vtp->readdat = &readdat;
-    vtp->printdat = &printdat;
-    vtp->setsizes = &setsizes;
-    vtp->setbestparam = &setbestparam;
-    vtp->clearstats = &clearstats;
-    vtp->scorevar = &scorevar;
-    vtp->costvar = &costvar;
-    vtp->derivvar = &derivvar;
-    vtp->ncostvar = &ncostvar;
+    vtp->data_size = sizeof(Datum);
+    vtp->attr_aux_size = sizeof(Vaux);
+    vtp->pop_aux_size = sizeof(Paux);
+    vtp->smpl_aux_size = sizeof(Saux);
+    vtp->read_aux_attr = &readvaux;
+    vtp->read_aux_smpl = &readsaux;
+    vtp->read_datum = &readdat;
+    vtp->print_datum = &printdat;
+    vtp->set_sizes = &setsizes;
+    vtp->set_best_pars = &setbestparam;
+    vtp->clear_stats = &clearstats;
+    vtp->score_var = &scorevar;
+    vtp->cost_var = &costvar;
+    vtp->deriv_var = &derivvar;
+    vtp->cost_var_nonleaf = &ncostvar;
     vtp->adjust = &adjust;
-    vtp->vprint = &vprint;
-    vtp->setvar = &setvar;
+    vtp->show = &vprint;
+    vtp->set_var = &setvar;
 
     /*	Make table of exp (-0.5 * x * x) in gaustab[]
         Entry for x = 0 is at gaustab[1]  */
@@ -188,7 +188,7 @@ void expmults_define(typindx) int typindx;
 void setvar(iv) int iv;
 {
     avi = vlist + iv;
-    vtp = avi->vtp;
+    vtp = avi->vtype;
     pvi = pvars + iv;
     paux = (Paux *)pvi->paux;
     svi = svars + iv;
@@ -224,7 +224,7 @@ Vaux *vax;
     double lstates;
 
     /*	Read in auxiliary info into vaux, return 0 if OK else 1  */
-    i = readint(&(vax->states), 1);
+    i = read_int(&(vax->states), 1);
     if (i < 0) {
         vax->states = 0;
         return (1);
@@ -272,7 +272,7 @@ int readdat(char *loc, int iv) {
     vaux = (Vaux *)(vlist[iv].vaux);
     states = vaux->states;
     /*	Read datum into xn, return error.  */
-    i = readint(&xn, 1);
+    i = read_int(&xn, 1);
     if (i)
         return (i);
     if (!xn)
@@ -280,7 +280,7 @@ int readdat(char *loc, int iv) {
     xn--;
     if ((xn < 0) || (xn >= states))
         return (2);
-    cmcpy(loc, &xn, sizeof(Datum));
+    memcpy(loc, &xn, sizeof(Datum));
     return (0);
 }
 
@@ -294,7 +294,7 @@ void printdat(loc) Datum *loc;
 }
 
 /*	---------------------  setsizes  -----------------------   */
-/*	To use info in ctx.vset to set sizes of basic and stats
+/*	To use info in CurCtx.vset to set sizes of basic and stats
 blocks for variable, and place in AVinst basicsize, statssize.
     */
 void setsizes(iv) int iv;
@@ -306,8 +306,8 @@ void setsizes(iv) int iv;
 
     /*	Set sizes of CVinst (basic) and EVinst (stats) in AVinst  */
     /*	Each inst has a number of vectors appended, of length 'states' */
-    avi->basicsize = sizeof(Basic) + (5 * states - 1) * sizeof(double);
-    avi->statssize = sizeof(Stats) + (5 * states - 1) * sizeof(double);
+    avi->basic_size = sizeof(Basic) + (5 * states - 1) * sizeof(double);
+    avi->stats_size = sizeof(Stats) + (5 * states - 1) * sizeof(double);
     return;
 }
 
@@ -447,7 +447,7 @@ void scorevar(iv) int iv;
 {
     double t1d1, t2d1, t3d1;
     setvar(iv);
-    if (avi->idle)
+    if (avi->inactive)
         return;
     if (saux->missing)
         return;
@@ -587,7 +587,7 @@ void adjust(iv, fac) int iv, fac;
     }
 
     /*	If too few data, use dad's n-paras   */
-    if ((control & AdjPr) && (cnt < MinSize)) {
+    if ((Control & AdjPr) && (cnt < MinSize)) {
         Fork {
             nap[k] = sap[k] = fap[k] = dadnap[k];
             fbp[k] = 0.0;
@@ -677,9 +677,9 @@ facdone1:
     evi->spcost = spcost;
     evi->fpcost = fpcost;
     /*	Add to class param costs  */
-    cls->cspcost += spcost;
-    cls->cfpcost += fpcost;
-    if (!(control & AdjPr))
+    cls->nofac_par_cost += spcost;
+    cls->fac_par_cost += fpcost;
+    if (!(Control & AdjPr))
         goto adjdone;
     if (cnt < MinSize)
         goto adjdone;
@@ -783,7 +783,7 @@ adjloop:
 
 facdone2:
     /*	If no sons, set as-dad params from non-fac params  */
-    if (cls->nson < 2) {
+    if (cls->num_sons < 2) {
         Fork nap[k] = sap[k];
         cvi->napsprd = cvi->sapsprd;
     }
@@ -821,12 +821,12 @@ int iv;
 {
     int k;
 
-    setclass1(ccl);
+    set_class(ccl);
     setvar(iv);
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out", evi->adj);
 
-    if (cls->nson < 2)
+    if (cls->num_sons < 2)
         goto skipn;
     printf(" NR: ");
     prprint(nap);
@@ -857,11 +857,11 @@ void ncostvar(iv) int iv;
     int n, k, ison, nson, nints;
 
     setvar(iv);
-    if (avi->idle) {
+    if (avi->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
-    nson = cls->nson;
+    nson = cls->num_sons;
     if (nson < 2) { /* cannot define parameters */
         evi->npcost = evi->ntcost = 0.0;
         Fork nap[k] = sap[k];
@@ -880,8 +880,8 @@ void ncostvar(iv) int iv;
     sometimes becomes (statesm * nson) in this case. We use the static vector
     'pr[]' to accumulate the sum of the sons' bap[]s, in place of the 'tstn' of
     the reals code. */
-    for (ison = cls->ison; ison > 0; ison = son->isib) {
-        son = population->classes[ison];
+    for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
+        son = Popln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         Fork {
             pr[k] += soncvi->bap[k];
@@ -890,7 +890,7 @@ void ncostvar(iv) int iv;
         if (son->type == Dad) { /* used as parent */
             nints++;
             tssn += soncvi->bapsprd;
-            tstvn += soncvi->bapsprd * statesm / son->nson;
+            tstvn += soncvi->bapsprd * statesm / son->num_sons;
         } else
             tstvn += soncvi->bapsprd * statesm;
     }

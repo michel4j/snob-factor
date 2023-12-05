@@ -2,16 +2,16 @@
 #define CLASSES 1
 #include "glob.h"
 
-/*	-----------------------  s2id  ---------------------------   */
+/*	-----------------------  serial_to_id  ---------------------------   */
 /*	Finds class index (id) from serial, or -3 if error    */
-int s2id(int ss) {
+int serial_to_id(int ss) {
     int k;
     Class *clp;
-    setpop();
+    set_population();
 
     if (ss >= 1) {
-        for (k = 0; k <= population->hicl; k++) {
-            clp = population->classes[k];
+        for (k = 0; k <= Popln->hi_class; k++) {
+            clp = Popln->classes[k];
             if (clp && (clp->type != Vacant) && (clp->serial == ss))
                 return (k);
         }
@@ -24,26 +24,26 @@ int s2id(int ss) {
     return (-3);
 }
 
-/*	---------------------  setclass1 --------------------------   */
-void setclass1(Class *ccl) {
+/*	---------------------  set_class --------------------------   */
+void set_class(Class *ccl) {
     cls = ccl;
-    idad = cls->idad;
+    idad = cls->dad_id;
     if (idad >= 0)
-        dad = population->classes[idad];
+        dad = Popln->classes[idad];
     else
         dad = 0;
     return;
 }
 
-/*	---------------------  setclass2 --------------------------   */
-void setclass2(Class *ccl) {
+/*	---------------------  set_class_with_scores --------------------------   */
+void set_class_with_scores(Class *ccl) {
     cls = ccl;
-    vv = cls->vv;
-    cls->caseiv = icvv = vv[item];
-    cwt = cls->casewt;
-    idad = cls->idad;
+    vv = cls->factor_scores;
+    cls->case_score = icvv = vv[item];
+    cwt = cls->case_weight;
+    idad = cls->dad_id;
     if (idad >= 0)
-        dad = population->classes[idad];
+        dad = Popln->classes[idad];
     else
         dad = 0;
     return;
@@ -57,44 +57,44 @@ ptrs to CVinsts and CVinsts filled in also EVinsts and ptrs.
     score vector.
     Returns index of class, or negative if no good  */
 
-int makeclass() {
+int make_class() {
     PVinst *pvars;
     CVinst **cvars, *cvi;
     EVinst **evars, *evi;
     int i, kk;
 
-    nc = ctx.popln->nc;
+    nc = CurCtx.popln->sample_size;
     /*	If nc, check that popln has an attached sample  */
     if (nc) {
-        i = sname2id(population->samplename, 1);
+        i = find_sample(Popln->sample_name, 1);
         if (i < 0)
             return (-2);
-        ctx.sample = samp = samples[i];
+        CurCtx.sample = Smpl = Samples[i];
     }
 
-    nv = vst->nv;
-    pvars = population->pvars;
+    nv = VSet->length;
+    pvars = Popln->variables;
     /*	Find a vacant slot in the popln's classes vec   */
-    for (kk = 0; kk < population->mncl; kk++) {
-        if (!population->classes[kk])
+    for (kk = 0; kk < Popln->cls_vec_len; kk++) {
+        if (!Popln->classes[kk])
             goto gotit;
         /*	Also test for a vacated class   */
-        if (population->classes[kk]->type == Vacant)
+        if (Popln->classes[kk]->type == Vacant)
             goto vacant1;
     }
     printf("Popln full of classes\n");
     goto nospace;
 
 gotit:
-    cls = (Class *)gtsp(1, sizeof(Class));
+    cls = (Class *)alloc_blocks(1, sizeof(Class));
     if (!cls)
         goto nospace;
-    population->classes[kk] = cls;
-    population->hicl = kk; /* Highest used index in population->classes */
+    Popln->classes[kk] = cls;
+    Popln->hi_class = kk; /* Highest used index in population->classes */
     cls->id = kk;
 
     /*	Make vector of ptrs to CVinsts   */
-    cvars = cls->basics = (CVinst **)gtsp(1, nv * sizeof(CVinst *));
+    cvars = cls->basics = (CVinst **)alloc_blocks(1, nv * sizeof(CVinst *));
     if (!cvars)
         goto nospace;
 
@@ -102,7 +102,7 @@ gotit:
     for (i = 0; i < nv; i++) {
         pvi = pvars + i;
         avi = vlist + i;
-        cvi = cvars[i] = (CVinst *)gtsp(1, avi->basicsize);
+        cvi = cvars[i] = (CVinst *)alloc_blocks(1, avi->basic_size);
         if (!cvi)
             goto nospace;
         /*	Fill in standard stuff  */
@@ -110,49 +110,49 @@ gotit:
     }
 
     /*	Make EVinst blocks and vector of pointers  */
-    evars = cls->stats = (EVinst **)gtsp(1, nv * sizeof(EVinst *));
+    evars = cls->stats = (EVinst **)alloc_blocks(1, nv * sizeof(EVinst *));
     if (!evars)
         goto nospace;
 
     for (i = 0; i < nv; i++) {
         pvi = pvars + i;
         avi = vlist + i;
-        evi = evars[i] = (EVinst *)gtsp(1, avi->statssize);
+        evi = evars[i] = (EVinst *)alloc_blocks(1, avi->stats_size);
         if (!evi)
             goto nospace;
         evi->id = pvi->id;
     }
 
     /*	Stomp on ptrs as yet undefined  */
-    cls->vv = 0;
+    cls->factor_scores = 0;
     cls->type = 0;
     goto donebasic;
 
 vacant1: /* Vacant type shows structure set up but vacated.
      Use, but set new (Vacant) type,  */
-    cls = population->classes[kk];
+    cls = Popln->classes[kk];
     cvars = cls->basics;
     evars = cls->stats;
     cls->type = Vacant;
 
 donebasic:
-    cls->cbcost = cls->cscost = cls->cfcost = 0.0;
-    cls->cnt = 0.0;
+    cls->best_cost = cls->nofac_cost = cls->fac_cost = 0.0;
+    cls->weights_sum = 0.0;
     /*	Invalidate hierarchy links  */
-    cls->idad = cls->isib = cls->ison = -1;
-    cls->nson = 0;
+    cls->dad_id = cls->sib_id = cls->son_id = -1;
+    cls->num_sons = 0;
     for (i = 0; i < nv; i++)
         cvars[i]->signif = 1;
-    population->ncl++;
-    if (kk > population->hicl)
-        population->hicl = kk;
+    Popln->num_classes++;
+    if (kk > Popln->hi_class)
+        Popln->hi_class = kk;
     if (cls->type == Vacant)
         goto vacant2;
 
     /*	If nc = 0, this completes the make.  */
     if (nc == 0)
         goto finish;
-    cls->vv = (short *)gtsp(2, nc * sizeof(short));
+    cls->factor_scores = (short *)alloc_blocks(2, nc * sizeof(short));
     goto expanded;
 
 vacant2:
@@ -160,11 +160,11 @@ vacant2:
 
 expanded:
     for (i = 0; i < nv; i++)
-        evars[i]->cnt = 0.0;
+        evars[i]->num_values = 0.0;
 finish:
     cls->age = 0;
-    cls->holdtype = cls->holduse = 0;
-    cls->cnt = 0.0;
+    cls->hold_type = cls->hold_use = 0;
+    cls->weights_sum = 0.0;
     return (kk);
 
 nospace:
@@ -172,7 +172,7 @@ nospace:
     return (-1);
 }
 
-/*	-----------------------  printclass  -----------------------  */
+/*	-----------------------  print_class  -----------------------  */
 /*	To print parameters of a class    */
 /*	If kk = -1, prints all non-subs. If kk = -2, prints all  */
 char *typstr[] = {"typ?", " DAD", "LEAF", "typ?", " Sub"};
@@ -181,132 +181,132 @@ void print1class(Class *clp, int full) {
     int i;
     double vrms;
 
-    printf("\nS%s", sers(clp));
+    printf("\nS%s", serial_to_str(clp));
     printf(" %s", typstr[((int)clp->type)]);
-    if (clp->idad < 0)
+    if (clp->dad_id < 0)
         printf("    Root");
     else
-        printf(" Dad%s", sers(population->classes[((int)clp->idad)]));
-    printf(" Age%4d  Sz%6.1f  Use %s", clp->age, clp->cnt, usestr[((int)clp->use)]);
+        printf(" Dad%s", serial_to_str(Popln->classes[((int)clp->dad_id)]));
+    printf(" Age%4d  Sz%6.1f  Use %s", clp->age, clp->weights_sum, usestr[((int)clp->use)]);
     printf("%c", (clp->use == Fac) ? ' ' : '(');
-    vrms = sqrt(clp->vsq / clp->cnt);
+    vrms = sqrt(clp->sum_score_sq / clp->weights_sum);
     printf("Vv%6.2f", vrms);
-    printf("%c", (cls->boostcnt) ? 'B' : ' ');
+    printf("%c", (cls->boost_count) ? 'B' : ' ');
     printf(" +-%5.3f", (clp->vav));
-    printf(" Avv%6.3f", clp->avvv);
+    printf(" Avv%6.3f", clp->avg_factor_scores);
     printf("%c", (clp->use == Fac) ? ' ' : ')');
     if (clp->type == Dad) {
-        printf("%4d sons", clp->nson);
+        printf("%4d sons", clp->num_sons);
     }
     printf("\n");
-    printf("Pcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->cspcost, clp->cfpcost, clp->cnpcost, clp->cbpcost);
-    printf("Tcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->cstcost, clp->cftcost - cls->cfvcost, clp->cntcost, clp->cbtcost);
+    printf("Pcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->nofac_par_cost, clp->fac_par_cost, clp->dad_par_cost, clp->best_par_cost);
+    printf("Tcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->cstcost, clp->cftcost - cls->cfvcost, clp->cntcost, clp->best_case_cost);
     printf("Vcost     ---------  F:%9.2f\n", clp->cfvcost);
-    printf("totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->cscost, clp->cfcost, clp->cncost, clp->cbcost);
+    printf("totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->nofac_cost, clp->fac_cost, clp->dad_cost, clp->best_cost);
     if (!full)
         return;
-    for (i = 0; i < vst->nv; i++) {
-        vtp = vlist[i].vtp;
-        (*vtp->vprint)(clp, i);
+    for (i = 0; i < VSet->length; i++) {
+        vtp = vlist[i].vtype;
+        (*vtp->show)(clp, i);
     }
     return;
 }
 
-void printclass(int kk, int full) {
+void print_class(int kk, int full) {
     Class *clp;
     if (kk >= 0) {
-        clp = population->classes[kk];
+        clp = Popln->classes[kk];
         print1class(clp, full);
         return;
     }
     if (kk < -2) {
-        printf("%d passed to printclass\n", kk);
+        printf("%d passed to print_class\n", kk);
         return;
     }
-    setpop();
+    set_population();
     clp = rootcl;
 
     do {
         if ((kk == -2) || (clp->type != Sub))
             print1class(clp, full);
-        nextclass(&clp);
+        next_class(&clp);
     } while (clp);
 
     return;
 }
 
-/*	-------------------------  cleartcosts  ------  */
+/*	-------------------------  clear_costs  ------  */
 /*	Clears tcosts (cntcost, cftcost, cstcost). Also clears newcnt,
 newvsq, and calls clearstats for all variables   */
-void cleartcosts(Class *ccl) {
+void clear_costs(Class *ccl) {
     int i;
 
-    setclass1(ccl);
+    set_class(ccl);
     cls->mlogab = -log(cls->relab);
     cls->cstcost = cls->cftcost = cls->cntcost = 0.0;
     cls->cfvcost = 0.0;
     cls->newcnt = cls->newvsq = 0.0;
-    cls->scorechange = 0;
+    cls->score_change_count = 0;
     cls->vav = 0.0;
-    cls->totvv = 0.0;
-    if (!seeall)
+    cls->factor_score_sum = 0.0;
+    if (!SeeAll)
         cls->scancnt = 0;
-    for (i = 0; i < vst->nv; i++) {
-        vtp = vlist[i].vtp;
-        (*vtp->clearstats)(i);
+    for (i = 0; i < VSet->length; i++) {
+        vtp = vlist[i].vtype;
+        (*vtp->clear_stats)(i);
     }
     return;
 }
 
-/*	-------------------  setbestparall  ------------------------   */
+/*	-------------------  set_best_costs  ------------------------   */
 /*	To set 'b' params, costs to reflect current use   */
-void setbestparall(Class *ccl) {
+void set_best_costs(Class *ccl) {
     int i;
 
-    setclass1(ccl);
+    set_class(ccl);
     if (cls->type == Dad) {
-        cls->cbcost = cls->cncost;
-        cls->cbpcost = cls->cnpcost;
-        cls->cbtcost = cls->cntcost;
+        cls->best_cost = cls->dad_cost;
+        cls->best_par_cost = cls->dad_par_cost;
+        cls->best_case_cost = cls->cntcost;
     } else if (cls->use != Fac) {
-        cls->cbcost = cls->cscost;
-        cls->cbpcost = cls->cspcost;
-        cls->cbtcost = cls->cstcost;
+        cls->best_cost = cls->nofac_cost;
+        cls->best_par_cost = cls->nofac_par_cost;
+        cls->best_case_cost = cls->cstcost;
     } else {
-        cls->cbcost = cls->cfcost;
-        cls->cbpcost = cls->cfpcost;
-        cls->cbtcost = cls->cftcost;
+        cls->best_cost = cls->fac_cost;
+        cls->best_par_cost = cls->fac_par_cost;
+        cls->best_case_cost = cls->cftcost;
     }
-    for (i = 0; i < vst->nv; i++) {
-        vtp = vlist[i].vtp;
-        (*vtp->setbestparam)(i);
+    for (i = 0; i < VSet->length; i++) {
+        vtp = vlist[i].vtype;
+        (*vtp->set_best_pars)(i);
     }
     return;
 }
 
-/*	--------------------  scorevarall  --------------------    */
+/*	--------------------  score_all_vars  --------------------    */
 /*	To evaluate derivs of cost wrt score in all vars of a class.
     Does one item, number case  */
 /*	Leaves data values set in stats, but does no scoring if class too
 young. If class age = MinFacAge, will guess scores but not cost them */
-/*	If control & AdjSc, will adjust score  */
-void scorevarall(Class *ccl) {
+/*	If Control & AdjSc, will adjust score  */
+void score_all_vars(Class *ccl) {
     int i, igbit, oldicvv;
     double del;
 
-    setclass2(ccl);
+    set_class_with_scores(ccl);
     if ((cls->age < MinFacAge) || (cls->use == Tiny)) {
-        cvv = cls->avvv = cls->vsq = 0.0;
+        cvv = cls->avg_factor_scores = cls->sum_score_sq = 0.0;
         icvv = 0;
         goto done;
     }
-    if (cls->vsq > 0.0)
+    if (cls->sum_score_sq > 0.0)
         goto started;
     /*	Generate a fake score to get started.   */
-    cls->boostcnt = 0;
+    cls->boost_count = 0;
     cvvsprd = 0.1 / nv;
     oldicvv = igbit = 0;
-    cvv = (sran() < 0) ? 1.0 : -1.0;
+    cvv = (rand_int() < 0) ? 1.0 : -1.0;
     goto fake;
 
 started:
@@ -318,8 +318,8 @@ started:
     /*xx
         cvv -= cls->avvv;
     */
-    if (cls->boostcnt && ((control & AdjSP) == AdjSP)) {
-        cvv *= cls->vboost;
+    if (cls->boost_count && ((Control & AdjSP) == AdjSP)) {
+        cvv *= cls->score_boost;
         if (cvv > Maxv)
             cvv = Maxv;
         else if (cvv < -Maxv)
@@ -335,12 +335,12 @@ started:
 
     cvvsq = cvv * cvv;
     vvd1 = vvd2 = mvvd2 = vvd3 = 0.0;
-    for (i = 0; i < vst->nv; i++) {
+    for (i = 0; i < VSet->length; i++) {
         avi = vlist + i;
-        if (avi->idle)
+        if (avi->inactive)
             goto vdone;
-        vtp = avi->vtp;
-        (*vtp->scorevar)(i);
+        vtp = avi->vtype;
+        (*vtp->score_var)(i);
     /*	scorevar should add to vvd1, vvd2, vvd3, mvvd2.  */
     vdone:;
     }
@@ -354,7 +354,7 @@ started:
     term wrt cvv of 0.5*cvvsprd*vvd3  */
     vvd1 += 0.5 * cvvsprd * vvd3;
     del = vvd1 / mvvd2;
-    if (control & AdjSc) {
+    if (Control & AdjSc) {
         cvv -= del;
     }
 fake:
@@ -365,7 +365,7 @@ fake:
     del = cvv * HScoreScale;
     if (del < 0.0)
         del -= 1.0;
-    icvv = del + fran();
+    icvv = del + rand_float();
     icvv = icvv << 1; /* Round to nearest even times ScoreScale */
     icvv |= igbit;    /* Restore original ignore bit */
     if (!igbit) {
@@ -373,24 +373,24 @@ fake:
         if (oldicvv < 0)
             oldicvv = -oldicvv;
         if (oldicvv > SigScoreChange)
-            cls->scorechange++;
+            cls->score_change_count++;
     }
-    cls->cvv = cvv = icvv * ScoreRscale;
-    cls->cvvsq = cvvsq = cvv * cvv;
+    cls->case_fac_score = cvv = icvv * ScoreRscale;
+    cls->case_fac_score_sq = cvvsq = cvv * cvv;
     cls->cvvsprd = cvvsprd;
 done:
-    vv[item] = cls->caseiv = icvv;
+    vv[item] = cls->case_score = icvv;
     return;
 }
 
-/*	----------------------  costvarall  --------------------------  */
+/*	----------------------  cost_all_vars  --------------------------  */
 /*	Does costvar on all vars of class for the current item, setting
 cls->casecost according to use of class  */
-void costvarall(Class *ccl) {
+void cost_all_vars(Class *ccl) {
     int fac;
     double tmp;
 
-    setclass2(ccl);
+    set_class_with_scores(ccl);
     if ((cls->age < MinFacAge) || (cls->use == Tiny))
         fac = 0;
     else {
@@ -398,21 +398,21 @@ void costvarall(Class *ccl) {
         cvvsq = cvv * cvv;
     }
     ncasecost = scasecost = fcasecost = cls->mlogab; /* Abundance cost */
-    for (int iv = 0; iv < vst->nv; iv++) {
+    for (int iv = 0; iv < VSet->length; iv++) {
         avi = vlist + iv;
-        if (avi->idle)
+        if (avi->inactive)
             goto vdone;
-        vtp = avi->vtp;
-        (*vtp->costvar)(iv, fac);
+        vtp = avi->vtype;
+        (*vtp->cost_var)(iv, fac);
     /*	will add to scasecost, fcasecost  */
     vdone:;
     }
 
-    cls->casecost = cls->casescost = scasecost;
-    cls->casefcost = scasecost + 10.0;
-    if (cls->nson < 2)
-        cls->casencost = 0.0;
-    cls->casevcost = 0.0;
+    cls->total_case_cost = cls->nofac_case_cost = scasecost;
+    cls->fac_case_cost = scasecost + 10.0;
+    if (cls->num_sons < 2)
+        cls->dad_case_cost = 0.0;
+    cls->coding_case_cost = 0.0;
     if (!fac)
         goto finish;
     /*	Now we add the cost of coding the score, and its roundoff */
@@ -428,72 +428,72 @@ void costvarall(Class *ccl) {
         to the class cost. This is added later, once cnt is known.
         */
     fcasecost += tmp;
-    cls->casefcost = fcasecost;
-    cls->casevcost = tmp;
+    cls->fac_case_cost = fcasecost;
+    cls->coding_case_cost = tmp;
     if (cls->use == Fac)
-        cls->casecost = fcasecost;
+        cls->total_case_cost = fcasecost;
 finish:
     return;
 }
 
-/*	----------------------  derivvarall  ---------------------    */
+/*	----------------------  deriv_all_vars  ---------------------    */
 /*	To collect derivative statistics for all vars of a class   */
-void derivvarall(Class *ccl) {
+void deriv_all_vars(Class *ccl) {
     int fac;
 
-    setclass2(ccl);
+    set_class_with_scores(ccl);
     cls->newcnt += cwt;
     if ((cls->age < MinFacAge) || (cls->use == Tiny))
         fac = 0;
     else {
         fac = 1;
-        cvv = cls->cvv;
-        cvvsq = cls->cvvsq;
+        cvv = cls->case_fac_score;
+        cvvsq = cls->case_fac_score_sq;
         cvvsprd = cls->cvvsprd;
         cls->newvsq += cwt * cvvsq;
         cls->vav += cwt * cls->clvsprd;
-        cls->totvv += cvv * cwt;
+        cls->factor_score_sum += cvv * cwt;
     }
     for (int iv = 0; iv < nv; iv++) {
         avi = vlist + iv;
-        if (avi->idle)
+        if (avi->inactive)
             goto vdone;
-        vtp = avi->vtp;
-        (*vtp->derivvar)(iv, fac);
+        vtp = avi->vtype;
+        (*vtp->deriv_var)(iv, fac);
     vdone:;
     }
 
     /*	Collect case item costs   */
-    cls->cstcost += cwt * cls->casescost;
-    cls->cftcost += cwt * cls->casefcost;
-    cls->cntcost += cwt * cls->casencost;
-    cls->cfvcost += cwt * cls->casevcost;
+    cls->cstcost += cwt * cls->nofac_case_cost;
+    cls->cftcost += cwt * cls->fac_case_cost;
+    cls->cntcost += cwt * cls->dad_case_cost;
+    cls->cfvcost += cwt * cls->coding_case_cost;
 
     return;
 }
 
-/*	--------------------  adjustclass  -----------------------   */
+/*	--------------------  adjust_class  -----------------------   */
 /*	To compute pcosts of a class, and if needed, adjust params  */
 /*	Will process as-dad params only if 'dod'  */
-void adjustclass(Class *ccl, int dod) {
+void adjust_class(Class *ccl, int dod) {
     int iv, fac, npars, small;
     Class *son;
     double leafcost;
 
-    setclass1(ccl);
+    set_class(ccl);
     /*	Get root (logarithmic average of vvsprds)  */
     cls->vav = exp(0.5 * cls->vav / (cls->newcnt + 0.1));
-    if (control & AdjSc)
-        cls->vsq = cls->newvsq;
-    if (control & AdjPr) {
-        cls->cnt = cls->newcnt;
+    if (Control & AdjSc)
+        cls->sum_score_sq = cls->newvsq;
+    if (Control & AdjPr) {
+        cls->weights_sum = cls->newcnt;
         /*	Count down holds   */
-        if ((cls->holdtype) && (cls->holdtype < Forever))
-            cls->holdtype--;
-        if ((cls->holduse) && (cls->holduse < Forever))
-            cls->holduse--;
+        if ((cls->hold_type) && (cls->hold_type < Forever))
+            cls->hold_type--;
+        if ((cls->hold_use) && (cls->hold_use < Forever))
+            cls->hold_use--;
         if (dad) {
-            cls->relab = (dad->relab * (cls->cnt + 0.5)) / (dad->cnt + 0.5 * dad->nson);
+            cls->relab = (dad->relab * (cls->weights_sum + 0.5)) / (dad->weights_sum + 0.5 * dad->num_sons);
             cls->mlogab = -log(cls->relab);
         } else {
             cls->relab = 1.0;
@@ -512,56 +512,56 @@ void adjustclass(Class *ccl, int dod) {
 
     /*	Set npars to show if class may be treated as a dad  */
     npars = 1;
-    if ((cls->age < MinAge) || (cls->nson < 2) || (population->classes[cls->ison]->age < MinSubAge))
+    if ((cls->age < MinAge) || (cls->num_sons < 2) || (Popln->classes[cls->son_id]->age < MinSubAge))
         npars = 0;
     if (cls->type == Dad)
         npars = 1;
 
-    /*	cls->cnpcost was zeroed in doall, and has accumulated the cbpcosts
-    of cls's sons, so we don't zero it here. 'ncostvarall' will add to it.  */
-    cls->cspcost = cls->cfpcost = 0.0;
-    for (iv = 0; iv < vst->nv; iv++) {
+    /*	cls->cnpcost was zeroed in do_all, and has accumulated the cbpcosts
+    of cls's sons, so we don't zero it here. 'parent_cost_all_vars' will add to it.  */
+    cls->nofac_par_cost = cls->fac_par_cost = 0.0;
+    for (iv = 0; iv < VSet->length; iv++) {
         avi = vlist + iv;
-        if (avi->idle)
+        if (avi->inactive)
             goto vdone;
-        vtp = avi->vtp;
+        vtp = avi->vtype;
         (*vtp->adjust)(iv, fac);
     vdone:;
     }
 
     /*	If vsq less than 0.3, set vboost to inflate  */
     /*	but only if both scores and params are being adjusted  */
-    if (((control & AdjSP) == AdjSP) && fac && (cls->vsq < (0.3 * cls->cnt))) {
-        cls->vboost = sqrt((1.0 * cls->cnt) / (cls->vsq + 1.0));
-        cls->boostcnt++;
+    if (((Control & AdjSP) == AdjSP) && fac && (cls->sum_score_sq < (0.3 * cls->weights_sum))) {
+        cls->score_boost = sqrt((1.0 * cls->weights_sum) / (cls->sum_score_sq + 1.0));
+        cls->boost_count++;
     } else {
-        cls->vboost = 1.0;
-        cls->boostcnt = 0;
+        cls->score_boost = 1.0;
+        cls->boost_count = 0;
     }
 
     /*	Get average score   */
-    cls->avvv = cls->totvv / cls->cnt;
+    cls->avg_factor_scores = cls->factor_score_sum / cls->weights_sum;
 
     if (dod)
-        ncostvarall(ccl, npars);
+        parent_cost_all_vars(ccl, npars);
 
-    cls->cscost = cls->cspcost + cls->cstcost;
+    cls->nofac_cost = cls->nofac_par_cost + cls->cstcost;
     /*	The 'lattice' effect on the cost of coding scores is approx
         (log (2 Pi cnt))/2 + 1,  which adds to cftcost  */
     cls->cftcost += 0.5 * log(cls->newcnt + 1.0) + hlg2pi + 1.0;
-    cls->cfcost = cls->cfpcost + cls->cftcost;
+    cls->fac_cost = cls->fac_par_cost + cls->cftcost;
     if (npars)
-        cls->cncost = cls->cnpcost + cls->cntcost;
+        cls->dad_cost = cls->dad_par_cost + cls->cntcost;
     else
-        cls->cncost = cls->cnpcost = cls->cntcost = 0.0;
+        cls->dad_cost = cls->dad_par_cost = cls->cntcost = 0.0;
 
     /*	Contemplate changes to class use and type   */
-    if (cls->holduse || (!(control & AdjPr)))
+    if (cls->hold_use || (!(Control & AdjPr)))
         goto usechecked;
     /*	If scores boosted too many times, make Tiny and hold   */
-    if (cls->boostcnt > 20) {
+    if (cls->boost_count > 20) {
         cls->use = Tiny;
-        cls->holduse = 10;
+        cls->hold_use = 10;
         goto usechecked;
     }
     /*	Check if size too small to support a factor  */
@@ -569,14 +569,14 @@ void adjustclass(Class *ccl, int dod) {
     small = 0;
     leafcost = 0.0; /* Used to add up evi->cnts */
     for (iv = 0; iv < nv; iv++) {
-        if (vlist[iv].idle)
+        if (vlist[iv].inactive)
             goto vidle;
         small++;
-        leafcost += cls->stats[iv]->cnt;
+        leafcost += cls->stats[iv]->num_values;
     vidle:;
     }
     /*	I want at least 1.5 data vals per param  */
-    small = (leafcost < (9 * small + 1.5 * cls->cnt + 1)) ? 1 : 0;
+    small = (leafcost < (9 * small + 1.5 * cls->weights_sum + 1)) ? 1 : 0;
     if (small) {
         if (cls->use != Tiny) {
             cls->use = Tiny;
@@ -585,91 +585,91 @@ void adjustclass(Class *ccl, int dod) {
     } else {
         if (cls->use == Tiny) {
             cls->use = Plain;
-            cls->vsq = 0.0;
+            cls->sum_score_sq = 0.0;
             goto usechecked;
         }
     }
     if (cls->age < MinFacAge)
         goto usechecked;
     if (cls->use == Plain) {
-        if (cls->cfcost < cls->cscost) {
+        if (cls->fac_cost < cls->nofac_cost) {
             cls->use = Fac;
-            cls->boostcnt = 0;
-            cls->vboost = 1.0;
+            cls->boost_count = 0;
+            cls->score_boost = 1.0;
         }
     } else {
-        if (cls->cscost < cls->cfcost) {
+        if (cls->nofac_cost < cls->fac_cost) {
             cls->use = Plain;
         }
     }
 usechecked:
     if (!dod)
         goto typechecked;
-    if (cls->holdtype)
+    if (cls->hold_type)
         goto typechecked;
-    if (!(control & AdjTr))
+    if (!(Control & AdjTr))
         goto typechecked;
-    if (cls->nson < 2)
+    if (cls->num_sons < 2)
         goto typechecked;
-    leafcost = (cls->use == Fac) ? cls->cfcost : cls->cscost;
+    leafcost = (cls->use == Fac) ? cls->fac_cost : cls->nofac_cost;
 
-    if ((cls->type == Dad) && (leafcost < cls->cncost) && (fix != Random)) {
+    if ((cls->type == Dad) && (leafcost < cls->dad_cost) && (Fix != Random)) {
         flp();
-        printf("Changing type of class%s from Dad to Leaf\n", sers(cls));
-        seeall = 4;
+        printf("Changing type of class%s from Dad to Leaf\n", serial_to_str(cls));
+        SeeAll = 4;
         /*	Kill all sons  */
-        killsons(cls->id); /* which changes type to leaf */
-    } else if (npars && (leafcost > cls->cncost) && (cls->type == Leaf)) {
+        delete_sons(cls->id); /* which changes type to leaf */
+    } else if (npars && (leafcost > cls->dad_cost) && (cls->type == Leaf)) {
         flp();
-        printf("Changing type of class%s from Leaf to Dad\n", sers(cls));
-        seeall = 4;
+        printf("Changing type of class%s from Leaf to Dad\n", serial_to_str(cls));
+        SeeAll = 4;
         cls->type = Dad;
         if (dad)
-            dad->holdtype += 3;
+            dad->hold_type += 3;
         /*	Make subs into leafs  */
-        son = population->classes[cls->ison];
+        son = Popln->classes[cls->son_id];
         son->type = Leaf;
-        son->serial = 4 * population->nextserial;
-        population->nextserial++;
-        son = population->classes[son->isib];
+        son->serial = 4 * Popln->next_serial;
+        Popln->next_serial++;
+        son = Popln->classes[son->sib_id];
         son->type = Leaf;
-        son->serial = 4 * population->nextserial;
-        population->nextserial++;
+        son->serial = 4 * Popln->next_serial;
+        Popln->next_serial++;
     }
 
 typechecked:
-    setbestparall(cls);
-    if (control & AdjPr)
+    set_best_costs(cls);
+    if (Control & AdjPr)
         cls->age++;
     return;
 }
 
-/*	----------------  ncostvarall  ------------------------------   */
+/*	----------------  parent_cost_all_vars  ------------------------------   */
 /*	To do parent costing on all vars of a class		*/
 /*	If not 'valid', don't cost, and fake params  */
-void ncostvarall(Class *ccl, int valid) {
+void parent_cost_all_vars(Class *ccl, int valid) {
     Class *son;
     EVinst *evi;
     int i, ison, nson;
     double abcost, rrelab;
 
-    setclass1(ccl);
+    set_class(ccl);
     abcost = 0.0;
-    for (i = 0; i < vst->nv; i++) {
+    for (i = 0; i < VSet->length; i++) {
         avi = vlist + i;
-        vtp = avi->vtp;
-        (*vtp->ncostvar)(i, valid);
+        vtp = avi->vtype;
+        (*vtp->cost_var_nonleaf)(i, valid);
         evi = (EVinst *)cls->stats[i];
-        if (!avi->idle) {
+        if (!avi->inactive) {
             abcost += evi->npcost;
         }
     }
 
     if (!valid) {
-        cls->cnpcost = cls->cncost = 0.0;
+        cls->dad_par_cost = cls->dad_cost = 0.0;
         return;
     }
-    nson = cls->nson;
+    nson = cls->num_sons;
     /*	The sons of a dad may be listed in any order, so the param cost
     of the dad can be reduced by log (nson !)  */
     abcost -= faclog[nson];
@@ -680,91 +680,91 @@ void ncostvarall(Class *ccl, int valid) {
     dad's relab. The cost includes -0.5 * Sum_sons { log (sonab / dadab) }
         */
     rrelab = 1.0 / cls->relab;
-    for (ison = cls->ison; ison >= 0; ison = son->isib) {
-        son = population->classes[ison];
+    for (ison = cls->son_id; ison >= 0; ison = son->sib_id) {
+        son = Popln->classes[ison];
         abcost -= 0.5 * log(son->relab * rrelab);
     }
     /*	Add other terms from Fisher  */
-    abcost += (nson - 1) * (log(cls->cnt) + lattice);
+    abcost += (nson - 1) * (log(cls->weights_sum) + lattice);
     /*	And from prior:  */
     abcost -= faclog[nson - 1];
-    /*	The sons will have been processed by 'adjustclass' already, and
+    /*	The sons will have been processed by 'adjust_class' already, and
     this will have caused their best pcosts to be added into cls->cnpcost  */
-    cls->cnpcost += abcost;
+    cls->dad_par_cost += abcost;
     return;
 }
 
-/*	--------------------  killsons ------------------------------- */
+/*	--------------------  delete_sons ------------------------------- */
 /*	To delete the sons of a class  */
-void killsons(int kk) {
+void delete_sons(int kk) {
     Class *clp, *son;
     int kks;
 
-    if (!(control & AdjTr))
+    if (!(Control & AdjTr))
         return;
-    clp = population->classes[kk];
-    if (clp->nson <= 0)
+    clp = Popln->classes[kk];
+    if (clp->num_sons <= 0)
         return;
-    seeall = 4;
-    for (kks = clp->ison; kks > 0; kks = son->isib) {
-        son = population->classes[kks];
+    SeeAll = 4;
+    for (kks = clp->son_id; kks > 0; kks = son->sib_id) {
+        son = Popln->classes[kks];
         son->type = Vacant;
-        son->idad = Deadkilled;
-        killsons(kks);
+        son->dad_id = Deadkilled;
+        delete_sons(kks);
     }
-    clp->nson = 0;
-    clp->ison = -1;
+    clp->num_sons = 0;
+    clp->son_id = -1;
     if (clp->type == Dad)
         clp->type = Leaf;
-    clp->holdtype = 0;
+    clp->hold_type = 0;
     return;
 }
 
-/*	--------------------  splitleaf ------------------------   */
+/*	--------------------  split_leaf ------------------------   */
 /*	If kk is a leaf and has subs, turns it into a dad and makes
 its subs into leaves.  Returns 0 if successful.  */
-int splitleaf(int kk) {
+int split_leaf(int kk) {
     Class *son;
     int kks;
-    cls = population->classes[kk];
-    if ((cls->type != Leaf) || (cls->nson < 2) || cls->holdtype) {
+    cls = Popln->classes[kk];
+    if ((cls->type != Leaf) || (cls->num_sons < 2) || cls->hold_type) {
         return (1);
     }
     cls->type = Dad;
-    cls->holdtype = HoldTime;
-    for (kks = cls->ison; kks >= 0; kks = son->isib) {
-        son = population->classes[kks];
+    cls->hold_type = HoldTime;
+    for (kks = cls->son_id; kks >= 0; kks = son->sib_id) {
+        son = Popln->classes[kks];
         son->type = Leaf;
-        son->serial = 4 * population->nextserial;
-        population->nextserial++;
+        son->serial = 4 * Popln->next_serial;
+        Popln->next_serial++;
     }
-    seeall = 4;
+    SeeAll = 4;
     return (0);
 }
 
-/*	---------------  deleteallclasses  ------------ */
+/*	---------------  delete_all_classes  ------------ */
 /*	To remove all classes of a popln except its root  */
-void deleteallclasses() {
+void delete_all_classes() {
     int k;
-    population = ctx.popln;
-    root = population->root;
-    for (k = 0; k <= population->hicl; k++) {
-        cls = population->classes[k];
+    Popln = CurCtx.popln;
+    root = Popln->root;
+    for (k = 0; k <= Popln->hi_class; k++) {
+        cls = Popln->classes[k];
         if (cls->id != root) {
             cls->type = Vacant;
-            cls->idad = Deadkilled;
+            cls->dad_id = Deadkilled;
         }
     }
-    population->ncl = 1;
-    population->hicl = root;
-    rootcl = cls = population->classes[root];
-    cls->ison = -1;
-    cls->isib = -1;
-    cls->nson = 0;
+    Popln->num_classes = 1;
+    Popln->hi_class = root;
+    rootcl = cls = Popln->classes[root];
+    cls->son_id = -1;
+    cls->sib_id = -1;
+    cls->num_sons = 0;
     cls->serial = 4;
-    population->nextserial = 2;
+    Popln->next_serial = 2;
     cls->age = 0;
-    cls->holdtype = cls->holduse = 0;
+    cls->hold_type = cls->hold_use = 0;
     cls->type = Leaf;
     nosubs++;
     tidy(1);
@@ -773,17 +773,17 @@ void deleteallclasses() {
     return;
 }
 
-/*	------------------  nextleaf  -------------------------   */
+/*	------------------  next_leaf  -------------------------   */
 /*	given a ptr cpop to a popln and an integer iss, returns the index
 of the next leaf in the popln with serial > iss, or -1 if there is none */
 /*	Intended for scanning the leaves of a popln in serial order  */
-int nextleaf(Population *cpop, int iss) {
+int next_leaf(Population *cpop, int iss) {
     Class *clp;
     int i, j, k, n;
 
     n = -1;
     k = 10000000;
-    for (i = 0; i <= cpop->hicl; i++) {
+    for (i = 0; i <= cpop->hi_class; i++) {
         clp = cpop->classes[i];
         if (clp->type != Leaf)
             goto idone;

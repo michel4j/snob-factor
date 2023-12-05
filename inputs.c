@@ -17,15 +17,15 @@ name.
 /*	Routines to read an item dont consume the character which terminates
 the item   */
 
-Buf cfilebuf, commsbuf; /* Buffers for command input */
+Buffer cfilebuf, commsbuf; /* Buffers for command input */
 int terminator;
 
-/*	--------------------------- bufopen() --------------------------  */
-/*	Given a Buf with a name in it, sets up and initializes the named file*/
-int bufopen() {
-    Buf *buf;
+/*	--------------------------- open_buffer() --------------------------  */
+/*	Given a Buffer with a name in it, sets up and initializes the named file*/
+int open_buffer() {
+    Buffer *buf;
 
-    buf = ctx.buffer;
+    buf = CurCtx.buffer;
     buf->cfile = fopen(buf->cname, "r");
     if (!buf->cfile) {
         buf->nch = -1;
@@ -40,28 +40,28 @@ int bufopen() {
 
 /*	------------------------  newline () ------------------   */
 /*	To skip to next line  */
-int newline() {
-    Buf *buf;
+int new_line() {
+    Buffer *buf;
     /*	Discard anything in inl and read in a new line, to '\n'  */
     int i, j;
 
-    buf = ctx.buffer;
+    buf = CurCtx.buffer;
     if (buf->cfile == 0) { /* Input via comms */
         j = 0;             /* To count tries at opening comms */
     retry:
-        if (usestdin)
+        if (UseStdIn)
             goto usestd;
         i = hark(buf->inl);
         /*	i = 0 means comms OK but no input yet. 1 means input present
             -1 means no comms file or bad format  */
         if (i == 1) {
-            heard = buf->nch = 0;
+            Heard = buf->nch = 0;
             return (0);
         }
         if (i < 0) {
             j++;
             if (j > 3) {
-                usestdin = 1;
+                UseStdIn = 1;
                 printf("There being no comms file,\
  input will be taken from StdInput\n");
                 goto retry;
@@ -83,7 +83,7 @@ int newline() {
         buf->inl[0] = j;
     nextchar:
         i++;
-        if (i >= LL) {
+        if (i >= INPUT_BUFFER_SIZE) {
             printf("Line too long\n");
             return (-1);
         }
@@ -92,11 +92,11 @@ int newline() {
         if (j != '\n')
             goto nextchar;
         buf->inl[i + 1] = 0;
-        heard = buf->nch = 0;
+        Heard = buf->nch = 0;
         return (0);
     }
 
-    /*	Input from control file  */
+    /*	Input from Control file  */
     i = 0;
     buf->nch = -1;
 firstch:
@@ -116,7 +116,7 @@ firstch:
 
 nextch:
     i++;
-    if (i >= LL) {
+    if (i >= INPUT_BUFFER_SIZE) {
         printf("Line %5d too long\n", buf->line);
         return (-1);
     }
@@ -125,7 +125,7 @@ nextch:
         buf->inl[i] = '\n';
         buf->inl[i + 1] = 0;
         buf->nch = 0;
-        /*	Copy out line of control file  */
+        /*	Copy out line of Control file  */
         if (buf == &cfilebuf)
             printf("=== %s\n", buf->inl);
         return (0);
@@ -139,37 +139,37 @@ void reperror() {
     int i, j;
     char k;
 
-    ctx.buffer->nch--;
-    printf("Format error line %6d  character %3d\n", ctx.buffer->line, ctx.buffer->nch + 1);
-    /*	Print some context of the error from ctx.buffer->inl
+    CurCtx.buffer->nch--;
+    printf("Format error line %6d  character %3d\n", CurCtx.buffer->line, CurCtx.buffer->nch + 1);
+    /*	Print some context of the error from CurCtx.buffer->inl
      *	Print up to 70 chars max   */
     i = 0;
-    if (ctx.buffer->nch > 60)
-        i = ctx.buffer->nch - 60;
+    if (CurCtx.buffer->nch > 60)
+        i = CurCtx.buffer->nch - 60;
     for (j = 0; j < 70; j++) {
-        k = ctx.buffer->inl[i + j];
+        k = CurCtx.buffer->inl[i + j];
         if (k == '\n')
             goto done;
         printf("%c", k);
     }
 done:
     printf("\n");
-    for (j = 0; j < (ctx.buffer->nch - i); j++)
+    for (j = 0; j < (CurCtx.buffer->nch - i); j++)
         printf("%c", '-');
     printf("%s", "^\n");
     return;
 }
 
 /*	-------------------------- readint () ----------------------  */
-/*	Readint, readdf, readalf will automatically advance to the next
+/*	Readint, read_double, read_str will automatically advance to the next
 line if cnl not zero, but will return 2 if cnl = 0 and EOL is reached before
 the read is satisfied  */
 /*	To read an integer into x   */
-int readint(int *x, int cnl) {
-    Buf *buf;
+int read_int(int *x, int cnl) {
+    Buffer *buf;
     int sign, i, v;
 
-    buf = ctx.buffer;
+    buf = CurCtx.buffer;
     v = sign = terminator = 0;
 
 skip:
@@ -180,7 +180,7 @@ skip:
             buf->nch--;
             return (2);
         }
-        if (newline(buf))
+        if (new_line(buf))
             return (-1);
     case ' ':
     case '\t':
@@ -222,13 +222,13 @@ miss: /* An '=' signifies missing value  */
     return (1);
 }
 
-/*	--------------------  readdf ()  --------------------------- */
+/*	--------------------  read_double ()  --------------------------- */
 /*	To read a float into (double) x   */
-int readdf(double *x, int cnl) {
-    Buf *buf;
+int read_double(double *x, int cnl) {
+    Buffer *buf;
     int sign, i;
     double v, pow;
-    buf = ctx.buffer;
+    buf = CurCtx.buffer;
     sign = 0;
     v = 0.0;
     pow = 1.0;
@@ -241,7 +241,7 @@ skip:
             buf->nch--;
             return (2);
         }
-        if (newline(buf))
+        if (new_line(buf))
             return (-1);
     case ' ':
     case '\t':
@@ -297,13 +297,13 @@ miss: /* An '=' signifies missing value  */
     return (1);
 }
 
-/*	--------------------  readalf () ------------------------   */
+/*	--------------------  read_str () ------------------------   */
 /*	To read a string of characters  */
-int readalf(char *str, int cnl) {
-    Buf *buf;
+int read_str(char *str, int cnl) {
+    Buffer *buf;
     int i, n;
 
-    buf = ctx.buffer;
+    buf = CurCtx.buffer;
     n = 0;
 skip:
     i = buf->inl[buf->nch++];
@@ -313,7 +313,7 @@ skip:
             buf->nch--;
             return (2);
         }
-        if (newline(buf))
+        if (new_line(buf))
             return (-1);
     case ' ':
     case '\t':
@@ -356,13 +356,13 @@ err:
     return (-1);
 }
 
-/*	---------------------- readch () -----------------------  */
+/*	---------------------- read_char () -----------------------  */
 /*	Returns next char, or -1 if error, or 2 if EOL and not cnl  */
-int readch(int cnl) {
-    Buf *buf;
+int read_char(int cnl) {
+    Buffer *buf;
     int i;
 
-    buf = ctx.buffer;
+    buf = CurCtx.buffer;
 skip:
     i = buf->inl[buf->nch++];
     if (i == '\n') {
@@ -370,7 +370,7 @@ skip:
             buf->nch--;
             return (2);
         }
-        if (newline(buf))
+        if (new_line(buf))
             return (-1);
         goto skip;
     }
@@ -380,10 +380,10 @@ skip:
 /*	--------------------------  swallow ()	--------------------- */
 /*	To swallow an erroneus field, stopping at blank, newline or tab */
 void swallow() {
-    Buf *buf;
+    Buffer *buf;
     int i;
 
-    buf = ctx.buffer;
+    buf = CurCtx.buffer;
 gulp:
     i = buf->inl[buf->nch];
     switch (i) {
@@ -396,15 +396,15 @@ gulp:
     goto gulp;
 }
 
-/*	--------------------------  bufclose () ------------------  */
+/*	--------------------------  close_buffer () ------------------  */
 /*	To close the open input file   */
-void bufclose() {
-    if (!ctx.buffer)
+void close_buffer() {
+    if (!CurCtx.buffer)
         return;
-    if (!(ctx.buffer->cfile))
+    if (!(CurCtx.buffer->cfile))
         return;
-    fclose(ctx.buffer->cfile);
-    ctx.buffer = 0;
+    fclose(CurCtx.buffer->cfile);
+    CurCtx.buffer = 0;
     return;
 }
 
@@ -415,13 +415,13 @@ commsbuf line. Otherwise, get a new line  */
 void revert(int flag) {
     if (source->cfile)
         printf("Command file %s\n terminated at line %d\n", source->cname, source->line);
-    bufclose();
+    close_buffer();
     source = &commsbuf;
-    ctx.buffer = source;
+    CurCtx.buffer = source;
     if (flag)
         source->nch = 0;
     else
-        newline(commsbuf.inl);
+        new_line(commsbuf.inl);
     return;
 }
 
