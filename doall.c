@@ -401,8 +401,182 @@ int count_score_changes() {
     }
     return scorechanges;
 }
-
 int doall(int ncycles, int all) {
+    int niter, nfail, ic, ncydone, ncyask;
+    double oldcost, leafsum, oldleafsum = 0.0;
+    int kicked = 0;
+
+    nfail = niter = ncydone = 0;
+    ncyask = ncycles;
+    all = (all) ? (Dad + Leaf + Sub) : Leaf;
+    oldcost = rootcl->cbcost;
+    /*	Get sum of class costs, meaningful only if 'all' = Leaf  */
+
+    findall(Leaf);
+    for (ic = 0; ic < numson; ic++) {
+        oldleafsum += sons[ic]->cbcost;
+    }
+
+    while (niter < ncycles) {
+        if ((niter % NewSubsTime) == 0) {
+            newsubs = 1;
+            if (seeall < 2)
+                seeall = 2;
+        } else
+            newsubs = 0;
+        if ((ncycles - niter) <= 2)
+            seeall = ncycles - niter;
+        if (ncycles < 2)
+            seeall = 2;
+        if (nosubs)
+            newsubs = 0;
+        if ((niter > newsubs) && (seeall == 1))
+            trackbest(0);
+
+        int repeat = 0;
+        do {
+            if (fix == Random)
+                seeall = 3;
+            tidy(1);
+            if (niter >= (ncycles - 1))
+                all = (Dad + Leaf + Sub);
+            findall(all);
+            for (int k = 0; k < numson; k++) {
+                cleartcosts(sons[k]);
+            }
+
+            for (int j = 0; j < samp->nc; j++) {
+                docase(j, all, 1);
+                /*	docase ignores classes with ignore bit in cls->vv[] for the case
+                    unless seeall is on.  */
+            }
+
+            // All classes in sons[] now have stats assigned to them.
+            // If all=Leaf, the classes are all leaves, so we just re-estimate
+            // their parameters and get their pcosts for fac and plain uses,
+            // using 'adjust'. But first, check all newcnt-s for vanishing
+            // classes.
+            if (control & (AdjPr + AdjTr)) {
+                for (int k = 0; k < numson; k++) {
+                    if (sons[k]->newcnt < MinSize) {
+                        sons[k]->cnt = 0.0;
+                        sons[k]->type = Vacant;
+                        seeall = 2;
+                        newsubs = 0;
+                        repeat = 1;
+                        break;
+                    }
+                }
+            }
+        } while (repeat);
+
+        if (!(all == (Dad + Leaf + Sub))) {
+            leafsum = 0.0;
+            for (ic = 0; ic < numson; ic++) {
+                adjustclass(sons[ic], 0);
+                /*	The second para tells adjust not to do as-dad params  */
+                leafsum += sons[ic]->cbcost;
+            }
+            if (seeall == 0) {
+                rep('.');
+            } else {
+                if (leafsum < (oldleafsum - MinGain)) {
+                    nfail = 0;
+                    oldleafsum = leafsum;
+                    rep('L');
+                } else {
+                    nfail++;
+                    rep('l');
+                }
+            }
+        } else {
+
+            /* all = 7, so we have dads, leaves and subs to do.
+               We do from bottom up, collecting as-dad pcosts.
+            */
+            cls = rootcl;
+
+            int alladjusted = 0;
+            do {
+                cls->cnpcost = 0.0;
+                if (cls->nson >= 2) {
+                    dad = cls;
+                    cls = population->classes[cls->ison];
+                    continue;
+                }
+
+                while (!alladjusted) {
+                    adjustclass(cls, 1);
+                    if (cls->idad < 0) {
+                        alladjusted = 1;
+                        break;
+                    }
+                    dad = population->classes[cls->idad];
+                    dad->cnpcost += cls->cbpcost;
+                    if (cls->isib >= 0) {
+                        cls = population->classes[cls->isib];
+                        break;
+                    } else {
+                        cls = dad; /*	dad is now complete   */
+                    }
+                }
+            } while (!alladjusted);
+
+            /*	Test for an improvement  */
+            if (seeall == 0) {
+                rep('.');
+            } else {
+                if (rootcl->cbcost < (oldcost - MinGain)) {
+                    nfail = 0;
+                    oldcost = rootcl->cbcost;
+                    rep('A');
+                } else {
+                    nfail++;
+                    rep('a');
+                }
+            }
+        }
+
+        if (nfail > GiveUp) {
+            if (all != Leaf)
+                break;
+            /*	But if we were doing just leaves, wind up with a couple of
+                'doall' cycles  */
+            all = Dad + Leaf + Sub;
+            ncycles = 2;
+            niter = nfail = 0;
+            continue;
+        }
+        if ((!usestdin) && hark(commsbuf.inl)) {
+            kicked = 1;
+            break;
+        }
+
+        if (seeall > 0)
+            seeall--;
+        ncydone++;
+        niter++;
+    }
+    if (ncydone >= ncyask)
+        ncydone = -1;
+
+    if (kicked) {
+        flp();
+        printf("Doall interrupted after %4d steps\n", ncydone);
+    }
+
+    /*	Scan leaf classes whose use is 'Fac' to accumulate significant
+        score changes.  */
+    scorechanges = 0;
+    for (ic = 0; ic <= population->hicl; ic++) {
+        cls = population->classes[ic];
+        if (cls && (cls->type == Leaf) && (cls->use == Fac))
+            scorechanges += cls->scorechange;
+    }
+    return (ncydone);
+}
+
+int doall1(int ncycles, int all) {
     int niter, nfail, k, ncydone, ncyask;
     double oldcost, oldleafsum;
     int repeat;
