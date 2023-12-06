@@ -22,7 +22,7 @@ int terminator;
 
 /*	--------------------------- bufopen() --------------------------  */
 /*	Given a Buffer with a name in it, sets up and initializes the named file*/
-int bufopen() {
+int open_buffser() {
     Buffer *buf;
 
     buf = ctx.buffer;
@@ -40,7 +40,7 @@ int bufopen() {
 
 /*	------------------------  newline () ------------------   */
 /*	To skip to next line  */
-int newline() {
+int new_line() {
     Buffer *buf;
     /*	Discard anything in inl and read in a new line, to '\n'  */
     int i, j;
@@ -165,7 +165,7 @@ done:
 line if cnl not zero, but will return 2 if cnl = 0 and EOL is reached before
 the read is satisfied  */
 /*	To read an integer into x   */
-int readint(int *x, int cnl) {
+int read_int(int *x, int cnl) {
     Buffer *buf;
     int sign, i, v;
 
@@ -180,7 +180,7 @@ skip:
             buf->nch--;
             return (2);
         }
-        if (newline(buf))
+        if (new_line(buf))
             return (-1);
     case ' ':
     case '\t':
@@ -224,7 +224,7 @@ miss: /* An '=' signifies missing value  */
 
 /*	--------------------  readdf ()  --------------------------- */
 /*	To read a float into (double) x   */
-int readdf(double *x, int cnl) {
+int read_double(double *x, int cnl) {
     Buffer *buf;
     int sign, i;
     double v, pow;
@@ -241,7 +241,7 @@ skip:
             buf->nch--;
             return (2);
         }
-        if (newline(buf))
+        if (new_line(buf))
             return (-1);
     case ' ':
     case '\t':
@@ -299,7 +299,7 @@ miss: /* An '=' signifies missing value  */
 
 /*	--------------------  readalf () ------------------------   */
 /*	To read a string of characters  */
-int readalf(char *str, int cnl) {
+int read_str(char *str, int cnl) {
     Buffer *buf;
     int i, n;
 
@@ -313,7 +313,7 @@ skip:
             buf->nch--;
             return (2);
         }
-        if (newline(buf))
+        if (new_line(buf))
             return (-1);
     case ' ':
     case '\t':
@@ -358,7 +358,7 @@ err:
 
 /*	---------------------- readch () -----------------------  */
 /*	Returns next char, or -1 if error, or 2 if EOL and not cnl  */
-int readch(int cnl) {
+int read_char(int cnl) {
     Buffer *buf;
     int i;
 
@@ -370,7 +370,7 @@ skip:
             buf->nch--;
             return (2);
         }
-        if (newline(buf))
+        if (new_line(buf))
             return (-1);
         goto skip;
     }
@@ -398,7 +398,7 @@ gulp:
 
 /*	--------------------------  bufclose () ------------------  */
 /*	To close the open input file   */
-void bufclose() {
+void close_buffer() {
     if (!ctx.buffer)
         return;
     if (!(ctx.buffer->cfile))
@@ -415,13 +415,13 @@ commsbuf line. Otherwise, get a new line  */
 void revert(int flag) {
     if (source->cfile)
         printf("Command file %s\n terminated at line %d\n", source->cname, source->line);
-    bufclose();
+    close_buffer();
     source = &commsbuf;
     ctx.buffer = source;
     if (flag)
         source->nch = 0;
     else
-        newline(commsbuf.inl);
+        new_line(commsbuf.inl);
     return;
 }
 

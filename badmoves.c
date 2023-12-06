@@ -18,7 +18,7 @@ void clearbadm() {
 int testbadm(int code, int w1, int w2) {
     int hi, key, bad, s1, s2;
 
-    setpop();
+    set_population();
     s1 = w1;
     s2 = w2;
     if ((code == 1) || (code == 3)) {
@@ -60,7 +60,7 @@ void setbadm(int code, int s1, int s2) {
     } else
         s1 = 0;
     key = hi = (((code << 13) + s1) << 13) + s2;
-    setpop();
+    set_population();
     if (hi < 0)
         hi = -1 - hi;
     hi = hi % BadSize;

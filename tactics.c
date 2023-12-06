@@ -11,7 +11,7 @@ void flatten() {
 
     int i;
 
-    setpop();
+    set_population();
     tidy(0);
     if (rootcl->num_sons == 0) {
         printf("Nothing to flatten\n");
@@ -48,7 +48,7 @@ void flatten() {
         printf("Flatten ends prematurely\n");
     if (nosubs > 0)
         nosubs--;
-    printtree();
+    print_tree();
     return;
 }
 
@@ -71,10 +71,10 @@ double insdad(int ser1, int ser2, int *dadid)
 
     origcost = rootcl->best_par_cost;
     *dadid = -1;
-    k1 = s2id(ser1);
+    k1 = serial_to_id(ser1);
     if (k1 < 0)
         goto nullit;
-    k2 = s2id(ser2);
+    k2 = serial_to_id(ser2);
     if (k2 < 0)
         goto nullit;
     cls1 = population->classes[k1];
@@ -107,7 +107,7 @@ double insdad(int ser1, int ser2, int *dadid)
 
 configok:
     odad = population->classes[oldid];
-    newid = makeclass();
+    newid = make_class();
     if (newid < 0)
         goto nullit;
     ndad = population->classes[newid]; /*  The new dad  */
@@ -182,7 +182,7 @@ int bestinsdad(int force)
     bestdrop = -1.0e20;
     bser1 = bser2 = -1;
     newser = 0;
-    setpop();
+    set_population();
     origcost = rootcl->best_cost;
     hiid = population->hi_class;
     if (population->num_classes < 4) {
@@ -219,11 +219,11 @@ inner:
         goto i2done;
 
     /*	Copy population to TrialPop, unfilled  */
-    newp = copypop(population->id, 0, "TrialPop");
+    newp = copy_population(population->id, 0, "TrialPop");
     if (newp < 0)
         goto popfails;
     ctx.popln = poplns[newp];
-    setpop();
+    set_population();
     res = insdad(ser1, ser2, &newid);
     if (newid < 0) {
         goto i2done;
@@ -235,7 +235,7 @@ inner:
     }
 i2done:
     memcpy(&ctx, &oldctx, sizeof(Context));
-    setpop(); /* Return to original popln */
+    set_population(); /* Return to original popln */
     i2++;
     if (i2 <= hiid)
         goto inner;
@@ -254,11 +254,11 @@ alldone:
         goto finish;
     }
     /*	Copy population to TrialPop, filled  */
-    newp = copypop(population->id, 1, "TrialPop");
+    newp = copy_population(population->id, 1, "TrialPop");
     if (newp < 0)
         goto popfails;
     ctx.popln = poplns[newp];
-    setpop();
+    set_population();
     flp();
     printf("TRYING INSERT %6d,%6d\n", bser1 >> 2, bser2 >> 2);
     res = insdad(bser1, bser2, &newid);
@@ -283,7 +283,7 @@ alldone:
     setbadm(1, bser1, bser2);
     newser = 0;
     memcpy(&ctx, &oldctx, sizeof(Context));
-    setpop(); /* Return to original popln */
+    set_population(); /* Return to original popln */
     flp();
     printf("Failed ******\n");
     goto finish;
@@ -297,13 +297,13 @@ popfails:
 winner:
     flp();
     printf("%s\n", (succ) ? "ACCEPTED !!!" : "FORCED");
-    printtree();
+    print_tree();
     clearbadm();
     /*	Reverse roles of 'work' and TrialPop  */
     strcpy(oldctx.popln->name, "TrialPop");
     strcpy(population->name, "work");
     if (succ)
-        trackbest(1);
+        track_best(1);
 
 finish:
     if (nosubs > 0)
@@ -330,8 +330,8 @@ double deldad(int ser)
     double drop, origcost, newcost;
 
     drop = -1.0e20;
-    kk = s2id(ser);
-    setclass1(population->classes[kk]);
+    kk = serial_to_id(ser);
+    set_class(population->classes[kk]);
     if (cls->type != Dad)
         goto finish;
     if (kk == root)
@@ -373,7 +373,7 @@ int bestdeldad() {
     nosubs++;
     bestdrop = -1.0e20;
     bser = -1;
-    setpop();
+    set_population();
     /*	Do one pass of doall to set costs  */
     doall(1, 1);
     origcost = rootcl->best_cost;
@@ -391,11 +391,11 @@ loop:
     ser = cls->serial;
     if (testbadm(2, 0, ser))
         goto i1done;
-    newp = copypop(population->id, 0, "TrialPop");
+    newp = copy_population(population->id, 0, "TrialPop");
     if (newp < 0)
         goto popfails;
     ctx.popln = poplns[newp];
-    setpop();
+    set_population();
     res = deldad(ser);
     if (res < -1000000.0) {
         goto i1done;
@@ -406,7 +406,7 @@ loop:
     }
 i1done:
     memcpy(&ctx, &oldctx, sizeof(Context));
-    setpop();
+    set_population();
     i1++;
     if (i1 <= hiid)
         goto loop;
@@ -416,11 +416,11 @@ i1done:
         printf("No possible dad deletions\n");
         goto finish;
     }
-    newp = copypop(population->id, 1, "TrialPop");
+    newp = copy_population(population->id, 1, "TrialPop");
     if (newp < 0)
         goto popfails;
     ctx.popln = poplns[newp];
-    setpop();
+    set_population();
     flp();
     printf("TRYING DELETE %6d\n", bser >> 2);
     res = deldad(bser);
@@ -436,7 +436,7 @@ i1done:
     setbadm(2, 0, bser); /* log failure in badmoves */
     bser = 0;
     memcpy(&ctx, &oldctx, sizeof(Context));
-    setpop();
+    set_population();
     flp();
     printf("Failed ******\n");
     goto finish;
@@ -451,10 +451,10 @@ winner:
     flp();
     clearbadm();
     printf("ACCEPTED !!!\n");
-    printtree();
+    print_tree();
     strcpy(oldctx.popln->name, "TrialPop");
     strcpy(population->name, "work");
-    trackbest(1);
+    track_best(1);
 
 finish:
     if (nosubs > 0)
@@ -469,7 +469,7 @@ void binhier(int flat)
 {
     int nn;
 
-    setpop();
+    set_population();
     if (flat)
         flatten();
     nosubs++;
@@ -499,16 +499,16 @@ delloop:
         goto kicked;
 
 finish:
-    printtree();
+    print_tree();
     if (nosubs > 0)
         nosubs--;
     clearbadm();
     return;
 
 kicked:
-    nn = pname2id("work");
+    nn = find_population("work");
     ctx.popln = poplns[nn];
-    setpop();
+    set_population();
     printf("BinHier ends prematurely\n");
     goto finish;
 }
@@ -521,7 +521,7 @@ void ranclass( int nn)
     double bs;
     Class *sub, *dad;
 
-    setpop();
+    set_population();
     if (!population) {
         printf("Ranclass needs a model\n");
         goto finish;
@@ -568,7 +568,7 @@ again:
     }
     /*	Split sons[ib]  */
     dad = sons[ib];
-    if (splitleaf(dad->id))
+    if (split_leaf(dad->id))
         goto windup;
     printf("Splitting %s size%8.1f\n", sers(dad), dad->weights_sum);
     dad->hold_type = Forever;
@@ -581,7 +581,7 @@ windup:
     flatten();
     doall(6, 0);
     doall(4, 1);
-    printtree();
+    print_tree();
     rootcl->hold_type = 0;
 
 finish:
@@ -597,10 +597,10 @@ double moveclass(int ser1, int ser2)
     double origcost, newcost, drop;
 
     origcost = rootcl->best_par_cost;
-    k1 = s2id(ser1);
+    k1 = serial_to_id(ser1);
     if (k1 < 0)
         goto nullit;
-    k2 = s2id(ser2);
+    k2 = serial_to_id(ser2);
     if (k2 < 0)
         goto nullit;
     cls1 = population->classes[k1];
@@ -685,7 +685,7 @@ int bestmoveclass(int force)
     nosubs++;
     bestdrop = -1.0e20;
     bser1 = bser2 = -1;
-    setpop();
+    set_population();
     doall(1, 1); /* To set costs */
     origcost = rootcl->best_cost;
     hiid = population->hi_class;
@@ -729,11 +729,11 @@ inner:
         goto i2done;
 
     /*	Copy pop to TrialPop, unfilled  */
-    newp = copypop(population->id, 0, "TrialPop");
+    newp = copy_population(population->id, 0, "TrialPop");
     if (newp < 0)
         goto popfails;
     ctx.popln = poplns[newp];
-    setpop();
+    set_population();
     res = moveclass(ser1, ser2);
     if (res > bestdrop) {
         bestdrop = res;
@@ -742,7 +742,7 @@ inner:
     }
 i2done:
     memcpy(&ctx, &oldctx, sizeof(Context));
-    setpop(); /* Return to original popln */
+    set_population(); /* Return to original popln */
     i2++;
     if (i2 <= hiid)
         goto inner;
@@ -761,11 +761,11 @@ alldone:
         goto finish;
     }
     /*	Copy pop to TrialPop, filled  */
-    newp = copypop(population->id, 1, "TrialPop");
+    newp = copy_population(population->id, 1, "TrialPop");
     if (newp < 0)
         goto popfails;
     ctx.popln = poplns[newp];
-    setpop();
+    set_population();
     flp();
     printf("TRYING MOVE CLASS %6d TO DAD %6d\n", bser1 >> 2, bser2 >> 2);
     res = moveclass(bser1, bser2);
@@ -784,7 +784,7 @@ alldone:
         goto winner;
     setbadm(3, bser1, bser2);
     memcpy(&ctx, &oldctx, sizeof(Context));
-    setpop(); /* Return to original popln */
+    set_population(); /* Return to original popln */
     flp();
     printf("Failed ******\n");
     goto finish;
@@ -798,13 +798,13 @@ popfails:
 winner:
     flp();
     printf("%s\n", (succ) ? "ACCEPTED !!!" : "FORCED");
-    printtree();
+    print_tree();
     clearbadm();
     /*	Reverse roles of 'work' and TrialPop  */
     strcpy(oldctx.popln->name, "TrialPop");
     strcpy(population->name, "work");
     if (succ)
-        trackbest(1);
+        track_best(1);
 
 finish:
     if (nosubs > 0)

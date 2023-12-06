@@ -57,26 +57,26 @@ gotit:
     vst->variables = 0;
     vst->blocks = 0;
     printf("Enter variable-set file name:\n");
-    kread = readalf(vst->filename, 1);
+    kread = read_str(vst->filename, 1);
     strcpy(buf->cname, vst->filename);
     ctx.buffer = buf;
-    if (bufopen()) {
+    if (open_buffser()) {
         printf("Cant open variable-set file %s\n", vst->filename);
         i = -2;
         goto error;
     }
 
     /*	Begin to read variable-set file. First entry is its name   */
-    newline();
-    kread = readalf(vst->name, 1);
+    new_line();
+    kread = read_str(vst->name, 1);
     if (kread < 0) {
         printf("Error in name of variable-set\n");
         i = -9;
         goto error;
     }
     /*	Num of variables   */
-    newline();
-    kread = readint(&nv, 1);
+    new_line();
+    kread = read_int(&nv, 1);
     if (kread) {
         printf("Cant read number of variables\n");
         i = -4;
@@ -104,8 +104,8 @@ gotit:
         avi->id = i;
 
         /*	Read name  */
-        newline();
-        kread = readalf(avi->name, 1);
+        new_line();
+        kread = read_str(avi->name, 1);
         if (kread < 0) {
             printf("Error in name of variable %d\n", i + 1);
             i = -10;
@@ -113,7 +113,7 @@ gotit:
         }
 
         /*	Read type code. Negative means idle.   */
-        kread = readint(&itype, 1);
+        kread = read_int(&itype, 1);
         if (kread) {
             printf("Cant read type code for var %d\n", i + 1);
             i = -5;
@@ -154,7 +154,7 @@ gotit:
     i = indx;
 
 error:
-    bufclose();
+    close_buffer();
     ctx.buffer = source;
     return (i);
 }
@@ -175,15 +175,15 @@ int readsample(char *fname) {
     buf = &bufst;
     strcpy(buf->cname, fname);
     ctx.buffer = buf;
-    if (bufopen()) {
+    if (open_buffser()) {
         printf("Cannot open sample file %s\n", buf->cname);
         i = -2;
         goto error;
     }
 
     /*	Begin to read sample file. First entry is its name   */
-    newline();
-    kread = readalf(sampname, 1);
+    new_line();
+    kread = read_str(sampname, 1);
     if (kread < 0) {
         printf("Error in name of sample\n");
         i = -9;
@@ -196,8 +196,8 @@ int readsample(char *fname) {
         goto error;
     }
     /*	Next line should be the vset name  */
-    newline();
-    kread = readalf(vstnam, 1);
+    new_line();
+    kread = read_str(vstnam, 1);
     if (kread < 0) {
         printf("Error in name of variableset\n");
         i = -9;
@@ -279,8 +279,8 @@ gotit:
     }                                 /* End of variables loop */
 
     /*	Now attempt to read in the data. The first item is the number of cases*/
-    newline();
-    kread = readint(&nc, 1);
+    new_line();
+    kread = read_int(&nc, 1);
     if (kread) {
         printf("Cant read number of cases\n");
         i = -11;
@@ -299,8 +299,8 @@ gotit:
 
     /*	Read in the data cases, each preceded by an active flag and ident   */
     for (n = 0; n < nc; n++) {
-        newline();
-        kread = readint(&caseid, 1);
+        new_line();
+        kread = read_int(&caseid, 1);
         if (kread) {
             printf("Cant read ident, case %d\n", n + 1);
             i = -12;
@@ -338,7 +338,7 @@ gotit:
         }
     }
     printf("Number of active cases = %d\n", samp->num_active);
-    bufclose();
+    close_buffer();
     ctx.buffer = source;
     if (qssamp(samp)) {
         printf("Sort failure on sample\n");
@@ -350,7 +350,7 @@ nospace:
     printf("No space for another sample\n");
     i = -1;
 error:
-    bufclose();
+    close_buffer();
     memcpy(&ctx, &oldctx, sizeof(Context));
     return (i);
 }
@@ -358,9 +358,7 @@ error:
 /*	-----------------------  sname2id  ------------------------  */
 /*	To find sample id given its name. Returns -1 if unknown  */
 /*	'expect' shows if sample expected to be present  */
-int sname2id(nam, expect)
-char *nam;
-int expect;
+int sname2id(char *nam, int expect)
 {
     int i;
 
@@ -382,8 +380,7 @@ searched:
 
 /*	-----------------------  vname2id  ------------------------  */
 /*	To find vset id given its name. Returns -1 if unknown  */
-int vname2id(nam)
-char *nam;
+int vname2id(char *nam)
 {
     int i, ii;
 
@@ -403,8 +400,7 @@ char *nam;
 /*	To quicksort a sample into increasing ident order   */
 
 /*	Record swapper  */
-void swaprec(p1, p2, ll) char *p1, *p2;
-int ll;
+void swaprec(char *p1, char *p2, int ll)
 {
     int tt;
     if (p1 == p2)
@@ -421,8 +417,7 @@ int ll;
 }
 
 /*	Recursive quicksort  */
-void qssamp1(bot, nn, len) char *bot;
-int nn, len;
+void qssamp1(char *bot, int nn, int len)
 {
     char *top, *rp1, *rp2, *cen;
     int av, bv, cv, nb, nt;
@@ -507,8 +502,7 @@ doboth:
     return;
 }
 
-int qssamp(samp)
-Sample *samp;
+int qssamp(Sample *samp)
 {
     int nc, len;
 
@@ -527,8 +521,7 @@ Sample *samp;
 
 /*	--------------------  id2ind  ------------------------------  */
 /*	Given a item ident, returns index in sample, or -1 if not found  */
-int id2ind(id)
-int id;
+int id2ind(int id)
 {
     int iu, il, ic, cid, len;
     char *recs;
@@ -574,7 +567,7 @@ char *tlstname;
         return (-1);
     if (!ctx.sample)
         return (-2);
-    setpop();
+    set_population();
     if (!samp->num_cases)
         return (-3);
 
@@ -595,7 +588,7 @@ treeloop:
         dadser = -4;
     fprintf(tlst, "%8d\n", dadser >> 2);
 nextcl1:
-    nextclass(&clp);
+    next_class(&clp);
     if (clp)
         goto treeloop;
     fprintf(tlst, "0 0\n");

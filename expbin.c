@@ -167,7 +167,7 @@ int readdat(char *loc, int iv)
     Datum xn;
 
     /*	Read datum into xn, return error.  */
-    i = readint(&xn, 1);
+    i = read_int(&xn, 1);
     if (i)
         return (i);
     if (!xn)
@@ -570,7 +570,7 @@ adjdone:
 /*	------------------------  vprint  -----------------------   */
 void vprint(Class* ccl, int iv){
 
-    setclass1(ccl);
+    set_class(ccl);
     setvar(iv);
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out", evi->adj);

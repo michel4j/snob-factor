@@ -4,10 +4,10 @@
 
 /*	-----------------------  s2id  ---------------------------   */
 /*	Finds class index (id) from serial, or -3 if error    */
-int s2id(int ss) {
+int serial_to_id(int ss) {
     int k;
     Class *clp;
-    setpop();
+    set_population();
 
     if (ss >= 1) {
         for (k = 0; k <= population->hi_class; k++) {
@@ -25,7 +25,7 @@ int s2id(int ss) {
 }
 
 /*	---------------------  setclass1 --------------------------   */
-void setclass1(Class *ccl) {
+void set_class(Class *ccl) {
     cls = ccl;
     idad = cls->dad_id;
     if (idad >= 0)
@@ -36,7 +36,7 @@ void setclass1(Class *ccl) {
 }
 
 /*	---------------------  setclass2 --------------------------   */
-void setclass2(Class *ccl) {
+void set_class_with_scores(Class *ccl) {
     cls = ccl;
     vv = cls->factor_scores;
     cls->case_score = icvv = vv[item];
@@ -57,7 +57,7 @@ ptrs to CVinsts and CVinsts filled in also EVinsts and ptrs.
     score vector.
     Returns index of class, or negative if no good  */
 
-int makeclass() {
+int make_class() {
     PVinst *pvars;
     CVinst **cvars, *cvi;
     EVinst **evars, *evi;
@@ -212,7 +212,7 @@ void print1class(Class *clp, int full) {
     return;
 }
 
-void printclass(int kk, int full) {
+void print_class(int kk, int full) {
     Class *clp;
     if (kk >= 0) {
         clp = population->classes[kk];
@@ -223,13 +223,13 @@ void printclass(int kk, int full) {
         printf("%d passed to printclass\n", kk);
         return;
     }
-    setpop();
+    set_population();
     clp = rootcl;
 
     do {
         if ((kk == -2) || (clp->type != Sub))
             print1class(clp, full);
-        nextclass(&clp);
+        next_class(&clp);
     } while (clp);
 
     return;
@@ -238,10 +238,10 @@ void printclass(int kk, int full) {
 /*	-------------------------  cleartcosts  ------  */
 /*	Clears tcosts (cntcost, cftcost, cstcost). Also clears newcnt,
 newvsq, and calls clearstats for all variables   */
-void cleartcosts(Class *ccl) {
+void clear_costs(Class *ccl) {
     int i;
 
-    setclass1(ccl);
+    set_class(ccl);
     cls->mlogab = -log(cls->relab);
     cls->cstcost = cls->cftcost = cls->cntcost = 0.0;
     cls->cfvcost = 0.0;
@@ -260,10 +260,10 @@ void cleartcosts(Class *ccl) {
 
 /*	-------------------  setbestparall  ------------------------   */
 /*	To set 'b' params, costs to reflect current use   */
-void setbestparall(Class *ccl) {
+void set_best_costs(Class *ccl) {
     int i;
 
-    setclass1(ccl);
+    set_class(ccl);
     if (cls->type == Dad) {
         cls->best_cost = cls->dad_cost;
         cls->best_par_cost = cls->dad_par_cost;
@@ -290,11 +290,11 @@ void setbestparall(Class *ccl) {
 /*	Leaves data values set in stats, but does no scoring if class too
 young. If class age = MinFacAge, will guess scores but not cost them */
 /*	If control & AdjSc, will adjust score  */
-void scorevarall(Class *ccl) {
+void score_all_vars(Class *ccl) {
     int i, igbit, oldicvv;
     double del;
 
-    setclass2(ccl);
+    set_class_with_scores(ccl);
     if ((cls->age < MinFacAge) || (cls->use == Tiny)) {
         cvv = cls->avg_factor_scores = cls->sum_score_sq = 0.0;
         icvv = 0;
@@ -386,11 +386,11 @@ done:
 /*	----------------------  costvarall  --------------------------  */
 /*	Does costvar on all vars of class for the current item, setting
 cls->casecost according to use of class  */
-void costvarall(Class *ccl) {
+void cost_all_vars(Class *ccl) {
     int fac;
     double tmp;
 
-    setclass2(ccl);
+    set_class_with_scores(ccl);
     if ((cls->age < MinFacAge) || (cls->use == Tiny))
         fac = 0;
     else {
@@ -438,10 +438,10 @@ finish:
 
 /*	----------------------  derivvarall  ---------------------    */
 /*	To collect derivative statistics for all vars of a class   */
-void derivvarall(Class *ccl) {
+void deriv_all_vars(Class *ccl) {
     int fac;
 
-    setclass2(ccl);
+    set_class_with_scores(ccl);
     cls->newcnt += cwt;
     if ((cls->age < MinFacAge) || (cls->use == Tiny))
         fac = 0;
@@ -475,12 +475,12 @@ void derivvarall(Class *ccl) {
 /*	--------------------  adjustclass  -----------------------   */
 /*	To compute pcosts of a class, and if needed, adjust params  */
 /*	Will process as-dad params only if 'dod'  */
-void adjustclass(Class *ccl, int dod) {
+void adjust_class(Class *ccl, int dod) {
     int iv, fac, npars, small;
     Class *son;
     double leafcost;
 
-    setclass1(ccl);
+    set_class(ccl);
     /*	Get root (logarithmic average of vvsprds)  */
     cls->vav = exp(0.5 * cls->vav / (cls->newcnt + 0.1));
     if (control & AdjSc)
@@ -543,7 +543,7 @@ void adjustclass(Class *ccl, int dod) {
     cls->avg_factor_scores = cls->totvv / cls->weights_sum;
 
     if (dod)
-        ncostvarall(ccl, npars);
+        parent_cost_all_vars(ccl, npars);
 
     cls->nofac_cost = cls->nofac_par_cost + cls->cstcost;
     /*	The 'lattice' effect on the cost of coding scores is approx
@@ -618,7 +618,7 @@ usechecked:
         printf("Changing type of class%s from Dad to Leaf\n", sers(cls));
         seeall = 4;
         /*	Kill all sons  */
-        killsons(cls->id); /* which changes type to leaf */
+        delete_sons(cls->id); /* which changes type to leaf */
     } else if (npars && (leafcost > cls->dad_cost) && (cls->type == Leaf)) {
         flp();
         printf("Changing type of class%s from Leaf to Dad\n", sers(cls));
@@ -638,7 +638,7 @@ usechecked:
     }
 
 typechecked:
-    setbestparall(cls);
+    set_best_costs(cls);
     if (control & AdjPr)
         cls->age++;
     return;
@@ -647,13 +647,13 @@ typechecked:
 /*	----------------  ncostvarall  ------------------------------   */
 /*	To do parent costing on all vars of a class		*/
 /*	If not 'valid', don't cost, and fake params  */
-void ncostvarall(Class *ccl, int valid) {
+void parent_cost_all_vars(Class *ccl, int valid) {
     Class *son;
     EVinst *evi;
     int i, son_id, nson;
     double abcost, rrelab;
 
-    setclass1(ccl);
+    set_class(ccl);
     abcost = 0.0;
     for (i = 0; i < vst->length; i++) {
         avi = vlist + i;
@@ -696,7 +696,7 @@ void ncostvarall(Class *ccl, int valid) {
 
 /*	--------------------  killsons ------------------------------- */
 /*	To delete the sons of a class  */
-void killsons(int kk) {
+void delete_sons(int kk) {
     Class *clp, *son;
     int kks;
 
@@ -710,7 +710,7 @@ void killsons(int kk) {
         son = population->classes[kks];
         son->type = Vacant;
         son->dad_id = Deadkilled;
-        killsons(kks);
+        delete_sons(kks);
     }
     clp->num_sons = 0;
     clp->son_id = -1;
@@ -723,7 +723,7 @@ void killsons(int kk) {
 /*	--------------------  splitleaf ------------------------   */
 /*	If kk is a leaf and has subs, turns it into a dad and makes
 its subs into leaves.  Returns 0 if successful.  */
-int splitleaf(int kk) {
+int split_leaf(int kk) {
     Class *son;
     int kks;
     cls = population->classes[kk];
@@ -777,7 +777,7 @@ void deleteallclasses() {
 /*	given a ptr cpop to a popln and an integer iss, returns the index
 of the next leaf in the popln with serial > iss, or -1 if there is none */
 /*	Intended for scanning the leaves of a popln in serial order  */
-int nextleaf(Population *cpop, int iss) {
+int next_leaf(Population *cpop, int iss) {
     Class *clp;
     int i, j, k, n;
 

@@ -40,7 +40,7 @@ void findall(int class_type) {
     int i, j;
     Class *cls;
 
-    setpop();
+    set_population();
     tidy(1);
     j = 0;
     cls = rootcl;
@@ -49,7 +49,7 @@ void findall(int class_type) {
         if (class_type & cls->type) {
             sons[j++] = cls;
         }
-        nextclass(&cls);
+        next_class(&cls);
     }
     numson = j;
 
@@ -226,7 +226,7 @@ void tidy(int hit) {
             // Check if conditions are met to make subclasses
             if (dad->type == Leaf && !dad->num_sons &&
                 dad->weights_sum >= (2.1 * MinSize) && dad->age >= MinAge) {
-                makesubs(i);
+                make_subclasses(i);
                 kkd++;
             }
         }
@@ -276,7 +276,7 @@ void update_seeall_newsubs(int niter, int ncycles) {
 
     // Track best if conditions are met
     if (niter > NewSubsTime && seeall == 1) {
-        trackbest(0);
+        track_best(0);
     }
 }
 
@@ -293,7 +293,7 @@ int find_and_estimate(int *all, int niter, int ncycles) {
     findall(*all);
 
     for (int k = 0; k < numson; k++) {
-        cleartcosts(sons[k]);
+        clear_costs(sons[k]);
     }
 
     for (int j = 0; j < samp->num_cases; j++) {
@@ -325,7 +325,7 @@ int find_and_estimate(int *all, int niter, int ncycles) {
 double update_leaf_classes(double *oldleafsum, int *nfail) {
     double leafsum = 0.0;
     for (int k = 0; k < numson; k++) {
-        adjustclass(sons[k], 0);
+        adjust_class(sons[k], 0);
         /*	The second para tells adjust not to do as-dad params  */
         leafsum += sons[k]->best_cost;
     }
@@ -359,7 +359,7 @@ void update_all_classes(double *oldcost, int *nfail) {
             continue;
         }
         while (1) {
-            adjustclass(cls, 1);
+            adjust_class(cls, 1);
             if (cls->dad_id >= 0) {
                 dad = population->classes[cls->dad_id];
                 dad->dad_par_cost += cls->best_par_cost;
@@ -431,7 +431,7 @@ int doall(int ncycles, int all) {
         if (nosubs)
             newsubs = 0;
         if ((niter > newsubs) && (seeall == 1))
-            trackbest(0);
+            track_best(0);
 
         int repeat = 0;
         do {
@@ -442,7 +442,7 @@ int doall(int ncycles, int all) {
                 all = (Dad + Leaf + Sub);
             findall(all);
             for (int k = 0; k < numson; k++) {
-                cleartcosts(sons[k]);
+                clear_costs(sons[k]);
             }
 
             for (int j = 0; j < samp->num_cases; j++) {
@@ -473,7 +473,7 @@ int doall(int ncycles, int all) {
         if (!(all == (Dad + Leaf + Sub))) {
             leafsum = 0.0;
             for (ic = 0; ic < numson; ic++) {
-                adjustclass(sons[ic], 0);
+                adjust_class(sons[ic], 0);
                 /*	The second para tells adjust not to do as-dad params  */
                 leafsum += sons[ic]->best_cost;
             }
@@ -506,7 +506,7 @@ int doall(int ncycles, int all) {
                 }
 
                 while (!alladjusted) {
-                    adjustclass(cls, 1);
+                    adjust_class(cls, 1);
                     if (cls->dad_id < 0) {
                         alladjusted = 1;
                         break;
@@ -660,7 +660,7 @@ int dodads(int ncy) {
     nfail = control;
     control = Noprior;
     for (nn = 0; nn < numson; nn++) {
-        adjustclass(sons[nn], 0);
+        adjust_class(sons[nn], 0);
     }
     control = nfail;
     nn = nfail = 0;
@@ -686,10 +686,10 @@ int dodads(int ncy) {
         /*	If a leaf, use adjustclass, else use ncostvarall  */
         if (cls->type == Leaf) {
             control = Tweak;
-            adjustclass(cls, 0);
+            adjust_class(cls, 0);
         } else {
             control = AdjPr;
-            ncostvarall(cls, 1);
+            parent_cost_all_vars(cls, 1);
             cls->best_par_cost = cls->dad_par_cost;
         }
         if (cls->dad_id < 0)
@@ -817,15 +817,15 @@ void docase(int cse, int all, int derivs) {
 
     clc = 0;
     while (clc < numson) {
-        setclass2(sons[clc]);
+        set_class_with_scores(sons[clc]);
         if ((!seeall) && (icvv & 1)) { /* Ignore this and decendants */
             clc = nextic[clc];
             continue;
         } else if (!seeall)
             cls->scancnt++;
         /*	Score and cost the class  */
-        scorevarall(cls);
-        costvarall(cls);
+        score_all_vars(cls);
+        cost_all_vars(cls);
         clc++;
     }
     /*	Now have casescost, casefcost and casecost set in all classes for
@@ -1016,7 +1016,7 @@ void docase(int cse, int all, int derivs) {
     for (clc = 0; clc < numson; clc++) {
         cls = sons[clc];
         if (cls->case_weight > 0.0) {
-            derivvarall(cls);
+            deriv_all_vars(cls);
         }
     }
 }

@@ -306,54 +306,54 @@ extern int terminator;
 extern Buffer cfilebuf, commsbuf;
 #endif
 
-int bufopen();
-int newline();
-int readint(int *x, int cnl);
-int readdf(double *x, int cnl);
-int readalf(char *str, int cnl);
-int readch(int cnl);
+int open_buffser();
+int new_line();
+int read_int(int *x, int cnl);
+int read_double(double *x, int cnl);
+int read_str(char *str, int cnl);
+int read_char(int cnl);
 void swallow();
-void bufclose();
+void close_buffer();
 void revert(int flag);
 void rep(int ch);
 void flp();
 /*	end inputs.c  */
 
 /*	In POPLNS.c   */
-void nextclass(Class **ptr);
-int makepop(int fill);
-int firstpop();
-void makesubs(int kk);
-void setpop();
-void killpop(int px);
-int copypop(int p1, int fill, char *newname);
-int savepop(int p1, int fill, char *newname);
-int restorepop(char *nam);
-int loadpop(int pp);
-void printtree();
-int bestpopid();
-void trackbest(int verify);
-int pname2id(char *nam);
+void next_class(Class **ptr);
+int make_population(int fill);
+int init_population();
+void make_subclasses(int kk);
+void set_population();
+void destroy_population(int px);
+int copy_population(int p1, int fill, char *newname);
+int save_population(int p1, int fill, char *newname);
+int load_population(char *nam);
+int set_work_population(int pp);
+void print_tree();
+int get_best_pop();
+void track_best(int verify);
+int find_population(char *nam);
 void correlpops(int xid);
 /*		end poplns.c		*/
 
 /*	In CLASSES.c	*/
-int s2id(int ss);
-int makeclass();
-void cleartcosts(Class *ccl);
-void setbestparall(Class *ccl);
-void scorevarall(Class *ccl);
-void costvarall(Class *ccl);
-void derivvarall(Class *ccl);
-void ncostvarall(Class *ccl, int valid);
-void adjustclass(Class *ccl, int dod);
-void killsons(int kk);
-void printclass(int kk, int full);
-void setclass1(Class *ccl);
-void setclass2(Class *ccl);
-int splitleaf(int kk);
+int serial_to_id(int ss);
+int make_class();
+void clear_costs(Class *ccl);
+void set_best_costs(Class *ccl);
+void score_all_vars(Class *ccl);
+void cost_all_vars(Class *ccl);
+void deriv_all_vars(Class *ccl);
+void parent_cost_all_vars(Class *ccl, int valid);
+void adjust_class(Class *ccl, int dod);
+void delete_sons(int kk);
+void print_class(int kk, int full);
+void set_class(Class *ccl);
+void set_class_with_scores(Class *ccl);
+int split_leaf(int kk);
 void deleteallclasses();
-int nextleaf(Population *cpop, int iss);
+int next_leaf(Population *cpop, int iss);
 /*		end classes.c		*/
 
 /*	In DOALL.c	*/
@@ -388,7 +388,6 @@ void trial(int param);
 /*		end tactics.c		*/
 
 /*	In BADMOVES.c	*/
-#define BadSize 1013
 void clearbadm();
 int testbadm(int code, int w1, int w2);
 void setbadm(int code, int s1, int s2);

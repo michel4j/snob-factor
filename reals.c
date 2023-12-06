@@ -164,7 +164,7 @@ Saux *sax;
     int i;
 
     /*	Read in auxiliary info into saux, return 0 if OK else 1  */
-    i = readdf(&(sax->eps), 1);
+    i = read_double(&(sax->eps), 1);
     if (i < 0) {
         sax->eps = sax->leps = 0.0;
         return (1);
@@ -181,7 +181,7 @@ int readdat(char *loc, int iv) {
     Datum xn;
 
     /*	Read datum into xn, return error.  */
-    i = readdf(&xn, 1);
+    i = read_double(&xn, 1);
     if (!i)
         memcpy(loc, &xn, sizeof(Datum));
     return (i);
@@ -583,7 +583,7 @@ void vprint(ccl, iv) Class *ccl;
 int iv;
 {
 
-    setclass1(ccl);
+    set_class(ccl);
     setvar(iv);
 
     printf("V%3d  Cnt%6.1f  %s\n", iv + 1, evi->cnt,

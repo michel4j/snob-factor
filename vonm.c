@@ -196,12 +196,12 @@ Saux *sax;
     int i;
 
     /*	Read in auxiliary info into saux, return 0 if OK else 1  */
-    i = readint(&(sax->unit), 1);
+    i = read_int(&(sax->unit), 1);
     if (i < 0) {
         sax->eps = sax->leps = 0.0;
         return (1);
     }
-    i = readdf(&(sax->eps), 1);
+    i = read_double(&(sax->eps), 1);
     if (i < 0) {
         sax->eps = sax->leps = 0.0;
         return (1);
@@ -225,7 +225,7 @@ int readdat(char *loc, int iv) {
     Datum xn;
 
     /*	Read datum into xn.xx, return error.  */
-    i = readdf(&(xn.xx), 1);
+    i = read_double(&(xn.xx), 1);
     if (!i) {
         /*	Get the unit code from Saux   */
         unit = ((Saux *)(svi->saux))->unit;
@@ -747,7 +747,7 @@ int iv;
 {
     double mu, kappa;
 
-    setclass1(ccl);
+    set_class(ccl);
     setvar(iv);
 
     printf("V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv + 1, evi->cnt,

@@ -148,10 +148,10 @@ int menu(int cnl) {
     char inp[80];
     int i, j, k = 0, nposs;
 
-    i = readalf(inp, cnl);
+    i = read_str(inp, cnl);
     if (i == 2) {
         printf("%s\n Enter command string:\n", prmt[10]);
-        i = readalf(inp, 1);
+        i = read_str(inp, 1);
     }
     if (i)
         return (-1);
@@ -205,12 +205,12 @@ int menu(int cnl) {
 int readserial(int prm) {
     int n, nn;
 
-    n = readint(&nn, 0);
+    n = read_int(&nn, 0);
     if (n == 2) {
         printf("The serial of a subclass is the serial of its dad\n");
         printf("followed without space by 'a' or 'b', e.g. 12a\n");
         printf("%s\n Enter class serial or 0 to abort\\n", prmt[prm]);
-        n = readint(&nn, 1);
+        n = read_int(&nn, 1);
     }
 
     if (n) return -3;
@@ -225,7 +225,7 @@ int readserial(int prm) {
         ctx.buffer->nch++;
     }
 
-    return s2id(nn);
+    return serial_to_id(nn);
 }
 
 
@@ -234,10 +234,10 @@ int readserial(int prm) {
 int readanint(int kk) {
     int n, nn;
 
-    n = readint(&nn, 0);
+    n = read_int(&nn, 0);
     if (n == 2) {
         printf("%s\n Enter integer parameter N\n", prmt[kk]);
-        n = readint(&nn, 1);
+        n = read_int(&nn, 1);
     }
     if (n)
         return (-1);
@@ -250,10 +250,10 @@ int readareal(int kk, double *rea) {
     double newv;
     int n;
 
-    n = readdf(&newv, 0);
+    n = read_double(&newv, 0);
     if (n == 2) {
         printf("%s\n Enter real parameter V or 'a' to abort.\n", prmt[kk]);
-        n = readdf(&newv, 1);
+        n = read_double(&newv, 1);
     }
     if (n)
         return (-1);
@@ -265,10 +265,10 @@ int readareal(int kk, double *rea) {
 /*	To read a string parameter. -1 if error  */
 int readsparam(int kk) {
     int n;
-    n = readalf(sparam, 0);
+    n = read_str(sparam, 0);
     if (n == 2) {
         printf("%s\n Enter string of characters\n", prmt[kk]);
-        n = readalf(sparam, 1);
+        n = read_str(sparam, 1);
     }
     if (n)
         n = -1;
@@ -281,7 +281,7 @@ int readachar(int kk) {
     int ch, nl=0;
 
     while (1) {
-        ch = readch(nl);
+        ch = read_char(nl);
         if (ch != ' ' && ch != '\t') {
             if (ch == 2) {
                 printf("%s\n Enter character:\n", prmt[kk]);
@@ -301,14 +301,14 @@ int readintname(int kk, int jj) {
     int n, i, nn = 0;
     intparam = -1;
 
-    n = readalf(sparam, 0);
+    n = read_str(sparam, 0);
     if (n == 2) {
         printf("%s\n Enter name string or integer index\n", prmt[kk]);
         switch (jj) {
             case 1: showpoplnnames(); break;
             case 2: showsamplenames(); break;
         }
-        n = readalf(sparam, 1);
+        n = read_str(sparam, 1);
     }
 
     if (n) return -1;
@@ -378,7 +378,7 @@ int readpopid(int kk) {
         printf("%d is not a valid popln index\n", intparam);
         return -1;
     } else {
-        nn = pname2id(sparam);
+        nn = find_population(sparam);
         if (nn < 0) {
             printf("%s is not a model name\n", sparam);
         }
@@ -490,14 +490,14 @@ int main() {
 
     seeall = 2;
     printf("Enter sample file name:\n");
-    if (readalf(sparam, 1) < 0) {
+    if (read_str(sparam, 1) < 0) {
         printf("Cannot read sample file name\n");
         goto error;
     }
     k = readsample(sparam);
     printf("Readsample returns %d\n", k);
     cspace = repspace(1);
-    kk = firstpop();
+    kk = init_population();
     flp();
     printf("Firstpop returns %d\n", kk);
     cspace = repspace(1);
@@ -510,16 +510,16 @@ int main() {
     if (trapkk >= 0)
         scanf("%d", &trapage);
 #endif
-    printclass(root, 0);
+    print_class(root, 0);
 error:
     printf("??? line %6d\n", source->line);
-    newline();
+    new_line();
     if (source->cfile)
         revert(0);
 loop:
-    k = pname2id("TrialPop");
+    k = find_population("TrialPop");
     if (k >= 0)
-        killpop(k);
+        destroy_population(k);
     flp();
     kk = repspace(0);
     if (kk != cspace)
@@ -546,11 +546,11 @@ loop:
         kk = 13;
         goto pickapop;
     }
-    setpop();
+    set_population();
     fix = dfix;
     control = dcontrol;
     tidy(1);
-    trackbest(1);
+    track_best(1);
     if (!source->cfile) {
         flp();
         population = ctx.popln;
@@ -564,7 +564,7 @@ loop:
                (ctx.sample) ? ctx.sample->name : "NULL");
     }
     if ((source->nch) || (source->inl[0] == '\n')) {
-        if (newline())
+        if (new_line())
             goto error;
     }
     kk = menu(1);
@@ -609,7 +609,7 @@ loop:
         k = readserial(kk);
         if (k < 0)
             goto error;
-        Log "%s", sers(population->classes[k]) EL killsons(k);
+        Log "%s", sers(population->classes[k]) EL delete_sons(k);
         population->classes[k]->hold_type = HoldTime;
         goto loop;
     case 5: /* prclass */
@@ -619,7 +619,7 @@ loop:
         i = readanint(kk);
         if (i < 0)
             goto error;
-        Log "%s  %d", sers(population->classes[k]), i EL printclass(k, i);
+        Log "%s  %d", sers(population->classes[k]), i EL print_class(k, i);
         goto loop;
     case 6: /*	adjust  */
         k = readsparam(kk);
@@ -689,7 +689,7 @@ loop:
             printf("Class %s is not a leaf\n", sers(population->classes[k]));
             goto loop;
         }
-        Log "%s", sers(population->classes[k]) EL if (splitleaf(k))
+        Log "%s", sers(population->classes[k]) EL if (split_leaf(k))
                       printf("Cannot split class%s\n", sers(population->classes[k]));
         goto loop;
     case 9: /* deldad */
@@ -742,7 +742,7 @@ loop:
         printf("Please donot use a popln name beginning BST_\n");
         goto error;
     ok11:
-        Log "%d %s", i, sparam EL i = copypop(population->id, i, sparam);
+        Log "%d %s", i, sparam EL i = copy_population(population->id, i, sparam);
         if (i < 0)
             goto error;
         printf("Index%3d = popln %s\n", i + 1, sparam);
@@ -753,12 +753,12 @@ loop:
         k = readpopid(kk);
         if (k < 0)
             goto error;
-        Log "%s", poplns[k]->name EL killpop(k);
+        Log "%s", poplns[k]->name EL destroy_population(k);
         goto loop;
     case 13: /* pickpop */
         goto pickapop;
     case 14: /* tree */
-        printtree();
+        print_tree();
         goto loop;
     case 15: /* sto */
         printf("%s\n", prmt[kk]);
@@ -768,11 +768,11 @@ loop:
         if (k < 0)
             goto error;
         if (source->cfile)
-            bufclose();
+            close_buffer();
         strcpy(cfilebuf.cname, sparam);
         source = &cfilebuf;
         ctx.buffer = source;
-        if (bufopen()) {
+        if (open_buffser()) {
             printf("Cant open file %s\n", sparam);
             goto error;
         }
@@ -823,7 +823,7 @@ loop:
             goto loop;
         }
         printf("Tree parameter cost changes by%12.1f\n", -drop);
-        printtree();
+        print_tree();
         goto loop;
 
     case 22: /*  dogood  */
@@ -876,7 +876,7 @@ loop:
         j = readsparam(kk);
         if (j < 0)
             goto error;
-        Log "%s %d %s", poplns[k]->name, i, sparam EL i = savepop(k, i, sparam);
+        Log "%s %d %s", poplns[k]->name, i, sparam EL i = save_population(k, i, sparam);
         if (i < 0) {
             printf("Savepop failed\n");
             goto error;
@@ -886,7 +886,7 @@ loop:
     case 28: /*  restorepop */
         if (readsparam(kk) < 0)
             goto error;
-        Log "%s", sparam EL k = restorepop(sparam);
+        Log "%s", sparam EL k = load_population(sparam);
         if (k < 0) {
             printf("Restorepop failed\n");
             goto error;
@@ -967,16 +967,16 @@ loop:
         if (k < 0)
             goto error;
         printf("Selecting sample %s\n", samples[k]->name);
-        Log "%s", samples[k]->name EL i = copypop(population->id, 0, "OldWork");
+        Log "%s", samples[k]->name EL i = copy_population(population->id, 0, "OldWork");
         if (i < 0) {
             printf("Can't make OldWork copy of work\n");
             goto error;
         }
         if (ctx.popln)
-            killpop(ctx.popln->id);
+            destroy_population(ctx.popln->id);
         population = ctx.popln = 0;
         samp = ctx.sample = samples[k];
-        i = firstpop();
+        i = init_population();
         if (i < 0) {
             printf("Cannot make first population for sample\n");
             goto error;
@@ -996,7 +996,7 @@ pickapop:
         k = i;
         goto picked;
     }
-    k = loadpop(i);
+    k = set_work_population(i);
 picked:
     ctx.popln = population = poplns[k];
     Log "%s", poplns[i]->name EL goto loop;
