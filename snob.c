@@ -9,7 +9,7 @@
 
 /*    ---------------------  main  ---------------------------  */
 int main(int argc, char *argv[]) {
-    int index, cycles = 20;
+    int index, cycles = 1;
 
     clock_t cpu_start, cpu_end;
     struct timespec wall_start, wall_end;
@@ -40,8 +40,8 @@ int main(int argc, char *argv[]) {
     classify(cycles, DO_ALL_STEPS, TRY_MOVE_STEPS, 0.01);  // % tolerance of 0.01 % for convergence of cost
    
     // display tree and classes
-    print_tree();
     print_class(-2, 1);
+    print_tree();
     show_population();
 
     if (argc == 4) {

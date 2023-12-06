@@ -547,7 +547,7 @@ int do_all(int ncycles, int all) {
             niter = nfail = 0;
             continue;
         }
-        if ((!UseStdIn) && hark(commsbuf.inl)) {
+        if ((!UseLib) && (!UseStdIn) && hark(commsbuf.inl))  {
             kicked = 1;
             break;
         }

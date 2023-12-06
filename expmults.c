@@ -567,7 +567,7 @@ facdone:
 
 /*	-------------------  adjust  ---------------------------    */
 /*	To adjust parameters of a multistate variable     */
-void adjust(iv, fac) int iv, fac;
+void adjust( int iv, int fac)
 {
 
     double adj, apd2, cnt, vara, del, tt, sum, spcost, fpcost;
@@ -816,8 +816,7 @@ void prprint(ap) double *ap;
 }
 
 /*	------------------------  vprint  -----------------------   */
-void vprint(ccl, iv) Class *ccl;
-int iv;
+void vprint(Class *ccl, int iv)
 {
     int k;
 
