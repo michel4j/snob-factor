@@ -101,28 +101,28 @@ when installing a new type of variable. It is also necessary to change the
 void expbinary_define(typindx) int typindx;
 /*	typindx is the index in types[] of this type   */
 {
-    vtp = types + typindx;
-    vtp->id = typindx;
+    CurVType = Types + typindx;
+    CurVType->id = typindx;
     /* 	Set type name as string up to 59 chars  */
-    vtp->name = "ExpBinary";
-    vtp->data_size = sizeof(Datum);
-    vtp->attr_aux_size = sizeof(Vaux);
-    vtp->pop_aux_size = sizeof(Paux);
-    vtp->smpl_aux_size = sizeof(Saux);
-    vtp->read_aux_attr = &readvaux;
-    vtp->read_aux_smpl = &readsaux;
-    vtp->read_datum = &readdat;
-    vtp->print_datum = &printdat;
-    vtp->set_sizes = &setsizes;
-    vtp->set_best_pars = &setbestparam;
-    vtp->clear_stats = &clearstats;
-    vtp->score_var = &scorevar;
-    vtp->cost_var = &costvar;
-    vtp->deriv_var = &derivvar;
-    vtp->cost_var_nonleaf = &ncostvar;
-    vtp->adjust = &adjust;
-    vtp->show = &vprint;
-    vtp->set_var = &setvar;
+    CurVType->name = "ExpBinary";
+    CurVType->data_size = sizeof(Datum);
+    CurVType->attr_aux_size = sizeof(Vaux);
+    CurVType->pop_aux_size = sizeof(Paux);
+    CurVType->smpl_aux_size = sizeof(Saux);
+    CurVType->read_aux_attr = &readvaux;
+    CurVType->read_aux_smpl = &readsaux;
+    CurVType->read_datum = &readdat;
+    CurVType->print_datum = &printdat;
+    CurVType->set_sizes = &setsizes;
+    CurVType->set_best_pars = &setbestparam;
+    CurVType->clear_stats = &clearstats;
+    CurVType->score_var = &scorevar;
+    CurVType->cost_var = &costvar;
+    CurVType->deriv_var = &derivvar;
+    CurVType->cost_var_nonleaf = &ncostvar;
+    CurVType->adjust = &adjust;
+    CurVType->show = &vprint;
+    CurVType->set_var = &setvar;
 
     return;
 }
@@ -130,15 +130,15 @@ void expbinary_define(typindx) int typindx;
 /*	----------------------- setvar --------------------------  */
 void setvar(iv) int iv;
 {
-    avi = vlist + iv;
-    vtp = avi->vtype;
+    CurAttr = CurAttrList + iv;
+    CurVType = CurAttr->vtype;
     pvi = pvars + iv;
     paux = (Paux *)pvi->paux;
-    svi = svars + iv;
-    vaux = (Vaux *)avi->vaux;
-    saux = (Saux *)svi->saux;
-    cvi = (Basic *)cls->basics[iv];
-    evi = (Stats *)cls->stats[iv];
+    CurVar = CurVarList + iv;
+    vaux = (Vaux *)CurAttr->vaux;
+    saux = (Saux *)CurVar->saux;
+    cvi = (Basic *)CurClass->basics[iv];
+    evi = (Stats *)CurClass->stats[iv];
     return;
 }
 
@@ -195,11 +195,11 @@ blocks for variable, and place in VSetVar basicsize, statssize.
 void setsizes( int iv)
 {
 
-    avi = vlist + iv;
+    CurAttr = CurAttrList + iv;
 
     /*	Set sizes of CVinst (basic) and EVinst (stats) in VSetVar  */
-    avi->basic_size = sizeof(Basic);
-    avi->stats_size = sizeof(Stats);
+    CurAttr->basic_size = sizeof(Basic);
+    CurAttr->stats_size = sizeof(Stats);
     return;
 }
 
@@ -209,12 +209,12 @@ void setbestparam(int iv)
 
     setvar(iv);
 
-    if (cls->type == Dad) {
+    if (CurClass->type == Dad) {
         cvi->bap = cvi->nap;
         cvi->bapsprd = cvi->napsprd;
         evi->btcost = evi->ntcost;
         evi->bpcost = evi->npcost;
-    } else if ((cls->use == Fac) && cvi->infac) {
+    } else if ((CurClass->use == Fac) && cvi->infac) {
         cvi->bap = cvi->fap;
         cvi->bapsprd = cvi->fapsprd;
         evi->btcost = evi->ftcost;
@@ -242,7 +242,7 @@ void clearstats(int iv)
     evi->cnt1 = evi->fapd1 = evi->fbpd1 = 0.0;
     evi->apd2 = evi->bpd2 = 0.0;
     evi->tvsprd = 0.0;
-    if (cls->age == 0)
+    if (CurClass->age == 0)
         return;
     /*	Some useful functions  */
     /*	Set up non-fac case costs in scst[]  */
@@ -270,12 +270,12 @@ void scorevar(int iv)
 {
     double cc, pr0, pr1, ff, ft, dbyv, hdffbydv, hdftbydv;
     setvar(iv);
-    if (avi->inactive)
+    if (CurAttr->inactive)
         return;
     if (saux->missing)
         return;
     /*	Calc prob of val 1  */
-    cc = cvi->fap + cvv * cvi->fbp;
+    cc = cvi->fap + CurCaseFacScore * cvi->fbp;
     if (cc > 0.0) {
         pr1 = exp(-2.0 * cc);
         pr0 = pr1 / (1.0 + pr1);
@@ -303,14 +303,14 @@ void scorevar(int iv)
     else
         dbyv = 2.0 * cvi->fbp * pr1;
     /*	From cost term 0.5 * vvsq * bpsprd * ft: */
-    dbyv += cvv * cvi->bpsprd * ft;
+    dbyv += CurCaseFacScore * cvi->bpsprd * ft;
     /*	And via dftbydv, terms 0.5*(fapsprd * vvsq*bpsprd)*ft :   */
-    dbyv += (cvi->fapsprd + cvvsq * cvi->bpsprd) * hdftbydv;
-    vvd1 += dbyv;
-    vvd2 += evi->bsq * ff;
-    mvvd2 += evi->bsq * ff;
+    dbyv += (cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd) * hdftbydv;
+    CaseFacScoreD1 += dbyv;
+    CaseFacScoreD2 += evi->bsq * ff;
+    EstFacScoreD2 += evi->bsq * ff;
     /*	Don't yet know cvvsprd, so just accum bsq * dffbydv  */
-    vvd3 += 2.0 * evi->bsq * hdffbydv;
+    CaseFacScoreD3 += 2.0 * evi->bsq * hdffbydv;
     return;
 }
 
@@ -324,7 +324,7 @@ void costvar(int iv, int fac)
     setvar(iv);
     if (saux->missing)
         return;
-    if (cls->age == 0) {
+    if (CurClass->age == 0) {
         evi->parkftcost = 0.0;
         return;
     }
@@ -335,7 +335,7 @@ void costvar(int iv, int fac)
     /*	Only do faccost if fac  */
     if (!fac)
         goto facdone;
-    cc = cvi->fap + cvv * cvi->fbp;
+    cc = cvi->fap + CurCaseFacScore * cvi->fbp;
     if (cc > 0.0) {
         small = exp(-2.0 * cc);
         pr0 = small / (1.0 + small);
@@ -368,11 +368,11 @@ void costvar(int iv, int fac)
     ff = Bbeta * ff + (1.0 - Bbeta) * ft;
     /*	In calculating the cost, use ft for all spreads, rather than using
         ff for the v spread, but use ff in getting differentials  */
-    cost += 0.5 * ((cvi->fapsprd + cvvsq * cvi->bpsprd) * ft +
+    cost += 0.5 * ((cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd) * ft +
                    evi->bsq * cvvsprd * ft);
-    evi->dbya += (cvi->fapsprd + cvvsq * cvi->bpsprd) * hdftbydc +
+    evi->dbya += (cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd) * hdftbydc +
                  evi->bsq * cvvsprd * hdffbydc;
-    evi->dbyb = cvv * evi->dbya + cvi->fbp * cvvsprd * ff;
+    evi->dbyb = CurCaseFacScore * evi->dbya + cvi->fbp * cvvsprd * ff;
 
 facdone:
     fcasecost += cost;
@@ -390,23 +390,23 @@ void derivvar(int iv, int fac)
     if (saux->missing)
         return;
     /*	Do no-fac first  */
-    evi->cnt += cwt;
+    evi->cnt += CurCaseWeight;
     /*	For non-fac, just accum weight of 1s in cnt1  */
     if (saux->xn == 1)
-        evi->cnt1 += cwt;
+        evi->cnt1 += CurCaseWeight;
     /*	Accum. weighted item cost  */
-    evi->stcost += cwt * evi->scst[saux->xn];
-    evi->ftcost += cwt * evi->parkftcost;
+    evi->stcost += CurCaseWeight * evi->scst[saux->xn];
+    evi->ftcost += CurCaseWeight * evi->parkftcost;
 
     /*	Now for factor form  */
     if (!fac)
         goto facdone;
-    evi->vsq += cwt * cvvsq;
-    evi->fapd1 += cwt * evi->dbya;
-    evi->fbpd1 += cwt * evi->dbyb;
+    evi->vsq += CurCaseWeight * CurCaseFacScoreSq;
+    evi->fapd1 += CurCaseWeight * evi->dbya;
+    evi->fbpd1 += CurCaseWeight * evi->dbyb;
     /*	Accum actual 2nd derivs  */
-    evi->apd2 += cwt * evi->parkft;
-    evi->bpd2 += cwt * evi->parkft * cvvsq;
+    evi->apd2 += CurCaseWeight * evi->parkft;
+    evi->bpd2 += CurCaseWeight * evi->parkft * CurCaseFacScoreSq;
 facdone:
     return;
 }
@@ -423,8 +423,8 @@ void adjust(int iv, int fac)
     setvar(iv);
     cnt = evi->cnt;
 
-    if (dad) { /* Not root */
-        dcvi = (Basic *)dad->basics[iv];
+    if (CurDad) { /* Not root */
+        dcvi = (Basic *)CurDad->basics[iv];
         dadnap = dcvi->nap;
         dapsprd = dcvi->napsprd;
     } else { /* Root */
@@ -434,7 +434,7 @@ void adjust(int iv, int fac)
     }
 
     /*	If too few data, use dad's n-paras   */
-    if ((control & AdjPr) && (cnt < MinSize)) {
+    if ((Control & AdjPr) && (cnt < MinSize)) {
         cvi->nap = cvi->sap = cvi->fap = dadnap;
         cvi->fbp = 0.0;
         cvi->napsprd = cvi->fapsprd = cvi->sapsprd = dapsprd;
@@ -443,7 +443,7 @@ void adjust(int iv, int fac)
     }
 
     /*	If class age zero, make some preliminary estimates  */
-    if (cls->age)
+    if (CurClass->age)
         goto hasage;
     evi->oldftcost = 0.0;
     evi->adj = 1.0;
@@ -455,8 +455,8 @@ void adjust(int iv, int fac)
     apd2 = cnt + 1.0 / dapsprd;
     cvi->fapsprd = cvi->sapsprd = cvi->bpsprd = 1.0 / apd2;
     /*	Make a stab at item cost   */
-    cls->cstcost -= evi->cnt1 * log(pr1) + (cnt - evi->cnt1) * log(pr0);
-    cls->cftcost = cls->cstcost + 100.0 * cnt;
+    CurClass->cstcost -= evi->cnt1 * log(pr1) + (cnt - evi->cnt1) * log(pr0);
+    CurClass->cftcost = CurClass->cstcost + 100.0 * cnt;
 
 hasage:
     /*	Calculate spcost for non-fac params  */
@@ -468,7 +468,7 @@ hasage:
     is a variance with squared spread dapsprd, Normal form */
     spcost = 0.5 * vara / dapsprd; /* The squared deviations term */
     spcost += 0.5 * log(dapsprd);  /* log sigma */
-    spcost += hlg2pi + lattice;
+    spcost += HALF_LOG_2PI + LATTICE;
     /*	This completes the prior density terms  */
     /*	The vol of uncertainty is sqrt (sapsprd)  */
     spcost -= 0.5 * log(cvi->sapsprd);
@@ -483,22 +483,22 @@ hasage:
     vara = del * del + cvi->fapsprd;
     fpcost = 0.5 * vara / dapsprd; /* The squared deviations term */
     fpcost += 0.5 * log(dapsprd);  /* log sigma */
-    fpcost += (hlg2pi + lattice);
+    fpcost += (HALF_LOG_2PI + LATTICE);
     fpcost -= 0.5 * log(cvi->fapsprd);
 
     /*	And for fbp[]:  (N(0,1) prior)  */
     vara = cvi->fbp * cvi->fbp + cvi->bpsprd;
     fpcost += 0.5 * vara; /* The squared deviations term */
-    fpcost += hlg2pi + lattice - 0.5 * log(cvi->bpsprd);
+    fpcost += HALF_LOG_2PI + LATTICE - 0.5 * log(cvi->bpsprd);
 
 facdone1:
     /*	Store param costs  */
     evi->spcost = spcost;
     evi->fpcost = fpcost;
     /*	Add to class param costs  */
-    cls->nofac_par_cost += spcost;
-    cls->fac_par_cost += fpcost;
-    if (!(control & AdjPr))
+    CurClass->nofac_par_cost += spcost;
+    CurClass->fac_par_cost += fpcost;
+    if (!(Control & AdjPr))
         goto adjdone;
     if (cnt < MinSize)
         goto adjdone;
@@ -557,7 +557,7 @@ adjloop:
 
 facdone2:
     /*	If no sons, set as-dad params from non-fac params  */
-    if (cls->num_sons < 2) {
+    if (CurClass->num_sons < 2) {
         cvi->nap = cvi->sap;
         cvi->napsprd = cvi->sapsprd;
     }
@@ -575,7 +575,7 @@ void vprint(Class* ccl, int iv){
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out", evi->adj);
 
-    if (cls->num_sons < 2)
+    if (CurClass->num_sons < 2)
         goto skipn;
     printf(" N: AP ");
     printf("%6.3f", cvi->nap);
@@ -600,11 +600,11 @@ void ncostvar(int iv) {
     int n, ison, nson, nints;
 
     setvar(iv);
-    if (avi->inactive) {
+    if (CurAttr->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
-    nson = cls->num_sons;
+    nson = CurClass->num_sons;
     if (nson < 2) { /* cannot define parameters */
         evi->npcost = evi->ntcost = 0.0;
         cvi->nap = cvi->sap;
@@ -619,8 +619,8 @@ void ncostvar(int iv) {
 
     apsprd = cvi->napsprd;
     /*	The calculation is like that in reals.c (q.v.)   */
-    for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
-        son = population->classes[ison];
+    for (ison = CurClass->son_id; ison > 0; ison = son->sib_id) {
+        son = CurPopln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         tap += soncvi->bap;
         tstvn += soncvi->bap * soncvi->bap;
@@ -663,10 +663,10 @@ adjloop:
     del = cvi->nap - dadnap;
     pcost = del * del;
     pcost =
-        0.5 * (pcost + apsprd / nson) / dapsprd + (hlg2pi + 0.5 * log(dapsprd));
+        0.5 * (pcost + apsprd / nson) / dapsprd + (HALF_LOG_2PI + 0.5 * log(dapsprd));
     /*      Add hlog Fisher, lattice  */
     pcost += 0.5 * log(0.5 * nson + nints) + 0.5 * log((double)nson) -
-             1.5 * log(apsprd) + 2.0 * lattice;
+             1.5 * log(apsprd) + 2.0 * LATTICE;
     /*	Add roundoff for params  */
     pcost += 1.0;
     evi->npcost = pcost;

@@ -16,22 +16,22 @@ void do_types() {
     int i;
 
     /*	Set the number of attribute types  */
-    Ntypes = 4;
+    NTypes = 4;
 
     /*	Set constants  */
-    pi = 4.0 * atan(1.0);
-    hlg2pi = 0.5 * log(2.0 * pi);
-    twoonpi = 2.0 / pi;
-    pion2 = 0.5 * pi;
-    bit = log(2.0);
-    bit2 = 2.0 * bit;
-    hlg2 = 0.5 * log(2.0);
-    lattice = -0.5 * log(12.0);
+    PI = 4.0 * atan(1.0);
+    HALF_LOG_2PI = 0.5 * log(2.0 * PI);
+    TWO_ON_PI = 2.0 / PI;
+    HALF_PI = 0.5 * PI;
+    BIT = log(2.0);
+    TWOBIT = 2.0 * BIT;
+    HALF_LOG_2 = 0.5 * log(2.0);
+    LATTICE = -0.5 * log(12.0);
     for (i = 0; i < MAX_ZERO; i++)
-        zerov[i] = 0.0;
+        ZeroVec[i] = 0.0;
 
     /*	Make the 'types' vector  */
-    types = (VarType *)malloc(Ntypes * sizeof(VarType));
+    Types = (VarType *)malloc(NTypes * sizeof(VarType));
 
     reals_define(0);
     expmults_define(1);

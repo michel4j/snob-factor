@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include "glob.h"
+
 #define LL 200
 FILE *co;
 int i, j, k, m, seq, num;

@@ -12,20 +12,20 @@ void print_var_datam(int i, int n) {
     SampleVar *svi;
     VarType *vtp;
 
-    samp = ctx.sample;
+    samp = CurCtx.sample;
     svi = samp->variables + i;
-    avi = vlist + i;
+    avi = CurAttrList + i;
     vtp = avi->vtype;
-    loc = (char *)samp->records;
-    loc += n * samp->record_length;
-    loc += svi->offset;
+    CurField = (char *)samp->records;
+    CurField += n * samp->record_length;
+    CurField += svi->offset;
     /*	Test for missing  */
-    if (*loc == 1) {
+    if (*CurField == 1) {
         printf("    =====");
         return;
     }
-    loc += 1;
-    (*vtp->print_datum)(loc);
+    CurField += 1;
+    (*vtp->print_datum)(CurField);
     return;
 }
 /*	------------------------ readvset ------------------------------ */
@@ -40,7 +40,7 @@ int read_vset() {
 
     buf = &bufst;
     for (i = 0; i < MAX_VSETS; i++)
-        if (!vsets[i])
+        if (!VarSets[i])
             goto gotit;
 nospce:
     printf("No space for VariableSet\n");
@@ -49,26 +49,26 @@ nospce:
 
 gotit:
     indx = i;
-    vst = vsets[i] = (VarSet *)malloc(sizeof(VarSet));
-    if (!vst)
+    CurVSet = VarSets[i] = (VarSet *)malloc(sizeof(VarSet));
+    if (!CurVSet)
         goto nospce;
-    vst->id = indx;
-    ctx.vset = vst;
-    vst->variables = 0;
-    vst->blocks = 0;
+    CurVSet->id = indx;
+    CurCtx.vset = CurVSet;
+    CurVSet->variables = 0;
+    CurVSet->blocks = 0;
     printf("Enter variable-set file name:\n");
-    kread = read_str(vst->filename, 1);
-    strcpy(buf->cname, vst->filename);
-    ctx.buffer = buf;
+    kread = read_str(CurVSet->filename, 1);
+    strcpy(buf->cname, CurVSet->filename);
+    CurCtx.buffer = buf;
     if (open_buffser()) {
-        printf("Cant open variable-set file %s\n", vst->filename);
+        printf("Cant open variable-set file %s\n", CurVSet->filename);
         i = -2;
         goto error;
     }
 
     /*	Begin to read variable-set file. First entry is its name   */
     new_line();
-    kread = read_str(vst->name, 1);
+    kread = read_str(CurVSet->name, 1);
     if (kread < 0) {
         printf("Error in name of variable-set\n");
         i = -9;
@@ -76,36 +76,36 @@ gotit:
     }
     /*	Num of variables   */
     new_line();
-    kread = read_int(&nv, 1);
+    kread = read_int(&NumVars, 1);
     if (kread) {
         printf("Cant read number of variables\n");
         i = -4;
         goto error;
     }
-    vst->length = nv;
-    vst->num_active = vst->length;
+    CurVSet->length = NumVars;
+    CurVSet->num_active = CurVSet->length;
 
     /*	Make a vec of nv VSetVar blocks  */
-    vlist = (VSetVar *)alloc_blocks(3, nv * sizeof(VSetVar));
-    if (!vlist) {
+    CurAttrList = (VSetVar *)alloc_blocks(3, NumVars * sizeof(VSetVar));
+    if (!CurAttrList) {
         printf("Cannot allocate memory for variables blocks\n");
         i = -3;
         goto error;
     }
-    vst->variables = vlist;
+    CurVSet->variables = CurAttrList;
 
     /*	Read in the info for each variable into vlist   */
-    for (i = 0; i < nv; i++) {
-        vlist[i].id = -1;
-        vlist[i].vaux = 0;
+    for (i = 0; i < NumVars; i++) {
+        CurAttrList[i].id = -1;
+        CurAttrList[i].vaux = 0;
     }
-    for (i = 0; i < nv; i++) {
-        avi = vlist + i;
-        avi->id = i;
+    for (i = 0; i < NumVars; i++) {
+        CurAttr = CurAttrList + i;
+        CurAttr->id = i;
 
         /*	Read name  */
         new_line();
-        kread = read_str(avi->name, 1);
+        kread = read_str(CurAttr->name, 1);
         if (kread < 0) {
             printf("Error in name of variable %d\n", i + 1);
             i = -10;
@@ -119,43 +119,43 @@ gotit:
             i = -5;
             goto error;
         }
-        avi->inactive = 0;
+        CurAttr->inactive = 0;
         if (itype < 0) {
-            avi->inactive = 1;
+            CurAttr->inactive = 1;
             itype = -itype;
         }
-        if ((itype < 1) || (itype > Ntypes)) {
+        if ((itype < 1) || (itype > NTypes)) {
             printf("Bad type code %d for var %d\n", itype, i + 1);
             i = -5;
             goto error;
         }
         itype = itype - 1; /*  Convert types to start at 0  */
-        vtp = avi->vtype = types + itype;
-        avi->type = itype;
+        CurVType = CurAttr->vtype = Types + itype;
+        CurAttr->type = itype;
 
         /*	Make the vaux block  */
-        vaux = (char *)alloc_blocks(3, vtp->attr_aux_size);
+        vaux = (char *)alloc_blocks(3, CurVType->attr_aux_size);
         if (!vaux) {
             printf("Cant make auxilliary var block\n");
             i = -6;
             goto error;
         }
-        avi->vaux = vaux;
+        CurAttr->vaux = vaux;
 
         /*	Read auxilliary information   */
-        if ((*vtp->read_aux_attr)(vaux)) {
+        if ((*CurVType->read_aux_attr)(vaux)) {
             printf("Error in reading auxilliary info var %d\n", i + 1);
             i = -7;
             goto error;
         }
         /*	Set sizes of stats and basic blocks for var in classes */
-        (*vtp->set_sizes)(i);
+        (*CurVType->set_sizes)(i);
     } /* End of variables loop */
     i = indx;
 
 error:
     close_buffer();
-    ctx.buffer = source;
+    CurCtx.buffer = CurSource;
     return (i);
 }
 
@@ -171,10 +171,10 @@ int load_sample(const char *fname) {
     Context oldctx;
     char *saux, vstnam[80], sampname[80];
 
-    memcpy(&oldctx, &ctx, sizeof(Context));
+    memcpy(&oldctx, &CurCtx, sizeof(Context));
     buf = &bufst;
     strcpy(buf->cname, fname);
-    ctx.buffer = buf;
+    CurCtx.buffer = buf;
     if (open_buffser()) {
         printf("Cannot open sample file %s\n", buf->cname);
         i = -2;
@@ -210,95 +210,95 @@ int load_sample(const char *fname) {
         i = -8;
         goto error;
     }
-    vst = ctx.vset = vsets[kread];
+    CurVSet = CurCtx.vset = VarSets[kread];
 
     /*	Find a vacant sample slot  */
     for (i = 0; i < MAX_SAMPLES; i++) {
-        if (samples[i] == 0)
+        if (Samples[i] == 0)
             goto gotit;
     }
     goto nospace;
 
 gotit:
-    samp = samples[i] = (Sample *)malloc(sizeof(Sample));
-    if (!samp)
+    CurSample = Samples[i] = (Sample *)malloc(sizeof(Sample));
+    if (!CurSample)
         goto nospace;
-    ctx.sample = samp;
-    samp->blocks = 0;
-    samp->id = i;
-    strcpy(samp->filename, buf->cname);
-    strcpy(samp->name, sampname);
+    CurCtx.sample = CurSample;
+    CurSample->blocks = 0;
+    CurSample->id = i;
+    strcpy(CurSample->filename, buf->cname);
+    strcpy(CurSample->name, sampname);
     /*	Set variable-set name in sample  */
-    strcpy(samp->vset_name, vst->name);
+    strcpy(CurSample->vset_name, CurVSet->name);
     /*	Num of variables   */
-    nv = vst->length;
-    vlist = vst->variables;
+    NumVars = CurVSet->length;
+    CurAttrList = CurVSet->variables;
 
     /*	Make a vec of nv SampleVar blocks  */
-    svars = (SampleVar *)alloc_blocks(0, nv * sizeof(SampleVar));
-    if (!svars) {
+    CurVarList = (SampleVar *)alloc_blocks(0, NumVars * sizeof(SampleVar));
+    if (!CurVarList) {
         printf("Cannot allocate memory for variables blocks\n");
         i = -3;
         goto error;
     }
-    samp->variables = svars;
+    CurSample->variables = CurVarList;
 
     /*	Read in the info for each variable into svars   */
-    for (i = 0; i < nv; i++) {
-        svars[i].id = -1;
-        svars[i].saux = 0;
-        svars[i].offset = 0;
-        svars[i].nval = 0;
+    for (i = 0; i < NumVars; i++) {
+        CurVarList[i].id = -1;
+        CurVarList[i].saux = 0;
+        CurVarList[i].offset = 0;
+        CurVarList[i].nval = 0;
     }
-    reclen = 1 + sizeof(int); /* active flag and ident  */
-    for (i = 0; i < nv; i++) {
-        svi = svars + i;
-        svi->id = i;
-        avi = vlist + i;
-        vtp = avi->vtype;
+    CurRecLen = 1 + sizeof(int); /* active flag and ident  */
+    for (i = 0; i < NumVars; i++) {
+        CurVar = CurVarList + i;
+        CurVar->id = i;
+        CurAttr = CurAttrList + i;
+        CurVType = CurAttr->vtype;
 
         /*	Make the saux block  */
-        saux = (char *)alloc_blocks(0, vtp->smpl_aux_size);
+        saux = (char *)alloc_blocks(0, CurVType->smpl_aux_size);
         if (!saux) {
             printf("Cant make auxilliary var block\n");
             i = -6;
             goto error;
         }
-        svi->saux = saux;
+        CurVar->saux = saux;
 
         /*	Read auxilliary information   */
-        if ((*vtp->read_aux_smpl)(saux)) {
+        if ((*CurVType->read_aux_smpl)(saux)) {
             printf("Error in reading auxilliary info var %d\n", i + 1);
             i = -7;
             goto error;
         }
 
         /*	Set the offset of the (missing, value) pair  */
-        svi->offset = reclen;
-        reclen += (1 + vtp->data_size); /* missing flag and value */
+        CurVar->offset = CurRecLen;
+        CurRecLen += (1 + CurVType->data_size); /* missing flag and value */
     }                                 /* End of variables loop */
 
     /*	Now attempt to read in the data. The first item is the number of cases*/
     new_line();
-    kread = read_int(&nc, 1);
+    kread = read_int(&NumCases, 1);
     if (kread) {
         printf("Cant read number of cases\n");
         i = -11;
         goto error;
     }
-    samp->num_cases = nc;
-    samp->num_active = 0;
+    CurSample->num_cases = NumCases;
+    CurSample->num_active = 0;
     /*	Make a vector of nc records each of size reclen  */
-    recs = samp->records = loc = (char *)alloc_blocks(0, nc * reclen);
-    if (!loc) {
+    CurRecords = CurSample->records = CurField = (char *)alloc_blocks(0, NumCases * CurRecLen);
+    if (!CurField) {
         printf("No space for data\n");
         i = -8;
         goto error;
     }
-    samp->record_length = reclen;
+    CurSample->record_length = CurRecLen;
 
     /*	Read in the data cases, each preceded by an active flag and ident   */
-    for (n = 0; n < nc; n++) {
+    for (n = 0; n < NumCases; n++) {
         new_line();
         kread = read_int(&caseid, 1);
         if (kread) {
@@ -309,49 +309,49 @@ gotit:
         /*	If ident negative, so clear active */
         if (caseid < 0) {
             caseid = -caseid;
-            *loc = 0;
+            *CurField = 0;
         } else {
-            *loc = 1;
-            samp->num_active++;
+            *CurField = 1;
+            CurSample->num_active++;
         }
-        loc++;
-        memcpy(loc, &caseid, sizeof(int));
-        loc += sizeof(int);
+        CurField++;
+        memcpy(CurField, &caseid, sizeof(int));
+        CurField += sizeof(int);
         /*	Posn now points to where the (missing, val) pair for the
         attribute should start.  */
-        for (i = 0; i < nv; i++) {
-            svi = svars + i;
-            avi = vlist + i;
-            vtp = avi->vtype;
-            kread = (*vtp->read_datum)(loc + 1, i);
+        for (i = 0; i < NumVars; i++) {
+            CurVar = CurVarList + i;
+            CurAttr = CurAttrList + i;
+            CurVType = CurAttr->vtype;
+            kread = (*CurVType->read_datum)(CurField + 1, i);
             if (kread < 0) {
                 printf("Data error case %d var %d\n", n + 1, i + 1);
                 swallow();
             }
             if (kread)
-                *loc = 1; /* Data missing */
+                *CurField = 1; /* Data missing */
             else {
-                *loc = 0;
-                svi->nval++;
+                *CurField = 0;
+                CurVar->nval++;
             }
-            loc += (vtp->data_size + 1);
+            CurField += (CurVType->data_size + 1);
         }
     }
-    printf("Number of active cases = %d\n", samp->num_active);
+    printf("Number of active cases = %d\n", CurSample->num_active);
     close_buffer();
-    ctx.buffer = source;
-    if (sort_sample(samp)) {
+    CurCtx.buffer = CurSource;
+    if (sort_sample(CurSample)) {
         printf("Sort failure on sample\n");
         return (-1);
     }
-    return (samp->id);
+    return (CurSample->id);
 
 nospace:
     printf("No space for another sample\n");
     i = -1;
 error:
     close_buffer();
-    memcpy(&ctx, &oldctx, sizeof(Context));
+    memcpy(&CurCtx, &oldctx, sizeof(Context));
     return (i);
 }
 
@@ -363,8 +363,8 @@ int find_sample(char *nam, int expect)
     int i;
 
     for (i = 0; i < MAX_SAMPLES; i++) {
-        if (samples[i]) {
-            if (!strcmp(nam, samples[i]->name))
+        if (Samples[i]) {
+            if (!strcmp(nam, Samples[i]->name))
                 goto searched;
         }
     }
@@ -386,8 +386,8 @@ int find_vset(char *nam)
 
     ii = -1;
     for (i = 0; i < MAX_VSETS; i++) {
-        if (vsets[i]) {
-            if (!strcmp(nam, vsets[i]->name))
+        if (VarSets[i]) {
+            if (!strcmp(nam, VarSets[i]->name))
                 ii = i;
         }
     }
@@ -526,13 +526,13 @@ int find_sample_index(int id)
     int iu, il, ic, cid, len;
     char *recs;
 
-    if ((!samp) || (samp->num_cases == 0)) {
+    if ((!CurSample) || (CurSample->num_cases == 0)) {
         printf("No defined sample\n");
         return (-1);
     }
-    recs = samp->records + 1;
-    len = samp->record_length;
-    iu = samp->num_cases;
+    recs = CurSample->records + 1;
+    len = CurSample->record_length;
+    iu = CurSample->num_cases;
     il = 0;
 chop:
     ic = (iu + il) >> 1;
@@ -562,12 +562,12 @@ int item_list(char *tlstname)
     Class *clp;
 
     /*	Check we have an attched sample and model  */
-    if (!ctx.popln)
+    if (!CurCtx.popln)
         return (-1);
-    if (!ctx.sample)
+    if (!CurCtx.sample)
         return (-2);
     set_population();
-    if (!samp->num_cases)
+    if (!CurSample->num_cases)
         return (-3);
 
     /*	Open a file  */
@@ -575,14 +575,14 @@ int item_list(char *tlstname)
     if (!tlst)
         return (-4);
     /*	Output a tree list in a primitive form  */
-    clp = rootcl;
+    clp = CurRootClass;
 
 treeloop:
     if (clp->type == Sub)
         goto nextcl1;
     fprintf(tlst, "%8d", clp->serial >> 2);
     if (clp->dad_id >= 0)
-        dadser = population->classes[clp->dad_id]->serial;
+        dadser = CurPopln->classes[clp->dad_id]->serial;
     else
         dadser = -4;
     fprintf(tlst, "%8d\n", dadser >> 2);
@@ -594,13 +594,13 @@ nextcl1:
 
     find_all(Dad + Leaf);
 
-    for (nn = 0; nn < samp->num_cases; nn++) {
+    for (nn = 0; nn < CurSample->num_cases; nn++) {
         do_case(nn, Leaf + Dad, 0);
         bl = bc = -1;
         bw = 0.0;
-        bs = samp->num_cases + 1;
-        for (i = 0; i < numson; i++) {
-            clp = sons[i];
+        bs = CurSample->num_cases + 1;
+        for (i = 0; i < NumSon; i++) {
+            clp = Sons[i];
             if ((clp->case_weight > 0.5) && (clp->weights_sum < bs)) {
                 bc = i;
                 bs = clp->weights_sum;
@@ -611,9 +611,9 @@ nextcl1:
             }
         }
 
-        memcpy(&tid, record + 1, sizeof(int));
-        fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, sons[bc]->serial >> 2,
-                sons[bl]->serial >> 2, ScoreRscale * sons[bl]->factor_scores[nn]);
+        memcpy(&tid, CurRecord + 1, sizeof(int));
+        fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, Sons[bc]->serial >> 2,
+                Sons[bl]->serial >> 2, ScoreRscale * Sons[bl]->factor_scores[nn]);
     }
 
     fclose(tlst);

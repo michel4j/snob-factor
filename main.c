@@ -222,7 +222,7 @@ int readserial(int prm) {
 
     // Advance buffer if needed
     if (terminator == 'a' || terminator == 'b') {
-        ctx.buffer->nch++;
+        CurCtx.buffer->nch++;
     }
 
     return serial_to_id(nn);
@@ -336,10 +336,10 @@ void showpoplnnames() {
     int i;
     printf("The defined models are:\n");
     for (i = 0; i < MAX_POPULATIONS; i++) {
-        if (poplns[i]) {
-            printf("%2d %s", i + 1, poplns[i]->name);
-            if (poplns[i]->sample_size)
-                printf(" Sample %s", poplns[i]->sample_name);
+        if (Populations[i]) {
+            printf("%2d %s", i + 1, Populations[i]->name);
+            if (Populations[i]->sample_size)
+                printf(" Sample %s", Populations[i]->sample_name);
             else
                 printf(" (unattached)");
             printf("\n");
@@ -355,8 +355,8 @@ void showsamplenames() {
     int k;
     printf("Loaded samples:\n");
     for (k = 0; k < MAX_SAMPLES; k++) {
-        if (samples[k]) {
-            printf("%2d:  %s\n", k + 1, samples[k]->name);
+        if (Samples[k]) {
+            printf("%2d:  %s\n", k + 1, Samples[k]->name);
         }
     }
     return;
@@ -372,7 +372,7 @@ int readpopid(int kk) {
 
     if (intparam >= 0) {
         nn = intparam - 1;
-        if (nn >= 0 && nn < MAX_POPULATIONS && poplns[nn] && poplns[nn]->id == nn) {
+        if (nn >= 0 && nn < MAX_POPULATIONS && Populations[nn] && Populations[nn]->id == nn) {
             return nn;
         }
         printf("%d is not a valid popln index\n", intparam);
@@ -397,7 +397,7 @@ int readsampid(int kk) {
 
     if (intparam >= 0) {
         nn = intparam - 1;
-        if (nn >= 0 && nn < MAX_SAMPLES && samples[nn] && samples[nn]->id == nn) {
+        if (nn >= 0 && nn < MAX_SAMPLES && Samples[nn] && Samples[nn]->id == nn) {
             return nn;
         }
         printf("%d is not a valid sample index\n", intparam);
@@ -421,7 +421,7 @@ int main() {
     char *chp;
     Context oldctx;
 
-    rseed = 1234567;
+    RSeed = 1234567;
     default_tune();
 
     /*	A section to sort the keywords into alphabetic order, and set
@@ -455,24 +455,24 @@ int main() {
             nvkey++;
     }
 
-    fix = dfix = Partial;
-    dcontrol = control = AdjAll;
+    Fix = DFix = Partial;
+    DControl = Control = AdjAll;
     /*	Clear vectors of pointers to Poplns, Samples  */
     for (k = 0; k < MAX_POPULATIONS; k++)
-        poplns[k] = 0;
+        Populations[k] = 0;
     for (k = 0; k < MAX_SAMPLES; k++)
-        samples[k] = 0;
+        Samples[k] = 0;
     for (k = 0; k < MAX_VSETS; k++)
-        vsets[k] = 0;
+        VarSets[k] = 0;
     do_types();
 
     /*	Set source to commsbuf and initialize  */
-    source = &commsbuf;
-    ctx.buffer = source;
-    source->cfile = 0;
-    source->nch = 0;
-    source->inl[0] = '\n';
-    heard = usestdin = 0;
+    CurSource = &commsbuf;
+    CurCtx.buffer = CurSource;
+    CurSource->cfile = 0;
+    CurSource->nch = 0;
+    CurSource->inl[0] = '\n';
+    Heard = UseStdIn = 0;
 
     /*ddd
     printf("Enter var and state to watch (kiv, kz)\n");
@@ -486,9 +486,9 @@ int main() {
     if (kk < 0)
         exit(2);
     else
-        vst = ctx.vset = vsets[kk];
+        CurVSet = CurCtx.vset = VarSets[kk];
 
-    seeall = 2;
+    SeeAll = 2;
     printf("Enter sample file name:\n");
     if (read_str(sparam, 1) < 0) {
         printf("Cannot read sample file name\n");
@@ -510,11 +510,11 @@ int main() {
     if (trapkk >= 0)
         scanf("%d", &trapage);
 #endif
-    print_class(root, 0);
+    print_class(CurRoot, 0);
 error:
-    printf("??? line %6d\n", source->line);
+    printf("??? line %6d\n", CurSource->line);
     new_line();
-    if (source->cfile)
+    if (CurSource->cfile)
         revert(0);
 loop:
     k = find_population("TrialPop");
@@ -524,46 +524,46 @@ loop:
     kk = report_space(0);
     if (kk != cspace)
         cspace = report_space(1);
-    if (heard) {
+    if (Heard) {
         revert(1);
-        heard = 0;
+        Heard = 0;
     }
-    if (nosubs || (control != AdjAll)) {
-        if (nosubs)
+    if (NoSubs || (Control != AdjAll)) {
+        if (NoSubs)
             printf("NOSUBS  ");
-        if (control != AdjAll) {
+        if (Control != AdjAll) {
             printf("FREEZE");
-            if (!(control & AdjPr))
+            if (!(Control & AdjPr))
                 printf(" PARAMS");
-            if (!(control & AdjSc))
+            if (!(Control & AdjSc))
                 printf(" SCORES");
-            if (!(control & AdjTr))
+            if (!(Control & AdjTr))
                 printf(" TREE");
         }
-        printf("  Cost%8.1f\n", rootcl->best_cost);
+        printf("  Cost%8.1f\n", CurRootClass->best_cost);
     }
-    if (!ctx.popln) {
+    if (!CurCtx.popln) {
         kk = 13;
         goto pickapop;
     }
     set_population();
-    fix = dfix;
-    control = dcontrol;
+    Fix = DFix;
+    Control = DControl;
     tidy(1);
     track_best(1);
-    if (!source->cfile) {
+    if (!CurSource->cfile) {
         flp();
-        population = ctx.popln;
-        cls = population->classes[population->root];
-        printf("P%1d  %4d classes, %4d leaves,  Pcost%8.1f", population->id + 1,
-               population->num_classes, population->num_leaves, cls->best_par_cost);
-        if (population->sample_size)
-            printf("  Tcost%10.1f,  Cost%10.1f", cls->best_case_cost, cls->best_cost);
+        CurPopln = CurCtx.popln;
+        CurClass = CurPopln->classes[CurPopln->root];
+        printf("P%1d  %4d classes, %4d leaves,  Pcost%8.1f", CurPopln->id + 1,
+               CurPopln->num_classes, CurPopln->num_leaves, CurClass->best_par_cost);
+        if (CurPopln->sample_size)
+            printf("  Tcost%10.1f,  Cost%10.1f", CurClass->best_case_cost, CurClass->best_cost);
         printf("\n");
-        printf("Sample %2d %s\n", (ctx.sample) ? ctx.sample->id + 1 : 0,
-               (ctx.sample) ? ctx.sample->name : "NULL");
+        printf("Sample %2d %s\n", (CurCtx.sample) ? CurCtx.sample->id + 1 : 0,
+               (CurCtx.sample) ? CurCtx.sample->name : "NULL");
     }
-    if ((source->nch) || (source->inl[0] == '\n')) {
+    if ((CurSource->nch) || (CurSource->inl[0] == '\n')) {
         if (new_line())
             goto error;
     }
@@ -597,20 +597,20 @@ loop:
         goto loop;
     case 3: /* killclass */
         k = readserial(kk);
-        if (k == root) {
+        if (k == CurRoot) {
             printf("Won't kill Root\n");
             goto loop;
         }
         if (k < 0)
             goto error;
-        Log "%s", serial_to_str(population->classes[k]) EL population->classes[k]->weights_sum = 0.0;
+        Log "%s", serial_to_str(CurPopln->classes[k]) EL CurPopln->classes[k]->weights_sum = 0.0;
         goto loop;
     case 4: /* killsons */
         k = readserial(kk);
         if (k < 0)
             goto error;
-        Log "%s", serial_to_str(population->classes[k]) EL delete_sons(k);
-        population->classes[k]->hold_type = HoldTime;
+        Log "%s", serial_to_str(CurPopln->classes[k]) EL delete_sons(k);
+        CurPopln->classes[k]->hold_type = HoldTime;
         goto loop;
     case 5: /* prclass */
         k = readserial(kk);
@@ -619,7 +619,7 @@ loop:
         i = readanint(kk);
         if (i < 0)
             goto error;
-        Log "%s  %d", serial_to_str(population->classes[k]), i EL print_class(k, i);
+        Log "%s  %d", serial_to_str(CurPopln->classes[k]), i EL print_class(k, i);
         goto loop;
     case 6: /*	adjust  */
         k = readsparam(kk);
@@ -660,21 +660,21 @@ loop:
         goto error;
     adjflagsin:
         Log "%s", sparam EL nn = AdjAll - nn;
-        control = dcontrol = (dcontrol & nn) | n;
+        Control = DControl = (DControl & nn) | n;
         goto loop;
     case 7: /*  assign  */
         k = readachar(kk);
         switch (k) {
         case 'p':
-            dfix = Partial;
+            DFix = Partial;
             goto assignok;
             ;
         case 'r':
-            dfix = Random;
+            DFix = Random;
             goto assignok;
             ;
         case 'm':
-            dfix = Most_likely;
+            DFix = Most_likely;
             goto assignok;
             ;
         }
@@ -685,18 +685,18 @@ loop:
         k = readserial(kk);
         if (k < 0)
             goto error;
-        if (population->classes[k]->type != Leaf) {
-            printf("Class %s is not a leaf\n", serial_to_str(population->classes[k]));
+        if (CurPopln->classes[k]->type != Leaf) {
+            printf("Class %s is not a leaf\n", serial_to_str(CurPopln->classes[k]));
             goto loop;
         }
-        Log "%s", serial_to_str(population->classes[k]) EL if (split_leaf(k))
-                      printf("Cannot split class%s\n", serial_to_str(population->classes[k]));
+        Log "%s", serial_to_str(CurPopln->classes[k]) EL if (split_leaf(k))
+                      printf("Cannot split class%s\n", serial_to_str(CurPopln->classes[k]));
         goto loop;
     case 9: /* deldad */
         k = readserial(kk);
         if (k < 0)
             goto error;
-        Log "%s", serial_to_str(population->classes[k]) EL k = population->classes[k]->serial;
+        Log "%s", serial_to_str(CurPopln->classes[k]) EL k = CurPopln->classes[k]->serial;
         drop = splice_dad(k);
         goto dropprint;
 
@@ -742,18 +742,18 @@ loop:
         printf("Please donot use a popln name beginning BST_\n");
         goto error;
     ok11:
-        Log "%d %s", i, sparam EL i = copy_population(population->id, i, sparam);
+        Log "%d %s", i, sparam EL i = copy_population(CurPopln->id, i, sparam);
         if (i < 0)
             goto error;
         printf("Index%3d = popln %s\n", i + 1, sparam);
-        control = dcontrol;
-        fix = dfix;
+        Control = DControl;
+        Fix = DFix;
         goto loop;
     case 12: /*  killpop */
         k = readpopid(kk);
         if (k < 0)
             goto error;
-        Log "%s", poplns[k]->name EL destroy_population(k);
+        Log "%s", Populations[k]->name EL destroy_population(k);
         goto loop;
     case 13: /* pickpop */
         goto pickapop;
@@ -767,11 +767,11 @@ loop:
         k = readsparam(kk);
         if (k < 0)
             goto error;
-        if (source->cfile)
+        if (CurSource->cfile)
             close_buffer();
         strcpy(cfilebuf.cname, sparam);
-        source = &cfilebuf;
-        ctx.buffer = source;
+        CurSource = &cfilebuf;
+        CurCtx.buffer = CurSource;
         if (open_buffser()) {
             printf("Cant open file %s\n", sparam);
             goto error;
@@ -780,12 +780,12 @@ loop:
     case 17: /* readsamp  */
         if (readsparam(kk) < 0)
             goto error;
-        memcpy(&oldctx, &ctx, sizeof(Context));
+        memcpy(&oldctx, &CurCtx, sizeof(Context));
         k = load_sample(sparam);
-        memcpy(&ctx, &oldctx, sizeof(Context));
+        memcpy(&CurCtx, &oldctx, sizeof(Context));
         if (k < 0)
             goto error;
-        printf("Sample %s index%2d from file %s\n", samples[k]->name, k + 1,
+        printf("Sample %s index%2d from file %s\n", Samples[k]->name, k + 1,
                sparam);
         Log "%s", sparam EL goto loop;
     case 18: /*  flatten  */
@@ -810,13 +810,13 @@ loop:
         k2 = readserial(kk);
         if (k2 < 0)
             goto error;
-        k1 = population->classes[k1]->serial;
-        k2 = population->classes[k2]->serial;
-        Log "%s %s", serial_to_str(population->classes[k1]),
-            serial_to_str(population->classes[k2]) EL drop = insert_dad(k1, k2, &k);
+        k1 = CurPopln->classes[k1]->serial;
+        k2 = CurPopln->classes[k2]->serial;
+        Log "%s %s", serial_to_str(CurPopln->classes[k1]),
+            serial_to_str(CurPopln->classes[k2]) EL drop = insert_dad(k1, k2, &k);
         flp();
         if (k >= 0)
-            printf("New Dad's serial%s\n", serial_to_str(population->classes[k]));
+            printf("New Dad's serial%s\n", serial_to_str(CurPopln->classes[k]));
     dropprint:
         if (drop < -1000000.0) {
             printf("Cannot be done\n");
@@ -876,7 +876,7 @@ loop:
         j = readsparam(kk);
         if (j < 0)
             goto error;
-        Log "%s %d %s", poplns[k]->name, i, sparam EL i = save_population(k, i, sparam);
+        Log "%s %d %s", Populations[k]->name, i, sparam EL i = save_population(k, i, sparam);
         if (i < 0) {
             printf("Savepop failed\n");
             goto error;
@@ -891,7 +891,7 @@ loop:
             printf("Restorepop failed\n");
             goto error;
         }
-        printf("Model %s Index%3d\n", poplns[k]->name, k + 1);
+        printf("Model %s Index%3d\n", Populations[k]->name, k + 1);
         goto loop;
 
     case 29: /* nosubs */
@@ -899,10 +899,10 @@ loop:
         if (nn < 0)
             goto error;
         if (nn)
-            nosubs = 1;
+            NoSubs = 1;
         else
-            nosubs = 0;
-        Log "%d", nosubs EL goto loop;
+            NoSubs = 0;
+        Log "%d", NoSubs EL goto loop;
 
     case 30: /* binhier */
         nn = readanint(kk);
@@ -918,10 +918,10 @@ loop:
         k2 = readserial(kk);
         if (k2 < 0)
             goto error;
-        k1 = population->classes[k1]->serial;
-        k2 = population->classes[k2]->serial;
-        Log "%s %s", serial_to_str(population->classes[k1]),
-            serial_to_str(population->classes[k2]) EL drop = move_class(k1, k2);
+        k1 = CurPopln->classes[k1]->serial;
+        k2 = CurPopln->classes[k2]->serial;
+        Log "%s %s", serial_to_str(CurPopln->classes[k1]),
+            serial_to_str(CurPopln->classes[k2]) EL drop = move_class(k1, k2);
         printf("Move changes cost by %12.1f\n", -drop);
         goto loop;
 
@@ -966,16 +966,16 @@ loop:
         k = readsampid(kk);
         if (k < 0)
             goto error;
-        printf("Selecting sample %s\n", samples[k]->name);
-        Log "%s", samples[k]->name EL i = copy_population(population->id, 0, "OldWork");
+        printf("Selecting sample %s\n", Samples[k]->name);
+        Log "%s", Samples[k]->name EL i = copy_population(CurPopln->id, 0, "OldWork");
         if (i < 0) {
             printf("Can't make OldWork copy of work\n");
             goto error;
         }
-        if (ctx.popln)
-            destroy_population(ctx.popln->id);
-        population = ctx.popln = 0;
-        samp = ctx.sample = samples[k];
+        if (CurCtx.popln)
+            destroy_population(CurCtx.popln->id);
+        CurPopln = CurCtx.popln = 0;
+        CurSample = CurCtx.sample = Samples[k];
         i = init_population();
         if (i < 0) {
             printf("Cannot make first population for sample\n");
@@ -988,8 +988,8 @@ pickapop:
     i = readpopid(kk);
     if (i < 0)
         goto error;
-    if (!strcmp(poplns[i]->name, "work")) {
-        if (ctx.popln && (ctx.popln->id == i))
+    if (!strcmp(Populations[i]->name, "work")) {
+        if (CurCtx.popln && (CurCtx.popln->id == i))
             printf("Work already picked\n");
         else
             printf("Switching context to existing 'work'");
@@ -998,8 +998,8 @@ pickapop:
     }
     k = set_work_population(i);
 picked:
-    ctx.popln = population = poplns[k];
-    Log "%s", poplns[i]->name EL goto loop;
+    CurCtx.popln = CurPopln = Populations[k];
+    Log "%s", Populations[i]->name EL goto loop;
 #ifdef ZZ
 #endif
 }

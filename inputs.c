@@ -25,7 +25,7 @@ int terminator;
 int open_buffser() {
     Buffer *buf;
 
-    buf = ctx.buffer;
+    buf = CurCtx.buffer;
     buf->cfile = fopen(buf->cname, "r");
     if (!buf->cfile) {
         buf->nch = -1;
@@ -45,23 +45,23 @@ int new_line() {
     /*	Discard anything in inl and read in a new line, to '\n'  */
     int i, j;
 
-    buf = ctx.buffer;
+    buf = CurCtx.buffer;
     if (buf->cfile == 0) { /* Input via comms */
         j = 0;             /* To count tries at opening comms */
     retry:
-        if (usestdin)
+        if (UseStdIn)
             goto usestd;
         i = hark(buf->inl);
         /*	i = 0 means comms OK but no input yet. 1 means input present
             -1 means no comms file or bad format  */
         if (i == 1) {
-            heard = buf->nch = 0;
+            Heard = buf->nch = 0;
             return (0);
         }
         if (i < 0) {
             j++;
             if (j > 3) {
-                usestdin = 1;
+                UseStdIn = 1;
                 printf("There being no comms file,\
  input will be taken from StdInput\n");
                 goto retry;
@@ -92,7 +92,7 @@ int new_line() {
         if (j != '\n')
             goto nextchar;
         buf->inl[i + 1] = 0;
-        heard = buf->nch = 0;
+        Heard = buf->nch = 0;
         return (0);
     }
 
@@ -139,22 +139,22 @@ void reperror() {
     int i, j;
     char k;
 
-    ctx.buffer->nch--;
-    printf("Format error line %6d  character %3d\n", ctx.buffer->line, ctx.buffer->nch + 1);
+    CurCtx.buffer->nch--;
+    printf("Format error line %6d  character %3d\n", CurCtx.buffer->line, CurCtx.buffer->nch + 1);
     /*	Print some context of the error from ctx.buffer->inl
      *	Print up to 70 chars max   */
     i = 0;
-    if (ctx.buffer->nch > 60)
-        i = ctx.buffer->nch - 60;
+    if (CurCtx.buffer->nch > 60)
+        i = CurCtx.buffer->nch - 60;
     for (j = 0; j < 70; j++) {
-        k = ctx.buffer->inl[i + j];
+        k = CurCtx.buffer->inl[i + j];
         if (k == '\n')
             goto done;
         printf("%c", k);
     }
 done:
     printf("\n");
-    for (j = 0; j < (ctx.buffer->nch - i); j++)
+    for (j = 0; j < (CurCtx.buffer->nch - i); j++)
         printf("%c", '-');
     printf("%s", "^\n");
     return;
@@ -169,7 +169,7 @@ int read_int(int *x, int cnl) {
     Buffer *buf;
     int sign, i, v;
 
-    buf = ctx.buffer;
+    buf = CurCtx.buffer;
     v = sign = terminator = 0;
 
 skip:
@@ -228,7 +228,7 @@ int read_double(double *x, int cnl) {
     Buffer *buf;
     int sign, i;
     double v, pow;
-    buf = ctx.buffer;
+    buf = CurCtx.buffer;
     sign = 0;
     v = 0.0;
     pow = 1.0;
@@ -303,7 +303,7 @@ int read_str(char *str, int cnl) {
     Buffer *buf;
     int i, n;
 
-    buf = ctx.buffer;
+    buf = CurCtx.buffer;
     n = 0;
 skip:
     i = buf->inl[buf->nch++];
@@ -362,7 +362,7 @@ int read_char(int cnl) {
     Buffer *buf;
     int i;
 
-    buf = ctx.buffer;
+    buf = CurCtx.buffer;
 skip:
     i = buf->inl[buf->nch++];
     if (i == '\n') {
@@ -383,7 +383,7 @@ void swallow() {
     Buffer *buf;
     int i;
 
-    buf = ctx.buffer;
+    buf = CurCtx.buffer;
 gulp:
     i = buf->inl[buf->nch];
     switch (i) {
@@ -399,12 +399,12 @@ gulp:
 /*	--------------------------  bufclose () ------------------  */
 /*	To close the open input file   */
 void close_buffer() {
-    if (!ctx.buffer)
+    if (!CurCtx.buffer)
         return;
-    if (!(ctx.buffer->cfile))
+    if (!(CurCtx.buffer->cfile))
         return;
-    fclose(ctx.buffer->cfile);
-    ctx.buffer = 0;
+    fclose(CurCtx.buffer->cfile);
+    CurCtx.buffer = 0;
     return;
 }
 
@@ -413,13 +413,13 @@ void close_buffer() {
 /*	If flag, revert due to an interrupt via hark, so use existing
 commsbuf line. Otherwise, get a new line  */
 void revert(int flag) {
-    if (source->cfile)
-        printf("Command file %s\n terminated at line %d\n", source->cname, source->line);
+    if (CurSource->cfile)
+        printf("Command file %s\n terminated at line %d\n", CurSource->cname, CurSource->line);
     close_buffer();
-    source = &commsbuf;
-    ctx.buffer = source;
+    CurSource = &commsbuf;
+    CurCtx.buffer = CurSource;
     if (flag)
-        source->nch = 0;
+        CurSource->nch = 0;
     else
         new_line(commsbuf.inl);
     return;

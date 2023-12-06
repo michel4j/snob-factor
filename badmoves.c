@@ -7,7 +7,7 @@ static char *movestr[] = {" ", "Insert", "Delete", "Move"};
 /*	To clear the badmoves table  */
 void clr_bad_move() {
     for (int i = 0; i < BadSize; i++)
-        badkey[i] = 0;
+        BadKey[i] = 0;
     return;
 }
 
@@ -33,7 +33,7 @@ int chk_bad_move(int code, int w1, int w2) {
         hi = -1 - hi;
     hi = hi % BadSize;
     bad = 0;
-    if (badkey[hi] == key) {
+    if (BadKey[hi] == key) {
         flp();
         bad = 1;
         printf("Badmove rejects %s", movestr[code]);
@@ -64,6 +64,6 @@ void set_bad_move(int code, int s1, int s2) {
     if (hi < 0)
         hi = -1 - hi;
     hi = hi % BadSize;
-    badkey[hi] = key;
+    BadKey[hi] = key;
     return;
 }
