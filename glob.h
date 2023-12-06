@@ -173,32 +173,32 @@ typedef struct EVinstStruct { /* Stuff for var in class in expln */
     double num_values;               /*  Num of values */
     double btcost, ntcost, stcost, ftcost;
     double bpcost, npcost, spcost, fpcost;
-    double sum_scores_sq; /* weighted sum of squared scores */
+    double vsq; /* weighted sum of squared scores */
     int id;
 } EVinst;
 
 typedef struct ClassStruct {
     double relab;
     double mlogab;                 /*  - log relab  */
-    double best_cost;                 /* Best total class cost  */
-    double dad_cost, nofac_cost, fac_cost; /* Class costs as dad, sansfac, confac */
-    double best_par_cost;
-    double dad_par_cost, nofac_par_cost, fac_par_cost; /* Parameter costs in above */
-    double best_par_cost;
-    double best_fac_cost; /*  Used to track best cfcost to detect improvement*/
-    double weights_sum;     /* sum of weights of members  */
-    double sum_score_sq;     /* Sum of squared scores */
-    double score_boost;  /* Used to inflate score vector early on  */
-    double avg_factor_score;    /* average vv  */
+    double cbcost;                 /* Best total class cost  */
+    double cncost, cscost, cfcost; /* Class costs as dad, sansfac, confac */
+    double cbpcost;
+    double cnpcost, cspcost, cfpcost; /* Parameter costs in above */
+    double cbtcost;
+    double cbfcost; /*  Used to track best cfcost to detect improvement*/
+    double cnt;     /* sum of weights of members  */
+    double vsq;     /* Sum of squared scores */
+    double vboost;  /* Used to inflate score vector early on  */
+    double avvv;    /* average vv  */
     char type;      /* 0 = ?, 1 = root, 2 = dad, 3 = leaf, 4 = sub */
-    char hold_type;
+    char holdtype;
     char use; /* Current use: 1=sansfac, 2=confac */
-    char hold_use;
-    int boost_count;         /*  Monitors need to boost vsq  */
-    int score_change_count;      /*  Counts significant score changes  */
+    char holduse;
+    int boostcnt;         /*  Monitors need to boost vsq  */
+    int scorechange;      /*  Counts significant score changes  */
     int age;              /*  age in massage counts  */
-    int dad_id, sib_id, son_id; /* id links in class hierarchy */
-    int num_sons;             /* Number of son classes */
+    int idad, isib, ison; /* id links in class hierarchy */
+    int nson;             /* Number of son classes */
     int serial;
     /*	******************* Items above this line must be distributed to
                 all remotes before each pass through the data.
@@ -210,19 +210,19 @@ typedef struct ClassStruct {
     double cfvcost;                   /*  Factor-score cost included in cftcost  */
     double cntcost, cstcost, cftcost; /* Thing costs in above */
     double vav;                       /* sum of log vvsprds */
-    double factor_score_sum;                     /* sum of vvs  */
+    double totvv;                     /* sum of vvs  */
     int scancnt;                      /*  Number of things considered  */
     /*	********************  Items below here are generated locally by
             docase for each case, and need not be distributed or
             returned  */
-    int case_score;       /*  Integer score of current case  */
-    double total_case_cost;  /*  tcost of current case  */
-    double nofac_case_cost; /* Cost of current case in no-fac class */
-    double fac_case_cost; /* """"""""""""""""""""""" factor class */
-    double coding_case_cost; /* Part of casefcost due to coding score */
-    double dad_case_cost; /* """""""""""""""""""""""  dad   class */
-    double case_weight;    /*  weight of current case  */
-    double case_fac_score, case_fac_score_sq, cvvsprd, clvsprd;
+    int caseiv;       /*  Integer score of current case  */
+    double casecost;  /*  tcost of current case  */
+    double casescost; /* Cost of current case in no-fac class */
+    double casefcost; /* """"""""""""""""""""""" factor class */
+    double casevcost; /* Part of casefcost due to coding score */
+    double casencost; /* """""""""""""""""""""""  dad   class */
+    double casewt;    /*  weight of current case  */
+    double cvv, cvvsq, cvvsprd, clvsprd;
     /*	*******************
         Items below this line are set up when class is made by makeclass()
     and should NOT be copied to a new class structure. IT IS ASSUMED THAT
@@ -232,7 +232,7 @@ typedef struct ClassStruct {
         change, but may have different values in different machines.
         ********************* */
     int id;
-    short *factor_scores;       /* Factor scores */
+    short *vv;       /* Factor scores */
                      /* Scores times 4096 held as signed shorts in +-30000 */
     CVinst **basics; /* ptr to vec of ptrs to variable basics */
     EVinst **stats;  /* ptr to vec of ptrs to variable stats blocks*/
@@ -247,22 +247,22 @@ typedef struct PVinstStruct {
 
 typedef struct PoplnStruct {
     int id;
-    Block *blocks, *model_blocks; /* Ptrs to bocks allocated for popln,
+    Block *pblks, *jblks; /* Ptrs to bocks allocated for popln,
       and for popln as model of sample */
-    char vst_name[80];     /* Name of variable-set */
-    char sample_name[80];  /*  Name of sample to which popln is attached if any*/
-    int sample_size;               /*  Size of sample attached, or 0 */
-    int num_cases;       /*  num of active cases in sample used for training */
+    char vstname[80];     /* Name of variable-set */
+    char samplename[80];  /*  Name of sample to which popln is attached if any*/
+    int nc;               /*  Size of sample attached, or 0 */
+    int samplesize;       /*  num of active cases in sample used for training */
     Class **classes;      /* ptr to vec of ptrs to classes  */
-    PVinst *variables;        /* Ptr to vector of PVinsts, one per variable */
-    char filename[80];      /*  Popln file name  */
+    PVinst *pvars;        /* Ptr to vector of PVinsts, one per variable */
+    char dfname[80];      /*  Popln file name  */
     char name[80];
-    int next_serial; /*  Next serial number for a new class */
-    int num_classes;        /* Number of classes  */
-    int num_leaves;      /* Number of leaves */
+    int nextserial; /*  Next serial number for a new class */
+    int ncl;        /* Number of classes  */
+    int nleaf;      /* Number of leaves */
     int root;       /* index of root class  */
-    int cls_vec_len;       /*  Length of 'classes' vec. */
-    int hi_class;       /*  Highest allocated entry in pop->classes */
+    int mncl;       /*  Length of 'classes' vec. */
+    int hicl;       /*  Highest allocated entry in pop->classes */
 } Population;
 
 /*	-------------------------------------------------------------   */

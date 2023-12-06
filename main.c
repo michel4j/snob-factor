@@ -338,8 +338,8 @@ void showpoplnnames() {
     for (i = 0; i < MAX_POPULATIONS; i++) {
         if (poplns[i]) {
             printf("%2d %s", i + 1, poplns[i]->name);
-            if (poplns[i]->sample_size)
-                printf(" Sample %s", poplns[i]->sample_name);
+            if (poplns[i]->nc)
+                printf(" Sample %s", poplns[i]->samplename);
             else
                 printf(" (unattached)");
             printf("\n");
@@ -540,7 +540,7 @@ loop:
             if (!(control & AdjTr))
                 printf(" TREE");
         }
-        printf("  Cost%8.1f\n", rootcl->best_cost);
+        printf("  Cost%8.1f\n", rootcl->cbcost);
     }
     if (!ctx.popln) {
         kk = 13;
@@ -556,9 +556,9 @@ loop:
         population = ctx.popln;
         cls = population->classes[population->root];
         printf("P%1d  %4d classes, %4d leaves,  Pcost%8.1f", population->id + 1,
-               population->num_classes, population->num_leaves, cls->best_par_cost);
-        if (population->sample_size)
-            printf("  Tcost%10.1f,  Cost%10.1f", cls->best_par_cost, cls->best_cost);
+               population->ncl, population->nleaf, cls->cbpcost);
+        if (population->nc)
+            printf("  Tcost%10.1f,  Cost%10.1f", cls->cbtcost, cls->cbcost);
         printf("\n");
         printf("Sample %2d %s\n", (ctx.sample) ? ctx.sample->id + 1 : 0,
                (ctx.sample) ? ctx.sample->name : "NULL");
@@ -603,14 +603,14 @@ loop:
         }
         if (k < 0)
             goto error;
-        Log "%s", sers(population->classes[k]) EL population->classes[k]->weights_sum = 0.0;
+        Log "%s", sers(population->classes[k]) EL population->classes[k]->cnt = 0.0;
         goto loop;
     case 4: /* killsons */
         k = readserial(kk);
         if (k < 0)
             goto error;
         Log "%s", sers(population->classes[k]) EL killsons(k);
-        population->classes[k]->hold_type = HoldTime;
+        population->classes[k]->holdtype = HoldTime;
         goto loop;
     case 5: /* prclass */
         k = readserial(kk);
