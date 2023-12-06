@@ -274,6 +274,26 @@ typedef struct ContextStruct {
     Buffer *buffer;
 } Context;
 
+/* Classification Result */
+typedef struct ResultStruct {
+    int num_classes;    // Number of classes found, includes Dads, Leaves and Subs
+    int num_leaves;     // Number of leaves, these are the relevant categories
+    double model_length;   // Cost of Transmitting Model 
+    double data_length;   // Cost of Transmitting Data
+    double message_length; // Total Cost
+} Result;
+
+
+/* Structur for calculating factor scores */
+typedef struct ScoreStruct {
+    double CurCaseFacScore, CurCaseFacScoreSq, cvvsprd;
+    int CaseFacInt; /*  integer form of case_fac_score*4096 */
+    double ncasecost, scasecost, fcasecost;
+    double CaseFacScoreD1, CaseFacScoreD2; /* derivs of case cost wrt score  */
+    double EstFacScoreD2;                     /* An over-estimate of CaseFacScoreD2 used in score ajust */
+    double CaseFacScoreD3;
+} Score;
+
 /*	--------- Functions -------------------------------   */
 
 /*	In LISTEN.c	*/
@@ -396,7 +416,6 @@ int thinglist(char *tlstname);
 /*		end samples.c		*/
 
 /*	In GLOB.c	*/
-void cmcpy(void *pt, void *pf, int ntm);
 char *sers(Class *cll);
 
 /*	--------------  Global variables declared here  ----------------  */

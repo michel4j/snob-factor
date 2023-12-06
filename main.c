@@ -780,9 +780,9 @@ loop:
     case 17: /* readsamp  */
         if (readsparam(kk) < 0)
             goto error;
-        cmcpy(&oldctx, &ctx, sizeof(Context));
+        memcpy(&oldctx, &ctx, sizeof(Context));
         k = readsample(sparam);
-        cmcpy(&ctx, &oldctx, sizeof(Context));
+        memcpy(&ctx, &oldctx, sizeof(Context));
         if (k < 0)
             goto error;
         printf("Sample %s index%2d from file %s\n", samples[k]->name, k + 1,

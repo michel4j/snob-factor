@@ -171,7 +171,7 @@ int readsample(char *fname) {
     Context oldctx;
     char *saux, vstnam[80], sampname[80];
 
-    cmcpy(&oldctx, &ctx, sizeof(Context));
+    memcpy(&oldctx, &ctx, sizeof(Context));
     buf = &bufst;
     strcpy(buf->cname, fname);
     ctx.buffer = buf;
@@ -315,7 +315,7 @@ gotit:
             samp->num_active++;
         }
         loc++;
-        cmcpy(loc, &caseid, sizeof(int));
+        memcpy(loc, &caseid, sizeof(int));
         loc += sizeof(int);
         /*	Posn now points to where the (missing, val) pair for the
         attribute should start.  */
@@ -351,7 +351,7 @@ nospace:
     i = -1;
 error:
     bufclose();
-    cmcpy(&ctx, &oldctx, sizeof(Context));
+    memcpy(&ctx, &oldctx, sizeof(Context));
     return (i);
 }
 
@@ -435,11 +435,11 @@ again:
     /*	Do a short block by bubble  */
     rp1 = bot;
     for (nt = 0; nt < nn - 1; nt++) {
-        cmcpy(&bv, rp1 + 1, sizeof(int));
+        memcpy(&bv, rp1 + 1, sizeof(int));
         rp2 = cen = rp1;
         for (nb = nt + 1; nb < nn; nb++) {
             rp2 += len;
-            cmcpy(&av, rp2 + 1, sizeof(int));
+            memcpy(&av, rp2 + 1, sizeof(int));
             if (av < bv) {
                 bv = av;
                 cen = rp2;
@@ -457,13 +457,13 @@ recurse:
     if (nt == nn)
         nt = nn / 2;
     cen = bot + nt * len;
-    cmcpy(&cv, cen + 1, sizeof(int));
+    memcpy(&cv, cen + 1, sizeof(int));
     top = bot + (nn - 1) * len;
     rp1 = bot;
     rp2 = top;
     nt = nb = 0;
 loop1:
-    cmcpy(&av, rp2 + 1, sizeof(int));
+    memcpy(&av, rp2 + 1, sizeof(int));
     if (av >= cv) {
         nt++;
         rp2 -= len;
@@ -473,7 +473,7 @@ loop1:
             goto done;
     }
 loop2:
-    cmcpy(&bv, rp1 + 1, sizeof(int));
+    memcpy(&bv, rp1 + 1, sizeof(int));
     if (bv < cv) {
         nb++;
         rp1 += len;
@@ -543,7 +543,7 @@ int id;
     il = 0;
 chop:
     ic = (iu + il) >> 1;
-    cmcpy(&cid, recs + ic * len, sizeof(int));
+    memcpy(&cid, recs + ic * len, sizeof(int));
     if (ic == il)
         goto chopped;
     if (cid > id) {
@@ -619,7 +619,7 @@ nextcl1:
             }
         }
 
-        cmcpy(&tid, record + 1, sizeof(int));
+        memcpy(&tid, record + 1, sizeof(int));
         fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, sons[bc]->serial >> 2,
                 sons[bl]->serial >> 2, ScoreRscale * sons[bl]->factor_scores[nn]);
     }

@@ -809,7 +809,7 @@ void docase(int cse, int all, int derivs) {
             psaux->missing = 1;
         } else {
             psaux->missing = 0;
-            cmcpy(&(psaux->xn), loc + 1, vlist[i].vtype->data_size);
+            memcpy(&(psaux->xn), loc + 1, vlist[i].vtype->data_size);
         }
     }
 

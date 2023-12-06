@@ -237,9 +237,9 @@ void makesubs(int kk){
         cvi = cls->basics[iv];
         scvi = clsa->basics[iv];
         nch = vlist[iv].basic_size;
-        cmcpy(scvi, cvi, nch);
+        memcpy(scvi, cvi, nch);
         scvi = clsb->basics[iv];
-        cmcpy(scvi, cvi, nch);
+        memcpy(scvi, cvi, nch);
     }
 
     clsa->age = 0;
@@ -316,7 +316,7 @@ int copypop(int p1, int fill, char *newname){
     int indx, sindx, kk, jdad, nch, n, i, iv, hiser;
 
     nomcnt = 0.0;
-    cmcpy(&oldctx, &ctx, sizeof(Context));
+    memcpy(&oldctx, &ctx, sizeof(Context));
     indx = -1;
     fpop = poplns[p1];
     if (!fpop) {
@@ -410,7 +410,7 @@ newclass:
     }
     cls = population->classes[kk];
     nch = ((char *)&cls->id) - ((char *)cls);
-    cmcpy(cls, fcls, nch);
+    memcpy(cls, fcls, nch);
     cls->sib_id = cls->son_id = -1;
     cls->dad_id = jdad;
     cls->num_sons = 0;
@@ -422,7 +422,7 @@ newclass:
         fcvi = fcls->basics[iv];
         cvi = cls->basics[iv];
         nch = vlist[iv].basic_size;
-        cmcpy(cvi, fcvi, nch);
+        memcpy(cvi, fcvi, nch);
     }
 
     /*	Copy stats  */
@@ -430,7 +430,7 @@ newclass:
         fevi = fcls->stats[iv];
         evi = cls->stats[iv];
         nch = vlist[iv].stats_size;
-        cmcpy(evi, fevi, nch);
+        memcpy(evi, fevi, nch);
     }
     if (fill == 0)
         goto classdone;
@@ -480,7 +480,7 @@ alldone: /*  All classes copied. Tidy up */
 finish:
     /*	Unless newname = "work", revert to old context  */
     if (strcmp(newname, "work") || (indx < 0))
-        cmcpy(&ctx, &oldctx, sizeof(Context));
+        memcpy(&ctx, &oldctx, sizeof(Context));
     setpop();
     return (indx);
 }
@@ -694,7 +694,7 @@ int savepop(int p1, int fill, char *newname){
     EVinst *evi;
     int leng, nch, i, iv, nc, jcl;
 
-    cmcpy(&oldctx, &ctx, sizeof(Context));
+    memcpy(&oldctx, &ctx, sizeof(Context));
     fl = 0;
     if (!poplns[p1]) {
         printf("No popln index %d\n", p1);
@@ -810,7 +810,7 @@ finish:
     fclose(fl);
     printf("\nModel %s  Cost %10.2f  saved in file %s\n", oldname,
            population->classes[0]->best_cost, newname);
-    cmcpy(&ctx, &oldctx, sizeof(Context));
+    memcpy(&ctx, &oldctx, sizeof(Context));
     setpop();
     return (leng);
 }
@@ -827,7 +827,7 @@ int restorepop(char *nam){
     FILE *fl;
 
     indx = -999;
-    cmcpy(&oldctx, &ctx, sizeof(Context));
+    memcpy(&oldctx, &ctx, sizeof(Context));
     fl = fopen(nam, "r");
     if (!fl) {
         printf("Cannot open %s\n", nam);
@@ -955,7 +955,7 @@ classdone:
         goto pickwork;
     strcpy(population->name, pname);
 error:
-    cmcpy(&ctx, &oldctx, sizeof(Context));
+    memcpy(&ctx, &oldctx, sizeof(Context));
     goto finish;
 
 pickwork:
@@ -977,7 +977,7 @@ int loadpop(int pp){
     Population *fpop;
 
     windx = -1;
-    cmcpy(&oldctx, &ctx, sizeof(Context));
+    memcpy(&oldctx, &ctx, sizeof(Context));
     fpop = 0;
     if (pp < 0)
         goto error;
@@ -1033,7 +1033,7 @@ fixscores:
     goto finish;
 
 error:
-    cmcpy(&ctx, &oldctx, sizeof(Context));
+    memcpy(&ctx, &oldctx, sizeof(Context));
 finish:
     /*	Restore 'nc' of copied popln  */
     if (fpop)

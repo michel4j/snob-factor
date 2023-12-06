@@ -235,7 +235,7 @@ int readdat(char *loc, int iv) {
             xn.xx *= (pi / 180.0);
         xn.sinxx = epsfac * sin(xn.xx);
         xn.cosxx = epsfac * cos(xn.xx);
-        cmcpy(loc, &xn, sizeof(Datum));
+        memcpy(loc, &xn, sizeof(Datum));
     }
     return (i);
 }

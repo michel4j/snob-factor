@@ -60,8 +60,7 @@ a sub, or it they have different dads, returns a huge negative benefit  */
 of the other, provided neither is the root  */
 /*	The change, if possible, is made to ctx.popln.
     dadid is set to the id of the new dad, if any.  */
-double insdad(ser1, ser2, dadid)
-int ser1, ser2, *dadid;
+double insdad(int ser1, int ser2, int *dadid)
 {
     Class *cls1, *cls2, *ndad, *odad;
     EVinst *evi, *fevi;
@@ -114,7 +113,7 @@ configok:
     ndad = population->classes[newid]; /*  The new dad  */
                                 /*	Copy old dad's basics, stats into new dad  */
     nch = ((char *)&odad->id) - ((char *)odad);
-    cmcpy(ndad, odad, nch);
+    memcpy(ndad, odad, nch);
     ndad->serial = population->next_serial << 2;
     population->next_serial++;
     ndad->age = MinFacAge - 3;
@@ -124,7 +123,7 @@ configok:
         fcvi = odad->basics[iv];
         cvi = ndad->basics[iv];
         nch = vlist[iv].basic_size;
-        cmcpy(cvi, fcvi, nch);
+        memcpy(cvi, fcvi, nch);
     }
 
     /*      Copy stats  */
@@ -132,7 +131,7 @@ configok:
         fevi = odad->stats[iv];
         evi = ndad->stats[iv];
         nch = vlist[iv].stats_size;
-        cmcpy(evi, fevi, nch);
+        memcpy(evi, fevi, nch);
     }
 
     ndad->dad_id = oldid; /* So new dad is son of old dad */
@@ -159,8 +158,7 @@ done:
 /*	----------------------  bestinsdad ---------------------   */
 /*	Returns serial of new dad, or 0 if best no good, or -1 if none
 to try  */
-int bestinsdad(force)
-int force;
+int bestinsdad(int force)
 {
     Context oldctx;
     Class *cls1, *cls2;
@@ -193,7 +191,7 @@ int force;
         succ = -1;
         goto alldone;
     }
-    cmcpy(&oldctx, &ctx, sizeof(Context));
+    memcpy(&oldctx, &ctx, sizeof(Context));
 
     i1 = 0;
 outer:
@@ -236,7 +234,7 @@ inner:
         bser2 = ser2;
     }
 i2done:
-    cmcpy(&ctx, &oldctx, sizeof(Context));
+    memcpy(&ctx, &oldctx, sizeof(Context));
     setpop(); /* Return to original popln */
     i2++;
     if (i2 <= hiid)
@@ -284,7 +282,7 @@ alldone:
         goto winner;
     setbadm(1, bser1, bser2);
     newser = 0;
-    cmcpy(&ctx, &oldctx, sizeof(Context));
+    memcpy(&ctx, &oldctx, sizeof(Context));
     setpop(); /* Return to original popln */
     flp();
     printf("Failed ******\n");
@@ -325,8 +323,7 @@ void rebuild() {
 /*	If class ser is Dad (not root), it is removed, and its sons become
 sons of its dad.
     */
-double deldad(ser)
-int ser;
+double deldad(int ser)
 {
     Class *son;
     int kk, kkd, kks;
@@ -381,7 +378,7 @@ int bestdeldad() {
     doall(1, 1);
     origcost = rootcl->best_cost;
     hiid = population->hi_class;
-    cmcpy(&oldctx, &ctx, sizeof(Context));
+    memcpy(&oldctx, &ctx, sizeof(Context));
     i1 = 0;
 loop:
     if (i1 == root)
@@ -408,7 +405,7 @@ loop:
         bser = ser;
     }
 i1done:
-    cmcpy(&ctx, &oldctx, sizeof(Context));
+    memcpy(&ctx, &oldctx, sizeof(Context));
     setpop();
     i1++;
     if (i1 <= hiid)
@@ -438,7 +435,7 @@ i1done:
         goto winner;
     setbadm(2, 0, bser); /* log failure in badmoves */
     bser = 0;
-    cmcpy(&ctx, &oldctx, sizeof(Context));
+    memcpy(&ctx, &oldctx, sizeof(Context));
     setpop();
     flp();
     printf("Failed ******\n");
@@ -468,7 +465,7 @@ finish:
 /*	---------------  binhier  --------------------------------  */
 /*	If flat, flattens population. Then inserts dads to make a binary hierarchy.
     Then deletes dads as appropriate  */
-void binhier(flat) int flat;
+void binhier(int flat) 
 {
     int nn;
 
@@ -518,7 +515,7 @@ kicked:
 
 /*	------------------  ranclass  --------------------------  */
 /*	To make nn random classes  */
-void ranclass(nn) int nn;
+void ranclass( int nn)
 {
     int n, ic, ib;
     double bs;
@@ -593,8 +590,7 @@ finish:
 
 /*	---------------  moveclass  --------------------------------  */
 /*	To move class ser1 to be a child of class ser2  */
-double moveclass(ser1, ser2)
-int ser1, ser2;
+double moveclass(int ser1, int ser2)
 {
     Class *cls1, *cls2, *odad;
     int k1, k2, od2;
@@ -657,7 +653,7 @@ done:
 }
 
 /*	-----------------  trial  ---------------------------------  */
-void trial(param) int param;
+void trial(int param)
 {
     printf("Running TRIAL\n");
     correlpops(param);
@@ -667,8 +663,7 @@ void trial(param) int param;
 /*	Lokks for the best moveclass. If force, or if an improvement,
 does it. Returns 1 if an improvement, 0 if best no improvement, -1 if none
 possible.	*/
-int bestmoveclass(force)
-int force;
+int bestmoveclass(int force)
 {
     Context oldctx;
     Class *cls1, *cls2, *odad;
@@ -700,7 +695,7 @@ int force;
         succ = -1;
         goto alldone;
     }
-    cmcpy(&oldctx, &ctx, sizeof(Context));
+    memcpy(&oldctx, &ctx, sizeof(Context));
 
     i1 = 0;
 outer:
@@ -746,7 +741,7 @@ inner:
         bser2 = ser2;
     }
 i2done:
-    cmcpy(&ctx, &oldctx, sizeof(Context));
+    memcpy(&ctx, &oldctx, sizeof(Context));
     setpop(); /* Return to original popln */
     i2++;
     if (i2 <= hiid)
@@ -788,7 +783,7 @@ alldone:
     if (force)
         goto winner;
     setbadm(3, bser1, bser2);
-    cmcpy(&ctx, &oldctx, sizeof(Context));
+    memcpy(&ctx, &oldctx, sizeof(Context));
     setpop(); /* Return to original popln */
     flp();
     printf("Failed ******\n");
@@ -820,7 +815,7 @@ finish:
 /*	--------------------  trymoves  ----------------------------   */
 /*	Tries moving classes using bestmoveclass until ntry attempts in
 succession have failed, or until all possible moves have been tried   */
-void trymoves(ntry) int ntry;
+void trymoves(int ntry)
 {
     int nfail, succ;
 
