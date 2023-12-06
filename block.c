@@ -69,7 +69,7 @@ void free_blocks(int gr) {
         CurCtx.vset->blocks = 0;
         break;
     default:
-        log_msg(0, "False group value %d in freespace\n", gr);
+        log_msg(0, "False group value %d in freespace", gr);
         exit(10);
     }
     while (blk) {
@@ -85,6 +85,6 @@ void free_blocks(int gr) {
 int report_space(int pp)
 {
     if (pp)
-        log_msg(1, "Allocated space %8d chars\n", AllocatedBlockSpace);
+        log_msg(1, "Allocated space %8d chars", AllocatedBlockSpace);
     return (AllocatedBlockSpace);
 }

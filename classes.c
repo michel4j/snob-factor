@@ -170,7 +170,7 @@ char *usestr[] = {"Tny", "Pln", "Fac"};
 void print_one_class(Class *cls, int full) {
     double vrms;
 
-    printf("\n--------------------------------------------------------------------------------\n");
+    printf("\n");
     printf("S%s", serial_to_str(cls));
     printf(" %s", typstr[((int)cls->type)]);
     if (cls->dad_id < 0)
@@ -200,7 +200,7 @@ void print_one_class(Class *cls, int full) {
             (*var_type->show)(cls, i);
         }
     }
-    printf("--------------------------------------------------------------------------------\n");
+    //printf("\n");
 }
 
 void print_class(int kk, int full) {
@@ -557,11 +557,11 @@ void adjust_class(Class *cls, int dod) {
 
         if ((cls->type == Dad) && (leafcost < cls->dad_cost) && (Fix != Random)) {
 
-            log_msg(0, "\nChanging type of class %s from DAD to LEAF", serial_to_str(cls));
+            log_msg(0, "\nChanging type of class%s from Dad to Leaf", serial_to_str(cls));
             SeeAll = 4;
             delete_sons(cls->id); // Changes type to leaf
         } else if (npars && (leafcost > cls->dad_cost) && (cls->type == Leaf)) {
-            log_msg(0, "\nChanging type of class %s from LEAF to DAD", serial_to_str(cls));
+            log_msg(0, "\nChanging type of class%s from Leaf to Dad", serial_to_str(cls));
             SeeAll = 4;
             cls->type = Dad;
             if (dad)
