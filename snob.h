@@ -289,7 +289,7 @@ typedef struct ResultStruct {
 typedef struct ScoreStruct {
     double CurCaseFacScore, CurCaseFacScoreSq, cvvsprd;
     int CaseFacInt; /*  integer form of case_fac_score*4096 */
-    double ncasecost, scasecost, fcasecost;
+    double NCaseCost, CaseNoFacCost, CaseFacCost;
     double CaseFacScoreD1, CaseFacScoreD2; /* derivs of case cost wrt score  */
     double EstFacScoreD2;                     /* An over-estimate of CaseFacScoreD2 used in score ajust */
     double CaseFacScoreD3;
@@ -359,14 +359,14 @@ int next_leaf(Population *cpop, int iss);
 
 /*	In DOALL.c	*/
 int do_all(int ncy, int all);
-void find_all(int typ);
+int find_all(int typ);
 int do_dads(int ncy);
 int do_good(int ncy, double target);
 void tidy(int hit);
 int rand_uint();
 int rand_int();
 double rand_float();
-void do_case(int cse, int all, int derivs);
+void do_case(int cse, int all, int derivs, int num_son);
 /*		end doall.c		*/
 
 /*	In TUNE.c	*/

@@ -132,8 +132,8 @@ void setvar(iv) int iv;
 {
     CurAttr = CurAttrList + iv;
     CurVType = CurAttr->vtype;
-    pvi = pvars + iv;
-    paux = (Paux *)pvi->paux;
+    CurPopVar = CurPopVarList + iv;
+    paux = (Paux *)CurPopVar->paux;
     CurVar = CurVarList + iv;
     vaux = (Vaux *)CurAttr->vaux;
     saux = (Saux *)CurVar->saux;
@@ -315,7 +315,7 @@ void scorevar(int iv)
 }
 
 /*	---------------------  costvar  ---------------------------  */
-/*	Accumulate item cost into scasecost, fcasecost  */
+/*	Accumulate item cost into CaseNoFacCost, CaseFacCost  */
 void costvar(int iv, int fac)
 {
     double cost;
@@ -330,7 +330,7 @@ void costvar(int iv, int fac)
     }
     /*	Do nofac costing first  */
     cost = evi->scst[saux->xn];
-    scasecost += cost;
+    CaseNoFacCost += cost;
 
     /*	Only do faccost if fac  */
     if (!fac)
@@ -375,7 +375,7 @@ void costvar(int iv, int fac)
     evi->dbyb = CurCaseFacScore * evi->dbya + cvi->fbp * cvvsprd * ff;
 
 facdone:
-    fcasecost += cost;
+    CaseFacCost += cost;
     evi->parkftcost = cost;
     return;
 }

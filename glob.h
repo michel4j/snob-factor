@@ -14,10 +14,9 @@ EXT double ZeroVec[MAX_ZERO];
 EXT double FacLog[MAX_CLASSES + 1];
 
 /*	general:	*/
-EXT int NTypes;   /* The number of different attribute types */
-EXT VarType *Types; /* a vector of Ntypes type definitions,
-         created in dotypes */
-EXT Context CurCtx;  /* current context */
+EXT int NTypes;     /* The number of different attribute types */
+EXT VarType *Types; /* a vector of Ntypes type definitions,    created in dotypes */
+EXT Context CurCtx; /* current context */
 EXT VarSet *VarSets[MAX_VSETS];
 EXT Sample *Samples[MAX_SAMPLES];
 EXT Population *Populations[MAX_POPULATIONS];
@@ -27,11 +26,11 @@ EXT int NSamples;
 EXT Buffer *CurSource; /* Ptr to command source buffer */
 
 /*	re Sample records  */
-EXT char *CurRecord; /*  Common ptr to a data record  */
-EXT int CurItem;     /*  Index of current item  */
-EXT char *CurField;    /*  Common ptr to a data field  */
-EXT int CurRecLen;   /*  reclen of current sample  */
-EXT char *CurRecords;   /*  Common ptr to data records block of a sample */
+EXT char *CurRecord;  /*  Common ptr to a data record  */
+EXT int CurItem;      /*  Index of current item  */
+EXT char *CurField;   /*  Common ptr to a data field  */
+EXT int CurRecLen;    /*  reclen of current sample  */
+EXT char *CurRecords; /*  Common ptr to data records block of a sample */
 
 /*	re hark  */
 EXT int Heard;    /* Flag showing a new command line has been detected */
@@ -54,36 +53,33 @@ EXT VarSet *CurVSet;
 EXT Sample *CurSample;
 EXT Population *CurPopln;
 EXT VSetVar *CurAttr;
-EXT PVinst *pvi;
+EXT PVinst *CurPopVar;
 EXT SampleVar *CurVar;
 EXT VarType *CurVType;
 EXT int NumCases; /* Number of cases */
-EXT int NumVars; /* Number of variables */
+EXT int NumVars;  /* Number of variables */
 EXT int CurRoot;
 EXT Class *CurRootClass;
 EXT VSetVar *CurAttrList;
-EXT PVinst *pvars;
+EXT PVinst *CurPopVarList;
 EXT SampleVar *CurVarList;
 
 /*	re Classes  */
 EXT Class *CurClass, *CurDad;
-EXT short *vv;
 EXT double CurCaseWeight; /*  weight of case in class  */
 EXT double CurCaseFacScore, CurCaseFacScoreSq, cvvsprd;
-EXT double ctv, ctvsq, ctvd1, ctvd1sq, ctvd1cu, ctvsprd, ctd1d2;
 EXT int CaseFacInt; /*  integer form of cvv*4096 */
-EXT double ncasecost, scasecost, fcasecost;
+EXT double NCaseCost, CaseNoFacCost, CaseFacCost;
 EXT double CaseFacScoreD1, CaseFacScoreD2; /* derivs of case cost wrt score  */
-EXT double EstFacScoreD2;      /* An over-estimate of vvd2 used in score ajust */
-EXT double CaseFacScoreD3;       /*  derivative of vvd2 wrt score  */
-EXT int idad;
+EXT double EstFacScoreD2;                  /* An over-estimate of vvd2 used in score ajust */
+EXT double CaseFacScoreD3;                 /*  derivative of vvd2 wrt score  */
+EXT int CurDadId;
 
 /*	re Doall   */
 EXT int RSeed; /*	Seed for random routines */
 EXT int NoSubs;
 EXT int NewSubs;
 EXT int Deaded; /* Shows some class killed */
-EXT int NumSon;
 EXT Class *Sons[MAX_CLASSES];
 EXT int NextIc[MAX_CLASSES];
 

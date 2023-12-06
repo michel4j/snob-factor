@@ -20,7 +20,7 @@ void set_population() {
         CurVarList = 0;
         CurRecords = 0;
     }
-    pvars = CurPopln->variables;
+    CurPopVarList = CurPopln->variables;
     CurRoot = CurPopln->root;
     CurRootClass = CurPopln->classes[CurRoot];
     return;
@@ -109,10 +109,10 @@ gotit:
     for (i = 0; i < NumVars; i++) {
         CurAttr = CurAttrList + i;
         CurVType = CurAttr->vtype;
-        pvi = pvars + i;
-        pvi->id = CurAttr->id;
-        pvi->paux = (char *)alloc_blocks(1, CurVType->pop_aux_size);
-        if (!pvi->paux)
+        CurPopVar = pvars + i;
+        CurPopVar->id = CurAttr->id;
+        CurPopVar->paux = (char *)alloc_blocks(1, CurVType->pop_aux_size);
+        if (!CurPopVar->paux)
             goto nospace;
     }
 
@@ -1057,7 +1057,7 @@ void correlpops(int xid){
     Class *wsons[MAX_CLASSES], *xsons[MAX_CLASSES];
     Population *xpop, *wpop;
     double fnact, wwt;
-    int wic, xic, n, pcw, wnl, xnl;
+    int wic, xic, n, pcw, wnl, xnl, num_son;
 
     set_population();
     wpop = CurPopln;
@@ -1085,8 +1085,7 @@ void correlpops(int xid){
     NoSubs++;
     do_all(3, 1);
     wpop = CurPopln;
-    find_all(Leaf);
-    wnl = NumSon;
+    wnl = find_all(Leaf);
     for (wic = 0; wic < wnl; wic++)
         wsons[wic] = Sons[wic];
     /*	Switch to xpop  */
@@ -1095,8 +1094,7 @@ void correlpops(int xid){
     SeeAll = 4;
     do_all(3, 1);
     /*	Find all leaves of xpop  */
-    find_all(Leaf);
-    xnl = NumSon;
+    xnl = find_all(Leaf);
     if ((wnl < 2) || (xnl < 2)) {
         printf("Need at least 2 classes in each model.\n");
         goto finish;
@@ -1117,12 +1115,12 @@ void correlpops(int xid){
         CurRecord = CurRecords + n * CurRecLen;
         if (!*CurRecord)
             goto ndone;
-        find_all(Leaf);
-        do_case(n, Leaf, 0);
+        num_son = find_all(Leaf);
+        do_case(n, Leaf, 0, num_son);
         CurCtx.popln = xpop;
         set_population();
-        find_all(Leaf);
-        do_case(n, Leaf, 0);
+        num_son = find_all(Leaf);
+        do_case(n, Leaf, 0, num_son);
         /*	Should now have caseweights set in leaves of both poplns  */
         for (wic = 0; wic < wnl; wic++) {
             wwt = wsons[wic]->case_weight;

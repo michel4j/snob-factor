@@ -1,5 +1,4 @@
 
-#define INPUTS 1
 #include "glob.h"
 
 /*	------------------------  Some routines to read numbers  -------- */

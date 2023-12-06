@@ -36,8 +36,8 @@ double rand_float() {
     (Dad = 1, Leaf = 2, Sub = 4), so if typ = 7, will find all classes.*/
 /*	Sets the classes in 'sons[]'  */
 /*	Puts count of classes found in numson */
-void find_all(int class_type) {
-    int i, j;
+int find_all(int class_type) {
+    int i, j, num_son;
     Class *cls;
 
     set_population();
@@ -51,13 +51,13 @@ void find_all(int class_type) {
         }
         next_class(&cls);
     }
-    NumSon = j;
+    num_son = j;
 
     // Set indices in nextic[] for non-descendant classes
-    for (i = 0; i < NumSon; i++) {
+    for (i = 0; i < num_son; i++) {
         int idi = Sons[i]->id;
 
-        for (j = i + 1; j < NumSon; j++) {
+        for (j = i + 1; j < num_son; j++) {
             cls = Sons[j];
             while (cls->id != idi) {
                 if (cls->dad_id < 0) {
@@ -69,8 +69,9 @@ void find_all(int class_type) {
                 break;
             }
         }
-        NextIc[i] = (j < NumSon) ? j : NumSon;
+        NextIc[i] = (j < num_son) ? j : num_son;
     }
+    return num_son;
 }
 
 /*	-------------------  sortsons  -----------------------------  */
@@ -111,7 +112,7 @@ void sortsons(int kk) {
 }
 
 /*	--------------------  tidy  -------------------------------  */
-/*	Reconstructs ison, isib, nson linkages from idad-s. If hit
+/*	Reconstructs ison, isib, nson linkages from CurDadId-s. If hit
     and AdjTr, kills classes which are too small.
 Also deletes singleton sonclasses.  Re-counts pop->ncl, pop->hicl, pop->num_leaves.
     */
@@ -283,20 +284,20 @@ void update_seeall_newsubs(int niter, int ncycles) {
 }
 
 void find_and_estimate(int *all, int niter, int ncycles) {
-    int repeat = 0;
+    int repeat = 0, num_son;
     do {
         if (Fix == Random)
             SeeAll = 3;
         tidy(1);
         if (niter >= (ncycles - 1))
             *all = (Dad + Leaf + Sub);
-        find_all(*all);
-        for (int k = 0; k < NumSon; k++) {
+        num_son = find_all(*all);
+        for (int k = 0; k < num_son; k++) {
             clear_costs(Sons[k]);
         }
 
         for (int j = 0; j < CurSample->num_cases; j++) {
-            do_case(j, *all, 1);
+            do_case(j, *all, 1, num_son);
             /*	docase ignores classes with ignore bit in cls->vv[] for the case
                 unless SeeAll is on.  */
         }
@@ -307,7 +308,7 @@ void find_and_estimate(int *all, int niter, int ncycles) {
         // using 'adjust'. But first, check all newcnt-s for vanishing
         // classes.
         if (Control & (AdjPr + AdjTr)) {
-            for (int k = 0; k < NumSon; k++) {
+            for (int k = 0; k < num_son; k++) {
                 if (Sons[k]->newcnt < MinSize) {
                     Sons[k]->weights_sum = 0.0;
                     Sons[k]->type = Vacant;
@@ -321,10 +322,10 @@ void find_and_estimate(int *all, int niter, int ncycles) {
     } while (repeat);
 }
 
-double update_leaf_classes(double *oldleafsum, int *nfail) {
+double update_leaf_classes(double *oldleafsum, int *nfail, int num_son) {
     double leafsum = 0.0;
     leafsum = 0.0;
-    for (int ic = 0; ic < NumSon; ic++) {
+    for (int ic = 0; ic < num_son; ic++) {
         adjust_class(Sons[ic], 0);
         /*	The second para tells adjust not to do as-dad params  */
         leafsum += Sons[ic]->best_cost;
@@ -406,7 +407,7 @@ int count_score_changes() {
 }
 
 int do_all(int ncycles, int all) {
-    int niter, nfail, ic, ncydone, ncyask, kicked = 0;
+    int niter, nfail, ic, ncydone, ncyask, kicked = 0, num_son;
     double oldcost, oldleafsum;
 
     nfail = niter = ncydone = 0;
@@ -415,8 +416,8 @@ int do_all(int ncycles, int all) {
     oldcost = CurRootClass->best_cost;
     /*	Get sum of class costs, meaningful only if 'all' = Leaf  */
     oldleafsum = 0.0;
-    find_all(Leaf);
-    for (ic = 0; ic < NumSon; ic++) {
+    num_son = find_all(Leaf);
+    for (ic = 0; ic < num_son; ic++) {
         oldleafsum += Sons[ic]->best_cost;
     }
 
@@ -425,7 +426,7 @@ int do_all(int ncycles, int all) {
         find_and_estimate(&all, niter, ncycles);
 
         if (all != (Dad + Leaf + Sub)) {
-            update_leaf_classes(&oldleafsum, &nfail);
+            update_leaf_classes(&oldleafsum, &nfail, num_son);
             
         } else {
             // all = 7, so we have dads, leaves and subs to do.
@@ -475,16 +476,16 @@ int do_all(int ncycles, int all) {
 int do_dads(int ncy) {
     Class *dad;
     double oldcost;
-    int nn, nfail;
+    int nn, nfail, num_son;
 
     if (!(Control & AdjPr))
         ncy = 1;
 
     /*	Capture no-prior params for subless leaves  */
-    find_all(Leaf);
+    num_son = find_all(Leaf);
     nfail = Control;
     Control = Noprior;
-    for (nn = 0; nn < NumSon; nn++) {
+    for (nn = 0; nn < num_son; nn++) {
         adjust_class(Sons[nn], 0);
     }
     Control = nfail;
@@ -613,7 +614,7 @@ typedef struct PSauxst {
     double xn;
 } PSaux;
 
-void do_case(int cse, int all, int derivs) {
+void do_case(int cse, int all, int derivs, int num_son) {
     double mincost, sum, rootcost, low, diff, w1, w2;
     Class *sub1, *sub2;
     PSaux *psaux;
@@ -641,7 +642,7 @@ void do_case(int cse, int all, int derivs) {
     /*	Deal with every class, as set up in sons[]  */
 
     clc = 0;
-    while (clc < NumSon) {
+    while (clc < num_son) {
         set_class_with_scores(Sons[clc]);
         if ((!SeeAll) && (CaseFacInt & 1)) { /* Ignore this and decendants */
             clc = NextIc[clc];
@@ -657,13 +658,13 @@ void do_case(int cse, int all, int derivs) {
         this case. We can distribute weight to all leaves, using their
         casecosts.  */
     /*	The whole item is irrelevant if just starting on root  */
-    if (NumSon != 1) { /*  Not Just doing root  */
+    if (num_son != 1) { /*  Not Just doing root  */
         /*	Clear all casewts   */
-        for (clc = 0; clc < NumSon; clc++)
+        for (clc = 0; clc < num_son; clc++)
             Sons[clc]->case_weight = 0.0;
         mincost = 1.0e30;
         clc = 0;
-        while (clc < NumSon) {
+        while (clc < num_son) {
             CurClass = Sons[clc];
             if ((!SeeAll) && (CurClass->case_score & 1)) {
                 CurClass->total_case_cost = 1.0e30;
@@ -689,7 +690,7 @@ void do_case(int cse, int all, int derivs) {
         if (Fix != Most_likely) {
             /*	Minimum cost is in mincost. Compute unnormalized weights  */
             clc = 0;
-            while (clc < NumSon) {
+            while (clc < num_son) {
                 CurClass = Sons[clc];
                 if ((CurClass->case_score & 1) && (!SeeAll)) {
                     clc = NextIc[clc];
@@ -703,7 +704,7 @@ void do_case(int cse, int all, int derivs) {
                 sum += CurClass->case_weight;
             }
         } else {
-            for (clc = 0; clc < NumSon; clc++) {
+            for (clc = 0; clc < num_son; clc++) {
                 CurClass = Sons[clc];
                 if ((CurClass->type == Leaf) && (CurClass->total_case_cost == mincost)) {
                     sum += 1.0;
@@ -724,7 +725,7 @@ void do_case(int cse, int all, int derivs) {
         CurRootClass->dad_case_cost = CurRootClass->total_case_cost = rootcost;
         sum = 1.0 / sum;
         clc = 0;
-        while (clc < NumSon) {
+        while (clc < num_son) {
             CurClass = Sons[clc];
             if ((CurClass->case_score & 1) && (!SeeAll)) {
                 clc = NextIc[clc];
@@ -808,7 +809,7 @@ void do_case(int cse, int all, int derivs) {
         /*	We have now assigned caseweights to all Leafs and Subs.
             Collect weights from leaves into Dads, setting their casecosts  */
         if (CurRootClass->type != Leaf) { /* skip when root is only leaf */
-            for (clc = NumSon - 1; clc >= 0; clc--) {
+            for (clc = num_son - 1; clc >= 0; clc--) {
                 CurClass = Sons[clc];
                 if ((CurClass->type == Sub) || ((!SeeAll) && (CurClass->factor_scores[CurItem] & 1))) {
                     continue;
@@ -838,7 +839,7 @@ void do_case(int cse, int all, int derivs) {
     if (!derivs) {
         return;
     }
-    for (clc = 0; clc < NumSon; clc++) {
+    for (clc = 0; clc < num_son; clc++) {
         CurClass = Sons[clc];
         if (CurClass->case_weight > 0.0) {
             deriv_all_vars(CurClass);

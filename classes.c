@@ -27,9 +27,9 @@ int serial_to_id(int ss) {
 /*	---------------------  setclass1 --------------------------   */
 void set_class(Class *ccl) {
     CurClass = ccl;
-    idad = CurClass->dad_id;
-    if (idad >= 0)
-        CurDad = CurPopln->classes[idad];
+    CurDadId = CurClass->dad_id;
+    if (CurDadId >= 0)
+        CurDad = CurPopln->classes[CurDadId];
     else
         CurDad = 0;
     return;
@@ -38,12 +38,11 @@ void set_class(Class *ccl) {
 /*	---------------------  setclass2 --------------------------   */
 void set_class_with_scores(Class *ccl) {
     CurClass = ccl;
-    vv = CurClass->factor_scores;
-    CurClass->case_score = CaseFacInt = vv[CurItem];
+    CurClass->case_score = CaseFacInt = CurClass->factor_scores[CurItem];
     CurCaseWeight = CurClass->case_weight;
-    idad = CurClass->dad_id;
-    if (idad >= 0)
-        CurDad = CurPopln->classes[idad];
+    CurDadId = CurClass->dad_id;
+    if (CurDadId >= 0)
+        CurDad = CurPopln->classes[CurDadId];
     else
         CurDad = 0;
     return;
@@ -100,7 +99,7 @@ gotit:
 
     /*	Now make the CVinst blocks, which are of varying size   */
     for (i = 0; i < NumVars; i++) {
-        pvi = pvars + i;
+        CurPopVar = pvars + i;
         CurAttr = CurAttrList + i;
         cvi = cvars[i] = (CVinst *)alloc_blocks(1, CurAttr->basic_size);
         if (!cvi)
@@ -115,12 +114,12 @@ gotit:
         goto nospace;
 
     for (i = 0; i < NumVars; i++) {
-        pvi = pvars + i;
+        CurPopVar = pvars + i;
         CurAttr = CurAttrList + i;
         evi = evars[i] = (EVinst *)alloc_blocks(1, CurAttr->stats_size);
         if (!evi)
             goto nospace;
-        evi->id = pvi->id;
+        evi->id = CurPopVar->id;
     }
 
     /*	Stomp on ptrs as yet undefined  */
@@ -379,7 +378,7 @@ fake:
     CurClass->case_fac_score_sq = CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
     CurClass->cvvsprd = cvvsprd;
 done:
-    vv[CurItem] = CurClass->case_score = CaseFacInt;
+    CurClass->factor_scores[CurItem] = CurClass->case_score = CaseFacInt;
     return;
 }
 
@@ -397,19 +396,19 @@ void cost_all_vars(Class *ccl) {
         fac = 1;
         CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
     }
-    ncasecost = scasecost = fcasecost = CurClass->mlogab; /* Abundance cost */
+    NCaseCost = CaseNoFacCost = CaseFacCost = CurClass->mlogab; /* Abundance cost */
     for (int iv = 0; iv < CurVSet->length; iv++) {
         CurAttr = CurAttrList + iv;
         if (CurAttr->inactive)
             goto vdone;
         CurVType = CurAttr->vtype;
         (*CurVType->cost_var)(iv, fac);
-    /*	will add to scasecost, fcasecost  */
+    /*	will add to CaseNoFacCost, CaseFacCost  */
     vdone:;
     }
 
-    CurClass->total_case_cost = CurClass->nofac_case_cost = scasecost;
-    CurClass->fac_case_cost = scasecost + 10.0;
+    CurClass->total_case_cost = CurClass->nofac_case_cost = CaseNoFacCost;
+    CurClass->fac_case_cost = CaseNoFacCost + 10.0;
     if (CurClass->num_sons < 2)
         CurClass->dad_case_cost = 0.0;
     CurClass->coding_case_cost = 0.0;
@@ -427,11 +426,11 @@ void cost_all_vars(Class *ccl) {
             ( log (2 Pi cnt)) / 2  + 1
         to the class cost. This is added later, once cnt is known.
         */
-    fcasecost += tmp;
-    CurClass->fac_case_cost = fcasecost;
+    CaseFacCost += tmp;
+    CurClass->fac_case_cost = CaseFacCost;
     CurClass->coding_case_cost = tmp;
     if (CurClass->use == Fac)
-        CurClass->total_case_cost = fcasecost;
+        CurClass->total_case_cost = CaseFacCost;
 finish:
     return;
 }
