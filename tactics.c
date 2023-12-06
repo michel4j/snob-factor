@@ -13,34 +13,34 @@ void flatten() {
 
     setpop();
     tidy(0);
-    if (rootcl->nson == 0) {
+    if (rootcl->num_sons == 0) {
         printf("Nothing to flatten\n");
         return;
     }
-    for (i = 0; i <= population->hicl; i++) {
+    for (i = 0; i <= population->hi_class; i++) {
         if (i == root)
             goto donecls;
         cls = population->classes[i];
         if (cls->type == Vacant)
             goto donecls;
-        if (cls->nson) { /*  Kill it  */
+        if (cls->num_sons) { /*  Kill it  */
             cls->type = Vacant;
-            cls->idad = Deadkilled;
-            population->ncl--;
+            cls->dad_id = Deadkilled;
+            population->num_classes--;
         } else {
             if (cls->type == Sub) {
                 cls->type = Leaf;
-                cls->serial = population->nextserial << 2;
-                population->nextserial++;
+                cls->serial = population->next_serial << 2;
+                population->next_serial++;
             }
-            cls->idad = root;
+            cls->dad_id = root;
         }
     donecls:;
     }
     nosubs++;
     tidy(0);
     rootcl->type = Dad;
-    rootcl->holdtype = Forever;
+    rootcl->hold_type = Forever;
     doall(1, 1);
     dodads(3);
     doall(3, 0);
@@ -70,7 +70,7 @@ int ser1, ser2, *dadid;
     double origcost, newcost, drop;
     int oldid, newid, od1, od2;
 
-    origcost = rootcl->cbpcost;
+    origcost = rootcl->best_par_cost;
     *dadid = -1;
     k1 = s2id(ser1);
     if (k1 < 0)
@@ -84,14 +84,14 @@ int ser1, ser2, *dadid;
     cls2 = population->classes[k2];
     if (cls2->type == Sub)
         goto nullit;
-    od1 = cls1->idad;
-    od2 = cls2->idad;
+    od1 = cls1->dad_id;
+    od2 = cls2->dad_id;
     /*	Normally we expect cls1, cls2 to have same dad, with at least one
         other son	*/
     if (od1 == od2) {
         oldid = od1;
         odad = population->classes[oldid];
-        if (odad->nson < 3)
+        if (odad->num_sons < 3)
             goto nullit;
         goto configok;
     }
@@ -115,10 +115,10 @@ configok:
                                 /*	Copy old dad's basics, stats into new dad  */
     nch = ((char *)&odad->id) - ((char *)odad);
     cmcpy(ndad, odad, nch);
-    ndad->serial = population->nextserial << 2;
-    population->nextserial++;
+    ndad->serial = population->next_serial << 2;
+    population->next_serial++;
     ndad->age = MinFacAge - 3;
-    ndad->holdtype = 0;
+    ndad->hold_type = 0;
     /*      Copy Basics. the structures should have been made.  */
     for (iv = 0; iv < nv; iv++) {
         fcvi = odad->basics[iv];
@@ -135,16 +135,16 @@ configok:
         cmcpy(evi, fevi, nch);
     }
 
-    ndad->idad = oldid; /* So new dad is son of old dad */
-    cls1->idad = cls2->idad = newid;
+    ndad->dad_id = oldid; /* So new dad is son of old dad */
+    cls1->dad_id = cls2->dad_id = newid;
     /*	Set relab and cnt in new dad  */
     ndad->relab = cls1->relab + cls2->relab;
-    ndad->cnt = cls1->cnt + cls2->cnt;
+    ndad->weights_sum = cls1->weights_sum + cls2->weights_sum;
 
     /*	Fix linkages  */
     tidy(0);
     dodads(20);
-    newcost = rootcl->cbpcost;
+    newcost = rootcl->best_par_cost;
     drop = origcost - newcost;
     *dadid = newid;
     goto done;
@@ -185,11 +185,11 @@ int force;
     bser1 = bser2 = -1;
     newser = 0;
     setpop();
-    origcost = rootcl->cbcost;
-    hiid = population->hicl;
-    if (population->ncl < 4) {
+    origcost = rootcl->best_cost;
+    hiid = population->hi_class;
+    if (population->num_classes < 4) {
         flp();
-        printf("Model has only%2d class\n", population->ncl);
+        printf("Model has only%2d class\n", population->num_classes);
         succ = -1;
         goto alldone;
     }
@@ -214,7 +214,7 @@ inner:
         goto i2done;
     if ((cls2->type == Vacant) || (cls2->type == Sub))
         goto i2done;
-    if (cls1->idad != cls2->idad)
+    if (cls1->dad_id != cls2->dad_id)
         goto i2done;
     ser2 = cls2->serial;
     if (testbadm(1, ser1, ser2))
@@ -277,7 +277,7 @@ alldone:
         newser = 0;
     /*	See if the trial model has improved over original  */
     succ = 1;
-    if (rootcl->cbcost < origcost)
+    if (rootcl->best_cost < origcost)
         goto winner;
     succ = 0;
     if (force)
@@ -339,24 +339,24 @@ int ser;
         goto finish;
     if (kk == root)
         goto finish;
-    kkd = cls->idad;
+    kkd = cls->dad_id;
     if (kkd < 0)
         goto finish;
-    if (cls->nson <= 0)
+    if (cls->num_sons <= 0)
         goto finish;
     /*	All seems OK. Fix idads in kk's sons  */
-    origcost = rootcl->cbpcost;
-    for (kks = cls->ison; kks >= 0; kks = son->isib) {
+    origcost = rootcl->best_par_cost;
+    for (kks = cls->son_id; kks >= 0; kks = son->sib_id) {
         son = population->classes[kks];
-        son->idad = kkd;
+        son->dad_id = kkd;
     }
     /*	Now kill off class kk  */
     cls->type = Vacant;
-    population->ncl--;
+    population->num_classes--;
     /*	Fix linkages  */
     tidy(0);
     dodads(20);
-    newcost = rootcl->cbpcost;
+    newcost = rootcl->best_par_cost;
     drop = origcost - newcost;
 finish:
     return (drop);
@@ -379,8 +379,8 @@ int bestdeldad() {
     setpop();
     /*	Do one pass of doall to set costs  */
     doall(1, 1);
-    origcost = rootcl->cbcost;
-    hiid = population->hicl;
+    origcost = rootcl->best_cost;
+    hiid = population->hi_class;
     cmcpy(&oldctx, &ctx, sizeof(Context));
     i1 = 0;
 loop:
@@ -434,7 +434,7 @@ i1done:
         printf("BestDelDad ends prematurely\n");
         return (0);
     }
-    if (rootcl->cbcost < origcost)
+    if (rootcl->best_cost < origcost)
         goto winner;
     setbadm(2, 0, bser); /* log failure in badmoves */
     bser = 0;
@@ -529,11 +529,11 @@ void ranclass(nn) int nn;
         printf("Ranclass needs a model\n");
         goto finish;
     }
-    if (!population->nc) {
+    if (!population->sample_size) {
         printf("Model has no sample\n");
         goto finish;
     }
-    if (nn > (population->mncl - 2)) {
+    if (nn > (population->cls_vec_len - 2)) {
         printf("Too many classes\n");
         goto finish;
     }
@@ -553,13 +553,13 @@ again:
     bs = 0.0;
     for (ic = 0; ic < numson; ic++) {
         cls = sons[ic];
-        if (cls->nson < 2)
+        if (cls->num_sons < 2)
             goto icdone;
-        sub = population->classes[cls->ison];
+        sub = population->classes[cls->son_id];
         if (sub->age < MinAge)
             goto icdone;
-        if (cls->cnt > bs) {
-            bs = cls->cnt;
+        if (cls->weights_sum > bs) {
+            bs = cls->weights_sum;
             ib = ic;
         }
     icdone:;
@@ -573,8 +573,8 @@ again:
     dad = sons[ib];
     if (splitleaf(dad->id))
         goto windup;
-    printf("Splitting %s size%8.1f\n", sers(dad), dad->cnt);
-    dad->holdtype = Forever;
+    printf("Splitting %s size%8.1f\n", sers(dad), dad->weights_sum);
+    dad->hold_type = Forever;
     n++;
     goto again;
 
@@ -585,7 +585,7 @@ windup:
     doall(6, 0);
     doall(4, 1);
     printtree();
-    rootcl->holdtype = 0;
+    rootcl->hold_type = 0;
 
 finish:
     return;
@@ -600,7 +600,7 @@ int ser1, ser2;
     int k1, k2, od2;
     double origcost, newcost, drop;
 
-    origcost = rootcl->cbpcost;
+    origcost = rootcl->best_par_cost;
     k1 = s2id(ser1);
     if (k1 < 0)
         goto nullit;
@@ -616,12 +616,12 @@ int ser1, ser2;
         goto nullit;
     }
     /*	Check that a change is needed  */
-    if (cls1->idad == k2) {
+    if (cls1->dad_id == k2) {
         printf("No change needed\n");
         goto nullit;
     }
     /*	Check that cls1 is not an ancestor of cls2  */
-    for (od2 = cls2->idad; od2 >= 0; od2 = odad->idad) {
+    for (od2 = cls2->dad_id; od2 >= 0; od2 = odad->dad_id) {
         if (od2 == k1) {
             printf("Class %4d is ancestor of class %4d\n", ser1, ser2);
             goto nullit;
@@ -629,11 +629,11 @@ int ser1, ser2;
         odad = population->classes[od2];
     }
     /*	All seems OK, so make change in links   */
-    cls1->idad = k2;
+    cls1->dad_id = k2;
     /*	Fix linkages  */
     tidy(0);
     dodads(30);
-    if (population->nc) {
+    if (population->sample_size) {
         doall(4, 0);
         if (heard)
             goto kicked;
@@ -642,7 +642,7 @@ int ser1, ser2;
         if (heard)
             goto kicked;
     }
-    newcost = rootcl->cbpcost;
+    newcost = rootcl->best_par_cost;
     drop = origcost - newcost;
     goto done;
 
@@ -692,11 +692,11 @@ int force;
     bser1 = bser2 = -1;
     setpop();
     doall(1, 1); /* To set costs */
-    origcost = rootcl->cbcost;
-    hiid = population->hicl;
-    if (population->ncl < 4) {
+    origcost = rootcl->best_cost;
+    hiid = population->hi_class;
+    if (population->num_classes < 4) {
         flp();
-        printf("Model has only%2d class\n", population->ncl);
+        printf("Model has only%2d class\n", population->num_classes);
         succ = -1;
         goto alldone;
     }
@@ -721,10 +721,10 @@ inner:
         goto i2done;
     if (cls2->type != Dad)
         goto i2done;
-    if (cls1->idad == i2)
+    if (cls1->dad_id == i2)
         goto i2done;
     /*	Check i1 not an ancestor of i2  */
-    for (od2 = cls2->idad; od2 >= 0; od2 = odad->idad) {
+    for (od2 = cls2->dad_id; od2 >= 0; od2 = odad->dad_id) {
         if (od2 == i1)
             goto i2done;
         odad = population->classes[od2];
@@ -782,7 +782,7 @@ alldone:
     /*	Setting dogood's target to origcost-1 allows early exit  */
     /*	See if the trial model has improved over original  */
     succ = 1;
-    if (rootcl->cbcost < origcost)
+    if (rootcl->best_cost < origcost)
         goto winner;
     succ = 0;
     if (force)

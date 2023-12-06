@@ -466,8 +466,8 @@ facdone1:
     evi->spcost = spcost;
     evi->fpcost = fpcost;
     /*	Add to class param costs  */
-    cls->cspcost += spcost;
-    cls->cfpcost += fpcost;
+    cls->nofac_par_cost += spcost;
+    cls->fac_par_cost += fpcost;
     if (cnt < MinSize)
         goto adjdone;
     if (!(control & AdjPr))
@@ -541,7 +541,7 @@ facdone2:
 
 tweaks: /* Come here if no adjustments made */
     /*	Deal only with sub-less leaves  */
-    if ((cls->type != Leaf) || (cls->nson < 2))
+    if ((cls->type != Leaf) || (cls->num_sons < 2))
         goto adjdone;
 
     /*	If Noprior, guess no-prior params, sprds and store instead of
@@ -588,7 +588,7 @@ int iv;
 
     printf("V%3d  Cnt%6.1f  %s\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out");
-    if (cls->nson < 2)
+    if (cls->num_sons < 2)
         goto skipn;
     printf(" N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", evi->npcost,
            cvi->nmu, sqrt(cvi->nmusprd), exp(cvi->nsdl),
@@ -729,7 +729,7 @@ void ncostvar(iv, vald) int iv, vald;
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
-    nson = cls->nson;
+    nson = cls->num_sons;
     pcost = tcost = 0.0;
 
     /*	There are two independent parameters, nmu and nsdl, to fiddle.
@@ -756,7 +756,7 @@ ploop:
     tstvn = 0.0; /* Total sum of sons' (t_n^2 + del_n)  */
     tssn = 0.0;  /* Total sons' s_n */
 
-    for (ison = cls->ison; ison > 0; ison = son->isib) {
+    for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
         son = population->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         spp = *(&soncvi->bmu + k);
@@ -766,7 +766,7 @@ ploop:
         if (son->type == Dad) { /* used as parent */
             nints++;
             tssn += sppsprd;
-            tstvn += sppsprd / son->nson;
+            tstvn += sppsprd / son->num_sons;
         } else
             tstvn += sppsprd;
     }

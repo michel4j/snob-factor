@@ -677,8 +677,8 @@ facdone1:
     evi->spcost = spcost;
     evi->fpcost = fpcost;
     /*	Add to class param costs  */
-    cls->cspcost += spcost;
-    cls->cfpcost += fpcost;
+    cls->nofac_par_cost += spcost;
+    cls->fac_par_cost += fpcost;
     if (!(control & AdjPr))
         goto adjdone;
     if (cnt < MinSize)
@@ -783,7 +783,7 @@ adjloop:
 
 facdone2:
     /*	If no sons, set as-dad params from non-fac params  */
-    if (cls->nson < 2) {
+    if (cls->num_sons < 2) {
         Fork nap[k] = sap[k];
         cvi->napsprd = cvi->sapsprd;
     }
@@ -826,7 +826,7 @@ int iv;
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out", evi->adj);
 
-    if (cls->nson < 2)
+    if (cls->num_sons < 2)
         goto skipn;
     printf(" NR: ");
     prprint(nap);
@@ -861,7 +861,7 @@ void ncostvar(iv) int iv;
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
-    nson = cls->nson;
+    nson = cls->num_sons;
     if (nson < 2) { /* cannot define parameters */
         evi->npcost = evi->ntcost = 0.0;
         Fork nap[k] = sap[k];
@@ -880,7 +880,7 @@ void ncostvar(iv) int iv;
     sometimes becomes (statesm * nson) in this case. We use the static vector
     'pr[]' to accumulate the sum of the sons' bap[]s, in place of the 'tstn' of
     the reals code. */
-    for (ison = cls->ison; ison > 0; ison = son->isib) {
+    for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
         son = population->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         Fork {
@@ -890,7 +890,7 @@ void ncostvar(iv) int iv;
         if (son->type == Dad) { /* used as parent */
             nints++;
             tssn += soncvi->bapsprd;
-            tstvn += soncvi->bapsprd * statesm / son->nson;
+            tstvn += soncvi->bapsprd * statesm / son->num_sons;
         } else
             tstvn += soncvi->bapsprd * statesm;
     }

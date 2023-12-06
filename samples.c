@@ -589,8 +589,8 @@ treeloop:
     if (clp->type == Sub)
         goto nextcl1;
     fprintf(tlst, "%8d", clp->serial >> 2);
-    if (clp->idad >= 0)
-        dadser = population->classes[clp->idad]->serial;
+    if (clp->dad_id >= 0)
+        dadser = population->classes[clp->dad_id]->serial;
     else
         dadser = -4;
     fprintf(tlst, "%8d\n", dadser >> 2);
@@ -609,19 +609,19 @@ nextcl1:
         bs = samp->num_cases + 1;
         for (i = 0; i < numson; i++) {
             clp = sons[i];
-            if ((clp->casewt > 0.5) && (clp->cnt < bs)) {
+            if ((clp->case_weight > 0.5) && (clp->weights_sum < bs)) {
                 bc = i;
-                bs = clp->cnt;
+                bs = clp->weights_sum;
             }
-            if ((clp->type == Leaf) && (clp->casewt > bw)) {
+            if ((clp->type == Leaf) && (clp->case_weight > bw)) {
                 bl = i;
-                bw = clp->casewt;
+                bw = clp->case_weight;
             }
         }
 
         cmcpy(&tid, record + 1, sizeof(int));
         fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, sons[bc]->serial >> 2,
-                sons[bl]->serial >> 2, ScoreRscale * sons[bl]->vv[nn]);
+                sons[bl]->serial >> 2, ScoreRscale * sons[bl]->factor_scores[nn]);
     }
 
     fclose(tlst);
