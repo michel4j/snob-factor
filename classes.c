@@ -10,7 +10,7 @@ int s2id(int ss) {
     setpop();
 
     if (ss >= 1) {
-        for (k = 0; k <= population->hicl; k++) {
+        for (k = 0; k <= population->hi_class; k++) {
             clp = population->classes[k];
             if (clp && (clp->type != Vacant) && (clp->serial == ss))
                 return (k);
@@ -27,7 +27,7 @@ int s2id(int ss) {
 /*	---------------------  setclass1 --------------------------   */
 void setclass1(Class *ccl) {
     cls = ccl;
-    idad = cls->idad;
+    idad = cls->dad_id;
     if (idad >= 0)
         dad = population->classes[idad];
     else
@@ -38,10 +38,10 @@ void setclass1(Class *ccl) {
 /*	---------------------  setclass2 --------------------------   */
 void setclass2(Class *ccl) {
     cls = ccl;
-    vv = cls->vv;
-    cls->caseiv = icvv = vv[item];
-    cwt = cls->casewt;
-    idad = cls->idad;
+    vv = cls->factor_scores;
+    cls->case_score = icvv = vv[item];
+    cwt = cls->case_weight;
+    idad = cls->dad_id;
     if (idad >= 0)
         dad = population->classes[idad];
     else
@@ -63,19 +63,19 @@ int makeclass() {
     EVinst **evars, *evi;
     int i, kk;
 
-    nc = ctx.popln->nc;
+    nc = ctx.popln->sample_size;
     /*	If nc, check that popln has an attached sample  */
     if (nc) {
-        i = sname2id(population->samplename, 1);
+        i = sname2id(population->sample_name, 1);
         if (i < 0)
             return (-2);
         ctx.sample = samp = samples[i];
     }
 
     nv = vst->length;
-    pvars = population->pvars;
+    pvars = population->variables;
     /*	Find a vacant slot in the popln's classes vec   */
-    for (kk = 0; kk < population->mncl; kk++) {
+    for (kk = 0; kk < population->cls_vec_len; kk++) {
         if (!population->classes[kk])
             goto gotit;
         /*	Also test for a vacated class   */
@@ -90,7 +90,7 @@ gotit:
     if (!cls)
         goto nospace;
     population->classes[kk] = cls;
-    population->hicl = kk; /* Highest used index in population->classes */
+    population->hi_class = kk; /* Highest used index in population->classes */
     cls->id = kk;
 
     /*	Make vector of ptrs to CVinsts   */
@@ -124,7 +124,7 @@ gotit:
     }
 
     /*	Stomp on ptrs as yet undefined  */
-    cls->vv = 0;
+    cls->factor_scores = 0;
     cls->type = 0;
     goto donebasic;
 
@@ -136,23 +136,23 @@ vacant1: /* Vacant type shows structure set up but vacated.
     cls->type = Vacant;
 
 donebasic:
-    cls->cbcost = cls->cscost = cls->cfcost = 0.0;
-    cls->cnt = 0.0;
+    cls->best_cost = cls->nofac_cost = cls->fac_cost = 0.0;
+    cls->weights_sum = 0.0;
     /*	Invalidate hierarchy links  */
-    cls->idad = cls->isib = cls->ison = -1;
-    cls->nson = 0;
+    cls->dad_id = cls->sib_id = cls->son_id = -1;
+    cls->num_sons = 0;
     for (i = 0; i < nv; i++)
         cvars[i]->signif = 1;
-    population->ncl++;
-    if (kk > population->hicl)
-        population->hicl = kk;
+    population->num_classes++;
+    if (kk > population->hi_class)
+        population->hi_class = kk;
     if (cls->type == Vacant)
         goto vacant2;
 
     /*	If nc = 0, this completes the make.  */
     if (nc == 0)
         goto finish;
-    cls->vv = (short *)gtsp(2, nc * sizeof(short));
+    cls->factor_scores = (short *)gtsp(2, nc * sizeof(short));
     goto expanded;
 
 vacant2:
@@ -163,8 +163,8 @@ expanded:
         evars[i]->num_values = 0.0;
 finish:
     cls->age = 0;
-    cls->holdtype = cls->holduse = 0;
-    cls->cnt = 0.0;
+    cls->hold_type = cls->hold_use = 0;
+    cls->weights_sum = 0.0;
     return (kk);
 
 nospace:
@@ -183,26 +183,26 @@ void print1class(Class *clp, int full) {
 
     printf("\nS%s", sers(clp));
     printf(" %s", typstr[((int)clp->type)]);
-    if (clp->idad < 0)
+    if (clp->dad_id < 0)
         printf("    Root");
     else
-        printf(" Dad%s", sers(population->classes[((int)clp->idad)]));
-    printf(" Age%4d  Sz%6.1f  Use %s", clp->age, clp->cnt, usestr[((int)clp->use)]);
+        printf(" Dad%s", sers(population->classes[((int)clp->dad_id)]));
+    printf(" Age%4d  Sz%6.1f  Use %s", clp->age, clp->weights_sum, usestr[((int)clp->use)]);
     printf("%c", (clp->use == Fac) ? ' ' : '(');
-    vrms = sqrt(clp->vsq / clp->cnt);
+    vrms = sqrt(clp->sum_score_sq / clp->weights_sum);
     printf("Vv%6.2f", vrms);
-    printf("%c", (cls->boostcnt) ? 'B' : ' ');
+    printf("%c", (cls->boost_count) ? 'B' : ' ');
     printf(" +-%5.3f", (clp->vav));
-    printf(" Avv%6.3f", clp->avvv);
+    printf(" Avv%6.3f", clp->avg_factor_scores);
     printf("%c", (clp->use == Fac) ? ' ' : ')');
     if (clp->type == Dad) {
-        printf("%4d sons", clp->nson);
+        printf("%4d sons", clp->num_sons);
     }
     printf("\n");
-    printf("Pcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->cspcost, clp->cfpcost, clp->cnpcost, clp->cbpcost);
-    printf("Tcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->cstcost, clp->cftcost - cls->cfvcost, clp->cntcost, clp->cbtcost);
+    printf("Pcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->nofac_par_cost, clp->fac_par_cost, clp->dad_par_cost, clp->best_par_cost);
+    printf("Tcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->cstcost, clp->cftcost - cls->cfvcost, clp->cntcost, clp->best_case_cost);
     printf("Vcost     ---------  F:%9.2f\n", clp->cfvcost);
-    printf("totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->cscost, clp->cfcost, clp->cncost, clp->cbcost);
+    printf("totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->nofac_cost, clp->fac_cost, clp->dad_cost, clp->best_cost);
     if (!full)
         return;
     for (i = 0; i < vst->length; i++) {
@@ -246,7 +246,7 @@ void cleartcosts(Class *ccl) {
     cls->cstcost = cls->cftcost = cls->cntcost = 0.0;
     cls->cfvcost = 0.0;
     cls->newcnt = cls->newvsq = 0.0;
-    cls->scorechange = 0;
+    cls->score_change_count = 0;
     cls->vav = 0.0;
     cls->totvv = 0.0;
     if (!seeall)
@@ -265,17 +265,17 @@ void setbestparall(Class *ccl) {
 
     setclass1(ccl);
     if (cls->type == Dad) {
-        cls->cbcost = cls->cncost;
-        cls->cbpcost = cls->cnpcost;
-        cls->cbtcost = cls->cntcost;
+        cls->best_cost = cls->dad_cost;
+        cls->best_par_cost = cls->dad_par_cost;
+        cls->best_case_cost = cls->cntcost;
     } else if (cls->use != Fac) {
-        cls->cbcost = cls->cscost;
-        cls->cbpcost = cls->cspcost;
-        cls->cbtcost = cls->cstcost;
+        cls->best_cost = cls->nofac_cost;
+        cls->best_par_cost = cls->nofac_par_cost;
+        cls->best_case_cost = cls->cstcost;
     } else {
-        cls->cbcost = cls->cfcost;
-        cls->cbpcost = cls->cfpcost;
-        cls->cbtcost = cls->cftcost;
+        cls->best_cost = cls->fac_cost;
+        cls->best_par_cost = cls->fac_par_cost;
+        cls->best_case_cost = cls->cftcost;
     }
     for (i = 0; i < vst->length; i++) {
         vtp = vlist[i].vtype;
@@ -296,14 +296,14 @@ void scorevarall(Class *ccl) {
 
     setclass2(ccl);
     if ((cls->age < MinFacAge) || (cls->use == Tiny)) {
-        cvv = cls->avvv = cls->vsq = 0.0;
+        cvv = cls->avg_factor_scores = cls->sum_score_sq = 0.0;
         icvv = 0;
         goto done;
     }
-    if (cls->vsq > 0.0)
+    if (cls->sum_score_sq > 0.0)
         goto started;
     /*	Generate a fake score to get started.   */
-    cls->boostcnt = 0;
+    cls->boost_count = 0;
     cvvsprd = 0.1 / nv;
     oldicvv = igbit = 0;
     cvv = (sran() < 0) ? 1.0 : -1.0;
@@ -316,10 +316,10 @@ started:
     cvv = icvv * ScoreRscale;
     /*	Subtract average from last pass  */
     /*xx
-        cvv -= cls->avvv;
+        cvv -= cls->avg_factor_scores;
     */
-    if (cls->boostcnt && ((control & AdjSP) == AdjSP)) {
-        cvv *= cls->vboost;
+    if (cls->boost_count && ((control & AdjSP) == AdjSP)) {
+        cvv *= cls->score_boost;
         if (cvv > Maxv)
             cvv = Maxv;
         else if (cvv < -Maxv)
@@ -373,13 +373,13 @@ fake:
         if (oldicvv < 0)
             oldicvv = -oldicvv;
         if (oldicvv > SigScoreChange)
-            cls->scorechange++;
+            cls->score_change_count++;
     }
-    cls->cvv = cvv = icvv * ScoreRscale;
-    cls->cvvsq = cvvsq = cvv * cvv;
+    cls->case_fac_score = cvv = icvv * ScoreRscale;
+    cls->case_fac_score_sq = cvvsq = cvv * cvv;
     cls->cvvsprd = cvvsprd;
 done:
-    vv[item] = cls->caseiv = icvv;
+    vv[item] = cls->case_score = icvv;
     return;
 }
 
@@ -408,11 +408,11 @@ void costvarall(Class *ccl) {
     vdone:;
     }
 
-    cls->casecost = cls->casescost = scasecost;
-    cls->casefcost = scasecost + 10.0;
-    if (cls->nson < 2)
-        cls->casencost = 0.0;
-    cls->casevcost = 0.0;
+    cls->total_case_cost = cls->nofac_case_cost = scasecost;
+    cls->fac_case_cost = scasecost + 10.0;
+    if (cls->num_sons < 2)
+        cls->dad_case_cost = 0.0;
+    cls->coding_case_cost = 0.0;
     if (!fac)
         goto finish;
     /*	Now we add the cost of coding the score, and its roundoff */
@@ -428,10 +428,10 @@ void costvarall(Class *ccl) {
         to the class cost. This is added later, once cnt is known.
         */
     fcasecost += tmp;
-    cls->casefcost = fcasecost;
-    cls->casevcost = tmp;
+    cls->fac_case_cost = fcasecost;
+    cls->coding_case_cost = tmp;
     if (cls->use == Fac)
-        cls->casecost = fcasecost;
+        cls->total_case_cost = fcasecost;
 finish:
     return;
 }
@@ -447,8 +447,8 @@ void derivvarall(Class *ccl) {
         fac = 0;
     else {
         fac = 1;
-        cvv = cls->cvv;
-        cvvsq = cls->cvvsq;
+        cvv = cls->case_fac_score;
+        cvvsq = cls->case_fac_score_sq;
         cvvsprd = cls->cvvsprd;
         cls->newvsq += cwt * cvvsq;
         cls->vav += cwt * cls->clvsprd;
@@ -464,10 +464,10 @@ void derivvarall(Class *ccl) {
     }
 
     /*	Collect case item costs   */
-    cls->cstcost += cwt * cls->casescost;
-    cls->cftcost += cwt * cls->casefcost;
-    cls->cntcost += cwt * cls->casencost;
-    cls->cfvcost += cwt * cls->casevcost;
+    cls->cstcost += cwt * cls->nofac_case_cost;
+    cls->cftcost += cwt * cls->fac_case_cost;
+    cls->cntcost += cwt * cls->dad_case_cost;
+    cls->cfvcost += cwt * cls->coding_case_cost;
 
     return;
 }
@@ -484,16 +484,16 @@ void adjustclass(Class *ccl, int dod) {
     /*	Get root (logarithmic average of vvsprds)  */
     cls->vav = exp(0.5 * cls->vav / (cls->newcnt + 0.1));
     if (control & AdjSc)
-        cls->vsq = cls->newvsq;
+        cls->sum_score_sq = cls->newvsq;
     if (control & AdjPr) {
-        cls->cnt = cls->newcnt;
+        cls->weights_sum = cls->newcnt;
         /*	Count down holds   */
-        if ((cls->holdtype) && (cls->holdtype < Forever))
-            cls->holdtype--;
-        if ((cls->holduse) && (cls->holduse < Forever))
-            cls->holduse--;
+        if ((cls->hold_type) && (cls->hold_type < Forever))
+            cls->hold_type--;
+        if ((cls->hold_use) && (cls->hold_use < Forever))
+            cls->hold_use--;
         if (dad) {
-            cls->relab = (dad->relab * (cls->cnt + 0.5)) / (dad->cnt + 0.5 * dad->nson);
+            cls->relab = (dad->relab * (cls->weights_sum + 0.5)) / (dad->weights_sum + 0.5 * dad->num_sons);
             cls->mlogab = -log(cls->relab);
         } else {
             cls->relab = 1.0;
@@ -512,14 +512,14 @@ void adjustclass(Class *ccl, int dod) {
 
     /*	Set npars to show if class may be treated as a dad  */
     npars = 1;
-    if ((cls->age < MinAge) || (cls->nson < 2) || (population->classes[cls->ison]->age < MinSubAge))
+    if ((cls->age < MinAge) || (cls->num_sons < 2) || (population->classes[cls->son_id]->age < MinSubAge))
         npars = 0;
     if (cls->type == Dad)
         npars = 1;
 
     /*	cls->cnpcost was zeroed in doall, and has accumulated the cbpcosts
     of cls's sons, so we don't zero it here. 'ncostvarall' will add to it.  */
-    cls->cspcost = cls->cfpcost = 0.0;
+    cls->nofac_par_cost = cls->fac_par_cost = 0.0;
     for (iv = 0; iv < vst->length; iv++) {
         avi = vlist + iv;
         if (avi->inactive)
@@ -531,37 +531,37 @@ void adjustclass(Class *ccl, int dod) {
 
     /*	If vsq less than 0.3, set vboost to inflate  */
     /*	but only if both scores and params are being adjusted  */
-    if (((control & AdjSP) == AdjSP) && fac && (cls->vsq < (0.3 * cls->cnt))) {
-        cls->vboost = sqrt((1.0 * cls->cnt) / (cls->vsq + 1.0));
-        cls->boostcnt++;
+    if (((control & AdjSP) == AdjSP) && fac && (cls->sum_score_sq < (0.3 * cls->weights_sum))) {
+        cls->score_boost = sqrt((1.0 * cls->weights_sum) / (cls->sum_score_sq + 1.0));
+        cls->boost_count++;
     } else {
-        cls->vboost = 1.0;
-        cls->boostcnt = 0;
+        cls->score_boost = 1.0;
+        cls->boost_count = 0;
     }
 
     /*	Get average score   */
-    cls->avvv = cls->totvv / cls->cnt;
+    cls->avg_factor_scores = cls->totvv / cls->weights_sum;
 
     if (dod)
         ncostvarall(ccl, npars);
 
-    cls->cscost = cls->cspcost + cls->cstcost;
+    cls->nofac_cost = cls->nofac_par_cost + cls->cstcost;
     /*	The 'lattice' effect on the cost of coding scores is approx
         (log (2 Pi cnt))/2 + 1,  which adds to cftcost  */
     cls->cftcost += 0.5 * log(cls->newcnt + 1.0) + hlg2pi + 1.0;
-    cls->cfcost = cls->cfpcost + cls->cftcost;
+    cls->fac_cost = cls->fac_par_cost + cls->cftcost;
     if (npars)
-        cls->cncost = cls->cnpcost + cls->cntcost;
+        cls->dad_cost = cls->dad_par_cost + cls->cntcost;
     else
-        cls->cncost = cls->cnpcost = cls->cntcost = 0.0;
+        cls->dad_cost = cls->dad_par_cost = cls->cntcost = 0.0;
 
     /*	Contemplate changes to class use and type   */
-    if (cls->holduse || (!(control & AdjPr)))
+    if (cls->hold_use || (!(control & AdjPr)))
         goto usechecked;
     /*	If scores boosted too many times, make Tiny and hold   */
-    if (cls->boostcnt > 20) {
+    if (cls->boost_count > 20) {
         cls->use = Tiny;
-        cls->holduse = 10;
+        cls->hold_use = 10;
         goto usechecked;
     }
     /*	Check if size too small to support a factor  */
@@ -576,7 +576,7 @@ void adjustclass(Class *ccl, int dod) {
     vidle:;
     }
     /*	I want at least 1.5 data vals per param  */
-    small = (leafcost < (9 * small + 1.5 * cls->cnt + 1)) ? 1 : 0;
+    small = (leafcost < (9 * small + 1.5 * cls->weights_sum + 1)) ? 1 : 0;
     if (small) {
         if (cls->use != Tiny) {
             cls->use = Tiny;
@@ -585,56 +585,56 @@ void adjustclass(Class *ccl, int dod) {
     } else {
         if (cls->use == Tiny) {
             cls->use = Plain;
-            cls->vsq = 0.0;
+            cls->sum_score_sq = 0.0;
             goto usechecked;
         }
     }
     if (cls->age < MinFacAge)
         goto usechecked;
     if (cls->use == Plain) {
-        if (cls->cfcost < cls->cscost) {
+        if (cls->fac_cost < cls->nofac_cost) {
             cls->use = Fac;
-            cls->boostcnt = 0;
-            cls->vboost = 1.0;
+            cls->boost_count = 0;
+            cls->score_boost = 1.0;
         }
     } else {
-        if (cls->cscost < cls->cfcost) {
+        if (cls->nofac_cost < cls->fac_cost) {
             cls->use = Plain;
         }
     }
 usechecked:
     if (!dod)
         goto typechecked;
-    if (cls->holdtype)
+    if (cls->hold_type)
         goto typechecked;
     if (!(control & AdjTr))
         goto typechecked;
-    if (cls->nson < 2)
+    if (cls->num_sons < 2)
         goto typechecked;
-    leafcost = (cls->use == Fac) ? cls->cfcost : cls->cscost;
+    leafcost = (cls->use == Fac) ? cls->fac_cost : cls->nofac_cost;
 
-    if ((cls->type == Dad) && (leafcost < cls->cncost) && (fix != Random)) {
+    if ((cls->type == Dad) && (leafcost < cls->dad_cost) && (fix != Random)) {
         flp();
         printf("Changing type of class%s from Dad to Leaf\n", sers(cls));
         seeall = 4;
         /*	Kill all sons  */
         killsons(cls->id); /* which changes type to leaf */
-    } else if (npars && (leafcost > cls->cncost) && (cls->type == Leaf)) {
+    } else if (npars && (leafcost > cls->dad_cost) && (cls->type == Leaf)) {
         flp();
         printf("Changing type of class%s from Leaf to Dad\n", sers(cls));
         seeall = 4;
         cls->type = Dad;
         if (dad)
-            dad->holdtype += 3;
+            dad->hold_type += 3;
         /*	Make subs into leafs  */
-        son = population->classes[cls->ison];
+        son = population->classes[cls->son_id];
         son->type = Leaf;
-        son->serial = 4 * population->nextserial;
-        population->nextserial++;
-        son = population->classes[son->isib];
+        son->serial = 4 * population->next_serial;
+        population->next_serial++;
+        son = population->classes[son->sib_id];
         son->type = Leaf;
-        son->serial = 4 * population->nextserial;
-        population->nextserial++;
+        son->serial = 4 * population->next_serial;
+        population->next_serial++;
     }
 
 typechecked:
@@ -650,7 +650,7 @@ typechecked:
 void ncostvarall(Class *ccl, int valid) {
     Class *son;
     EVinst *evi;
-    int i, ison, nson;
+    int i, son_id, nson;
     double abcost, rrelab;
 
     setclass1(ccl);
@@ -666,10 +666,10 @@ void ncostvarall(Class *ccl, int valid) {
     }
 
     if (!valid) {
-        cls->cnpcost = cls->cncost = 0.0;
+        cls->dad_par_cost = cls->dad_cost = 0.0;
         return;
     }
-    nson = cls->nson;
+    nson = cls->num_sons;
     /*	The sons of a dad may be listed in any order, so the param cost
     of the dad can be reduced by log (nson !)  */
     abcost -= faclog[nson];
@@ -680,17 +680,17 @@ void ncostvarall(Class *ccl, int valid) {
     dad's relab. The cost includes -0.5 * Sum_sons { log (sonab / dadab) }
         */
     rrelab = 1.0 / cls->relab;
-    for (ison = cls->ison; ison >= 0; ison = son->isib) {
-        son = population->classes[ison];
+    for (son_id = cls->son_id; son_id >= 0; son_id = son->sib_id) {
+        son = population->classes[son_id];
         abcost -= 0.5 * log(son->relab * rrelab);
     }
     /*	Add other terms from Fisher  */
-    abcost += (nson - 1) * (log(cls->cnt) + lattice);
+    abcost += (nson - 1) * (log(cls->weights_sum) + lattice);
     /*	And from prior:  */
     abcost -= faclog[nson - 1];
     /*	The sons will have been processed by 'adjustclass' already, and
     this will have caused their best pcosts to be added into cls->cnpcost  */
-    cls->cnpcost += abcost;
+    cls->dad_par_cost += abcost;
     return;
 }
 
@@ -703,20 +703,20 @@ void killsons(int kk) {
     if (!(control & AdjTr))
         return;
     clp = population->classes[kk];
-    if (clp->nson <= 0)
+    if (clp->num_sons <= 0)
         return;
     seeall = 4;
-    for (kks = clp->ison; kks > 0; kks = son->isib) {
+    for (kks = clp->son_id; kks > 0; kks = son->sib_id) {
         son = population->classes[kks];
         son->type = Vacant;
-        son->idad = Deadkilled;
+        son->dad_id = Deadkilled;
         killsons(kks);
     }
-    clp->nson = 0;
-    clp->ison = -1;
+    clp->num_sons = 0;
+    clp->son_id = -1;
     if (clp->type == Dad)
         clp->type = Leaf;
-    clp->holdtype = 0;
+    clp->hold_type = 0;
     return;
 }
 
@@ -727,16 +727,16 @@ int splitleaf(int kk) {
     Class *son;
     int kks;
     cls = population->classes[kk];
-    if ((cls->type != Leaf) || (cls->nson < 2) || cls->holdtype) {
+    if ((cls->type != Leaf) || (cls->num_sons < 2) || cls->hold_type) {
         return (1);
     }
     cls->type = Dad;
-    cls->holdtype = HoldTime;
-    for (kks = cls->ison; kks >= 0; kks = son->isib) {
+    cls->hold_type = HoldTime;
+    for (kks = cls->son_id; kks >= 0; kks = son->sib_id) {
         son = population->classes[kks];
         son->type = Leaf;
-        son->serial = 4 * population->nextserial;
-        population->nextserial++;
+        son->serial = 4 * population->next_serial;
+        population->next_serial++;
     }
     seeall = 4;
     return (0);
@@ -748,23 +748,23 @@ void deleteallclasses() {
     int k;
     population = ctx.popln;
     root = population->root;
-    for (k = 0; k <= population->hicl; k++) {
+    for (k = 0; k <= population->hi_class; k++) {
         cls = population->classes[k];
         if (cls->id != root) {
             cls->type = Vacant;
-            cls->idad = Deadkilled;
+            cls->dad_id = Deadkilled;
         }
     }
-    population->ncl = 1;
-    population->hicl = root;
+    population->num_classes = 1;
+    population->hi_class = root;
     rootcl = cls = population->classes[root];
-    cls->ison = -1;
-    cls->isib = -1;
-    cls->nson = 0;
+    cls->son_id = -1;
+    cls->sib_id = -1;
+    cls->num_sons = 0;
     cls->serial = 4;
-    population->nextserial = 2;
+    population->next_serial = 2;
     cls->age = 0;
-    cls->holdtype = cls->holduse = 0;
+    cls->hold_type = cls->hold_use = 0;
     cls->type = Leaf;
     nosubs++;
     tidy(1);
@@ -783,7 +783,7 @@ int nextleaf(Population *cpop, int iss) {
 
     n = -1;
     k = 10000000;
-    for (i = 0; i <= cpop->hicl; i++) {
+    for (i = 0; i <= cpop->hi_class; i++) {
         clp = cpop->classes[i];
         if (clp->type != Leaf)
             goto idone;

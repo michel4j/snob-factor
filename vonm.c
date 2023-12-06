@@ -599,8 +599,8 @@ facdone1:
     evi->spcost = spcost;
     evi->fpcost = fpcost;
     /*	Add to class param costs  */
-    cls->cspcost += spcost;
-    cls->cfpcost += fpcost;
+    cls->nofac_par_cost += spcost;
+    cls->fac_par_cost += fpcost;
     if (!(control & AdjPr))
         goto adjdone;
     if (cnt < MinSize)
@@ -730,7 +730,7 @@ facdone2:
     cvi->ldsq = cvi->ld * cvi->ld;
 
     /*	Adjust as-dad params, but if no sons, set from nonfac params */
-    if (cls->nson < 2) {
+    if (cls->num_sons < 2) {
         cvi->nhx = cvi->shx;
         cvi->nhy = cvi->shy;
         cvi->nhsprd = cvi->shsprd;
@@ -752,7 +752,7 @@ int iv;
 
     printf("V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out", evi->adj);
-    if (cls->nson < 2)
+    if (cls->num_sons < 2)
         goto skipn;
     printf(" N: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", evi->npcost, cvi->nhx,
            cvi->nhy, sqrt(cvi->nhsprd));
@@ -899,7 +899,7 @@ void ncostvar(iv, vald) int iv, vald;
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
-    nson = cls->nson;
+    nson = cls->num_sons;
 
     /*	There are two independent parameters, nhx and nhy, to fiddle.
         However, for vonmises variables, we use a single spread value
@@ -925,7 +925,7 @@ void ncostvar(iv, vald) int iv, vald;
     tsvn = 0.0; /* Total sum of sons' (hx_n^2 + hy_n^2 + del_n) */
     tssn = 0.0; /* Total sons' s_n */
 
-    for (ison = cls->ison; ison > 0; ison = son->isib) {
+    for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
         son = population->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         sbhx = soncvi->bhx;
@@ -937,7 +937,7 @@ void ncostvar(iv, vald) int iv, vald;
         if (son->type == Dad) { /* used as parent */
             nints++;
             tssn += sbhsprd;
-            tsvn += sbhsprd / son->nson;
+            tsvn += sbhsprd / son->num_sons;
         } else
             tsvn += sbhsprd;
     }

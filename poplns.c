@@ -20,7 +20,7 @@ void setpop() {
         svars = 0;
         recs = 0;
     }
-    pvars = population->pvars;
+    pvars = population->variables;
     root = population->root;
     rootcl = population->classes[root];
     return;
@@ -34,20 +34,20 @@ void nextclass(Class **ptr)
     Class *clp;
 
     clp = *ptr;
-    if (clp->ison >= 0) {
-        *ptr = population->classes[clp->ison];
+    if (clp->son_id >= 0) {
+        *ptr = population->classes[clp->son_id];
         goto done;
     }
 loop:
-    if (clp->isib >= 0) {
-        *ptr = population->classes[clp->isib];
+    if (clp->sib_id >= 0) {
+        *ptr = population->classes[clp->sib_id];
         goto done;
     }
-    if (clp->idad < 0) {
+    if (clp->dad_id < 0) {
         *ptr = 0;
         goto done;
     }
-    clp = population->classes[clp->idad];
+    clp = population->classes[clp->dad_id];
     goto loop;
 
 done:
@@ -90,19 +90,19 @@ gotit:
     if (!population)
         goto nospace;
     population->id = indx;
-    population->nc = 0;
-    strcpy(population->samplename, "??");
-    strcpy(population->vstname, vst->name);
-    population->pblks = population->jblks = 0;
+    population->sample_size = 0;
+    strcpy(population->sample_name, "??");
+    strcpy(population->vst_name, vst->name);
+    population->blocks = population->model_blocks = 0;
     ctx.popln = population;
     for (i = 0; i < 80; i++)
         population->name[i] = 0;
     strcpy(population->name, "newpop");
-    population->dfname[0] = 0;
-    population->ncl = 0; /*  Initially no class  */
+    population->filename[0] = 0;
+    population->num_classes = 0; /*  Initially no class  */
 
     /*	Make vector of PVinsts    */
-    pvars = population->pvars = (PVinst *)gtsp(1, nv * sizeof(PVinst));
+    pvars = population->variables = (PVinst *)gtsp(1, nv * sizeof(PVinst));
     if (!pvars)
         goto nospace;
     /*	Copy from variable-set AVinsts to PVinsts  */
@@ -121,26 +121,26 @@ gotit:
     population->classes = (Class **)gtsp(1, MAX_CLASSES * sizeof(Class *));
     if (!population->classes)
         goto nospace;
-    population->mncl = MAX_CLASSES;
-    for (i = 0; i < population->mncl; i++)
+    population->cls_vec_len = MAX_CLASSES;
+    for (i = 0; i < population->cls_vec_len; i++)
         population->classes[i] = 0;
 
     if (fill) {
-        strcpy(population->samplename, samp->name);
-        population->nc = nc;
+        strcpy(population->sample_name, samp->name);
+        population->sample_size = nc;
     }
     root = population->root = makeclass();
     if (root < 0)
         goto nospace;
     cls = population->classes[root];
     cls->serial = 4;
-    population->nextserial = 2;
-    cls->idad = -2; /* root has no dad */
+    population->next_serial = 2;
+    cls->dad_id = -2; /* root has no dad */
     cls->relab = 1.0;
     /*      Set type as leaf, no fac  */
     cls->type = Leaf;
     cls->use = Plain;
-    cls->cnt = 0.0;
+    cls->weights_sum = 0.0;
 
     setpop();
     return (indx);
@@ -192,12 +192,12 @@ void makesubs(int kk){
     setclass1(clp);
     clsa = clsb = 0;
     /*	Check that class has no subs   */
-    if (cls->nson > 0) {
+    if (cls->num_sons > 0) {
         i = 0;
         goto finish;
     }
     /*	And that it is big enough to support subs    */
-    cntk = cls->cnt;
+    cntk = cls->weights_sum;
     if (cntk < (2 * MinSize + 2.0)) {
         i = 1;
         goto finish;
@@ -225,12 +225,12 @@ void makesubs(int kk){
     setclass1(clp);
 
     /*	Fix hierarchy links.  */
-    cls->nson = 2;
-    cls->ison = kka;
-    clsa->idad = clsb->idad = kk;
-    clsa->nson = clsb->nson = 0;
-    clsa->isib = kkb;
-    clsb->isib = -1;
+    cls->num_sons = 2;
+    cls->son_id = kka;
+    clsa->dad_id = clsb->dad_id = kk;
+    clsa->num_sons = clsb->num_sons = 0;
+    clsa->sib_id = kkb;
+    clsb->sib_id = -1;
 
     /*	Copy kk's Basics into both subs  */
     for (iv = 0; iv < nv; iv++) {
@@ -248,18 +248,18 @@ void makesubs(int kk){
     clsa->use = clsb->use = Plain;
     clsa->relab = clsb->relab = 0.5 * cls->relab;
     clsa->mlogab = clsb->mlogab = -log(clsa->relab);
-    clsa->cnt = clsb->cnt = 0.5 * cls->cnt;
+    clsa->weights_sum = clsb->weights_sum = 0.5 * cls->weights_sum;
     i = 3;
 
 finish:
     if (i < 3) {
         if (clsa) {
             clsa->type = Vacant;
-            clsa->idad = Dead;
+            clsa->dad_id = Dead;
         }
         if (clsb) {
             clsb->type = Vacant;
-            clsb->idad = Dead;
+            clsb->dad_id = Dead;
         }
     }
     return;
@@ -324,9 +324,9 @@ int copypop(int p1, int fill, char *newname){
         indx = -106;
         goto finish;
     }
-    kk = vname2id(fpop->vstname);
+    kk = vname2id(fpop->vst_name);
     if (kk < 0) {
-        printf("No Variable-set %s\n", fpop->vstname);
+        printf("No Variable-set %s\n", fpop->vst_name);
         indx = -101;
         goto finish;
     }
@@ -335,8 +335,8 @@ int copypop(int p1, int fill, char *newname){
     nc = 0;
     if (!fill)
         goto sampfound;
-    if (fpop->nc) {
-        sindx = sname2id(fpop->samplename, 1);
+    if (fpop->sample_size) {
+        sindx = sname2id(fpop->sample_name, 1);
         goto sampfound;
     }
     /*	Use current sample if compatible  */
@@ -380,11 +380,11 @@ sampfound:
     ctx.popln = poplns[indx];
     setpop();
     if (samp) {
-        strcpy(population->samplename, samp->name);
-        population->nc = samp->num_cases;
+        strcpy(population->sample_name, samp->name);
+        population->sample_size = samp->num_cases;
     } else {
-        strcpy(population->samplename, "??");
-        population->nc = 0;
+        strcpy(population->sample_name, "??");
+        population->sample_size = 0;
     }
     strcpy(population->name, newname);
     hiser = 0;
@@ -394,13 +394,13 @@ sampfound:
     jdad = -1;
     /*	In case the pop is unattached (fpop->nc = 0), prepare a nominal
     count to insert in leaf classes  */
-    if (fill & (!fpop->nc)) {
+    if (fill & (!fpop->sample_size)) {
         nomcnt = samp->num_active;
-        nomcnt = nomcnt / fpop->nleaf;
+        nomcnt = nomcnt / fpop->num_leaves;
     }
 
 newclass:
-    if (fcls->idad < 0)
+    if (fcls->dad_id < 0)
         kk = population->root;
     else
         kk = makeclass();
@@ -411,9 +411,9 @@ newclass:
     cls = population->classes[kk];
     nch = ((char *)&cls->id) - ((char *)cls);
     cmcpy(cls, fcls, nch);
-    cls->isib = cls->ison = -1;
-    cls->idad = jdad;
-    cls->nson = 0;
+    cls->sib_id = cls->son_id = -1;
+    cls->dad_id = jdad;
+    cls->num_sons = 0;
     if (cls->serial > hiser)
         hiser = cls->serial;
 
@@ -436,46 +436,46 @@ newclass:
         goto classdone;
 
     /*	If fpop is not attached, we cannot copy item-specific data */
-    if (fpop->nc == 0)
+    if (fpop->sample_size == 0)
         goto fakeit;
     /*	Copy scores  */
     for (n = 0; n < nc; n++)
-        cls->vv[n] = fcls->vv[n];
+        cls->factor_scores[n] = fcls->factor_scores[n];
     goto classdone;
 
 fakeit: /*  initialize scorevectors  */
     for (n = 0; n < nc; n++) {
         record = recs + n * reclen;
-        cls->vv[n] = 0;
+        cls->factor_scores[n] = 0;
     }
-    cls->cnt = nomcnt;
-    if (cls->idad < 0) /* Root class */
-        cls->cnt = samp->num_active;
+    cls->weights_sum = nomcnt;
+    if (cls->dad_id < 0) /* Root class */
+        cls->weights_sum = samp->num_active;
 
 classdone:
     if (fill)
         setbestparall(cls);
     /*	Move on to a son class, if any, else a sib class, else back up */
-    if ((fcls->ison >= 0) && (fpop->classes[fcls->ison]->type != Sub)) {
+    if ((fcls->son_id >= 0) && (fpop->classes[fcls->son_id]->type != Sub)) {
         jdad = cls->id;
-        fcls = fpop->classes[fcls->ison];
+        fcls = fpop->classes[fcls->son_id];
         goto newclass;
     }
 siborback:
-    if (fcls->isib >= 0) {
-        fcls = fpop->classes[fcls->isib];
+    if (fcls->sib_id >= 0) {
+        fcls = fpop->classes[fcls->sib_id];
         goto newclass;
     }
-    if (fcls->idad < 0)
+    if (fcls->dad_id < 0)
         goto alldone;
-    cls = population->classes[cls->idad];
-    jdad = cls->idad;
-    fcls = fpop->classes[fcls->idad];
+    cls = population->classes[cls->dad_id];
+    jdad = cls->dad_id;
+    fcls = fpop->classes[fcls->dad_id];
     goto siborback;
 
 alldone: /*  All classes copied. Tidy up */
     tidy(0);
-    population->nextserial = (hiser >> 2) + 1;
+    population->next_serial = (hiser >> 2) + 1;
 
 finish:
     /*	Unless newname = "work", revert to old context  */
@@ -501,7 +501,7 @@ void printsubtree(int kk){
         printf("Leaf");
     if (clp->type == Sub)
         printf(" Sub");
-    if (clp->holdtype)
+    if (clp->hold_type)
         printf(" H");
     else
         printf("  ");
@@ -515,7 +515,7 @@ void printsubtree(int kk){
     printf(" RelAb%6.3f  Size%8.1f\n", clp->relab, clp->newcnt);
 
     pdeep++;
-    for (kks = clp->ison; kks >= 0; kks = son->isib) {
+    for (kks = clp->son_id; kks >= 0; kks = son->sib_id) {
         son = population->classes[kks];
         printsubtree(kks);
     }
@@ -533,8 +533,8 @@ void printtree() {
     }
     setpop();
     printf("Popln%3d on sample%3d,%4d classes,%6d things", population->id + 1,
-           samp->id + 1, population->ncl, samp->num_cases);
-    printf("  Cost %10.2f\n", population->classes[population->root]->cbcost);
+           samp->id + 1, population->num_classes, samp->num_cases);
+    printf("  Cost %10.2f\n", population->classes[population->root]->best_cost);
     printf("\n  Assign mode ");
     if (fix == Partial)
         printf("Partial    ");
@@ -584,7 +584,7 @@ int bestpopid() {
     if (i < 0)
         goto gotit;
     /*	Set bestcost in samp from current cost  */
-    samp->best_cost = population->classes[root]->cbcost;
+    samp->best_cost = population->classes[root]->best_cost;
     /*	Set goodtime as current pop age  */
     samp->best_time = population->classes[root]->age;
 
@@ -615,8 +615,8 @@ void trackbest(int verify) {
     }
     bstpop = poplns[bstid];
     bstroot = bstpop->root;
-    bstcst = bstpop->classes[bstroot]->cbcost;
-    if (population->classes[root]->cbcost >= bstcst)
+    bstcst = bstpop->classes[bstroot]->best_cost;
+    if (population->classes[root]->best_cost >= bstcst)
         return;
     /*	Current looks better, but do a doall to ensure cost is correct */
     /*	But only bother if 'verify'  */
@@ -625,14 +625,14 @@ void trackbest(int verify) {
         control = 0;
         doall(1, 1);
         control = kk;
-        if (population->classes[root]->cbcost >= (bstcst))
+        if (population->classes[root]->best_cost >= (bstcst))
             return;
     }
 
     /*	Seems better, so kill old 'bestmodel' and make a new one */
     setpop();
     kk = copypop(population->id, 0, BSTname);
-    samp->best_cost = population->classes[root]->cbcost;
+    samp->best_cost = population->classes[root]->best_cost;
     samp->best_time = population->classes[root]->age;
     return;
 }
@@ -721,7 +721,7 @@ namefixed:
     i = pname2id("TrialPop");
     if (i >= 0)
         killpop(i);
-    nc = population->nc;
+    nc = population->sample_size;
     if (!nc)
         fill = 0;
     if (!fill)
@@ -736,8 +736,8 @@ namefixed:
     /*	switch context to TrialPop  */
     ctx.popln = poplns[i];
     setpop();
-    vst = ctx.vset = vsets[vname2id(population->vstname)];
-    nc = population->nc;
+    vst = ctx.vset = vsets[vname2id(population->vst_name)];
+    nc = population->sample_size;
     if (!fill)
         nc = 0;
 
@@ -756,15 +756,15 @@ namefixed:
         fputc(*jp, fl);
     }
     fputc('\n', fl);
-    for (jp = population->vstname; *jp; jp++) {
+    for (jp = population->vst_name; *jp; jp++) {
         fputc(*jp, fl);
     }
     fputc('\n', fl);
-    for (jp = population->samplename; *jp; jp++) {
+    for (jp = population->sample_name; *jp; jp++) {
         fputc(*jp, fl);
     }
     fputc('\n', fl);
-    fprintf(fl, "%4d%10d\n", population->ncl, nc);
+    fprintf(fl, "%4d%10d\n", population->num_classes, nc);
     fputc('+', fl);
     fputc('\n', fl);
 
@@ -799,17 +799,17 @@ newclass:
 
     /*	Copy scores  */
     nch = nc * sizeof(short);
-    recordit(fl, cls->vv, nch);
+    recordit(fl, cls->factor_scores, nch);
     leng += nch;
 classdone:
     jcl++;
-    if (jcl < population->ncl)
+    if (jcl < population->num_classes)
         goto newclass;
 
 finish:
     fclose(fl);
     printf("\nModel %s  Cost %10.2f  saved in file %s\n", oldname,
-           population->classes[0]->cbcost, newname);
+           population->classes[0]->best_cost, newname);
     cmcpy(&ctx, &oldctx, sizeof(Context));
     setpop();
     return (leng);
@@ -881,12 +881,12 @@ int restorepop(char *nam){
     if (indx < 0)
         goto error;
     population = ctx.popln = poplns[indx];
-    population->nc = nc;
+    population->sample_size = nc;
     strcpy(population->name, "TrialPop");
     if (!nc)
-        strcpy(population->samplename, "??");
+        strcpy(population->sample_name, "??");
     setpop();
-    population->nleaf = 0;
+    population->num_leaves = 0;
     /*	Popln has a root class set up. We read into it.  */
     j = 0;
     goto haveclass;
@@ -924,7 +924,7 @@ haveclass:
         }
     }
     if (cls->type == Leaf)
-        population->nleaf++;
+        population->num_leaves++;
     if (!fnc)
         goto classdone;
 
@@ -936,14 +936,14 @@ haveclass:
         goto classdone;
     }
     nch = nc * sizeof(short);
-    jp = (char *)(cls->vv);
+    jp = (char *)(cls->factor_scores);
     for (k = 0; k < nch; k++) {
         *jp = fgetc(fl);
         jp++;
     }
 
 classdone:
-    if (population->ncl < fncl)
+    if (population->num_classes < fncl)
         goto newclass;
 
     i = pname2id(pname);
@@ -985,9 +985,9 @@ int loadpop(int pp){
     if (!population)
         goto error;
     /*	Save the 'nc' of the popln to be loaded  */
-    fpopnc = population->nc;
+    fpopnc = population->sample_size;
     /*	Check popln vset  */
-    j = vname2id(population->vstname);
+    j = vname2id(population->vst_name);
     if (j < 0) {
         printf("Load cannot find variable set\n");
         goto error;
@@ -999,17 +999,17 @@ int loadpop(int pp){
         goto error;
     }
     /*	Check sample   */
-    if (fpopnc && strcmp(population->samplename, oldctx.sample->name)) {
+    if (fpopnc && strcmp(population->sample_name, oldctx.sample->name)) {
         printf("Picked popln attached to non-current sample.\n");
         /*	Make pop appear unattached  */
-        population->nc = 0;
+        population->sample_size = 0;
     }
 
     ctx.sample = samp = oldctx.sample;
     windx = copypop(pp, 1, "work");
     if (windx < 0)
         goto error;
-    if (poplns[pp]->nc)
+    if (poplns[pp]->sample_size)
         goto finish;
 
     /*	The popln was copied as if unattached, so scores, weights must be
@@ -1037,7 +1037,7 @@ error:
 finish:
     /*	Restore 'nc' of copied popln  */
     if (fpop)
-        fpop->nc = fpopnc;
+        fpop->sample_size = fpopnc;
     setpop();
     if (windx >= 0)
         printtree();
@@ -1066,15 +1066,15 @@ void correlpops(int xid){
         printf("No such model\n");
         goto finish;
     }
-    if (!xpop->nc) {
+    if (!xpop->sample_size) {
         printf("Model is unattached\n");
         goto finish;
     }
-    if (strcmp(population->samplename, xpop->samplename)) {
+    if (strcmp(population->sample_name, xpop->sample_name)) {
         printf("Model not for same sample.\n");
         goto finish;
     }
-    if (xpop->nc != nc) {
+    if (xpop->sample_size != nc) {
         printf("Models have unequal numbers of cases.\n");
         goto finish;
     }
@@ -1125,9 +1125,9 @@ void correlpops(int xid){
         docase(n, Leaf, 0);
         /*	Should now have caseweights set in leaves of both poplns  */
         for (wic = 0; wic < wnl; wic++) {
-            wwt = wsons[wic]->casewt;
+            wwt = wsons[wic]->case_weight;
             for (xic = 0; xic < xnl; xic++) {
-                table[wic][xic] += wwt * xsons[xic]->casewt;
+                table[wic][xic] += wwt * xsons[xic]->case_weight;
             }
         }
     ndone:;

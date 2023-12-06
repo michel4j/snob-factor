@@ -496,8 +496,8 @@ facdone1:
     evi->spcost = spcost;
     evi->fpcost = fpcost;
     /*	Add to class param costs  */
-    cls->cspcost += spcost;
-    cls->cfpcost += fpcost;
+    cls->nofac_par_cost += spcost;
+    cls->fac_par_cost += fpcost;
     if (!(control & AdjPr))
         goto adjdone;
     if (cnt < MinSize)
@@ -557,7 +557,7 @@ adjloop:
 
 facdone2:
     /*	If no sons, set as-dad params from non-fac params  */
-    if (cls->nson < 2) {
+    if (cls->num_sons < 2) {
         cvi->nap = cvi->sap;
         cvi->napsprd = cvi->sapsprd;
     }
@@ -575,7 +575,7 @@ void vprint(Class* ccl, int iv){
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out", evi->adj);
 
-    if (cls->nson < 2)
+    if (cls->num_sons < 2)
         goto skipn;
     printf(" N: AP ");
     printf("%6.3f", cvi->nap);
@@ -604,7 +604,7 @@ void ncostvar(int iv) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
-    nson = cls->nson;
+    nson = cls->num_sons;
     if (nson < 2) { /* cannot define parameters */
         evi->npcost = evi->ntcost = 0.0;
         cvi->nap = cvi->sap;
@@ -619,7 +619,7 @@ void ncostvar(int iv) {
 
     apsprd = cvi->napsprd;
     /*	The calculation is like that in reals.c (q.v.)   */
-    for (ison = cls->ison; ison > 0; ison = son->isib) {
+    for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
         son = population->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         tap += soncvi->bap;
@@ -627,7 +627,7 @@ void ncostvar(int iv) {
         if (son->type == Dad) { /* used as parent */
             nints++;
             tssn += soncvi->bapsprd;
-            tstvn += soncvi->bapsprd / son->nson;
+            tstvn += soncvi->bapsprd / son->num_sons;
         } else
             tstvn += soncvi->bapsprd;
     }
