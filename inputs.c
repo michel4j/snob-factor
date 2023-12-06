@@ -83,7 +83,7 @@ int newline() {
         buf->inl[0] = j;
     nextchar:
         i++;
-        if (i >= LL) {
+        if (i >= INPUT_BUFFER_SIZE) {
             printf("Line too long\n");
             return (-1);
         }
@@ -116,7 +116,7 @@ firstch:
 
 nextch:
     i++;
-    if (i >= LL) {
+    if (i >= INPUT_BUFFER_SIZE) {
         printf("Line %5d too long\n", buf->line);
         return (-1);
     }

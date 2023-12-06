@@ -12,12 +12,12 @@ files. The declarations herein then become converted to "EXT" declarations.
 #include <string.h>
 #include <unistd.h>
 
-#define Maxsamples 10 /* Max number of samples */
-#define Maxvsets 3
-#define Maxpoplns 10 /* Max number of popln models */
-#define MaxClasses 150
-#define MaxZ 100 /*  Length of the Zero vector  */
-#define LL 450   /*	Length of input line buffer */
+#define MAX_SAMPLES 10 /* Max number of samples */
+#define MAX_VSETS 3
+#define MAX_POPULATIONS 10 /* Max number of popln models */
+#define MAX_CLASSES 150
+#define MAX_ZERO 100          /*  Length of the Zero vector  */
+#define INPUT_BUFFER_SIZE 450 /*    Length of input line buffer */
 
 /*	-----------------  Control  ------------------------------   */
 #define Sc char
@@ -97,7 +97,7 @@ typedef struct BufStruct {
     FILE *cfile;
     int line, nch;
     char cname[80];
-    char inl[LL];
+    char inl[INPUT_BUFFER_SIZE];
 } Buf;
 
 /*	------------------  Allocation blocks  --------------------  */
@@ -415,17 +415,17 @@ char *sers(Class *cll);
 
 /*	mathematical constants   */
 EXT double hlg2pi, hlg2, lattice, pi, bit, bit2, twoonpi, pion2;
-EXT double zerov[MaxZ];
-EXT double faclog[MaxClasses + 1];
+EXT double zerov[MAX_ZERO];
+EXT double faclog[MAX_CLASSES + 1];
 
 /*	general:	*/
 EXT int Ntypes;   /* The number of different attribute types */
 EXT Vtype *types; /* a vector of Ntypes type definitions,
          created in dotypes */
 EXT Context ctx;  /* current context */
-EXT Vset *vsets[Maxvsets];
-EXT Sample *samples[Maxsamples];
-EXT Population *poplns[Maxpoplns];
+EXT Vset *vsets[MAX_VSETS];
+EXT Sample *samples[MAX_SAMPLES];
+EXT Population *poplns[MAX_POPULATIONS];
 EXT int nsamples;
 
 /*	re inputs for main  */
@@ -485,8 +485,8 @@ EXT int nosubs;
 EXT int newsubs;
 EXT int deaded; /* Shows some class killed */
 EXT int numson;
-EXT Class *sons[MaxClasses];
-EXT int nextic[MaxClasses];
+EXT Class *sons[MAX_CLASSES];
+EXT int nextic[MAX_CLASSES];
 
 /*	re Tuning  */
 EXT int MinAge;      /* Min class age for creation of subs */

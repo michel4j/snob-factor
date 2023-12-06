@@ -27,7 +27,7 @@ void dotypes() {
     bit2 = 2.0 * bit;
     hlg2 = 0.5 * log(2.0);
     lattice = -0.5 * log(12.0);
-    for (i = 0; i < MaxZ; i++)
+    for (i = 0; i < MAX_ZERO; i++)
         zerov[i] = 0.0;
 
     /*	Make the 'types' vector  */

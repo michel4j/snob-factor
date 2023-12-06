@@ -335,7 +335,7 @@ int readintname(int kk, int jj) {
 void showpoplnnames() {
     int i;
     printf("The defined models are:\n");
-    for (i = 0; i < Maxpoplns; i++) {
+    for (i = 0; i < MAX_POPULATIONS; i++) {
         if (poplns[i]) {
             printf("%2d %s", i + 1, poplns[i]->name);
             if (poplns[i]->nc)
@@ -354,7 +354,7 @@ void showpoplnnames() {
 void showsamplenames() {
     int k;
     printf("Loaded samples:\n");
-    for (k = 0; k < Maxsamples; k++) {
+    for (k = 0; k < MAX_SAMPLES; k++) {
         if (samples[k]) {
             printf("%2d:  %s\n", k + 1, samples[k]->name);
         }
@@ -372,7 +372,7 @@ int readpopid(int kk) {
 
     if (intparam >= 0) {
         nn = intparam - 1;
-        if (nn >= 0 && nn < Maxpoplns && poplns[nn] && poplns[nn]->id == nn) {
+        if (nn >= 0 && nn < MAX_POPULATIONS && poplns[nn] && poplns[nn]->id == nn) {
             return nn;
         }
         printf("%d is not a valid popln index\n", intparam);
@@ -397,7 +397,7 @@ int readsampid(int kk) {
 
     if (intparam >= 0) {
         nn = intparam - 1;
-        if (nn >= 0 && nn < Maxsamples && samples[nn] && samples[nn]->id == nn) {
+        if (nn >= 0 && nn < MAX_SAMPLES && samples[nn] && samples[nn]->id == nn) {
             return nn;
         }
         printf("%d is not a valid sample index\n", intparam);
@@ -458,11 +458,11 @@ int main() {
     fix = dfix = Partial;
     dcontrol = control = AdjAll;
     /*	Clear vectors of pointers to Poplns, Samples  */
-    for (k = 0; k < Maxpoplns; k++)
+    for (k = 0; k < MAX_POPULATIONS; k++)
         poplns[k] = 0;
-    for (k = 0; k < Maxsamples; k++)
+    for (k = 0; k < MAX_SAMPLES; k++)
         samples[k] = 0;
-    for (k = 0; k < Maxvsets; k++)
+    for (k = 0; k < MAX_VSETS; k++)
         vsets[k] = 0;
     dotypes();
 

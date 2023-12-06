@@ -39,7 +39,7 @@ int readvset() {
     char *vaux;
 
     buf = &bufst;
-    for (i = 0; i < Maxvsets; i++)
+    for (i = 0; i < MAX_VSETS; i++)
         if (!vsets[i])
             goto gotit;
 nospce:
@@ -213,7 +213,7 @@ int readsample(char *fname) {
     vst = ctx.vset = vsets[kread];
 
     /*	Find a vacant sample slot  */
-    for (i = 0; i < Maxsamples; i++) {
+    for (i = 0; i < MAX_SAMPLES; i++) {
         if (samples[i] == 0)
             goto gotit;
     }
@@ -364,7 +364,7 @@ int expect;
 {
     int i;
 
-    for (i = 0; i < Maxsamples; i++) {
+    for (i = 0; i < MAX_SAMPLES; i++) {
         if (samples[i]) {
             if (!strcmp(nam, samples[i]->name))
                 goto searched;
@@ -388,7 +388,7 @@ char *nam;
     int i, ii;
 
     ii = -1;
-    for (i = 0; i < Maxvsets; i++) {
+    for (i = 0; i < MAX_VSETS; i++) {
         if (vsets[i]) {
             if (!strcmp(nam, vsets[i]->name))
                 ii = i;

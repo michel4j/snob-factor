@@ -79,7 +79,7 @@ int makepop(int fill){
         return (-1);
     }
     /*	Find vacant popln slot    */
-    for (indx = 0; indx < Maxpoplns; indx++) {
+    for (indx = 0; indx < MAX_POPULATIONS; indx++) {
         if (poplns[indx] == 0)
             goto gotit;
     }
@@ -117,11 +117,11 @@ gotit:
     }
 
     /*	Make an empty vector of ptrs to class structures, initially
-        allowing for MaxClasses classes  */
-    population->classes = (Class **)gtsp(1, MaxClasses * sizeof(Class *));
+        allowing for MAX_CLASSES classes  */
+    population->classes = (Class **)gtsp(1, MAX_CLASSES * sizeof(Class *));
     if (!population->classes)
         goto nospace;
-    population->mncl = MaxClasses;
+    population->mncl = MAX_CLASSES;
     for (i = 0; i < population->mncl; i++)
         population->classes[i] = 0;
 
@@ -653,7 +653,7 @@ int pname2id(char *nam)
         else
             return (-1);
     }
-    for (i = 0; i < Maxpoplns; i++) {
+    for (i = 0; i < MAX_POPULATIONS; i++) {
         if (poplns[i] && (!strcmp(lname, poplns[i]->name)))
             return (i);
     }
@@ -1053,8 +1053,8 @@ Table entries show the weight assigned to both one leaf of 'work' and one
 leaf of the other popln, as a permillage of active things.
     */
 void correlpops(int xid){
-    float table[MaxClasses][MaxClasses];
-    Class *wsons[MaxClasses], *xsons[MaxClasses];
+    float table[MAX_CLASSES][MAX_CLASSES];
+    Class *wsons[MAX_CLASSES], *xsons[MAX_CLASSES];
     Population *xpop, *wpop;
     double fnact, wwt;
     int wic, xic, n, pcw, wnl, xnl;
