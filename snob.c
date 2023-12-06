@@ -1,125 +1,59 @@
+
 /*    ---------------------  MAIN FILE -----------------  */
-#include "glob.h"
-#include <omp.h>
+#include "snob.h"
 #include <stdarg.h>
 #include <time.h>
 
+#define DO_ALL_STEPS 50
+#define TRY_MOVE_STEPS 2
+
 /*    ---------------------  main  ---------------------------  */
-
-/**
-    Clear vectors of pointers to Poplns, Samples
-*/
-void clear_vectors() {
-    int k;
-
-    for (k = 0; k < MAX_POPULATIONS; k++)
-        Populations[k] = 0;
-    for (k = 0; k < MAX_SAMPLES; k++)
-        Samples[k] = 0;
-    for (k = 0; k < MAX_VSETS; k++)
-        VarSets[k] = 0;
-}
-/**
-    Initialize SNOB
-*/
-void initialize() {
-    RSeed = 1234567;
-    defaulttune();
-    printf("SNOB-Factor: %d Threads Available\n\n", omp_get_max_threads());
-    clear_vectors();
-}
-
-
-void show_summary() {
-    if (NoSubs || (Control != AdjAll)) {
-        if (NoSubs)
-            printf("NOSUBS  ");
-        if (Control != AdjAll) {
-            printf("FREEZE");
-            if (!(Control & AdjPr))
-                printf(" PARAMS");
-            if (!(Control & AdjSc))
-                printf(" SCORES");
-            if (!(Control & AdjTr))
-                printf(" TREE");
-        }
-        printf("  Cost%8.1f\n", CurRootClass->best_cost);
-    }
-}
-
-extern char *malloc_options;
 int main(int argc, char *argv[]) {
-    int k, i, res, kk;
-    int cspace = 0;
+    int index, cycles = 20;
+
+    clock_t cpu_start, cpu_end;
+    struct timespec wall_start, wall_end;
+    double cpu_time, wall_time;
 
     if (argc < 3) {
-        printf("Usage: %s <vset.v> <smpl.s> <report.rep>\n", argv[1]);
+        log_msg(1, "Usage: %s <vset.v> <smpl.s> <report.rep>", argv[1]);
         exit(2);
     }
 
-    Fix = DFix = Partial;
-    DControl = Control = AdjAll;
+    // Record start time 
+    cpu_start = clock();
+    timespec_get(&wall_start, TIME_UTC);
 
-    initialize();    // initialize menu
-    clear_vectors(); //    Clear vectors of pointers to Poplns, Samples
-    do_types();
+    initialize(1, 0, 8);
 
-    /*    Set source to commsbuf and initialize  */
-    CurSource = &commsbuf;
-    CurCtx.buffer = CurSource;
-    CurSource->cfile = 0;
-    CurSource->nch = 0;
-    CurSource->inl[0] = '\n';
-
-    res = open_vset(argv[1]);
-    if (res < 0) {
-        printf("Error[ %d ] reading vset: %s\n", res, argv[1]);
+    index = load_vset(argv[1]);
+    if (index < 0) {
+        log_msg(2, "Error[ %d ] reading vset: %s", index, argv[1]);
         exit(2);
     }
-    CurVSet = CurCtx.vset = VarSets[res];
-    SeeAll = 2;
-    k = load_sample(argv[2]);
-    cspace = report_space(1);
-    kk = init_population();
-    cspace = report_space(1);
 
-    trapcnt = 0;
-    print_class(CurRoot, 0);
-
-    k = find_population("TrialPop");
-    if (k >= 0)
-        destroy_population(k);
-    kk = report_space(0);
-    if (kk != cspace)
-        cspace = report_space(1);
-
-    show_summary();
-    set_population();
-    Fix = DFix;
-    Control = DControl;
-    tidy(1);
-    track_best(1);
-    if (!CurSource->cfile) {
-        CurPopln = CurCtx.popln;
-        CurClass = CurPopln->classes[CurPopln->root];
-        printf("\n");
-        printf("P%1d  %4d classes, %4d leaves,  Pcost%8.1f", CurPopln->id + 1, CurPopln->num_classes, CurPopln->num_leaves, CurClass->best_par_cost);
-        if (CurPopln->sample_size)
-            printf("  Tcost%10.1f,  Cost%10.1f", CurClass->best_case_cost, CurClass->best_cost);
-        printf("\n");
-        printf("Sample %2d %s\n", (CurCtx.sample) ? CurCtx.sample->id + 1 : 0, (CurCtx.sample) ? CurCtx.sample->name : "NULL");
+    index = load_sample(argv[2]);
+    if (index < 0) {
+        log_msg(2, "Error[ %d ] reading sample: %s", index, argv[2]);
+        exit(2);
     }
-
-    for (int j = 0; j < 3; j++) {
-        k = do_all(50, 1);
-        printf("Doall ends after %d cycles\n", k);
-        try_moves(2);
-        show_summary();
-    }
+    classify(cycles, DO_ALL_STEPS, TRY_MOVE_STEPS, 0.01);  // % tolerance of 0.01 % for convergence of cost
+   
+    // display tree and classes
     print_tree();
     print_class(-2, 1);
+    show_population();
 
     if (argc == 4) {
         item_list(argv[3]);
     }
+
+    // Report time used
+    cpu_end = clock();
+    timespec_get(&wall_end, TIME_UTC);
+    cpu_time = ((double) (cpu_end - cpu_start)) / CLOCKS_PER_SEC;
+    wall_time = (wall_end.tv_sec - wall_start.tv_sec) +  (wall_end.tv_nsec - wall_start.tv_nsec) / 1E9;
+
+    log_msg(1, "CPU Time:     %10.3f s", cpu_time);
+    log_msg(1, "Elapsed Time: %10.3f s", wall_time);
 }
