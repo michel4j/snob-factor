@@ -20,11 +20,6 @@ files. The declarations herein then become converted to "EXT" declarations.
 #define INPUT_BUFFER_SIZE 450 /*    Length of input line buffer */
 
 /*	-----------------  Control  ------------------------------   */
-#define Sc char
-#define Sf double
-#define Sw int
-#define Sh short
-
 #define AdjSc 1
 #define AdjTr 2
 #define AdjPr 4
@@ -63,7 +58,6 @@ controls the mode of weight assignment  */
 #define Deadsing -12
 #define Deadorphan -13
 #define Deadkilled -14
-
 #define BadSize 1013
 
 /*	-----------------  Variable types  ---------------------  */
@@ -288,7 +282,7 @@ int hark(char *lline);
 
 /*	In inputs.c  */
 #ifndef INPUTS
-extern Sw terminator;
+extern int terminator;
 extern Buf cfilebuf, commsbuf;
 #endif
 

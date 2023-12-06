@@ -19,7 +19,7 @@ typedef struct Vmpackst {
 
 void kapcode(double hx, double hy, double *vmst);
 
-#define NullSprd ((Sf)10.0) /* Root prior spread */
+#define NullSprd ((double)10.0) /* Root prior spread */
 
 static void setvar();
 static int readvaux();
