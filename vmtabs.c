@@ -5121,7 +5121,7 @@ asymp:
 #define double double
 #define int int
 
-double pi;
+double PI;
 
 /*	----------------  calc (ka, *li0, *aa, ni) -------------  */
 void calc(ka, li0, aa, ni) double ka, *li0, *aa;
@@ -5130,7 +5130,7 @@ int ni;
     double xx, hh, cx, sum1, sum2, pp;
     int ii;
 
-    hh = pi / ni;
+    hh = PI / ni;
 
     sum1 = sum2 = 0.0;
     for (ii = ni - 1; ii >= 0; ii--) {
@@ -5155,7 +5155,7 @@ int main() {
     int ni;
     double aa, li0, aaa, ali0, daa;
 
-    pi = 4.0 * atan(1.0);
+    PI = 4.0 * atan(1.0);
 loop:
     printf("Enter kappa: ");
     scanf("%lf", &kap);

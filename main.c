@@ -486,7 +486,7 @@ int main() {
     if (kk < 0)
         exit(2);
     else
-        VSet = CurCtx.vset = VarSets[kk];
+        CurVSet = CurCtx.vset = VarSets[kk];
 
     SeeAll = 2;
     printf("Enter sample file name:\n");
@@ -510,7 +510,7 @@ int main() {
     if (trapkk >= 0)
         scanf("%d", &trapage);
 #endif
-    print_class(root, 0);
+    print_class(CurRoot, 0);
 error:
     printf("??? line %6d\n", CurSource->line);
     new_line();
@@ -540,7 +540,7 @@ loop:
             if (!(Control & AdjTr))
                 printf(" TREE");
         }
-        printf("  Cost%8.1f\n", rootcl->best_cost);
+        printf("  Cost%8.1f\n", CurRootClass->best_cost);
     }
     if (!CurCtx.popln) {
         kk = 13;
@@ -553,12 +553,12 @@ loop:
     track_best(1);
     if (!CurSource->cfile) {
         flp();
-        Popln = CurCtx.popln;
-        cls = Popln->classes[Popln->root];
-        printf("P%1d  %4d classes, %4d leaves,  Pcost%8.1f", Popln->id + 1,
-               Popln->num_classes, Popln->num_leaves, cls->best_par_cost);
-        if (Popln->sample_size)
-            printf("  Tcost%10.1f,  Cost%10.1f", cls->best_case_cost, cls->best_cost);
+        CurPopln = CurCtx.popln;
+        CurClass = CurPopln->classes[CurPopln->root];
+        printf("P%1d  %4d classes, %4d leaves,  Pcost%8.1f", CurPopln->id + 1,
+               CurPopln->num_classes, CurPopln->num_leaves, CurClass->best_par_cost);
+        if (CurPopln->sample_size)
+            printf("  Tcost%10.1f,  Cost%10.1f", CurClass->best_case_cost, CurClass->best_cost);
         printf("\n");
         printf("Sample %2d %s\n", (CurCtx.sample) ? CurCtx.sample->id + 1 : 0,
                (CurCtx.sample) ? CurCtx.sample->name : "NULL");
@@ -597,20 +597,20 @@ loop:
         goto loop;
     case 3: /* killclass */
         k = readserial(kk);
-        if (k == root) {
+        if (k == CurRoot) {
             printf("Won't kill Root\n");
             goto loop;
         }
         if (k < 0)
             goto error;
-        Log "%s", serial_to_str(Popln->classes[k]) EL Popln->classes[k]->weights_sum = 0.0;
+        Log "%s", serial_to_str(CurPopln->classes[k]) EL CurPopln->classes[k]->weights_sum = 0.0;
         goto loop;
     case 4: /* delete_sons */
         k = readserial(kk);
         if (k < 0)
             goto error;
-        Log "%s", serial_to_str(Popln->classes[k]) EL delete_sons(k);
-        Popln->classes[k]->hold_type = HoldTime;
+        Log "%s", serial_to_str(CurPopln->classes[k]) EL delete_sons(k);
+        CurPopln->classes[k]->hold_type = HoldTime;
         goto loop;
     case 5: /* prclass */
         k = readserial(kk);
@@ -619,7 +619,7 @@ loop:
         i = readanint(kk);
         if (i < 0)
             goto error;
-        Log "%s  %d", serial_to_str(Popln->classes[k]), i EL print_class(k, i);
+        Log "%s  %d", serial_to_str(CurPopln->classes[k]), i EL print_class(k, i);
         goto loop;
     case 6: /*	adjust  */
         k = readsparam(kk);
@@ -685,18 +685,18 @@ loop:
         k = readserial(kk);
         if (k < 0)
             goto error;
-        if (Popln->classes[k]->type != Leaf) {
-            printf("Class %s is not a leaf\n", serial_to_str(Popln->classes[k]));
+        if (CurPopln->classes[k]->type != Leaf) {
+            printf("Class %s is not a leaf\n", serial_to_str(CurPopln->classes[k]));
             goto loop;
         }
-        Log "%s", serial_to_str(Popln->classes[k]) EL if (split_leaf(k))
-                      printf("Cannot split class%s\n", serial_to_str(Popln->classes[k]));
+        Log "%s", serial_to_str(CurPopln->classes[k]) EL if (split_leaf(k))
+                      printf("Cannot split class%s\n", serial_to_str(CurPopln->classes[k]));
         goto loop;
     case 9: /* splice_dad */
         k = readserial(kk);
         if (k < 0)
             goto error;
-        Log "%s", serial_to_str(Popln->classes[k]) EL k = Popln->classes[k]->serial;
+        Log "%s", serial_to_str(CurPopln->classes[k]) EL k = CurPopln->classes[k]->serial;
         drop = splice_dad(k);
         goto dropprint;
 
@@ -742,7 +742,7 @@ loop:
         printf("Please donot use a popln name beginning BST_\n");
         goto error;
     ok11:
-        Log "%d %s", i, sparam EL i = copy_population(Popln->id, i, sparam);
+        Log "%d %s", i, sparam EL i = copy_population(CurPopln->id, i, sparam);
         if (i < 0)
             goto error;
         printf("Index%3d = popln %s\n", i + 1, sparam);
@@ -810,13 +810,13 @@ loop:
         k2 = readserial(kk);
         if (k2 < 0)
             goto error;
-        k1 = Popln->classes[k1]->serial;
-        k2 = Popln->classes[k2]->serial;
-        Log "%s %s", serial_to_str(Popln->classes[k1]),
-            serial_to_str(Popln->classes[k2]) EL drop = insert_dad(k1, k2, &k);
+        k1 = CurPopln->classes[k1]->serial;
+        k2 = CurPopln->classes[k2]->serial;
+        Log "%s %s", serial_to_str(CurPopln->classes[k1]),
+            serial_to_str(CurPopln->classes[k2]) EL drop = insert_dad(k1, k2, &k);
         flp();
         if (k >= 0)
-            printf("New Dad's serial%s\n", serial_to_str(Popln->classes[k]));
+            printf("New Dad's serial%s\n", serial_to_str(CurPopln->classes[k]));
     dropprint:
         if (drop < -1000000.0) {
             printf("Cannot be done\n");
@@ -918,10 +918,10 @@ loop:
         k2 = readserial(kk);
         if (k2 < 0)
             goto error;
-        k1 = Popln->classes[k1]->serial;
-        k2 = Popln->classes[k2]->serial;
-        Log "%s %s", serial_to_str(Popln->classes[k1]),
-            serial_to_str(Popln->classes[k2]) EL drop = move_class(k1, k2);
+        k1 = CurPopln->classes[k1]->serial;
+        k2 = CurPopln->classes[k2]->serial;
+        Log "%s %s", serial_to_str(CurPopln->classes[k1]),
+            serial_to_str(CurPopln->classes[k2]) EL drop = move_class(k1, k2);
         printf("Move changes cost by %12.1f\n", -drop);
         goto loop;
 
@@ -967,15 +967,15 @@ loop:
         if (k < 0)
             goto error;
         printf("Selecting sample %s\n", Samples[k]->name);
-        Log "%s", Samples[k]->name EL i = copy_population(Popln->id, 0, "OldWork");
+        Log "%s", Samples[k]->name EL i = copy_population(CurPopln->id, 0, "OldWork");
         if (i < 0) {
             printf("Can't make OldWork copy of work\n");
             goto error;
         }
         if (CurCtx.popln)
             destroy_population(CurCtx.popln->id);
-        Popln = CurCtx.popln = 0;
-        Smpl = CurCtx.sample = Samples[k];
+        CurPopln = CurCtx.popln = 0;
+        CurSample = CurCtx.sample = Samples[k];
         i = init_population();
         if (i < 0) {
             printf("Cannot make first population for sample\n");
@@ -998,7 +998,7 @@ pickapop:
     }
     k = set_work_population(i);
 picked:
-    CurCtx.popln = Popln = Populations[k];
+    CurCtx.popln = CurPopln = Populations[k];
     Log "%s", Populations[i]->name EL goto loop;
 #ifdef ZZ
 #endif

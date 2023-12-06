@@ -132,17 +132,17 @@ void reals_define(typindx) int typindx;
 /*	-------------------  setvar -----------------------------  */
 void setvar(iv) int iv;
 {
-    avi = vlist + iv;
-    vtp = avi->vtype;
+    CurAttr = CurAttrList + iv;
+    CurVType = CurAttr->vtype;
     pvi = pvars + iv;
     paux = (Paux *)pvi->paux;
-    svi = svars + iv;
-    vaux = (Vaux *)avi->vaux;
-    saux = (Saux *)svi->saux;
-    cvi = (Basic *)cls->basics[iv];
-    evi = (Stats *)cls->stats[iv];
-    if (dad)
-        dcvi = (Basic *)dad->basics[iv];
+    CurVar = CurVarList + iv;
+    vaux = (Vaux *)CurAttr->vaux;
+    saux = (Saux *)CurVar->saux;
+    cvi = (Basic *)CurClass->basics[iv];
+    evi = (Stats *)CurClass->stats[iv];
+    if (CurDad)
+        dcvi = (Basic *)CurDad->basics[iv];
     else
         dcvi = 0;
     return;
@@ -198,9 +198,9 @@ void printdat(char *loc) {
 /*	---------------------  setsizes  -----------------------   */
 void setsizes(iv) int iv;
 {
-    avi = vlist + iv;
-    avi->basic_size = sizeof(Basic);
-    avi->stats_size = sizeof(Stats);
+    CurAttr = CurAttrList + iv;
+    CurAttr->basic_size = sizeof(Basic);
+    CurAttr->stats_size = sizeof(Stats);
     return;
 }
 
@@ -210,14 +210,14 @@ void setbestparam(iv) int iv;
 
     setvar(iv);
 
-    if (cls->type == Dad) {
+    if (CurClass->type == Dad) {
         cvi->bmu = cvi->nmu;
         cvi->bmusprd = cvi->nmusprd;
         cvi->bsdl = cvi->nsdl;
         cvi->bsdlsprd = cvi->nsdlsprd;
         evi->btcost = evi->ntcost;
         evi->bpcost = evi->npcost;
-    } else if ((cls->use == Fac) && cvi->infac) {
+    } else if ((CurClass->use == Fac) && cvi->infac) {
         cvi->bmu = cvi->fmu;
         cvi->bmusprd = cvi->fmusprd;
         cvi->bsdl = cvi->fsdl;
@@ -249,7 +249,7 @@ void clearstats(iv) int iv;
     evi->fsdld1 = evi->fmud1 = evi->ldd1 = 0.0;
     evi->fsdld2 = evi->fmud2 = evi->ldd2 = 0.0;
 
-    if (cls->age == 0)
+    if (CurClass->age == 0)
         return;
     evi->ssig = exp(cvi->ssdl);
     tmp = 1.0 / evi->ssig;
@@ -271,16 +271,16 @@ void scorevar(iv) int iv;
     double del, md2;
 
     setvar(iv);
-    if (avi->inactive)
+    if (CurAttr->inactive)
         return;
 
     if (saux->missing)
         return;
-    del = cvi->fmu + cvv * cvi->ld - saux->xn;
-    vvd1 += evi->frsds * (del * cvi->ld + cvv * cvi->ldsprd);
+    del = cvi->fmu + CurCaseFacScore * cvi->ld - saux->xn;
+    CaseFacScoreD1 += evi->frsds * (del * cvi->ld + CurCaseFacScore * cvi->ldsprd);
     md2 = evi->frsds * (evi->ldsq + cvi->ldsprd);
-    vvd2 += md2;
-    mvvd2 += 1.1 * md2;
+    CaseFacScoreD2 += md2;
+    EstFacScoreD2 += 1.1 * md2;
     return;
 }
 
@@ -292,14 +292,14 @@ void costvar(iv, fac) int iv, fac;
     setvar(iv);
     if (saux->missing)
         return;
-    if (cls->age == 0) {
+    if (CurClass->age == 0) {
         evi->parkftcost = evi->parkstcost = 0.0;
         return;
     }
     /*	Do no-fac cost first  */
     del = cvi->smu - saux->xn;
     var = del * del + cvi->smusprd + saux->epssq;
-    cost = 0.5 * var * evi->srsds + cvi->ssdlsprd + hlg2pi + cvi->ssdl -
+    cost = 0.5 * var * evi->srsds + cvi->ssdlsprd + HALF_LOG_2PI + cvi->ssdl -
            saux->leps;
     evi->parkstcost = cost;
     scasecost += cost;
@@ -307,11 +307,11 @@ void costvar(iv, fac) int iv, fac;
     /*	Only do faccost if fac  */
     if (!fac)
         goto facdone;
-    del += cvv * cvi->ld;
-    var = del * del + cvi->fmusprd + saux->epssq + cvvsq * cvi->ldsprd +
+    del += CurCaseFacScore * cvi->ld;
+    var = del * del + cvi->fmusprd + saux->epssq + CurCaseFacScoreSq * cvi->ldsprd +
           cvvsprd * evi->ldsq;
     evi->var = var;
-    cost = hlg2pi + 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd * 2.0 -
+    cost = HALF_LOG_2PI + 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd * 2.0 -
            saux->leps;
 
 facdone:
@@ -332,20 +332,20 @@ void derivvar(iv, fac) int iv, fac;
     if (saux->missing)
         return;
     /*	Do non-fac first  */
-    evi->cnt += cwt;
+    evi->cnt += CurCaseWeight;
     /*	For non-fac, rather than getting derivatives I just collect
         the sufficient statistics, sum of xn, sum of xn^2  */
-    evi->tx += cwt * saux->xn;
-    evi->txx += cwt * (saux->xn * saux->xn + saux->epssq);
+    evi->tx += CurCaseWeight * saux->xn;
+    evi->txx += CurCaseWeight * (saux->xn * saux->xn + saux->epssq);
     /*	Accumulate weighted item cost  */
-    evi->stcost += cwt * evi->parkstcost;
-    evi->ftcost += cwt * evi->parkftcost;
+    evi->stcost += CurCaseWeight * evi->parkstcost;
+    evi->ftcost += CurCaseWeight * evi->parkftcost;
 
     /*	Now for factor form  */
     if (!fac)
         goto facdone;
     frsds = evi->frsds;
-    del = cvi->fmu + cvv * cvi->ld - saux->xn;
+    del = cvi->fmu + CurCaseFacScore * cvi->ld - saux->xn;
     /*	From costvar, we have:
         cost = 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd*2.0 + consts
             where var is given by:
@@ -353,12 +353,12 @@ void derivvar(iv, fac) int iv, fac;
         var has been kept in stats.  */
     /*	Add to derivatives:  */
     var = evi->var;
-    evi->fsdld1 += cwt * (1.0 - frsds * var);
-    evi->fsdld2 += 2.0 * cwt;
-    evi->fmud1 += cwt * del * frsds;
-    evi->fmud2 += cwt * frsds;
-    evi->ldd1 += cwt * frsds * (del * cvv + cvi->ld * cvvsprd);
-    evi->ldd2 += cwt * frsds * (cvvsq + cvvsprd);
+    evi->fsdld1 += CurCaseWeight * (1.0 - frsds * var);
+    evi->fsdld2 += 2.0 * CurCaseWeight;
+    evi->fmud1 += CurCaseWeight * del * frsds;
+    evi->fmud2 += CurCaseWeight * frsds;
+    evi->ldd1 += CurCaseWeight * frsds * (del * CurCaseFacScore + cvi->ld * cvvsprd);
+    evi->ldd2 += CurCaseWeight * frsds * (CurCaseFacScoreSq + cvvsprd);
 facdone:
     return;
 }
@@ -378,8 +378,8 @@ void adjust(iv, fac) int iv, fac;
     cnt = evi->cnt;
 
     /*	Get prior constants from dad, or if root, fake them  */
-    if (!dad) { /* Class is root */
-        if (cls->age > 0) {
+    if (!CurDad) { /* Class is root */
+        if (CurClass->age > 0) {
             dadmu = cvi->smu;
             dadsdl = cvi->ssdl;
             dmusprd = exp(2.0 * dadsdl);
@@ -406,7 +406,7 @@ void adjust(iv, fac) int iv, fac;
         goto hasage;
     }
     /*	If class age is zero, make some preliminary estimates  */
-    if (cls->age)
+    if (CurClass->age)
         goto hasage;
     cvi->smu = cvi->fmu = evi->tx / cnt;
     var = evi->txx / cnt - cvi->smu * cvi->smu;
@@ -417,16 +417,16 @@ void adjust(iv, fac) int iv, fac;
     cvi->ldsprd = var / cnt;
     cvi->ld = 0.0;
     cvi->ssdlsprd = cvi->fsdlsprd = 1.0 / cnt;
-    if (!dad) { /*  First stab at root  */
+    if (!CurDad) { /*  First stab at root  */
         dadmu = cvi->smu;
         dadsdl = cvi->ssdl;
         dmusprd = exp(2.0 * dadsdl);
         dsdlsprd = 1.0;
     }
     /*	Make a stab at class tcost  */
-    cls->cstcost +=
-        cnt * (hlg2pi + cvi->ssdl - saux->leps + 0.5 + cls->mlogab) + 1.0;
-    cls->cftcost = cls->cstcost + 100.0 * cnt;
+    CurClass->cstcost +=
+        cnt * (HALF_LOG_2PI + cvi->ssdl - saux->leps + 0.5 + CurClass->mlogab) + 1.0;
+    CurClass->cftcost = CurClass->cstcost + 100.0 * cnt;
 
 hasage:
     temp1 = 1.0 / dmusprd;
@@ -437,12 +437,12 @@ hasage:
     /*	Compute parameter costs as they are  */
     del1 = dadmu - cvi->smu;
     spcost =
-        hlg2pi + 0.5 * (log(dmusprd) + temp1 * (del1 * del1 + cvi->smusprd));
+        HALF_LOG_2PI + 0.5 * (log(dmusprd) + temp1 * (del1 * del1 + cvi->smusprd));
     del2 = dadsdl - cvi->ssdl;
     spcost +=
-        hlg2pi + 0.5 * (log(dsdlsprd) + temp2 * (del2 * del2 + cvi->ssdlsprd));
+        HALF_LOG_2PI + 0.5 * (log(dsdlsprd) + temp2 * (del2 * del2 + cvi->ssdlsprd));
     spcost -= 0.5 * log(cvi->smusprd * cvi->ssdlsprd);
-    spcost += 2.0 * lattice;
+    spcost += 2.0 * LATTICE;
 
     if (!fac) {
         fpcost = spcost + 100.0;
@@ -451,14 +451,14 @@ hasage:
     }
     del3 = cvi->fmu - dadmu;
     fpcost =
-        hlg2pi + 0.5 * (log(dmusprd) + temp1 * (del3 * del3 + cvi->fmusprd));
+        HALF_LOG_2PI + 0.5 * (log(dmusprd) + temp1 * (del3 * del3 + cvi->fmusprd));
     del4 = cvi->fsdl - dadsdl;
     fpcost +=
-        hlg2pi + 0.5 * (log(dsdlsprd) + temp2 * (del4 * del4 + cvi->fsdlsprd));
+        HALF_LOG_2PI + 0.5 * (log(dsdlsprd) + temp2 * (del4 * del4 + cvi->fsdlsprd));
     /*    The prior for load ld id N (0, sigsq)  */
-    fpcost += hlg2pi + 0.5 * (evi->ldsq + cvi->ldsprd) * frsds + cvi->fsdl;
+    fpcost += HALF_LOG_2PI + 0.5 * (evi->ldsq + cvi->ldsprd) * frsds + cvi->fsdl;
     fpcost -= 0.5 * log(cvi->fmusprd * cvi->fsdlsprd * cvi->ldsprd);
-    fpcost += 3.0 * lattice;
+    fpcost += 3.0 * LATTICE;
 
 facdone1:
 
@@ -466,8 +466,8 @@ facdone1:
     evi->spcost = spcost;
     evi->fpcost = fpcost;
     /*	Add to class param costs  */
-    cls->nofac_par_cost += spcost;
-    cls->fac_par_cost += fpcost;
+    CurClass->nofac_par_cost += spcost;
+    CurClass->fac_par_cost += fpcost;
     if (cnt < MinSize)
         goto adjdone;
     if (!(Control & AdjPr))
@@ -541,7 +541,7 @@ facdone2:
 
 tweaks: /* Come here if no adjustments made */
     /*	Deal only with sub-less leaves  */
-    if ((cls->type != Leaf) || (cls->num_sons < 2))
+    if ((CurClass->type != Leaf) || (CurClass->num_sons < 2))
         goto adjdone;
 
     /*	If Noprior, guess no-prior params, sprds and store instead of
@@ -559,7 +559,7 @@ tweaks: /* Come here if no adjustments made */
         cvi->bmu = (cvi->nmu + dadmu / dmusprd) * cvi->bmusprd;
         cvi->bsdlsprd = 1.0 / (cvi->nsdlsprd + (1.0 / dsdlsprd));
         cvi->bsdl = (cvi->nsdl + dadsdl / dsdlsprd) * cvi->bsdlsprd;
-        if (cls->use == Fac) {
+        if (CurClass->use == Fac) {
             cvi->fmu = cvi->bmu;
             cvi->fmusprd = cvi->nmusprd;
         } else {
@@ -588,7 +588,7 @@ int iv;
 
     printf("V%3d  Cnt%6.1f  %s\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out");
-    if (cls->num_sons < 2)
+    if (CurClass->num_sons < 2)
         goto skipn;
     printf(" N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", evi->npcost,
            cvi->nmu, sqrt(cvi->nmusprd), exp(cvi->nsdl),
@@ -725,11 +725,11 @@ void ncostvar(iv, vald) int iv, vald;
         cvi->nsdlsprd = cvi->ssdlsprd * evi->cnt;
         return;
     }
-    if (avi->inactive) {
+    if (CurAttr->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
-    nson = cls->num_sons;
+    nson = CurClass->num_sons;
     pcost = tcost = 0.0;
 
     /*	There are two independent parameters, nmu and nsdl, to fiddle.
@@ -740,7 +740,7 @@ void ncostvar(iv, vald) int iv, vald;
     k = 0;
 ploop:
     /*	Get prior constants from dad, or if root, fake them  */
-    if (!dad) { /* Class is root */
+    if (!CurDad) { /* Class is root */
         dadpp = *(&cvi->smu + k);
         dppsprd = *(&cvi->smusprd + k) * evi->cnt;
     } else {
@@ -756,8 +756,8 @@ ploop:
     tstvn = 0.0; /* Total sum of sons' (t_n^2 + del_n)  */
     tssn = 0.0;  /* Total sons' s_n */
 
-    for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
-        son = Popln->classes[ison];
+    for (ison = CurClass->son_id; ison > 0; ison = son->sib_id) {
+        son = CurPopln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         spp = *(&soncvi->bmu + k);
         sppsprd = *(&soncvi->bmusprd + k);
@@ -799,11 +799,11 @@ adjloop:
 
 adjdone: /*	Calc cost  */
     del = pp - dadpp;
-    pcost += hlg2pi + 1.5 * log(dppsprd) +
+    pcost += HALF_LOG_2PI + 1.5 * log(dppsprd) +
              0.5 * (del * del + ppsprd / nson) / dppsprd + ppsprd / dppsprd;
-    /*	Add hlog Fisher, lattice  */
+    /*	Add hlog Fisher, LATTICE  */
     pcost += 0.5 * log(nson * (0.5 * nson + nints)) - 1.5 * log(ppsprd) +
-             2.0 * lattice;
+             2.0 * LATTICE;
 
     /*	Add roundoff for 2 params  (pp, ppsprd)  */
     pcost += 1.0;

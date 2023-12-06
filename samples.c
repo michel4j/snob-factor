@@ -14,7 +14,7 @@ void print_var_datum(int i, int n) {
 
     samp = CurCtx.sample;
     svi = samp->variables + i;
-    avi = vlist + i;
+    avi = CurAttrList + i;
     vtp = avi->vtype;
     loc = (char *)samp->records;
     loc += n * samp->record_length;
@@ -228,7 +228,7 @@ int load_sample(const char *fname) {
         i = -8;
         goto error;
     }
-    VSet = CurCtx.vset = VarSets[kread];
+    CurVSet = CurCtx.vset = VarSets[kread];
 
     /*	Find a vacant sample slot  */
     for (i = 0; i < MAX_SAMPLES; i++) {
@@ -238,85 +238,85 @@ int load_sample(const char *fname) {
     goto nospace;
 
 gotit:
-    Smpl = Samples[i] = (Sample *)malloc(sizeof(Sample));
-    if (!Smpl)
+    CurSample = Samples[i] = (Sample *)malloc(sizeof(Sample));
+    if (!CurSample)
         goto nospace;
-    CurCtx.sample = Smpl;
-    Smpl->blocks = 0;
-    Smpl->id = i;
-    strcpy(Smpl->filename, buf->cname);
-    strcpy(Smpl->name, sampname);
+    CurCtx.sample = CurSample;
+    CurSample->blocks = 0;
+    CurSample->id = i;
+    strcpy(CurSample->filename, buf->cname);
+    strcpy(CurSample->name, sampname);
     /*	Set variable-set name in sample  */
-    strcpy(Smpl->vset_name, VSet->name);
+    strcpy(CurSample->vset_name, CurVSet->name);
     /*	Num of variables   */
-    nv = VSet->length;
-    vlist = VSet->variables;
+    NumVars = CurVSet->length;
+    CurAttrList = CurVSet->variables;
 
     /*	Make a vec of nv SVinst blocks  */
-    svars = (SampleVar *)alloc_blocks(0, nv * sizeof(SampleVar));
-    if (!svars) {
+    CurVarList = (SampleVar *)alloc_blocks(0, NumVars * sizeof(SampleVar));
+    if (!CurVarList) {
         printf("Cannot allocate memory for variables blocks\n");
         i = -3;
         goto error;
     }
-    Smpl->variables = svars;
+    CurSample->variables = CurVarList;
 
     /*	Read in the info for each variable into svars   */
-    for (i = 0; i < nv; i++) {
-        svars[i].id = -1;
-        svars[i].saux = 0;
-        svars[i].offset = 0;
-        svars[i].nval = 0;
+    for (i = 0; i < NumVars; i++) {
+        CurVarList[i].id = -1;
+        CurVarList[i].saux = 0;
+        CurVarList[i].offset = 0;
+        CurVarList[i].nval = 0;
     }
-    reclen = 1 + sizeof(int); /* active flag and ident  */
-    for (i = 0; i < nv; i++) {
-        svi = svars + i;
-        svi->id = i;
-        avi = vlist + i;
-        vtp = avi->vtype;
+    CurRecLen = 1 + sizeof(int); /* active flag and ident  */
+    for (i = 0; i < NumVars; i++) {
+        CurVar = CurVarList + i;
+        CurVar->id = i;
+        CurAttr = CurAttrList + i;
+        CurVType = CurAttr->vtype;
 
         /*	Make the saux block  */
-        saux = (char *)alloc_blocks(0, vtp->smpl_aux_size);
+        saux = (char *)alloc_blocks(0, CurVType->smpl_aux_size);
         if (!saux) {
             printf("Cant make auxilliary var block\n");
             i = -6;
             goto error;
         }
-        svi->saux = saux;
+        CurVar->saux = saux;
 
         /*	Read auxilliary information   */
-        if ((*vtp->read_aux_smpl)(saux)) {
+        if ((*CurVType->read_aux_smpl)(saux)) {
             printf("Error in reading auxilliary info var %d\n", i + 1);
             i = -7;
             goto error;
         }
 
         /*	Set the offset of the (missing, value) pair  */
-        svi->offset = reclen;
-        reclen += (1 + vtp->data_size); /* missing flag and value */
+        CurVar->offset = CurRecLen;
+        CurRecLen += (1 + CurVType->data_size); /* missing flag and value */
     }                                   /* End of variables loop */
 
     /*	Now attempt to read in the data. The first item is the number of cases*/
     new_line();
-    kread = read_int(&nc, 1);
+    kread = read_int(&NumCases, 1);
     if (kread) {
         printf("Cant read number of cases\n");
         i = -11;
         goto error;
     }
-    Smpl->num_cases = nc;
-    Smpl->num_active = 0;
+    CurSample->num_cases = NumCases;
+    CurSample->num_active = 0;
     /*	Make a vector of nc records each of size reclen  */
-    recs = Smpl->records = loc = (char *)alloc_blocks(0, nc * reclen);
+    CurRecords = CurSample->records = loc = (char *)alloc_blocks(0, NumCases * CurRecLen);
     if (!loc) {
         printf("No space for data\n");
         i = -8;
         goto error;
     }
-    Smpl->record_length = reclen;
+    CurSample->record_length = CurRecLen;
 
     /*	Read in the data cases, each preceded by an active flag and ident   */
-    for (n = 0; n < nc; n++) {
+    for (n = 0; n < NumCases; n++) {
         new_line();
         kread = read_int(&caseid, 1);
         if (kread) {
@@ -330,18 +330,18 @@ gotit:
             *loc = 0;
         } else {
             *loc = 1;
-            Smpl->num_active++;
+            CurSample->num_active++;
         }
         loc++;
         memcpy(loc, &caseid, sizeof(int));
         loc += sizeof(int);
         /*	Posn now points to where the (missing, val) pair for the
         attribute should start.  */
-        for (i = 0; i < nv; i++) {
-            svi = svars + i;
-            avi = vlist + i;
-            vtp = avi->vtype;
-            kread = (*vtp->read_datum)(loc + 1, i);
+        for (i = 0; i < NumVars; i++) {
+            CurVar = CurVarList + i;
+            CurAttr = CurAttrList + i;
+            CurVType = CurAttr->vtype;
+            kread = (*CurVType->read_datum)(loc + 1, i);
             if (kread < 0) {
                 printf("Data error case %d var %d\n", n + 1, i + 1);
                 swallow();
@@ -350,19 +350,19 @@ gotit:
                 *loc = 1; /* Data missing */
             else {
                 *loc = 0;
-                svi->nval++;
+                CurVar->nval++;
             }
-            loc += (vtp->data_size + 1);
+            loc += (CurVType->data_size + 1);
         }
     }
-    printf("Number of active cases = %d\n", Smpl->num_active);
+    printf("Number of active cases = %d\n", CurSample->num_active);
     close_buffer();
     CurCtx.buffer = CurSource;
-    if (sort_sample(Smpl)) {
+    if (sort_sample(CurSample)) {
         printf("Sort failure on sample\n");
         return (-1);
     }
-    return (Smpl->id);
+    return (CurSample->id);
 
 nospace:
     printf("No space for another sample\n");
@@ -542,13 +542,13 @@ int find_sample_index(int id) {
     int iu, il, ic, cid, len;
     char *recs;
 
-    if ((!Smpl) || (Smpl->num_cases == 0)) {
+    if ((!CurSample) || (CurSample->num_cases == 0)) {
         printf("No defined sample\n");
         return (-1);
     }
-    recs = Smpl->records + 1;
-    len = Smpl->record_length;
-    iu = Smpl->num_cases;
+    recs = CurSample->records + 1;
+    len = CurSample->record_length;
+    iu = CurSample->num_cases;
     il = 0;
 chop:
     ic = (iu + il) >> 1;
@@ -583,7 +583,7 @@ int item_list(char *tlstname)
     if (!CurCtx.sample)
         return (-2);
     set_population();
-    if (!Smpl->num_cases)
+    if (!CurSample->num_cases)
         return (-3);
 
     /*	Open a file  */
@@ -591,14 +591,14 @@ int item_list(char *tlstname)
     if (!tlst)
         return (-4);
     /*	Output a tree list in a primitive form  */
-    clp = rootcl;
+    clp = CurRootClass;
 
 treeloop:
     if (clp->type == Sub)
         goto nextcl1;
     fprintf(tlst, "%8d", clp->serial >> 2);
     if (clp->dad_id >= 0)
-        dadser = Popln->classes[clp->dad_id]->serial;
+        dadser = CurPopln->classes[clp->dad_id]->serial;
     else
         dadser = -4;
     fprintf(tlst, "%8d\n", dadser >> 2);
@@ -610,11 +610,11 @@ nextcl1:
 
     find_all(Dad + Leaf);
 
-    for (nn = 0; nn < Smpl->num_cases; nn++) {
+    for (nn = 0; nn < CurSample->num_cases; nn++) {
         do_case(nn, Leaf + Dad, 0);
         bl = bc = -1;
         bw = 0.0;
-        bs = Smpl->num_cases + 1;
+        bs = CurSample->num_cases + 1;
         for (i = 0; i < NumSon; i++) {
             clp = Sons[i];
             if ((clp->case_weight > 0.5) && (clp->weights_sum < bs)) {
@@ -627,7 +627,7 @@ nextcl1:
             }
         }
 
-        memcpy(&tid, record + 1, sizeof(int));
+        memcpy(&tid, CurRecord + 1, sizeof(int));
         fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, Sons[bc]->serial >> 2, Sons[bl]->serial >> 2, ScoreRscale * Sons[bl]->factor_scores[nn]);
     }
 

@@ -164,17 +164,17 @@ void vonm_define(typindx) int typindx;
 /*	-------------------  setvar -----------------------------  */
 void setvar(iv) int iv;
 {
-    avi = vlist + iv;
-    vtp = avi->vtype;
+    CurAttr = CurAttrList + iv;
+    CurVType = CurAttr->vtype;
     pvi = pvars + iv;
     paux = (Paux *)pvi->paux;
-    svi = svars + iv;
-    vaux = (Vaux *)avi->vaux;
-    saux = (Saux *)svi->saux;
-    cvi = (Basic *)cls->basics[iv];
-    evi = (Stats *)cls->stats[iv];
-    if (dad)
-        dcvi = (Basic *)dad->basics[iv];
+    CurVar = CurVarList + iv;
+    vaux = (Vaux *)CurAttr->vaux;
+    saux = (Saux *)CurVar->saux;
+    cvi = (Basic *)CurClass->basics[iv];
+    evi = (Stats *)CurClass->stats[iv];
+    if (CurDad)
+        dcvi = (Basic *)CurDad->basics[iv];
     else
         dcvi = 0;
     return;
@@ -207,7 +207,7 @@ Saux *sax;
         return (1);
     }
     if (sax->unit)
-        sax->eps *= (pi / 180.0);
+        sax->eps *= (PI / 180.0);
     if (sax->eps > 0.01)
         sax->epsfac = 2.0 * sin(0.5 * sax->eps) / sax->eps;
     else
@@ -228,11 +228,11 @@ int readdat(char *loc, int iv) {
     i = read_double(&(xn.xx), 1);
     if (!i) {
         /*	Get the unit code from Saux   */
-        unit = ((Saux *)(svi->saux))->unit;
+        unit = ((Saux *)(CurVar->saux))->unit;
         /*	Get quantization effect from Saux  */
-        epsfac = ((Saux *)(svi->saux))->epsfac;
+        epsfac = ((Saux *)(CurVar->saux))->epsfac;
         if (unit)
-            xn.xx *= (pi / 180.0);
+            xn.xx *= (PI / 180.0);
         xn.sinxx = epsfac * sin(xn.xx);
         xn.cosxx = epsfac * cos(xn.xx);
         memcpy(loc, &xn, sizeof(Datum));
@@ -251,9 +251,9 @@ void printdat(char *loc) {
 /*	---------------------  setsizes  -----------------------   */
 void setsizes(iv) int iv;
 {
-    avi = vlist + iv;
-    avi->basic_size = sizeof(Basic);
-    avi->stats_size = sizeof(Stats);
+    CurAttr = CurAttrList + iv;
+    CurAttr->basic_size = sizeof(Basic);
+    CurAttr->stats_size = sizeof(Stats);
     return;
 }
 
@@ -263,13 +263,13 @@ void setbestparam(iv) int iv;
 
     setvar(iv);
 
-    if (cls->type == Dad) {
+    if (CurClass->type == Dad) {
         cvi->bhx = cvi->nhx;
         cvi->bhy = cvi->nhy;
         cvi->bhsprd = cvi->nhsprd;
         evi->btcost = evi->ntcost;
         evi->bpcost = evi->npcost;
-    } else if ((cls->use == Fac) && cvi->infac) {
+    } else if ((CurClass->use == Fac) && cvi->infac) {
         cvi->bhx = cvi->fhx;
         cvi->bhy = cvi->fhy;
         cvi->bhsprd = cvi->fhsprd;
@@ -298,11 +298,11 @@ void clearstats(iv) int iv;
     evi->tfsin = evi->tfcos = 0.0;
     evi->ldd2 = evi->ldd1 = evi->fwd2 = 0.0;
 
-    if (cls->age > 0)
+    if (CurClass->age > 0)
         return;
 
     /*	Set some plausible values for initial pass  */
-    if ((dad) && (cls->age == 0))
+    if ((CurDad) && (CurClass->age == 0))
         return;
     cvi->shx = cvi->shy = cvi->fhx = cvi->fhy = 0.0;
     cvi->shsprd = cvi->fhsprd = 1.0;
@@ -341,14 +341,14 @@ void scorevar(iv) int iv;
     double dwdt, dwdv, r2, dr2dw;
 
     setvar(iv);
-    if (avi->inactive)
+    if (CurAttr->inactive)
         return;
 
     if (saux->missing)
         return;
 
     /*	Get t  */
-    tt = cvi->ld * cvv;
+    tt = cvi->ld * CurCaseFacScore;
     /*	tt is tan of w/2.  Use the formulae for cos and sin in terms of
         tan of half-angle.  */
     r2 = 1.0 / (1.0 + tt * tt);
@@ -374,27 +374,27 @@ void scorevar(iv) int iv;
     /*	The mc3 term 0.5 * Fmu * r2 * (vsq * ldsprd + ldsq * vsprd)
         is treated in two parts, as we don't yet know vsprd. The part in
         (vsq * ldsprd) gives a contibution to wd1 via the r2 factor:  */
-    wd1 += 0.5 * cvi->fmufish * cvi->ldsprd * cvvsq * dr2dw;
+    wd1 += 0.5 * cvi->fmufish * cvi->ldsprd * CurCaseFacScoreSq * dr2dw;
 
     /*	This part also directly contributes to vvd1 via the vsq factor: */
-    vvd1 += cvi->fmufish * cvi->ldsprd * r2 * cvv;
+    CaseFacScoreD1 += cvi->fmufish * cvi->ldsprd * r2 * CurCaseFacScore;
 
     /*	This gives a term in mvvd2 :  */
-    mvvd2 += cvi->fmufish * cvi->ldsprd * r2;
+    EstFacScoreD2 += cvi->fmufish * cvi->ldsprd * r2;
 
     /*	The second part, involving vsprd, is treated by accumulating
         in vvd3 the deriv wrt vv of the multiplier of half vsprd.   */
-    vvd3 += cvi->fmufish * cvi->ldsq * dr2dw * dwdv;
+    CaseFacScoreD3 += cvi->fmufish * cvi->ldsq * dr2dw * dwdv;
 
     /*	The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
     /*	and so to deriv wrt vv of:  wd1 * dwdv  */
 
-    vvd1 += wd1 * dwdv;
+    CaseFacScoreD1 += wd1 * dwdv;
 
     /*	Now for contribution to vvd2. This is 2 * the coeff of vsprd in
         the item cost.  */
-    vvd2 += cvi->fmufish * cvi->ldsq * r2;
-    mvvd2 += cvi->fmufish * cvi->ldsq * 4.0;
+    CaseFacScoreD2 += cvi->fmufish * cvi->ldsq * r2;
+    EstFacScoreD2 += cvi->fmufish * cvi->ldsq * 4.0;
     /*		Note, the max value of r2 is 4  */
     return;
 }
@@ -407,7 +407,7 @@ void costvar(iv, fac) int iv, fac;
     setvar(iv);
     if (saux->missing)
         return;
-    if (cls->age == 0) {
+    if (CurClass->age == 0) {
         evi->parkftcost = evi->parkstcost = 0.0;
         return;
     }
@@ -428,7 +428,7 @@ void costvar(iv, fac) int iv, fac;
     /*	flgi0 already contains the mc2 term hsprd * Fh */
 
     /*	And we need -kap * cos (mu + w - xx)   */
-    tt = cvi->ld * cvv;
+    tt = cvi->ld * CurCaseFacScore;
     r2 = 1.0 / (1.0 + tt * tt);
     cosw = (1.0 - tt * tt) * r2;
     r2 = 2.0 * r2;
@@ -439,7 +439,7 @@ void costvar(iv, fac) int iv, fac;
             (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * sinw;
 
     /*	And cost term mc3, depending on tsprd:  */
-    tsprd = cvvsq * cvi->ldsprd + cvi->ldsq * cvvsprd;
+    tsprd = CurCaseFacScoreSq * cvi->ldsprd + cvi->ldsq * cvvsprd;
     cost += 0.5 * cvi->fmufish * tsprd * r2;
 
 facdone:
@@ -461,19 +461,19 @@ void derivvar(iv, fac) int iv, fac;
     if (saux->missing)
         return;
     /*	Do non-fac first  */
-    evi->cnt += cwt;
+    evi->cnt += CurCaseWeight;
     /*	For non-fac, rather than getting derivatives I just collect
         the sufficient statistics, sum of xn.sinxx, xn.cosxx  */
-    evi->tssin += cwt * saux->xn.sinxx;
-    evi->tscos += cwt * saux->xn.cosxx;
+    evi->tssin += CurCaseWeight * saux->xn.sinxx;
+    evi->tscos += CurCaseWeight * saux->xn.cosxx;
     /*	Accumulate weighted item cost  */
-    evi->stcost += cwt * evi->parkstcost;
-    evi->ftcost += cwt * evi->parkftcost;
+    evi->stcost += CurCaseWeight * evi->parkstcost;
+    evi->ftcost += CurCaseWeight * evi->parkftcost;
 
     /*	Now for factor form  */
     if (!fac)
         goto facdone;
-    tt = cvi->ld * cvv;
+    tt = cvi->ld * CurCaseFacScore;
     /*	Hence cos(w), sin(w)  */
     r2 = 1.0 / (1.0 + tt * tt);
     cosw = (1.0 - tt * tt) * r2; /* (1-t^2) / (1+t^2) */
@@ -486,16 +486,16 @@ void derivvar(iv, fac) int iv, fac;
         accumulation as tfcos, tssin  */
 
     coser = saux->xn.cosxx * cosw + saux->xn.sinxx * sinw;
-    evi->tfcos += cwt * coser;
+    evi->tfcos += CurCaseWeight * coser;
     siner = saux->xn.sinxx * cosw - saux->xn.cosxx * sinw;
-    evi->tfsin += cwt * siner;
+    evi->tfsin += CurCaseWeight * siner;
 
     /*	These should be sufficient to get derivs of mc1 wrt hx, hy,
         also derivs of mc2, but there remains mc3, and load. */
 
     /*	Cost mc3 = 0.5 * Fmu * tsprd * r2  */
-    tsprd = cvvsq * cvi->ldsprd + cvi->ldsq * cvvsprd;
-    wtr2 = cwt * r2;
+    tsprd = CurCaseFacScoreSq * cvi->ldsprd + cvi->ldsq * cvvsprd;
+    wtr2 = CurCaseWeight * r2;
     /*	Accumulate wsprd = tsprd * r2  */
     evi->fwd2 += tsprd * wtr2;
 
@@ -509,13 +509,13 @@ void derivvar(iv, fac) int iv, fac;
 
     /*	The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
     /*	and so to a deriv wrt ld of: (vv * wd1 * dwdt)  */
-    evi->ldd1 += cwt * cvv * wd1 * dwdt;
+    evi->ldd1 += CurCaseWeight * CurCaseFacScore * wd1 * dwdt;
 
     /*	There is also a deriv wrt ld via tsprd.  */
     evi->ldd1 += cvi->fmufish * wtr2 * cvi->ld * cvvsprd;
 
     /*	Accum as ldd2 twice the multiplier of ldsprd in mc3  */
-    evi->ldd2 += 0.5 * cvi->fmufish * r2 * cvvsq;
+    evi->ldd2 += 0.5 * cvi->fmufish * r2 * CurCaseFacScoreSq;
 
 facdone:
     return;
@@ -535,7 +535,7 @@ void adjust(iv, fac) int iv, fac;
     cnt = evi->cnt;
 
     /*	Get prior constants from dad, or if root, fake them  */
-    if (!dad) { /* Class is root */
+    if (!CurDad) { /* Class is root */
         dadhx = dadhy = 0.0;
         dhsprd = NullSprd;
     } else {
@@ -555,7 +555,7 @@ void adjust(iv, fac) int iv, fac;
         goto hasage;
     }
     /*	If class age is zero, make some preliminary estimates  */
-    if (cls->age)
+    if (CurClass->age)
         goto hasage;
     evi->oldftcost = 0.0;
     evi->adj = 1.0;
@@ -566,8 +566,8 @@ void adjust(iv, fac) int iv, fac;
     cvi->ld = 0.0;
     cvi->sfh = cvi->ffh = -1.0;
     /*	Make a stab at class tcost  */
-    cls->cstcost += cnt * (2.0 * hlg2pi - saux->leps + cls->mlogab) + 1.0;
-    cls->cftcost = cls->cstcost + 100.0 * cnt;
+    CurClass->cstcost += cnt * (2.0 * HALF_LOG_2PI - saux->leps + CurClass->mlogab) + 1.0;
+    CurClass->cftcost = CurClass->cstcost + 100.0 * cnt;
 
 hasage:
     temp1 = 1.0 / dhsprd;
@@ -575,9 +575,9 @@ hasage:
     /*	Compute parameter costs as they are  */
     del1 = (dadhx - cvi->shx) * (dadhx - cvi->shx) +
            (dadhy - cvi->shy) * (dadhy - cvi->shy);
-    spcost = 2.0 * hlg2pi + log(dhsprd) +
+    spcost = 2.0 * HALF_LOG_2PI + log(dhsprd) +
              0.5 * temp1 * (del1 + 2.0 * cvi->shsprd) - log(cvi->shsprd) +
-             2.0 * lattice;
+             2.0 * LATTICE;
 
     if (!fac) {
         fpcost = spcost + 100.0;
@@ -586,12 +586,12 @@ hasage:
     }
     del2 = (dadhx - cvi->fhx) * (dadhx - cvi->fhx) +
            (dadhy - cvi->fhy) * (dadhy - cvi->fhy);
-    fpcost = 2.0 * hlg2pi + log(dhsprd) +
+    fpcost = 2.0 * HALF_LOG_2PI + log(dhsprd) +
              0.5 * temp1 * (del2 + 2.0 * cvi->fhsprd) - log(cvi->fhsprd) +
-             2.0 * lattice;
+             2.0 * LATTICE;
     /*    The prior for load ld is N (0, 1)  */
-    fpcost += hlg2pi + 0.5 * (cvi->ldsq + cvi->ldsprd);
-    fpcost -= 0.5 * log(cvi->ldsprd) + lattice;
+    fpcost += HALF_LOG_2PI + 0.5 * (cvi->ldsq + cvi->ldsprd);
+    fpcost -= 0.5 * log(cvi->ldsprd) + LATTICE;
 
 facdone1:
 
@@ -599,8 +599,8 @@ facdone1:
     evi->spcost = spcost;
     evi->fpcost = fpcost;
     /*	Add to class param costs  */
-    cls->nofac_par_cost += spcost;
-    cls->fac_par_cost += fpcost;
+    CurClass->nofac_par_cost += spcost;
+    CurClass->fac_par_cost += fpcost;
     if (!(Control & AdjPr))
         goto adjdone;
     if (cnt < MinSize)
@@ -730,7 +730,7 @@ facdone2:
     cvi->ldsq = cvi->ld * cvi->ld;
 
     /*	Adjust as-dad params, but if no sons, set from nonfac params */
-    if (cls->num_sons < 2) {
+    if (CurClass->num_sons < 2) {
         cvi->nhx = cvi->shx;
         cvi->nhy = cvi->shy;
         cvi->nhsprd = cvi->shsprd;
@@ -752,7 +752,7 @@ int iv;
 
     printf("V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out", evi->adj);
-    if (cls->num_sons < 2)
+    if (CurClass->num_sons < 2)
         goto skipn;
     printf(" N: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", evi->npcost, cvi->nhx,
            cvi->nhy, sqrt(cvi->nhsprd));
@@ -766,7 +766,7 @@ skipn:
     mu = atan2(cvi->bhx, cvi->bhy);
     printf(" B:  Mean ");
     if (saux->unit)
-        printf("%6.1f deg", (180.0 / pi) * mu);
+        printf("%6.1f deg", (180.0 / PI) * mu);
     else
         printf("%6.3f rad", mu);
     printf("  Kappa %8.2f\n", kappa);
@@ -895,18 +895,18 @@ void ncostvar(iv, vald) int iv, vald;
         cvi->nhsprd = cvi->shsprd * evi->cnt;
         return;
     }
-    if (avi->inactive) {
+    if (CurAttr->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
-    nson = cls->num_sons;
+    nson = CurClass->num_sons;
 
     /*	There are two independent parameters, nhx and nhy, to fiddle.
         However, for vonmises variables, we use a single spread value
         for both, in both internal and leaf or sub classes.  */
 
     /*	Get prior constants from dad, or if root, fake them  */
-    if (!dad) { /* Class is root */
+    if (!CurDad) { /* Class is root */
         dadhx = dadhy = 0.0;
         dadhsprd = NullSprd;
     } else {
@@ -925,8 +925,8 @@ void ncostvar(iv, vald) int iv, vald;
     tsvn = 0.0; /* Total sum of sons' (hx_n^2 + hy_n^2 + del_n) */
     tssn = 0.0; /* Total sons' s_n */
 
-    for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
-        son = Popln->classes[ison];
+    for (ison = CurClass->son_id; ison > 0; ison = son->sib_id) {
+        son = CurPopln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         sbhx = soncvi->bhx;
         sbhy = soncvi->bhy;
@@ -975,11 +975,11 @@ adjloop:
 
 adjdone: /*	Calc cost  */
     del = (nhx - dadhx) * (nhx - dadhx) + (nhy - dadhy) * (nhy - dadhy);
-    pcost = 2.0 * hlg2pi + 2.0 * log(dadhsprd) +
+    pcost = 2.0 * HALF_LOG_2PI + 2.0 * log(dadhsprd) +
             (0.5 * del + nhsprd / nson) / dadhsprd + nhsprd / dadhsprd;
-    /*	Add hlog Fisher, lattice  */
+    /*	Add hlog Fisher, LATTICE  */
     pcost += 0.5 * log(nson * nson * (nson + nints)) -
-             2.0 * log(nhsprd + 1.0e-8) + 3.0 * lattice;
+             2.0 * log(nhsprd + 1.0e-8) + 3.0 * LATTICE;
 
     /*	Add roundoff for 3 params (nhx, nhy, nhsprd)  */
     pcost += 1.5;

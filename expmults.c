@@ -151,28 +151,28 @@ void expmults_define(typindx) int typindx;
     int ig;
     double xg;
 
-    vtp = Types + typindx;
-    vtp->id = typindx;
+    CurVType = Types + typindx;
+    CurVType->id = typindx;
     /* 	Set type name as string up to 59 chars  */
-    vtp->name = "ExpMultiState";
-    vtp->data_size = sizeof(Datum);
-    vtp->attr_aux_size = sizeof(Vaux);
-    vtp->pop_aux_size = sizeof(Paux);
-    vtp->smpl_aux_size = sizeof(Saux);
-    vtp->read_aux_attr = &readvaux;
-    vtp->read_aux_smpl = &readsaux;
-    vtp->read_datum = &readdat;
-    vtp->print_datum = &printdat;
-    vtp->set_sizes = &setsizes;
-    vtp->set_best_pars = &setbestparam;
-    vtp->clear_stats = &clearstats;
-    vtp->score_var = &scorevar;
-    vtp->cost_var = &costvar;
-    vtp->deriv_var = &derivvar;
-    vtp->cost_var_nonleaf = &ncostvar;
-    vtp->adjust = &adjust;
-    vtp->show = &vprint;
-    vtp->set_var = &setvar;
+    CurVType->name = "ExpMultiState";
+    CurVType->data_size = sizeof(Datum);
+    CurVType->attr_aux_size = sizeof(Vaux);
+    CurVType->pop_aux_size = sizeof(Paux);
+    CurVType->smpl_aux_size = sizeof(Saux);
+    CurVType->read_aux_attr = &readvaux;
+    CurVType->read_aux_smpl = &readsaux;
+    CurVType->read_datum = &readdat;
+    CurVType->print_datum = &printdat;
+    CurVType->set_sizes = &setsizes;
+    CurVType->set_best_pars = &setbestparam;
+    CurVType->clear_stats = &clearstats;
+    CurVType->score_var = &scorevar;
+    CurVType->cost_var = &costvar;
+    CurVType->deriv_var = &derivvar;
+    CurVType->cost_var_nonleaf = &ncostvar;
+    CurVType->adjust = &adjust;
+    CurVType->show = &vprint;
+    CurVType->set_var = &setvar;
 
     /*	Make table of exp (-0.5 * x * x) in gaustab[]
         Entry for x = 0 is at gaustab[1]  */
@@ -187,15 +187,15 @@ void expmults_define(typindx) int typindx;
 /*	----------------------- setvar --------------------------  */
 void setvar(iv) int iv;
 {
-    avi = vlist + iv;
-    vtp = avi->vtype;
+    CurAttr = CurAttrList + iv;
+    CurVType = CurAttr->vtype;
     pvi = pvars + iv;
     paux = (Paux *)pvi->paux;
-    svi = svars + iv;
-    vaux = (Vaux *)avi->vaux;
-    saux = (Saux *)svi->saux;
-    cvi = (Basic *)cls->basics[iv];
-    evi = (Stats *)cls->stats[iv];
+    CurVar = CurVarList + iv;
+    vaux = (Vaux *)CurAttr->vaux;
+    saux = (Saux *)CurVar->saux;
+    cvi = (Basic *)CurClass->basics[iv];
+    evi = (Stats *)CurClass->stats[iv];
     states = vaux->states;
     statesm = states - 1;
     rstates = 1.0 / states;
@@ -269,7 +269,7 @@ int readdat(char *loc, int iv) {
     int i;
     Datum xn;
 
-    vaux = (Vaux *)(vlist[iv].vaux);
+    vaux = (Vaux *)(CurAttrList[iv].vaux);
     states = vaux->states;
     /*	Read datum into xn, return error.  */
     i = read_int(&xn, 1);
@@ -300,14 +300,14 @@ blocks for variable, and place in VSetVar basicsize, statssize.
 void setsizes(iv) int iv;
 {
 
-    avi = vlist + iv;
-    vaux = (Vaux *)avi->vaux;
+    CurAttr = CurAttrList + iv;
+    vaux = (Vaux *)CurAttr->vaux;
     states = vaux->states;
 
     /*	Set sizes of CVinst (basic) and EVinst (stats) in VSetVar  */
     /*	Each inst has a number of vectors appended, of length 'states' */
-    avi->basic_size = sizeof(Basic) + (5 * states - 1) * sizeof(double);
-    avi->stats_size = sizeof(Stats) + (5 * states - 1) * sizeof(double);
+    CurAttr->basic_size = sizeof(Basic) + (5 * states - 1) * sizeof(double);
+    CurAttr->stats_size = sizeof(Stats) + (5 * states - 1) * sizeof(double);
     return;
 }
 
@@ -317,12 +317,12 @@ void setbestparam(iv) int iv;
 
     setvar(iv);
 
-    if (cls->type == Dad) {
+    if (CurClass->type == Dad) {
         cvi->bap = nap;
         cvi->bapsprd = cvi->napsprd;
         evi->btcost = evi->ntcost;
         evi->bpcost = evi->npcost;
-    } else if ((cls->use == Fac) && cvi->infac) {
+    } else if ((CurClass->use == Fac) && cvi->infac) {
         cvi->bap = fap;
         cvi->bapsprd = cvi->fapsprd;
         evi->btcost = evi->ftcost;
@@ -347,7 +347,7 @@ void setprobs() {
     b3p = b2p = b1p = 0.0; /* For calculating dispersion of bp[] */
     sum = 0.0;
     Fork {
-        tt = fabs(cvv - fbp[k]);
+        tt = fabs(CurCaseFacScore - fbp[k]);
         /*	Do table interpolation in gausorg   */
         tt = tt * Gns;
         ig = tt;
@@ -392,7 +392,7 @@ void clearstats(iv) int iv;
     evi->vsq = 0.0;
     Fork { scnt[k] = fapd1[k] = fbpd1[k] = 0.0; }
     evi->apd2 = evi->bpd2 = 0.0;
-    if (cls->age == 0) {
+    if (CurClass->age == 0) {
         /*	Set nominal state costs in scst[]  */
         sum = log((double)states) + 1.0;
         Fork scst[k] = sum;
@@ -447,22 +447,22 @@ void scorevar(iv) int iv;
 {
     double t1d1, t2d1, t3d1;
     setvar(iv);
-    if (avi->inactive)
+    if (CurAttr->inactive)
         return;
     if (saux->missing)
         return;
     setprobs(); /* Will calc pr[], qr[], gg, ff  */
     t1d1 = b1p - fbp[saux->xn];
-    t2d1 = -(0.5 * states * rstatesm) * (cvi->fapsprd + cvvsq * cvi->bpsprd) *
+    t2d1 = -(0.5 * states * rstatesm) * (cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd) *
            ff * b1p;
-    t3d1 = cvv * cvi->bpsprd * ff;
+    t3d1 = CurCaseFacScore * cvi->bpsprd * ff;
 
-    vvd1 += t1d1 + t3d1 + t2d1;
-    vvd2 += gg;
+    CaseFacScoreD1 += t1d1 + t3d1 + t2d1;
+    CaseFacScoreD2 += gg;
     /*xx	vvd2 += Mbeta * evi->mgg;  */
-    mvvd2 += (gg > evi->mgg) ? gg : evi->mgg;
+    EstFacScoreD2 += (gg > evi->mgg) ? gg : evi->mgg;
     /*	Since we don't know vsprd, just calc and accumulate deriv of 'gg' */
-    vvd3 += b3p - b1p * (3.0 * gg + b1p2);
+    CaseFacScoreD3 += b3p - b1p * (3.0 * gg + b1p2);
     return;
 }
 
@@ -475,7 +475,7 @@ void costvar(iv, fac) int iv, fac;
     setvar(iv);
     if (saux->missing)
         return;
-    if (cls->age == 0) {
+    if (CurClass->age == 0) {
         evi->parkftcost = 0.0;
         return;
     }
@@ -488,7 +488,7 @@ void costvar(iv, fac) int iv, fac;
         goto facdone;
     setprobs();
     cost = -log(pr[saux->xn]); /* -log prob of xn */
-    evi->conff = 0.5 * ff * (cvi->fapsprd + cvvsq * cvi->bpsprd);
+    evi->conff = 0.5 * ff * (cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd);
     evi->ff = ff;
     evi->parkb1p = b1p;
     evi->parkb2p = b2p;
@@ -514,53 +514,53 @@ void derivvar(iv, fac) int iv, fac;
     if (saux->missing)
         return;
     /*	Do no-fac first  */
-    evi->cnt += cwt;
+    evi->cnt += CurCaseWeight;
     /*	For non-fac, I just accumulate counts in scnt[]  */
-    scnt[saux->xn] += cwt;
+    scnt[saux->xn] += CurCaseWeight;
     /*	Accum. weighted item cost  */
-    evi->stcost += cwt * scst[saux->xn];
-    evi->ftcost += cwt * evi->parkftcost;
+    evi->stcost += CurCaseWeight * scst[saux->xn];
+    evi->ftcost += CurCaseWeight * evi->parkftcost;
 
     /*	Now for factor form  */
-    evi->vsq += cwt * cvvsq;
+    evi->vsq += CurCaseWeight * CurCaseFacScoreSq;
     if (!fac)
         goto facdone;
     b1p = evi->parkb1p;
     b1p2 = b1p * b1p;
     b2p = evi->parkb2p;
     /*	From 1st cost term:  */
-    fapd1[saux->xn] -= cwt;
-    fbpd1[saux->xn] -= cwt * cvv;
+    fapd1[saux->xn] -= CurCaseWeight;
+    fbpd1[saux->xn] -= CurCaseWeight * CurCaseFacScore;
     Fork {
-        fapd1[k] += cwt * pr[k];
-        fbpd1[k] += cwt * pr[k] * cvv;
+        fapd1[k] += CurCaseWeight * pr[k];
+        fbpd1[k] += CurCaseWeight * pr[k] * CurCaseFacScore;
     }
 
     /*	Second cost term :  */
-    cons1 = cwt * evi->conff * rstatesm;
+    cons1 = CurCaseWeight * evi->conff * rstatesm;
     cons2 = states * cons1;
     Fork {
         inc = cons1 - pr[k] * cons2;
         fapd1[k] += inc;
-        fbpd1[k] += cvv * inc;
+        fbpd1[k] += CurCaseFacScore * inc;
     }
 
     /*	Third cost term:  */
     cons1 = 2.0 * b1p2 - b2p;
-    cons2 = cwt * cvvsprd * Mbeta * rstates;
+    cons2 = CurCaseWeight * cvvsprd * Mbeta * rstates;
     Fork {
-        inc = 0.5 * cwt * cvvsprd * pr[k] *
+        inc = 0.5 * CurCaseWeight * cvvsprd * pr[k] *
               (fbp[k] * fbp[k] - 2.0 * fbp[k] * b1p + cons1);
         fapd1[k] += inc;
-        fbpd1[k] += cvv * inc;
+        fbpd1[k] += CurCaseFacScore * inc;
         /*	Terms I forgot :  */
-        fbpd1[k] += cwt * cvvsprd * pr[k] * (fbp[k] - b1p);
+        fbpd1[k] += CurCaseWeight * cvvsprd * pr[k] * (fbp[k] - b1p);
         fbpd1[k] += cons2 * fbp[k];
     }
 
     /*	Second derivs (i.e. derivs wrt fapsprd, bpsprd)  */
-    evi->apd2 += cwt * evi->ff;
-    evi->bpd2 += cwt * evi->ff * cvvsq;
+    evi->apd2 += CurCaseWeight * evi->ff;
+    evi->bpd2 += CurCaseWeight * evi->ff * CurCaseFacScoreSq;
 facdone:
     return;
 }
@@ -576,13 +576,13 @@ void adjust(iv, fac) int iv, fac;
     setvar(iv);
     cnt = evi->cnt;
 
-    if (dad) { /* Not root */
-        dcvi = (Basic *)dad->basics[iv];
+    if (CurDad) { /* Not root */
+        dcvi = (Basic *)CurDad->basics[iv];
         dadnap = &(dcvi->origin);
         dapsprd = dcvi->napsprd;
     } else { /* Root */
         dcvi = 0;
-        dadnap = zerov;
+        dadnap = ZeroVec;
         dapsprd = 1.0;
     }
 
@@ -599,7 +599,7 @@ void adjust(iv, fac) int iv, fac;
     }
 
     /*	If class age zero, make some preliminary estimates  */
-    if (cls->age)
+    if (CurClass->age)
         goto hasage;
     evi->oldftcost = 0.0;
     evi->adj = 1.0;
@@ -623,8 +623,8 @@ void adjust(iv, fac) int iv, fac;
     /*	Make a stab at item cost   */
     sum = 0.0;
     Fork sum += scnt[k] * qr[k];
-    cls->cstcost -= sum + 0.5 * statesm;
-    cls->cftcost = cls->cstcost + 100.0 * cnt;
+    CurClass->cstcost -= sum + 0.5 * statesm;
+    CurClass->cftcost = CurClass->cstcost + 100.0 * cnt;
 
 hasage:
     /*	Calculate spcost for non-fac params  */
@@ -638,7 +638,7 @@ hasage:
     is a variance in (states-1) space with sum-sq spread dapsprd, Normal form */
     spcost = 0.5 * vara / dapsprd;          /* The squared deviations term */
     spcost += 0.5 * statesm * log(dapsprd); /* statesm * log sigma */
-    spcost += statesm * (hlg2pi + lattice);
+    spcost += statesm * (HALF_LOG_2PI + LATTICE);
     /*	This completes the prior density terms  */
     /*	The vol of uncertainty is (sapsprd/statesm)^(statesm/2)  */
     spcost -= 0.5 * statesm * log(cvi->sapsprd / statesm);
@@ -659,7 +659,7 @@ hasage:
     is a variance in (states-1) space with sum-sq spread dapsprd, Normal form */
     fpcost = 0.5 * vara / dapsprd;          /* The squared deviations term */
     fpcost += 0.5 * statesm * log(dapsprd); /* statesm * log sigma */
-    fpcost += statesm * (hlg2pi + lattice);
+    fpcost += statesm * (HALF_LOG_2PI + LATTICE);
     /*	The vol of uncertainty is (fapsprd/statesm)^(statesm/2)  */
     fpcost -= 0.5 * statesm * log(cvi->fapsprd / statesm);
 
@@ -668,7 +668,7 @@ hasage:
     Fork vara += fbp[k] * fbp[k];
     vara += cvi->bpsprd;  /* Additional variance from roundoff */
     fpcost += 0.5 * vara; /* The squared deviations term */
-    fpcost += statesm * (hlg2pi + lattice);
+    fpcost += statesm * (HALF_LOG_2PI + LATTICE);
     /*	The vol of uncertainty is (bpsprd/statesm)^(statesm/2)  */
     fpcost -= 0.5 * statesm * log(cvi->bpsprd / statesm);
 
@@ -677,8 +677,8 @@ facdone1:
     evi->spcost = spcost;
     evi->fpcost = fpcost;
     /*	Add to class param costs  */
-    cls->nofac_par_cost += spcost;
-    cls->fac_par_cost += fpcost;
+    CurClass->nofac_par_cost += spcost;
+    CurClass->fac_par_cost += fpcost;
     if (!(Control & AdjPr))
         goto adjdone;
     if (cnt < MinSize)
@@ -744,7 +744,7 @@ adjloop:
     evi->apd2 += 1.0 / dapsprd;
     evi->bpd2 += 1.0;
     /*	Stabilization  */
-    cvv = 0.0;
+    CurCaseFacScore = 0.0;
     setprobs();
     Fork fapd1[k] += 0.5 * pr[k];
     evi->apd2 += 0.5 * states * ff;
@@ -783,7 +783,7 @@ adjloop:
 
 facdone2:
     /*	If no sons, set as-dad params from non-fac params  */
-    if (cls->num_sons < 2) {
+    if (CurClass->num_sons < 2) {
         Fork nap[k] = sap[k];
         cvi->napsprd = cvi->sapsprd;
     }
@@ -826,7 +826,7 @@ int iv;
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out", evi->adj);
 
-    if (cls->num_sons < 2)
+    if (CurClass->num_sons < 2)
         goto skipn;
     printf(" NR: ");
     prprint(nap);
@@ -835,7 +835,7 @@ skipn:
     printf(" PR: ");
     prprint(sap);
     printf("\n");
-    if (cls->use == Tiny)
+    if (CurClass->use == Tiny)
         goto skipf;
     printf(" FR: ");
     Fork printf("%7.3f", frate[k]);
@@ -857,11 +857,11 @@ void ncostvar(iv) int iv;
     int n, k, ison, nson, nints;
 
     setvar(iv);
-    if (avi->inactive) {
+    if (CurAttr->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
-    nson = cls->num_sons;
+    nson = CurClass->num_sons;
     if (nson < 2) { /* cannot define parameters */
         evi->npcost = evi->ntcost = 0.0;
         Fork nap[k] = sap[k];
@@ -880,8 +880,8 @@ void ncostvar(iv) int iv;
     sometimes becomes (statesm * nson) in this case. We use the static vector
     'pr[]' to accumulate the sum of the sons' bap[]s, in place of the 'tstn' of
     the reals code. */
-    for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
-        son = Popln->classes[ison];
+    for (ison = CurClass->son_id; ison > 0; ison = son->sib_id) {
+        son = CurPopln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         Fork {
             pr[k] += soncvi->bap[k];
@@ -935,11 +935,11 @@ adjloop:
         pcost += del * del;
     }
     pcost = 0.5 * (pcost + statesm * apsprd / nson) / dapsprd +
-            statesm * (hlg2pi + 0.5 * log(dapsprd));
-    /*      Add hlog Fisher, lattice  */
+            statesm * (HALF_LOG_2PI + 0.5 * log(dapsprd));
+    /*      Add hlog Fisher, LATTICE  */
     pcost += 0.5 * log(0.5 * nson * statesm + nints) +
              0.5 * statesm * log((double)nson) -
-             0.5 * (statesm + 2.0) * log(apsprd) + states * lattice;
+             0.5 * (statesm + 2.0) * log(apsprd) + states * LATTICE;
     /*	Add roundoff for states params  */
     pcost += 0.5 * states;
     evi->npcost = pcost;
