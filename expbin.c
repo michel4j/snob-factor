@@ -91,7 +91,7 @@ static double dadnap;
 static double dapsprd; /* Dad's napsprd */
 
 /*--------------------------  define ------------------------------- */
-/*	This routine is used to set up a Vtype entry in the global "types"
+/*	This routine is used to set up a VarType entry in the global "types"
 array.  It is the only function whose name needs to be altered for different
 types of variable, and this name must be copied into the file "dotypes.c"
 when installing a new type of variable. It is also necessary to change the
@@ -105,24 +105,24 @@ void expbinary_define(typindx) int typindx;
     vtp->id = typindx;
     /* 	Set type name as string up to 59 chars  */
     vtp->name = "ExpBinary";
-    vtp->datsize = sizeof(Datum);
-    vtp->vauxsize = sizeof(Vaux);
-    vtp->pauxsize = sizeof(Paux);
-    vtp->sauxsize = sizeof(Saux);
-    vtp->readvaux = &readvaux;
-    vtp->readsaux = &readsaux;
-    vtp->readdat = &readdat;
-    vtp->printdat = &printdat;
-    vtp->setsizes = &setsizes;
-    vtp->setbestparam = &setbestparam;
-    vtp->clearstats = &clearstats;
-    vtp->scorevar = &scorevar;
-    vtp->costvar = &costvar;
-    vtp->derivvar = &derivvar;
-    vtp->ncostvar = &ncostvar;
+    vtp->data_size = sizeof(Datum);
+    vtp->attr_aux_size = sizeof(Vaux);
+    vtp->pop_aux_size = sizeof(Paux);
+    vtp->smpl_aux_size = sizeof(Saux);
+    vtp->read_aux_attr = &readvaux;
+    vtp->read_aux_smpl = &readsaux;
+    vtp->read_datum = &readdat;
+    vtp->print_datum = &printdat;
+    vtp->set_sizes = &setsizes;
+    vtp->set_best_pars = &setbestparam;
+    vtp->clear_stats = &clearstats;
+    vtp->score_var = &scorevar;
+    vtp->cost_var = &costvar;
+    vtp->deriv_var = &derivvar;
+    vtp->cost_var_nonleaf = &ncostvar;
     vtp->adjust = &adjust;
-    vtp->vprint = &vprint;
-    vtp->setvar = &setvar;
+    vtp->show = &vprint;
+    vtp->set_var = &setvar;
 
     return;
 }
@@ -131,7 +131,7 @@ void expbinary_define(typindx) int typindx;
 void setvar(iv) int iv;
 {
     avi = vlist + iv;
-    vtp = avi->vtp;
+    vtp = avi->vtype;
     pvi = pvars + iv;
     paux = (Paux *)pvi->paux;
     svi = svars + iv;
@@ -190,16 +190,16 @@ void printdat(Datum *loc)
 
 /*	---------------------  setsizes  -----------------------   */
 /*	To use info in ctx.vset to set sizes of basic and stats
-blocks for variable, and place in AVinst basicsize, statssize.
+blocks for variable, and place in VSetVar basicsize, statssize.
     */
 void setsizes( int iv)
 {
 
     avi = vlist + iv;
 
-    /*	Set sizes of CVinst (basic) and EVinst (stats) in AVinst  */
-    avi->basicsize = sizeof(Basic);
-    avi->statssize = sizeof(Stats);
+    /*	Set sizes of CVinst (basic) and EVinst (stats) in VSetVar  */
+    avi->basic_size = sizeof(Basic);
+    avi->stats_size = sizeof(Stats);
     return;
 }
 
@@ -270,7 +270,7 @@ void scorevar(int iv)
 {
     double cc, pr0, pr1, ff, ft, dbyv, hdffbydv, hdftbydv;
     setvar(iv);
-    if (avi->idle)
+    if (avi->inactive)
         return;
     if (saux->missing)
         return;
@@ -600,7 +600,7 @@ void ncostvar(int iv) {
     int n, ison, nson, nints;
 
     setvar(iv);
-    if (avi->idle) {
+    if (avi->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }

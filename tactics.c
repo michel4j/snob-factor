@@ -123,7 +123,7 @@ configok:
     for (iv = 0; iv < nv; iv++) {
         fcvi = odad->basics[iv];
         cvi = ndad->basics[iv];
-        nch = vlist[iv].basicsize;
+        nch = vlist[iv].basic_size;
         cmcpy(cvi, fcvi, nch);
     }
 
@@ -131,7 +131,7 @@ configok:
     for (iv = 0; iv < nv; iv++) {
         fevi = odad->stats[iv];
         evi = ndad->stats[iv];
-        nch = vlist[iv].statssize;
+        nch = vlist[iv].stats_size;
         cmcpy(evi, fevi, nch);
     }
 

@@ -62,76 +62,76 @@ controls the mode of weight assignment  */
 
 /*	-----------------  Variable types  ---------------------  */
 
-typedef struct VtypeStruct {
+typedef struct VarTypeStruct {
     int id;
-    int datsize;
-    int vauxsize; /* Size of aux block for vartype in vlist */
-    int sauxsize; /* size of aux block for vartype in sample */
-    int pauxsize; /* size of aux block for vartype in popln */
+    int data_size;
+    int attr_aux_size; /* Size of aux block for vartype in vlist */
+    int smpl_aux_size; /* size of aux block for vartype in sample */
+    int pop_aux_size; /* size of aux block for vartype in popln */
     char *name;
-    int (*readvaux)();      /* Fun to read aux attribute info */
-    int (*readsaux)();      /* Fun to read aux sample info */
-    int (*readdat)();       /* Fun to read a datum */
-    void (*printdat)();     /* Fun to print datum value */
-    void (*setsizes)();     /* To set basicsize, statssize */
-    void (*setbestparam)(); /* To set current best use params */
-    void (*clearstats)();   /* To clear stats prior to re-estimation */
-    void (*scorevar)();
-    void (*derivvar)();
-    void (*costvar)();
-    void (*ncostvar)();
+    int (*read_aux_attr)();      /* Fun to read aux attribute info */
+    int (*read_aux_smpl)();      /* Fun to read aux sample info */
+    int (*read_datum)();       /* Fun to read a datum */
+    void (*print_datum)();     /* Fun to print datum value */
+    void (*set_sizes)();     /* To set basicsize, statssize */
+    void (*set_best_pars)(); /* To set current best use params */
+    void (*clear_stats)();   /* To clear stats prior to re-estimation */
+    void (*score_var)();
+    void (*deriv_var)();
+    void (*cost_var)();
+    void (*cost_var_nonleaf)();
     void (*adjust)();
-    void (*vprint)();
-    void (*setvar)();
-} Vtype;
+    void (*show)();
+    void (*set_var)();
+} VarType;
 
 /*	-------------------  Files ----------------------------------  */
 
-typedef struct BufStruct {
+typedef struct BufferStruct {
     FILE *cfile;
     int line, nch;
     char cname[80];
     char inl[INPUT_BUFFER_SIZE];
-} Buf;
+} Buffer;
 
 /*	------------------  Allocation blocks  --------------------  */
 typedef struct BlockStruct Block;
 struct BlockStruct {
-    Block *nblock;
+    Block *next;
     int size;
 };
 
 /*	-------------------  Attributes  -------------------------   */
 
-typedef struct AVinstStruct {
+typedef struct VSetVarStruct {
     int id;
-    int itype;
-    int idle;      /* Inactive attribute flag */
-    int basicsize; /*  Sizeof basic block (CVinst) for this var */
-    int statssize; /* Sizeof stats block (EVinst) for this var */
-    Vtype *vtp;
+    int type;
+    int inactive;      /* Inactive attribute flag */
+    int basic_size; /*  Sizeof basic block (CVinst) for this var */
+    int stats_size; /* Sizeof stats block (EVinst) for this var */
+    VarType *vtype;
     char *vaux;
     char name[80];
-} AVinst;
+} VSetVar;
 
-typedef struct VsetStruct {
+typedef struct VSetStruct {
     int id;
-    Block *vblks;    /* Ptr to chain of blocks allocated */
-    char dfname[80]; /* file name of vset */
+    Block *blocks;    /* Ptr to chain of blocks allocated */
+    char filename[80]; /* file name of vset */
     char name[80];
-    int nv;    /* Number of variables */
-    int nactv; /* Number of active variables */
-    AVinst *vlist;
-} Vset;
+    int length;    /* Number of variables */
+    int num_active; /* Number of active variables */
+    VSetVar *variables;
+} VarSet;
 
 /*	--------------------  Samples  ---------------------------   */
 
-typedef struct SVinstStruct {
+typedef struct SampleVarStruct {
     int id;
     int nval;
     char *saux;
     int offset; /*  offset of (missing, value) in record  */
-} SVinst;
+} SampleVar;
 
 /*	Sample data is packed into a block of 'records' addressed by
 the 'recs' pointer in a Sample structure. There is one record per item in the
@@ -148,17 +148,17 @@ actually has two parts:
 
 typedef struct SampleStruct {
     int id;
-    Block *sblks;     /* Ptr to chain of blocks allocated for sample */
-    char vstname[80]; /* Name of variable-set */
-    int nc;           /* Num of cases */
-    int nact;         /* Num of active cases */
-    SVinst *svars;    /* Ptr to vector of SVinsts, one per variable */
-    char *recs;       /*  vector of records  */
-    int reclen;       /*  Length in chars of a data record  */
-    double bestcost;  /*  Cost of best model */
-    int goodtime;     /*  Popln age when bestcost reached  */
+    Block *blocks;     /* Ptr to chain of blocks allocated for sample */
+    char vset_name[80]; /* Name of variable-set */
+    int num_cases;           /* Num of cases */
+    int num_active;         /* Num of active cases */
+    SampleVar *variables;    /* Ptr to vector of SVinsts, one per variable */
+    char *records;       /*  vector of records  */
+    int record_length;       /*  Length in chars of a data record  */
+    double best_cost;  /*  Cost of best model */
+    int best_time;     /*  Popln age when bestcost reached  */
     char name[80];
-    char dfname[80]; /*  Data file name  */
+    char filename[80]; /*  Data file name  */
 } Sample;
 
 /*	----------------------   Classes  ---------------------------     */
@@ -170,7 +170,7 @@ typedef struct CVinstStruct { /*Structure for basic info on a var in a class*/
 } CVinst;
 
 typedef struct EVinstStruct { /* Stuff for var in class in expln */
-    double cnt;               /*  Num of values */
+    double num_values;               /*  Num of values */
     double btcost, ntcost, stcost, ftcost;
     double bpcost, npcost, spcost, fpcost;
     double vsq; /* weighted sum of squared scores */
@@ -205,9 +205,9 @@ typedef struct ClassStruct {
             The items in the next group are accumulated and must be
             returned to central.  They are cleared to zero by cleartcosts.
             */
-    double newcnt;  /*  Accumulates weights for cnt  */
-    double newvsq;  /*  Accumulates squared scores for vsq  */
-    double cfvcost; /*  Factor-score cost included in cftcost  */
+    double newcnt;                    /*  Accumulates weights for cnt  */
+    double newvsq;                    /*  Accumulates squared scores for vsq  */
+    double cfvcost;                   /*  Factor-score cost included in cftcost  */
     double cntcost, cstcost, cftcost; /* Thing costs in above */
     double vav;                       /* sum of log vvsprds */
     double totvv;                     /* sum of vvs  */
@@ -268,10 +268,10 @@ typedef struct PoplnStruct {
 /*	-------------------------------------------------------------   */
 
 typedef struct ContextStruct {
-    Vset *vset;
+    VarSet *vset;
     Sample *sample;
     Population *popln;
-    Buf *buffer;
+    Buffer *buffer;
 } Context;
 
 /*	--------- Functions -------------------------------   */
@@ -283,7 +283,7 @@ int hark(char *lline);
 /*	In inputs.c  */
 #ifndef INPUTS
 extern int terminator;
-extern Buf cfilebuf, commsbuf;
+extern Buffer cfilebuf, commsbuf;
 #endif
 
 int bufopen();
@@ -414,16 +414,16 @@ EXT double faclog[MAX_CLASSES + 1];
 
 /*	general:	*/
 EXT int Ntypes;   /* The number of different attribute types */
-EXT Vtype *types; /* a vector of Ntypes type definitions,
+EXT VarType *types; /* a vector of Ntypes type definitions,
          created in dotypes */
 EXT Context ctx;  /* current context */
-EXT Vset *vsets[MAX_VSETS];
+EXT VarSet *vsets[MAX_VSETS];
 EXT Sample *samples[MAX_SAMPLES];
 EXT Population *poplns[MAX_POPULATIONS];
 EXT int nsamples;
 
 /*	re inputs for main  */
-EXT Buf *source; /* Ptr to command source buffer */
+EXT Buffer *source; /* Ptr to command source buffer */
 
 /*	re Sample records  */
 EXT char *record; /*  Common ptr to a data record  */
@@ -445,20 +445,20 @@ EXT int control, dcontrol;
 EXT int dfix, fix;
 
 /*	re Poplns  */
-EXT Vset *vst;
+EXT VarSet *vst;
 EXT Sample *samp;
 EXT Population *population;
-EXT AVinst *avi;
+EXT VSetVar *avi;
 EXT PVinst *pvi;
-EXT SVinst *svi;
-EXT Vtype *vtp;
+EXT SampleVar *svi;
+EXT VarType *vtp;
 EXT int nc; /* Number of cases */
 EXT int nv; /* Number of variables */
 EXT int root;
 EXT Class *rootcl;
-EXT AVinst *vlist;
+EXT VSetVar *vlist;
 EXT PVinst *pvars;
-EXT SVinst *svars;
+EXT SampleVar *svars;
 
 /*	re Classes  */
 EXT Class *cls, *dad;
@@ -483,17 +483,17 @@ EXT Class *sons[MAX_CLASSES];
 EXT int nextic[MAX_CLASSES];
 
 /*	re Tuning  */
-EXT int MinAge;      /* Min class age for creation of subs */
-EXT int MinFacAge;   /* Min age for contemplating a factor model */
-EXT int MinSubAge;   /* Until this age, subclass relabs not allowed to
-       decay.  */
-EXT int MaxSubAge;   /* Subclasses older than this are replaced  */
-EXT int HoldTime;    /* Massage cycles for which class type is fixed
-    following forcible change  */
-EXT int Forever;     /* If holdtype set to this, it isnt counted down */
-EXT double MinSize;  /* Min size for a class */
-EXT double MinWt;    /* Min weight for a case to be treated in a class */
-EXT double MinSubWt; /* Min fractional wt for a case to be treated in a Sub */
+EXT int MinAge;         /* Min class age for creation of subs */
+EXT int MinFacAge;      /* Min age for contemplating a factor model */
+EXT int MinSubAge;      /* Until this age, subclass relabs not allowed to
+          decay.  */
+EXT int MaxSubAge;      /* Subclasses older than this are replaced  */
+EXT int HoldTime;       /* Massage cycles for which class type is fixed
+       following forcible change  */
+EXT int Forever;        /* If holdtype set to this, it isnt counted down */
+EXT double MinSize;     /* Min size for a class */
+EXT double MinWt;       /* Min weight for a case to be treated in a class */
+EXT double MinSubWt;    /* Min fractional wt for a case to be treated in a Sub */
 EXT int SigScoreChange; /*  Min significant change in factor score */
 EXT int seeall;         /* A flag to make all cases be treated in all classes */
 EXT int dontignore;     /* A flag signalling a major change to structure */

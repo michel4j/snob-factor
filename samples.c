@@ -8,16 +8,16 @@ int qssamp();
 /*	To print datum for variable i, case n, in sample     */
 void printdatum(int i, int n) {
     Sample *samp;
-    AVinst *avi;
-    SVinst *svi;
-    Vtype *vtp;
+    VSetVar *avi;
+    SampleVar *svi;
+    VarType *vtp;
 
     samp = ctx.sample;
-    svi = samp->svars + i;
+    svi = samp->variables + i;
     avi = vlist + i;
-    vtp = avi->vtp;
-    loc = (char *)samp->recs;
-    loc += n * samp->reclen;
+    vtp = avi->vtype;
+    loc = (char *)samp->records;
+    loc += n * samp->record_length;
     loc += svi->offset;
     /*	Test for missing  */
     if (*loc == 1) {
@@ -25,7 +25,7 @@ void printdatum(int i, int n) {
         return;
     }
     loc += 1;
-    (*vtp->printdat)(loc);
+    (*vtp->print_datum)(loc);
     return;
 }
 /*	------------------------ readvset ------------------------------ */
@@ -35,7 +35,7 @@ int readvset() {
 
     int i, itype, indx;
     int kread;
-    Buf bufst, *buf;
+    Buffer bufst, *buf;
     char *vaux;
 
     buf = &bufst;
@@ -49,19 +49,19 @@ nospce:
 
 gotit:
     indx = i;
-    vst = vsets[i] = (Vset *)malloc(sizeof(Vset));
+    vst = vsets[i] = (VarSet *)malloc(sizeof(VarSet));
     if (!vst)
         goto nospce;
     vst->id = indx;
     ctx.vset = vst;
-    vst->vlist = 0;
-    vst->vblks = 0;
+    vst->variables = 0;
+    vst->blocks = 0;
     printf("Enter variable-set file name:\n");
-    kread = readalf(vst->dfname, 1);
-    strcpy(buf->cname, vst->dfname);
+    kread = readalf(vst->filename, 1);
+    strcpy(buf->cname, vst->filename);
     ctx.buffer = buf;
     if (bufopen()) {
-        printf("Cant open variable-set file %s\n", vst->dfname);
+        printf("Cant open variable-set file %s\n", vst->filename);
         i = -2;
         goto error;
     }
@@ -82,17 +82,17 @@ gotit:
         i = -4;
         goto error;
     }
-    vst->nv = nv;
-    vst->nactv = vst->nv;
+    vst->length = nv;
+    vst->num_active = vst->length;
 
-    /*	Make a vec of nv AVinst blocks  */
-    vlist = (AVinst *)gtsp(3, nv * sizeof(AVinst));
+    /*	Make a vec of nv VSetVar blocks  */
+    vlist = (VSetVar *)gtsp(3, nv * sizeof(VSetVar));
     if (!vlist) {
         printf("Cannot allocate memory for variables blocks\n");
         i = -3;
         goto error;
     }
-    vst->vlist = vlist;
+    vst->variables = vlist;
 
     /*	Read in the info for each variable into vlist   */
     for (i = 0; i < nv; i++) {
@@ -119,9 +119,9 @@ gotit:
             i = -5;
             goto error;
         }
-        avi->idle = 0;
+        avi->inactive = 0;
         if (itype < 0) {
-            avi->idle = 1;
+            avi->inactive = 1;
             itype = -itype;
         }
         if ((itype < 1) || (itype > Ntypes)) {
@@ -130,11 +130,11 @@ gotit:
             goto error;
         }
         itype = itype - 1; /*  Convert types to start at 0  */
-        vtp = avi->vtp = types + itype;
-        avi->itype = itype;
+        vtp = avi->vtype = types + itype;
+        avi->type = itype;
 
         /*	Make the vaux block  */
-        vaux = (char *)gtsp(3, vtp->vauxsize);
+        vaux = (char *)gtsp(3, vtp->attr_aux_size);
         if (!vaux) {
             printf("Cant make auxilliary var block\n");
             i = -6;
@@ -143,13 +143,13 @@ gotit:
         avi->vaux = vaux;
 
         /*	Read auxilliary information   */
-        if ((*vtp->readvaux)(vaux)) {
+        if ((*vtp->read_aux_attr)(vaux)) {
             printf("Error in reading auxilliary info var %d\n", i + 1);
             i = -7;
             goto error;
         }
         /*	Set sizes of stats and basic blocks for var in classes */
-        (*vtp->setsizes)(i);
+        (*vtp->set_sizes)(i);
     } /* End of variables loop */
     i = indx;
 
@@ -167,7 +167,7 @@ int readsample(char *fname) {
     int i, n;
     int kread;
     int caseid;
-    Buf bufst, *buf;
+    Buffer bufst, *buf;
     Context oldctx;
     char *saux, vstnam[80], sampname[80];
 
@@ -224,24 +224,24 @@ gotit:
     if (!samp)
         goto nospace;
     ctx.sample = samp;
-    samp->sblks = 0;
+    samp->blocks = 0;
     samp->id = i;
-    strcpy(samp->dfname, buf->cname);
+    strcpy(samp->filename, buf->cname);
     strcpy(samp->name, sampname);
     /*	Set variable-set name in sample  */
-    strcpy(samp->vstname, vst->name);
+    strcpy(samp->vset_name, vst->name);
     /*	Num of variables   */
-    nv = vst->nv;
-    vlist = vst->vlist;
+    nv = vst->length;
+    vlist = vst->variables;
 
-    /*	Make a vec of nv SVinst blocks  */
-    svars = (SVinst *)gtsp(0, nv * sizeof(SVinst));
+    /*	Make a vec of nv SampleVar blocks  */
+    svars = (SampleVar *)gtsp(0, nv * sizeof(SampleVar));
     if (!svars) {
         printf("Cannot allocate memory for variables blocks\n");
         i = -3;
         goto error;
     }
-    samp->svars = svars;
+    samp->variables = svars;
 
     /*	Read in the info for each variable into svars   */
     for (i = 0; i < nv; i++) {
@@ -255,10 +255,10 @@ gotit:
         svi = svars + i;
         svi->id = i;
         avi = vlist + i;
-        vtp = avi->vtp;
+        vtp = avi->vtype;
 
         /*	Make the saux block  */
-        saux = (char *)gtsp(0, vtp->sauxsize);
+        saux = (char *)gtsp(0, vtp->smpl_aux_size);
         if (!saux) {
             printf("Cant make auxilliary var block\n");
             i = -6;
@@ -267,7 +267,7 @@ gotit:
         svi->saux = saux;
 
         /*	Read auxilliary information   */
-        if ((*vtp->readsaux)(saux)) {
+        if ((*vtp->read_aux_smpl)(saux)) {
             printf("Error in reading auxilliary info var %d\n", i + 1);
             i = -7;
             goto error;
@@ -275,7 +275,7 @@ gotit:
 
         /*	Set the offset of the (missing, value) pair  */
         svi->offset = reclen;
-        reclen += (1 + vtp->datsize); /* missing flag and value */
+        reclen += (1 + vtp->data_size); /* missing flag and value */
     }                                 /* End of variables loop */
 
     /*	Now attempt to read in the data. The first item is the number of cases*/
@@ -286,16 +286,16 @@ gotit:
         i = -11;
         goto error;
     }
-    samp->nc = nc;
-    samp->nact = 0;
+    samp->num_cases = nc;
+    samp->num_active = 0;
     /*	Make a vector of nc records each of size reclen  */
-    recs = samp->recs = loc = (char *)gtsp(0, nc * reclen);
+    recs = samp->records = loc = (char *)gtsp(0, nc * reclen);
     if (!loc) {
         printf("No space for data\n");
         i = -8;
         goto error;
     }
-    samp->reclen = reclen;
+    samp->record_length = reclen;
 
     /*	Read in the data cases, each preceded by an active flag and ident   */
     for (n = 0; n < nc; n++) {
@@ -312,7 +312,7 @@ gotit:
             *loc = 0;
         } else {
             *loc = 1;
-            samp->nact++;
+            samp->num_active++;
         }
         loc++;
         cmcpy(loc, &caseid, sizeof(int));
@@ -322,8 +322,8 @@ gotit:
         for (i = 0; i < nv; i++) {
             svi = svars + i;
             avi = vlist + i;
-            vtp = avi->vtp;
-            kread = (*vtp->readdat)(loc + 1, i);
+            vtp = avi->vtype;
+            kread = (*vtp->read_datum)(loc + 1, i);
             if (kread < 0) {
                 printf("Data error case %d var %d\n", n + 1, i + 1);
                 swallow();
@@ -334,10 +334,10 @@ gotit:
                 *loc = 0;
                 svi->nval++;
             }
-            loc += (vtp->datsize + 1);
+            loc += (vtp->data_size + 1);
         }
     }
-    printf("Number of active cases = %d\n", samp->nact);
+    printf("Number of active cases = %d\n", samp->num_active);
     bufclose();
     ctx.buffer = source;
     if (qssamp(samp)) {
@@ -512,15 +512,15 @@ Sample *samp;
 {
     int nc, len;
 
-    nc = samp->nc;
+    nc = samp->num_cases;
     printf("Begin sort of %d cases\n", nc);
     if (nc < 1) {
         printf("From qssamp: sample unattached.\n");
         return (-1);
     }
-    len = samp->reclen;
+    len = samp->record_length;
 
-    qssamp1(samp->recs, nc, len);
+    qssamp1(samp->records, nc, len);
     printf("Finished sort\n");
     return (0);
 }
@@ -533,13 +533,13 @@ int id;
     int iu, il, ic, cid, len;
     char *recs;
 
-    if ((!samp) || (samp->nc == 0)) {
+    if ((!samp) || (samp->num_cases == 0)) {
         printf("No defined sample\n");
         return (-1);
     }
-    recs = samp->recs + 1;
-    len = samp->reclen;
-    iu = samp->nc;
+    recs = samp->records + 1;
+    len = samp->record_length;
+    iu = samp->num_cases;
     il = 0;
 chop:
     ic = (iu + il) >> 1;
@@ -575,7 +575,7 @@ char *tlstname;
     if (!ctx.sample)
         return (-2);
     setpop();
-    if (!samp->nc)
+    if (!samp->num_cases)
         return (-3);
 
     /*	Open a file  */
@@ -602,11 +602,11 @@ nextcl1:
 
     findall(Dad + Leaf);
 
-    for (nn = 0; nn < samp->nc; nn++) {
+    for (nn = 0; nn < samp->num_cases; nn++) {
         docase(nn, Leaf + Dad, 0);
         bl = bc = -1;
         bw = 0.0;
-        bs = samp->nc + 1;
+        bs = samp->num_cases + 1;
         for (i = 0; i < numson; i++) {
             clp = sons[i];
             if ((clp->casewt > 0.5) && (clp->cnt < bs)) {

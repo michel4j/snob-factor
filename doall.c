@@ -296,7 +296,7 @@ int find_and_estimate(int *all, int niter, int ncycles) {
         cleartcosts(sons[k]);
     }
 
-    for (int j = 0; j < samp->nc; j++) {
+    for (int j = 0; j < samp->num_cases; j++) {
         docase(j, *all, 1);
         // docase ignores classes with ignore bit in cls->vv[] for the
         // case unless seeall is on.
@@ -445,7 +445,7 @@ int doall(int ncycles, int all) {
                 cleartcosts(sons[k]);
             }
 
-            for (int j = 0; j < samp->nc; j++) {
+            for (int j = 0; j < samp->num_cases; j++) {
                 docase(j, all, 1);
                 /*	docase ignores classes with ignore bit in cls->vv[] for the case
                     unless seeall is on.  */
@@ -809,7 +809,7 @@ void docase(int cse, int all, int derivs) {
             psaux->missing = 1;
         } else {
             psaux->missing = 0;
-            cmcpy(&(psaux->xn), loc + 1, vlist[i].vtp->datsize);
+            cmcpy(&(psaux->xn), loc + 1, vlist[i].vtype->data_size);
         }
     }
 

@@ -8,13 +8,13 @@ void setpop() {
     population = ctx.popln;
     samp = ctx.sample;
     vst = ctx.vset;
-    nv = vst->nv;
-    vlist = vst->vlist;
+    nv = vst->length;
+    vlist = vst->variables;
     if (samp) {
-        nc = samp->nc;
-        svars = samp->svars;
-        reclen = samp->reclen;
-        recs = samp->recs;
+        nc = samp->num_cases;
+        svars = samp->variables;
+        reclen = samp->record_length;
+        recs = samp->records;
     } else {
         nc = 0;
         svars = 0;
@@ -71,7 +71,7 @@ int makepop(int fill){
     samp = ctx.sample;
     vst = ctx.vset;
     if (samp)
-        nc = samp->nc;
+        nc = samp->num_cases;
     else
         nc = 0;
     if ((!samp) && fill) {
@@ -108,10 +108,10 @@ gotit:
     /*	Copy from variable-set AVinsts to PVinsts  */
     for (i = 0; i < nv; i++) {
         avi = vlist + i;
-        vtp = avi->vtp;
+        vtp = avi->vtype;
         pvi = pvars + i;
         pvi->id = avi->id;
-        pvi->paux = (char *)gtsp(1, vtp->pauxsize);
+        pvi->paux = (char *)gtsp(1, vtp->pop_aux_size);
         if (!pvi->paux)
             goto nospace;
     }
@@ -236,7 +236,7 @@ void makesubs(int kk){
     for (iv = 0; iv < nv; iv++) {
         cvi = cls->basics[iv];
         scvi = clsa->basics[iv];
-        nch = vlist[iv].basicsize;
+        nch = vlist[iv].basic_size;
         cmcpy(scvi, cvi, nch);
         scvi = clsb->basics[iv];
         cmcpy(scvi, cvi, nch);
@@ -341,7 +341,7 @@ int copypop(int p1, int fill, char *newname){
     }
     /*	Use current sample if compatible  */
     samp = ctx.sample;
-    if (samp && (!strcmp(samp->vstname, vst->name))) {
+    if (samp && (!strcmp(samp->vset_name, vst->name))) {
         sindx = samp->id;
         goto sampfound;
     }
@@ -353,7 +353,7 @@ int copypop(int p1, int fill, char *newname){
 sampfound:
     if (sindx >= 0) {
         samp = ctx.sample = samples[sindx];
-        nc = samp->nc;
+        nc = samp->num_cases;
     } else {
         samp = ctx.sample = 0;
         fill = nc = 0;
@@ -381,7 +381,7 @@ sampfound:
     setpop();
     if (samp) {
         strcpy(population->samplename, samp->name);
-        population->nc = samp->nc;
+        population->nc = samp->num_cases;
     } else {
         strcpy(population->samplename, "??");
         population->nc = 0;
@@ -395,7 +395,7 @@ sampfound:
     /*	In case the pop is unattached (fpop->nc = 0), prepare a nominal
     count to insert in leaf classes  */
     if (fill & (!fpop->nc)) {
-        nomcnt = samp->nact;
+        nomcnt = samp->num_active;
         nomcnt = nomcnt / fpop->nleaf;
     }
 
@@ -421,7 +421,7 @@ newclass:
     for (iv = 0; iv < nv; iv++) {
         fcvi = fcls->basics[iv];
         cvi = cls->basics[iv];
-        nch = vlist[iv].basicsize;
+        nch = vlist[iv].basic_size;
         cmcpy(cvi, fcvi, nch);
     }
 
@@ -429,7 +429,7 @@ newclass:
     for (iv = 0; iv < nv; iv++) {
         fevi = fcls->stats[iv];
         evi = cls->stats[iv];
-        nch = vlist[iv].statssize;
+        nch = vlist[iv].stats_size;
         cmcpy(evi, fevi, nch);
     }
     if (fill == 0)
@@ -450,7 +450,7 @@ fakeit: /*  initialize scorevectors  */
     }
     cls->cnt = nomcnt;
     if (cls->idad < 0) /* Root class */
-        cls->cnt = samp->nact;
+        cls->cnt = samp->num_active;
 
 classdone:
     if (fill)
@@ -533,7 +533,7 @@ void printtree() {
     }
     setpop();
     printf("Popln%3d on sample%3d,%4d classes,%6d things", population->id + 1,
-           samp->id + 1, population->ncl, samp->nc);
+           samp->id + 1, population->ncl, samp->num_cases);
     printf("  Cost %10.2f\n", population->classes[population->root]->cbcost);
     printf("\n  Assign mode ");
     if (fix == Partial)
@@ -584,9 +584,9 @@ int bestpopid() {
     if (i < 0)
         goto gotit;
     /*	Set bestcost in samp from current cost  */
-    samp->bestcost = population->classes[root]->cbcost;
+    samp->best_cost = population->classes[root]->cbcost;
     /*	Set goodtime as current pop age  */
-    samp->goodtime = population->classes[root]->age;
+    samp->best_time = population->classes[root]->age;
 
 gotit:
     return (i);
@@ -632,8 +632,8 @@ void trackbest(int verify) {
     /*	Seems better, so kill old 'bestmodel' and make a new one */
     setpop();
     kk = copypop(population->id, 0, BSTname);
-    samp->bestcost = population->classes[root]->cbcost;
-    samp->goodtime = population->classes[root]->age;
+    samp->best_cost = population->classes[root]->cbcost;
+    samp->best_time = population->classes[root]->age;
     return;
 }
 
@@ -782,7 +782,7 @@ newclass:
     /*	Copy Basics..  */
     for (iv = 0; iv < nv; iv++) {
         cvi = cls->basics[iv];
-        nch = vlist[iv].basicsize;
+        nch = vlist[iv].basic_size;
         recordit(fl, cvi, nch);
         leng += nch;
     }
@@ -790,7 +790,7 @@ newclass:
     /*	Copy stats  */
     for (iv = 0; iv < nv; iv++) {
         evi = cls->stats[iv];
-        nch = vlist[iv].statssize;
+        nch = vlist[iv].stats_size;
         recordit(fl, evi, nch);
         leng += nch;
     }
@@ -847,7 +847,7 @@ int restorepop(char *nam){
         goto error;
     }
     vst = ctx.vset = vsets[j];
-    nv = vst->nv;
+    nv = vst->length;
     fscanf(fl, "%s", name);          /* Reading sample name */
     fscanf(fl, "%d%d", &fncl, &fnc); /* num of classes, cases */
                                      /*	Advance to real data */
@@ -862,7 +862,7 @@ int restorepop(char *nam){
             samp = ctx.sample = 0;
         } else {
             samp = ctx.sample = samples[j];
-            if (samp->nc != fnc) {
+            if (samp->num_cases != fnc) {
                 printf("Size conflict Model%9d vs. Sample%9d\n", fnc, nc);
                 goto error;
             }
@@ -907,7 +907,7 @@ haveclass:
     }
     for (iv = 0; iv < nv; iv++) {
         cvi = cls->basics[iv];
-        nch = vlist[iv].basicsize;
+        nch = vlist[iv].basic_size;
         jp = (char *)cvi;
         for (k = 0; k < nch; k++) {
             *jp = fgetc(fl);
@@ -916,7 +916,7 @@ haveclass:
     }
     for (iv = 0; iv < nv; iv++) {
         evi = cls->stats[iv];
-        nch = vlist[iv].statssize;
+        nch = vlist[iv].stats_size;
         jp = (char *)evi;
         for (k = 0; k < nch; k++) {
             *jp = fgetc(fl);
@@ -993,8 +993,8 @@ int loadpop(int pp){
         goto error;
     }
     vst = ctx.vset = vsets[j];
-    /*	Check Vset  */
-    if (strcmp(vst->name, oldctx.sample->vstname)) {
+    /*	Check VarSet  */
+    if (strcmp(vst->name, oldctx.sample->vset_name)) {
         printf("Picked popln has incompatible VariableSet\n");
         goto error;
     }
@@ -1079,7 +1079,7 @@ void correlpops(int xid){
         goto finish;
     }
     /*	Should be able to proceed  */
-    fnact = samp->nact;
+    fnact = samp->num_active;
     control = AdjSc;
     seeall = 4;
     nosubs++;

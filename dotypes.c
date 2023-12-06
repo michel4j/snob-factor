@@ -1,4 +1,4 @@
-/*	A routine to initialize the Vtype list "types"
+/*	A routine to initialize the VarType list "types"
     It must be added to for every new type added, by adding a call
 on XXXdefine() where XXX is the prefix of the fun XXXdefine in the file
 of functions for the new type.
@@ -31,7 +31,7 @@ void dotypes() {
         zerov[i] = 0.0;
 
     /*	Make the 'types' vector  */
-    types = (Vtype *)malloc(Ntypes * sizeof(Vtype));
+    types = (VarType *)malloc(Ntypes * sizeof(VarType));
 
     reals_define(0);
     expmults_define(1);

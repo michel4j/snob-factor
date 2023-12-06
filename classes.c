@@ -72,7 +72,7 @@ int makeclass() {
         ctx.sample = samp = samples[i];
     }
 
-    nv = vst->nv;
+    nv = vst->length;
     pvars = population->pvars;
     /*	Find a vacant slot in the popln's classes vec   */
     for (kk = 0; kk < population->mncl; kk++) {
@@ -102,7 +102,7 @@ gotit:
     for (i = 0; i < nv; i++) {
         pvi = pvars + i;
         avi = vlist + i;
-        cvi = cvars[i] = (CVinst *)gtsp(1, avi->basicsize);
+        cvi = cvars[i] = (CVinst *)gtsp(1, avi->basic_size);
         if (!cvi)
             goto nospace;
         /*	Fill in standard stuff  */
@@ -117,7 +117,7 @@ gotit:
     for (i = 0; i < nv; i++) {
         pvi = pvars + i;
         avi = vlist + i;
-        evi = evars[i] = (EVinst *)gtsp(1, avi->statssize);
+        evi = evars[i] = (EVinst *)gtsp(1, avi->stats_size);
         if (!evi)
             goto nospace;
         evi->id = pvi->id;
@@ -160,7 +160,7 @@ vacant2:
 
 expanded:
     for (i = 0; i < nv; i++)
-        evars[i]->cnt = 0.0;
+        evars[i]->num_values = 0.0;
 finish:
     cls->age = 0;
     cls->holdtype = cls->holduse = 0;
@@ -205,9 +205,9 @@ void print1class(Class *clp, int full) {
     printf("totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->cscost, clp->cfcost, clp->cncost, clp->cbcost);
     if (!full)
         return;
-    for (i = 0; i < vst->nv; i++) {
-        vtp = vlist[i].vtp;
-        (*vtp->vprint)(clp, i);
+    for (i = 0; i < vst->length; i++) {
+        vtp = vlist[i].vtype;
+        (*vtp->show)(clp, i);
     }
     return;
 }
@@ -251,9 +251,9 @@ void cleartcosts(Class *ccl) {
     cls->totvv = 0.0;
     if (!seeall)
         cls->scancnt = 0;
-    for (i = 0; i < vst->nv; i++) {
-        vtp = vlist[i].vtp;
-        (*vtp->clearstats)(i);
+    for (i = 0; i < vst->length; i++) {
+        vtp = vlist[i].vtype;
+        (*vtp->clear_stats)(i);
     }
     return;
 }
@@ -277,9 +277,9 @@ void setbestparall(Class *ccl) {
         cls->cbpcost = cls->cfpcost;
         cls->cbtcost = cls->cftcost;
     }
-    for (i = 0; i < vst->nv; i++) {
-        vtp = vlist[i].vtp;
-        (*vtp->setbestparam)(i);
+    for (i = 0; i < vst->length; i++) {
+        vtp = vlist[i].vtype;
+        (*vtp->set_best_pars)(i);
     }
     return;
 }
@@ -335,12 +335,12 @@ started:
 
     cvvsq = cvv * cvv;
     vvd1 = vvd2 = mvvd2 = vvd3 = 0.0;
-    for (i = 0; i < vst->nv; i++) {
+    for (i = 0; i < vst->length; i++) {
         avi = vlist + i;
-        if (avi->idle)
+        if (avi->inactive)
             goto vdone;
-        vtp = avi->vtp;
-        (*vtp->scorevar)(i);
+        vtp = avi->vtype;
+        (*vtp->score_var)(i);
     /*	scorevar should add to vvd1, vvd2, vvd3, mvvd2.  */
     vdone:;
     }
@@ -398,12 +398,12 @@ void costvarall(Class *ccl) {
         cvvsq = cvv * cvv;
     }
     ncasecost = scasecost = fcasecost = cls->mlogab; /* Abundance cost */
-    for (int iv = 0; iv < vst->nv; iv++) {
+    for (int iv = 0; iv < vst->length; iv++) {
         avi = vlist + iv;
-        if (avi->idle)
+        if (avi->inactive)
             goto vdone;
-        vtp = avi->vtp;
-        (*vtp->costvar)(iv, fac);
+        vtp = avi->vtype;
+        (*vtp->cost_var)(iv, fac);
     /*	will add to scasecost, fcasecost  */
     vdone:;
     }
@@ -456,10 +456,10 @@ void derivvarall(Class *ccl) {
     }
     for (int iv = 0; iv < nv; iv++) {
         avi = vlist + iv;
-        if (avi->idle)
+        if (avi->inactive)
             goto vdone;
-        vtp = avi->vtp;
-        (*vtp->derivvar)(iv, fac);
+        vtp = avi->vtype;
+        (*vtp->deriv_var)(iv, fac);
     vdone:;
     }
 
@@ -520,11 +520,11 @@ void adjustclass(Class *ccl, int dod) {
     /*	cls->cnpcost was zeroed in doall, and has accumulated the cbpcosts
     of cls's sons, so we don't zero it here. 'ncostvarall' will add to it.  */
     cls->cspcost = cls->cfpcost = 0.0;
-    for (iv = 0; iv < vst->nv; iv++) {
+    for (iv = 0; iv < vst->length; iv++) {
         avi = vlist + iv;
-        if (avi->idle)
+        if (avi->inactive)
             goto vdone;
-        vtp = avi->vtp;
+        vtp = avi->vtype;
         (*vtp->adjust)(iv, fac);
     vdone:;
     }
@@ -569,10 +569,10 @@ void adjustclass(Class *ccl, int dod) {
     small = 0;
     leafcost = 0.0; /* Used to add up evi->cnts */
     for (iv = 0; iv < nv; iv++) {
-        if (vlist[iv].idle)
+        if (vlist[iv].inactive)
             goto vidle;
         small++;
-        leafcost += cls->stats[iv]->cnt;
+        leafcost += cls->stats[iv]->num_values;
     vidle:;
     }
     /*	I want at least 1.5 data vals per param  */
@@ -655,12 +655,12 @@ void ncostvarall(Class *ccl, int valid) {
 
     setclass1(ccl);
     abcost = 0.0;
-    for (i = 0; i < vst->nv; i++) {
+    for (i = 0; i < vst->length; i++) {
         avi = vlist + i;
-        vtp = avi->vtp;
-        (*vtp->ncostvar)(i, valid);
+        vtp = avi->vtype;
+        (*vtp->cost_var_nonleaf)(i, valid);
         evi = (EVinst *)cls->stats[i];
-        if (!avi->idle) {
+        if (!avi->inactive) {
             abcost += evi->npcost;
         }
     }

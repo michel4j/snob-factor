@@ -17,13 +17,13 @@ name.
 /*	Routines to read an item dont consume the character which terminates
 the item   */
 
-Buf cfilebuf, commsbuf; /* Buffers for command input */
+Buffer cfilebuf, commsbuf; /* Buffers for command input */
 int terminator;
 
 /*	--------------------------- bufopen() --------------------------  */
-/*	Given a Buf with a name in it, sets up and initializes the named file*/
+/*	Given a Buffer with a name in it, sets up and initializes the named file*/
 int bufopen() {
-    Buf *buf;
+    Buffer *buf;
 
     buf = ctx.buffer;
     buf->cfile = fopen(buf->cname, "r");
@@ -41,7 +41,7 @@ int bufopen() {
 /*	------------------------  newline () ------------------   */
 /*	To skip to next line  */
 int newline() {
-    Buf *buf;
+    Buffer *buf;
     /*	Discard anything in inl and read in a new line, to '\n'  */
     int i, j;
 
@@ -166,7 +166,7 @@ line if cnl not zero, but will return 2 if cnl = 0 and EOL is reached before
 the read is satisfied  */
 /*	To read an integer into x   */
 int readint(int *x, int cnl) {
-    Buf *buf;
+    Buffer *buf;
     int sign, i, v;
 
     buf = ctx.buffer;
@@ -225,7 +225,7 @@ miss: /* An '=' signifies missing value  */
 /*	--------------------  readdf ()  --------------------------- */
 /*	To read a float into (double) x   */
 int readdf(double *x, int cnl) {
-    Buf *buf;
+    Buffer *buf;
     int sign, i;
     double v, pow;
     buf = ctx.buffer;
@@ -300,7 +300,7 @@ miss: /* An '=' signifies missing value  */
 /*	--------------------  readalf () ------------------------   */
 /*	To read a string of characters  */
 int readalf(char *str, int cnl) {
-    Buf *buf;
+    Buffer *buf;
     int i, n;
 
     buf = ctx.buffer;
@@ -359,7 +359,7 @@ err:
 /*	---------------------- readch () -----------------------  */
 /*	Returns next char, or -1 if error, or 2 if EOL and not cnl  */
 int readch(int cnl) {
-    Buf *buf;
+    Buffer *buf;
     int i;
 
     buf = ctx.buffer;
@@ -380,7 +380,7 @@ skip:
 /*	--------------------------  swallow ()	--------------------- */
 /*	To swallow an erroneus field, stopping at blank, newline or tab */
 void swallow() {
-    Buf *buf;
+    Buffer *buf;
     int i;
 
     buf = ctx.buffer;

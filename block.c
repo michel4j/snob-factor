@@ -27,20 +27,20 @@ void *gtsp(int gr, int size) {
 
     switch (gr) {
     case 0:
-        blk->nblock = ctx.sample->sblks;
-        ctx.sample->sblks = blk;
+        blk->next = ctx.sample->blocks;
+        ctx.sample->blocks = blk;
         break;
     case 1:
-        blk->nblock = ctx.popln->pblks;
+        blk->next = ctx.popln->pblks;
         ctx.popln->pblks = blk;
         break;
     case 2:
-        blk->nblock = ctx.popln->jblks;
+        blk->next = ctx.popln->jblks;
         ctx.popln->jblks = blk;
         break;
     case 3:
-        blk->nblock = ctx.vset->vblks;
-        ctx.vset->vblks = blk;
+        blk->next = ctx.vset->blocks;
+        ctx.vset->blocks = blk;
         break;
     } /* End of switch */
     return ((void *)(((char *)blk) + SpUnit));
@@ -53,8 +53,8 @@ void freesp(int gr) {
     Block *blk, *nblk;
     switch (gr) {
     case 0:
-        blk = ctx.sample->sblks;
-        ctx.sample->sblks = 0;
+        blk = ctx.sample->blocks;
+        ctx.sample->blocks = 0;
         break;
     case 1:
         blk = ctx.popln->pblks;
@@ -65,15 +65,15 @@ void freesp(int gr) {
         ctx.popln->jblks = 0;
         break;
     case 3:
-        blk = ctx.vset->vblks;
-        ctx.vset->vblks = 0;
+        blk = ctx.vset->blocks;
+        ctx.vset->blocks = 0;
         break;
     default:
         printf("False group value %d in freespace\n", gr);
         exit(10);
     }
     while (blk) {
-        nblk = blk->nblock;
+        nblk = blk->next;
         allocated -= blk->size;
         free(blk);
         blk = nblk;
