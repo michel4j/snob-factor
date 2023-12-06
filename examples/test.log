@@ -1,0 +1,71 @@
+Enter variable-set file name:
+There being no comms file, input will be taken from StdInput
+Readvset returns 0
+Enter sample file name:
+Number of active cases = 200
+Begin sort of 200 cases
+Finished sort
+Readsample returns 0
+Allocated space    14140 chars
+ll.la
+Firstpop returns 0
+Allocated space    20208 chars
+
+S    1  LEAF    Root Age   5  Sz 200.0  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    33.36  F:   933.36  D:     0.00  B:    33.36
+Tcosts  S:  5002.32  F:  7006.89  D:     0.00  B:  5002.32
+Vcost     ---------  F:     0.00
+totals  S:  5035.68  F:  7940.25  D:     0.00  B:  5035.68
+??? line      0
+P1     1 classes,    1 leaves,  Pcost    33.4  Tcost    5002.3,  Cost    5035.7
+Sample  1 From_d2r3m6
+aa....
+Changing type of class    1  from Leaf to Dad
+AAAAAA...
+Changing type of class    2  from Leaf to Dad
+Changing type of class    3  from Leaf to Dad
+aAAA.AA........AA........aa......aa
+Allocated space   117236 chars
+P1    15 classes,    4 leaves,  Pcost   151.5  Tcost    4645.3,  Cost    4796.8
+Sample  1 From_d2r3m6
+aaDDDddddDDDdddddDdddddDdddddDdddddDdddddDDdddddDdddddDDdddddDdddd
+TRYING MOVE CLASS      2 TO DAD      3
+DDDddddlLlAaaaaA
+ACCEPTED !!!
+Popln  3 on sample  1,   6 classes,   200 things  Cost    4791.65
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad       Scan     200 RelAb 1.000  Size   200.0
+       2  Dad       Scan     125 RelAb 0.499  Size   100.1
+          4 Leaf       Scan      67 RelAb 0.252  Size    50.5
+          5 Leaf       Scan      60 RelAb 0.248  Size    49.7
+       6 Leaf       Scan      87 RelAb 0.275  Size    54.9
+       7 Leaf       Scan      58 RelAb 0.226  Size    45.0
+aadDDdddddDdddddDdddddDdddd
+TRYING MOVE CLASS      5 TO DAD      1
+dDddddLLLaAAAAA
+ACCEPTED !!!
+Popln  1 on sample  1,   5 classes,   200 things  Cost    4786.63
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad       Scan     200 RelAb 1.000  Size   200.0
+       2 Leaf       Scan     125 RelAb 0.255  Size    50.9
+       5 Leaf       Scan      60 RelAb 0.249  Size    49.7
+       6 Leaf       Scan      87 RelAb 0.272  Size    54.4
+       7 Leaf       Scan      58 RelAb 0.225  Size    44.9
+aa
+No possible class move
+Allocated space    66468 chars
+P1     5 classes,    4 leaves,  Pcost   140.1  Tcost    4646.5,  Cost    4786.7
+Sample  1 From_d2r3m6
+Popln  1 on sample  1,   5 classes,   200 things  Cost    4786.65
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad       Scan     200 RelAb 1.000  Size   200.0
+       2 Leaf       Scan     125 RelAb 0.254  Size    50.9
+       5 Leaf       Scan      60 RelAb 0.249  Size    49.7
+       6 Leaf       Scan      87 RelAb 0.272  Size    54.4
+       7 Leaf       Scan      58 RelAb 0.225  Size    44.9
+P1     5 classes,    4 leaves,  Pcost   140.1  Tcost    4646.5,  Cost    4786.7
+Sample  1 From_d2r3m6
+EOF in StdInput

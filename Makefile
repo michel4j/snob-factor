@@ -34,4 +34,9 @@ clean:
 	rm -f *.o snob-factor pro
 
 test: clean snob-factor
-	./snob-factor < ./examples/test.cmd 
+	./snob-factor < ./examples/test.cmd | tee testing.log && \
+    if cmp -s ./examples/test.log testinig.log; then \
+			echo -e "\033[0;31mTEST FAILED!\033[0m"; \
+    else \
+            echo -e "\033[0;32mTEST PASSED!\033[0m"; \
+    fi
