@@ -446,7 +446,7 @@ int count_score_changes() {
 }
 
 int do_all(int ncycles, int all) {
-    int niter, nfail, k, ncydone, ncyask, kicked=0;
+    int niter, nfail, k, ncydone, ncyask, kicked = 0;
     double oldcost, oldleafsum = 0;
     int num_son;
     Class *root;
@@ -481,7 +481,7 @@ int do_all(int ncycles, int all) {
             if (all != Leaf)
                 break;
             //  But if we were doing just leaves, wind up with a couple of
-            //  'do_all' cycles 
+            //  'do_all' cycles
             all = Dad + Leaf + Sub;
             ncycles = 2;
             niter = nfail = 0;
@@ -506,10 +506,10 @@ int do_all(int ncycles, int all) {
     if (kicked) {
         log_msg(2, "\nDOALL: Interrupted after %4d steps", ncydone);
     }
-    
+
     // Scan leaf classes whose use is 'Fac' to accumulate significant score changes.
     ScoreChanges = count_score_changes();
-    return (niter);
+    return (ncydone);
 }
 
 /*    ----------------------  do_dads  -----------------------------  */
