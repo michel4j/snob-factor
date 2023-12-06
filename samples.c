@@ -632,3 +632,52 @@ nextcl1:
     fclose(tlst);
     return (0);
 }
+
+
+/*    -------------------- destroy_sample --------------------  */
+/*    To destroy sample index sx    */
+void destroy_sample(int sx) {
+    int prev;
+    if (CurCtx.sample)
+        prev = CurCtx.sample->id;
+    else
+        prev = -1;
+    CurCtx.sample = Samples[sx];
+    if (!CurCtx.sample)
+        return;
+
+    free_blocks(0);
+    free(CurCtx.sample);
+    Samples[sx] = 0;
+    CurCtx.sample = 0;
+    if (sx == prev)
+        return;
+    if (prev < 0)
+        return;
+    CurCtx.sample = Samples[prev];
+}
+
+
+/*    -------------------- destroy_vset --------------------  */
+/*    To destroy vset index vx    */
+void destroy_vset(int vx) {
+    int prev;
+    if (CurCtx.vset)
+        prev = CurCtx.vset->id;
+    else
+        prev = -1;
+    CurCtx.vset = VarSets[vx];
+    if (!CurCtx.vset)
+        return;
+
+    free_blocks(3);
+    free(CurCtx.vset);
+    VarSets[vx] = 0;
+    CurCtx.vset = 0;
+    if (vx == prev)
+        return;
+    if (prev < 0)
+        return;
+    CurCtx.vset = VarSets[prev];
+
+}
