@@ -25,27 +25,17 @@ int serial_to_id(int ss) {
 }
 
 /*	---------------------  setclass1 --------------------------   */
-void set_class(Class *ccl) {
-    CurClass = ccl;
-    CurDadId = CurClass->dad_id;
-    if (CurDadId >= 0)
-        CurDad = CurPopln->classes[CurDadId];
-    else
-        CurDad = 0;
-    return;
+void set_class(Class *cls) {
+    CurClass = cls;
+    CurDad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
 }
 
 /*	---------------------  setclass2 --------------------------   */
-void set_class_with_scores(Class *ccl) {
-    CurClass = ccl;
+void set_class_with_scores(Class *cls) {
+    CurClass = cls;
     CurClass->case_score = CaseFacInt = CurClass->factor_scores[CurItem];
     CurCaseWeight = CurClass->case_weight;
-    CurDadId = CurClass->dad_id;
-    if (CurDadId >= 0)
-        CurDad = CurPopln->classes[CurDadId];
-    else
-        CurDad = 0;
-    return;
+    CurDad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
 }
 
 /*	---------------------   makeclass  -------------------------   */

@@ -73,7 +73,6 @@ EXT double NCaseCost, CaseNoFacCost, CaseFacCost;
 EXT double CaseFacScoreD1, CaseFacScoreD2; /* derivs of case cost wrt score  */
 EXT double EstFacScoreD2;                  /* An over-estimate of vvd2 used in score ajust */
 EXT double CaseFacScoreD3;                 /*  derivative of vvd2 wrt score  */
-EXT int CurDadId;
 
 /*	re Doall   */
 EXT int RSeed; /*	Seed for random routines */
