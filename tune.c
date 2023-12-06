@@ -4,7 +4,7 @@
 #include "glob.h"
 
 /*	----------------  defaulttune -------------------------------- */
-void defaulttune() {
+void default_tune() {
     int i;
 
     MinAge = 4;

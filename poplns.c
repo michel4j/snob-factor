@@ -102,7 +102,7 @@ gotit:
     population->num_classes = 0; /*  Initially no class  */
 
     /*	Make vector of PVinsts    */
-    pvars = population->variables = (PVinst *)gtsp(1, nv * sizeof(PVinst));
+    pvars = population->variables = (PVinst *)alloc_blocks(1, nv * sizeof(PVinst));
     if (!pvars)
         goto nospace;
     /*	Copy from variable-set AVinsts to PVinsts  */
@@ -111,14 +111,14 @@ gotit:
         vtp = avi->vtype;
         pvi = pvars + i;
         pvi->id = avi->id;
-        pvi->paux = (char *)gtsp(1, vtp->pop_aux_size);
+        pvi->paux = (char *)alloc_blocks(1, vtp->pop_aux_size);
         if (!pvi->paux)
             goto nospace;
     }
 
     /*	Make an empty vector of ptrs to class structures, initially
         allowing for MAX_CLASSES classes  */
-    population->classes = (Class **)gtsp(1, MAX_CLASSES * sizeof(Class *));
+    population->classes = (Class **)alloc_blocks(1, MAX_CLASSES * sizeof(Class *));
     if (!population->classes)
         goto nospace;
     population->cls_vec_len = MAX_CLASSES;
@@ -157,7 +157,7 @@ and non-fac estimates done  */
 int init_population() {
     int ipop;
 
-    clearbadm();
+    clr_bad_move();
     samp = ctx.sample;
     vst = ctx.vset;
     ipop = -1;
@@ -172,7 +172,7 @@ int init_population() {
 
     set_population();
     /*	Run doall on the root alone  */
-    doall(5, 0);
+    do_all(5, 0);
 
 finish:
     return (ipop);
@@ -279,8 +279,8 @@ void destroy_population(int px){
 
     ctx.popln = population;
     set_population();
-    freesp(2);
-    freesp(1);
+    free_blocks(2);
+    free_blocks(1);
     free(population);
     poplns[px] = 0;
     population = ctx.popln = 0;
@@ -324,7 +324,7 @@ int copy_population(int p1, int fill, char *newname){
         indx = -106;
         goto finish;
     }
-    kk = vname2id(fpop->vst_name);
+    kk = find_vset(fpop->vst_name);
     if (kk < 0) {
         printf("No Variable-set %s\n", fpop->vst_name);
         indx = -101;
@@ -336,7 +336,7 @@ int copy_population(int p1, int fill, char *newname){
     if (!fill)
         goto sampfound;
     if (fpop->sample_size) {
-        sindx = sname2id(fpop->sample_name, 1);
+        sindx = find_sample(fpop->sample_name, 1);
         goto sampfound;
     }
     /*	Use current sample if compatible  */
@@ -494,7 +494,7 @@ void printsubtree(int kk){
     for (kks = 0; kks < pdeep; kks++)
         printf("   ");
     clp = population->classes[kk];
-    printf("%s", sers(clp));
+    printf("%s", serial_to_str(clp));
     if (clp->type == Dad)
         printf(" Dad");
     if (clp->type == Leaf)
@@ -623,7 +623,7 @@ void track_best(int verify) {
     if (verify) {
         kk = control;
         control = 0;
-        doall(1, 1);
+        do_all(1, 1);
         control = kk;
         if (population->classes[root]->best_cost >= (bstcst))
             return;
@@ -736,7 +736,7 @@ namefixed:
     /*	switch context to TrialPop  */
     ctx.popln = poplns[i];
     set_population();
-    vst = ctx.vset = vsets[vname2id(population->vst_name)];
+    vst = ctx.vset = vsets[find_vset(population->vst_name)];
     nc = population->sample_size;
     if (!fill)
         nc = 0;
@@ -841,7 +841,7 @@ int load_population(char *nam){
     fscanf(fl, "%s", pname);
     printf("Model %s\n", pname);
     fscanf(fl, "%s", name); /* Reading v-set name */
-    j = vname2id(name);
+    j = find_vset(name);
     if (j < 0) {
         printf("Model needs variableset %s\n", name);
         goto error;
@@ -855,7 +855,7 @@ int load_population(char *nam){
         ;
     fgetc(fl);
     if (fnc) {
-        j = sname2id(name, 1);
+        j = find_sample(name, 1);
         if (j < 0) {
             printf("Sample %s unknown.\n", name);
             nc = 0;
@@ -987,7 +987,7 @@ int set_work_population(int pp){
     /*	Save the 'nc' of the popln to be loaded  */
     fpopnc = population->sample_size;
     /*	Check popln vset  */
-    j = vname2id(population->vst_name);
+    j = find_vset(population->vst_name);
     if (j < 0) {
         printf("Load cannot find variable set\n");
         goto error;
@@ -1019,7 +1019,7 @@ int set_work_population(int pp){
     control = AdjSc;
 fixscores:
     seeall = 16;
-    doall(15, 0);
+    do_all(15, 0);
     /*	doall should leave a count of score changes in global  */
     flp();
     printf("%8d  score changes\n", scorechanges);
@@ -1083,9 +1083,9 @@ void correlpops(int xid){
     control = AdjSc;
     seeall = 4;
     nosubs++;
-    doall(3, 1);
+    do_all(3, 1);
     wpop = population;
-    findall(Leaf);
+    find_all(Leaf);
     wnl = numson;
     for (wic = 0; wic < wnl; wic++)
         wsons[wic] = sons[wic];
@@ -1093,9 +1093,9 @@ void correlpops(int xid){
     ctx.popln = xpop;
     set_population();
     seeall = 4;
-    doall(3, 1);
+    do_all(3, 1);
     /*	Find all leaves of xpop  */
-    findall(Leaf);
+    find_all(Leaf);
     xnl = numson;
     if ((wnl < 2) || (xnl < 2)) {
         printf("Need at least 2 classes in each model.\n");
@@ -1117,12 +1117,12 @@ void correlpops(int xid){
         record = recs + n * reclen;
         if (!*record)
             goto ndone;
-        findall(Leaf);
-        docase(n, Leaf, 0);
+        find_all(Leaf);
+        do_case(n, Leaf, 0);
         ctx.popln = xpop;
         set_population();
-        findall(Leaf);
-        docase(n, Leaf, 0);
+        find_all(Leaf);
+        do_case(n, Leaf, 0);
         /*	Should now have caseweights set in leaves of both poplns  */
         for (wic = 0; wic < wnl; wic++) {
             wwt = wsons[wic]->case_weight;

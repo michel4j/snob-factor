@@ -66,7 +66,7 @@ int make_class() {
     nc = ctx.popln->sample_size;
     /*	If nc, check that popln has an attached sample  */
     if (nc) {
-        i = sname2id(population->sample_name, 1);
+        i = find_sample(population->sample_name, 1);
         if (i < 0)
             return (-2);
         ctx.sample = samp = samples[i];
@@ -86,7 +86,7 @@ int make_class() {
     goto nospace;
 
 gotit:
-    cls = (Class *)gtsp(1, sizeof(Class));
+    cls = (Class *)alloc_blocks(1, sizeof(Class));
     if (!cls)
         goto nospace;
     population->classes[kk] = cls;
@@ -94,7 +94,7 @@ gotit:
     cls->id = kk;
 
     /*	Make vector of ptrs to CVinsts   */
-    cvars = cls->basics = (CVinst **)gtsp(1, nv * sizeof(CVinst *));
+    cvars = cls->basics = (CVinst **)alloc_blocks(1, nv * sizeof(CVinst *));
     if (!cvars)
         goto nospace;
 
@@ -102,7 +102,7 @@ gotit:
     for (i = 0; i < nv; i++) {
         pvi = pvars + i;
         avi = vlist + i;
-        cvi = cvars[i] = (CVinst *)gtsp(1, avi->basic_size);
+        cvi = cvars[i] = (CVinst *)alloc_blocks(1, avi->basic_size);
         if (!cvi)
             goto nospace;
         /*	Fill in standard stuff  */
@@ -110,14 +110,14 @@ gotit:
     }
 
     /*	Make EVinst blocks and vector of pointers  */
-    evars = cls->stats = (EVinst **)gtsp(1, nv * sizeof(EVinst *));
+    evars = cls->stats = (EVinst **)alloc_blocks(1, nv * sizeof(EVinst *));
     if (!evars)
         goto nospace;
 
     for (i = 0; i < nv; i++) {
         pvi = pvars + i;
         avi = vlist + i;
-        evi = evars[i] = (EVinst *)gtsp(1, avi->stats_size);
+        evi = evars[i] = (EVinst *)alloc_blocks(1, avi->stats_size);
         if (!evi)
             goto nospace;
         evi->id = pvi->id;
@@ -152,7 +152,7 @@ donebasic:
     /*	If nc = 0, this completes the make.  */
     if (nc == 0)
         goto finish;
-    cls->factor_scores = (short *)gtsp(2, nc * sizeof(short));
+    cls->factor_scores = (short *)alloc_blocks(2, nc * sizeof(short));
     goto expanded;
 
 vacant2:
@@ -181,12 +181,12 @@ void print1class(Class *clp, int full) {
     int i;
     double vrms;
 
-    printf("\nS%s", sers(clp));
+    printf("\nS%s", serial_to_str(clp));
     printf(" %s", typstr[((int)clp->type)]);
     if (clp->dad_id < 0)
         printf("    Root");
     else
-        printf(" Dad%s", sers(population->classes[((int)clp->dad_id)]));
+        printf(" Dad%s", serial_to_str(population->classes[((int)clp->dad_id)]));
     printf(" Age%4d  Sz%6.1f  Use %s", clp->age, clp->weights_sum, usestr[((int)clp->use)]);
     printf("%c", (clp->use == Fac) ? ' ' : '(');
     vrms = sqrt(clp->sum_score_sq / clp->weights_sum);
@@ -306,7 +306,7 @@ void score_all_vars(Class *ccl) {
     cls->boost_count = 0;
     cvvsprd = 0.1 / nv;
     oldicvv = igbit = 0;
-    cvv = (sran() < 0) ? 1.0 : -1.0;
+    cvv = (rand_int() < 0) ? 1.0 : -1.0;
     goto fake;
 
 started:
@@ -365,7 +365,7 @@ fake:
     del = cvv * HScoreScale;
     if (del < 0.0)
         del -= 1.0;
-    icvv = del + fran();
+    icvv = del + rand_float();
     icvv = icvv << 1; /* Round to nearest even times ScoreScale */
     icvv |= igbit;    /* Restore original ignore bit */
     if (!igbit) {
@@ -615,13 +615,13 @@ usechecked:
 
     if ((cls->type == Dad) && (leafcost < cls->dad_cost) && (fix != Random)) {
         flp();
-        printf("Changing type of class%s from Dad to Leaf\n", sers(cls));
+        printf("Changing type of class%s from Dad to Leaf\n", serial_to_str(cls));
         seeall = 4;
         /*	Kill all sons  */
         delete_sons(cls->id); /* which changes type to leaf */
     } else if (npars && (leafcost > cls->dad_cost) && (cls->type == Leaf)) {
         flp();
-        printf("Changing type of class%s from Leaf to Dad\n", sers(cls));
+        printf("Changing type of class%s from Leaf to Dad\n", serial_to_str(cls));
         seeall = 4;
         cls->type = Dad;
         if (dad)

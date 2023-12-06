@@ -12,7 +12,7 @@ void expmults_define(int typindx);
 void expbinary_define(int typindx);
 void vonm_define(int typindx);
 
-void dotypes() {
+void do_types() {
     int i;
 
     /*	Set the number of attribute types  */

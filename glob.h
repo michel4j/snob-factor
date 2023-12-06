@@ -357,65 +357,68 @@ int next_leaf(Population *cpop, int iss);
 /*		end classes.c		*/
 
 /*	In DOALL.c	*/
-int doall(int ncy, int all);
-void findall(int typ);
-int dodads(int ncy);
-int dogood(int ncy, double target);
+int do_all(int ncy, int all);
+void find_all(int typ);
+int do_dads(int ncy);
+int do_good(int ncy, double target);
 void tidy(int hit);
-int uran();
-int sran();
-double fran();
-void docase(int cse, int all, int derivs);
+int rand_uint();
+int rand_int();
+double rand_float();
+void do_case(int cse, int all, int derivs);
 /*		end doall.c		*/
 
 /*	In TUNE.c	*/
-void defaulttune();
+void default_tune();
 /*		end tune.c	*/
 
 /*	In TACTICS.c	*/
 void flatten();
-double insdad(int ser1, int ser2, int *dadid);
-int bestinsdad(int force);
-double deldad(int ser);
-int bestdeldad();
+double insert_dad(int ser1, int ser2, int *dadid);
+int best_insert_dad(int force);
+double splice_dad(int ser);
+int best_remove_dad();
 void rebuild();
 void ranclass(int nn);
-void binhier(int flat);
-double moveclass(int ser1, int ser2);
-int bestmoveclass(int force);
-void trymoves(int ntry);
+void binary_hierarchy(int flat);
+double move_class(int ser1, int ser2);
+int best_move_class(int force);
+void try_moves(int ntry);
 void trial(int param);
 /*		end tactics.c		*/
 
 /*	In BADMOVES.c	*/
-void clearbadm();
-int testbadm(int code, int w1, int w2);
-void setbadm(int code, int s1, int s2);
+void clr_bad_move();
+int chk_bad_move(int code, int w1, int w2);
+void set_bad_move(int code, int s1, int s2);
 /*		end badmoves.c		*/
 
 /*	In BLOCK.c	*/
-void *gtsp(int gr, int size);
-void freesp(int gr);
-int repspace(int pp);
+void *alloc_blocks(int gr, int size);
+void free_blocks(int gr);
+int report_space(int pp);
 /*		end block.c		*/
 
 /*	In DOTYPES.c	*/
-void dotypes();
+void do_types();
 /*		end dotypes.c		*/
 
 /*	In SAMPLES.c	*/
-void printdatum(int i, int n);
-int readvset();
-int readsample(char *fname);
-int sname2id(char *nam, int expect);
-int vname2id(char *nam);
-int qssamp(Sample *samp);
-int id2ind(int id);
-int thinglist(char *tlstname);
+void print_var_datam(int i, int n);
+int read_vset();
+int load_vset(const char *fname);
+int load_sample(const char *fname);
+int find_sample(char *nam, int expect);
+int find_vset(char *nam);
+int sort_sample(Sample *samp);
+int find_sample_index(int id);
+int item_list(char *tlstname);
+void destroy_sample(int sx);
+void destroy_vset(int vx);
 /*		end samples.c		*/
 
 /*	In GLOB.c	*/
-char *sers(Class *cll);
+char *serial_to_str(Class *cll);
 
 /*	--------------  Global variables declared here  ----------------  */
 

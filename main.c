@@ -403,7 +403,7 @@ int readsampid(int kk) {
         printf("%d is not a valid sample index\n", intparam);
         return -1;
     } else {
-        nn = sname2id(sparam, 1);
+        nn = find_sample(sparam, 1);
         if (nn < 0) {
             printf("%s is not a sample name\n", sparam);
         }
@@ -422,7 +422,7 @@ int main() {
     Context oldctx;
 
     rseed = 1234567;
-    defaulttune();
+    default_tune();
 
     /*	A section to sort the keywords into alphabetic order, and set
     actk[] to hold their original order indexes   */
@@ -464,7 +464,7 @@ int main() {
         samples[k] = 0;
     for (k = 0; k < MAX_VSETS; k++)
         vsets[k] = 0;
-    dotypes();
+    do_types();
 
     /*	Set source to commsbuf and initialize  */
     source = &commsbuf;
@@ -481,7 +481,7 @@ int main() {
     /*	Open a log file   */
     yxw = fopen("run.log", "w");
 
-    kk = readvset();
+    kk = read_vset();
     printf("Readvset returns %d\n", kk);
     if (kk < 0)
         exit(2);
@@ -494,13 +494,13 @@ int main() {
         printf("Cannot read sample file name\n");
         goto error;
     }
-    k = readsample(sparam);
+    k = load_sample(sparam);
     printf("Readsample returns %d\n", k);
-    cspace = repspace(1);
+    cspace = report_space(1);
     kk = init_population();
     flp();
     printf("Firstpop returns %d\n", kk);
-    cspace = repspace(1);
+    cspace = report_space(1);
 
     trapcnt = 0;
 #ifdef TRAP
@@ -521,9 +521,9 @@ loop:
     if (k >= 0)
         destroy_population(k);
     flp();
-    kk = repspace(0);
+    kk = report_space(0);
     if (kk != cspace)
-        cspace = repspace(1);
+        cspace = report_space(1);
     if (heard) {
         revert(1);
         heard = 0;
@@ -579,7 +579,7 @@ loop:
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL k = doall(nn, 1);
+        Log "%d", nn EL k = do_all(nn, 1);
         if (k >= 0) {
             flp();
             printf("Doall ends after %d cycles\n", k);
@@ -589,7 +589,7 @@ loop:
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL k = doall(nn, 0);
+        Log "%d", nn EL k = do_all(nn, 0);
         if (k >= 0) {
             flp();
             printf("Doleaves ends after %d cycles\n", k);
@@ -603,13 +603,13 @@ loop:
         }
         if (k < 0)
             goto error;
-        Log "%s", sers(population->classes[k]) EL population->classes[k]->weights_sum = 0.0;
+        Log "%s", serial_to_str(population->classes[k]) EL population->classes[k]->weights_sum = 0.0;
         goto loop;
     case 4: /* killsons */
         k = readserial(kk);
         if (k < 0)
             goto error;
-        Log "%s", sers(population->classes[k]) EL delete_sons(k);
+        Log "%s", serial_to_str(population->classes[k]) EL delete_sons(k);
         population->classes[k]->hold_type = HoldTime;
         goto loop;
     case 5: /* prclass */
@@ -619,7 +619,7 @@ loop:
         i = readanint(kk);
         if (i < 0)
             goto error;
-        Log "%s  %d", sers(population->classes[k]), i EL print_class(k, i);
+        Log "%s  %d", serial_to_str(population->classes[k]), i EL print_class(k, i);
         goto loop;
     case 6: /*	adjust  */
         k = readsparam(kk);
@@ -686,18 +686,18 @@ loop:
         if (k < 0)
             goto error;
         if (population->classes[k]->type != Leaf) {
-            printf("Class %s is not a leaf\n", sers(population->classes[k]));
+            printf("Class %s is not a leaf\n", serial_to_str(population->classes[k]));
             goto loop;
         }
-        Log "%s", sers(population->classes[k]) EL if (split_leaf(k))
-                      printf("Cannot split class%s\n", sers(population->classes[k]));
+        Log "%s", serial_to_str(population->classes[k]) EL if (split_leaf(k))
+                      printf("Cannot split class%s\n", serial_to_str(population->classes[k]));
         goto loop;
     case 9: /* deldad */
         k = readserial(kk);
         if (k < 0)
             goto error;
-        Log "%s", sers(population->classes[k]) EL k = population->classes[k]->serial;
-        drop = deldad(k);
+        Log "%s", serial_to_str(population->classes[k]) EL k = population->classes[k]->serial;
+        drop = splice_dad(k);
         goto dropprint;
 
     case 10: /* help */
@@ -781,7 +781,7 @@ loop:
         if (readsparam(kk) < 0)
             goto error;
         memcpy(&oldctx, &ctx, sizeof(Context));
-        k = readsample(sparam);
+        k = load_sample(sparam);
         memcpy(&ctx, &oldctx, sizeof(Context));
         if (k < 0)
             goto error;
@@ -796,7 +796,7 @@ loop:
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL dodads(nn);
+        Log "%d", nn EL do_dads(nn);
         goto loop;
 
     case 20: /*  samps  */
@@ -812,11 +812,11 @@ loop:
             goto error;
         k1 = population->classes[k1]->serial;
         k2 = population->classes[k2]->serial;
-        Log "%s %s", sers(population->classes[k1]),
-            sers(population->classes[k2]) EL drop = insdad(k1, k2, &k);
+        Log "%s %s", serial_to_str(population->classes[k1]),
+            serial_to_str(population->classes[k2]) EL drop = insert_dad(k1, k2, &k);
         flp();
         if (k >= 0)
-            printf("New Dad's serial%s\n", sers(population->classes[k]));
+            printf("New Dad's serial%s\n", serial_to_str(population->classes[k]));
     dropprint:
         if (drop < -1000000.0) {
             printf("Cannot be done\n");
@@ -830,7 +830,7 @@ loop:
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL k = dogood(nn, ((double)0.0));
+        Log "%d", nn EL k = do_good(nn, ((double)0.0));
         if (k >= 0) {
             flp();
             printf("Dogood ends after %d cycles\n", k);
@@ -838,8 +838,8 @@ loop:
         goto loop;
 
     case 23: /*  bestinsdad  */
-        clearbadm();
-        Log " " EL k = bestinsdad(0);
+        clr_bad_move();
+        Log " " EL k = best_insert_dad(0);
         if (k < 0)
             printf("No good dad insertion found\n");
         else
@@ -847,8 +847,8 @@ loop:
         goto loop;
 
     case 24: /*  bestdeldad  */
-        clearbadm();
-        Log " " EL k = bestdeldad();
+        clr_bad_move();
+        Log " " EL k = best_remove_dad();
         if (k < 0)
             printf("No good dad deletion found\n");
         else
@@ -908,7 +908,7 @@ loop:
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL binhier(nn);
+        Log "%d", nn EL binary_hierarchy(nn);
         goto loop;
 
     case 31: /* moveclass */
@@ -920,14 +920,14 @@ loop:
             goto error;
         k1 = population->classes[k1]->serial;
         k2 = population->classes[k2]->serial;
-        Log "%s %s", sers(population->classes[k1]),
-            sers(population->classes[k2]) EL drop = moveclass(k1, k2);
+        Log "%s %s", serial_to_str(population->classes[k1]),
+            serial_to_str(population->classes[k2]) EL drop = move_class(k1, k2);
         printf("Move changes cost by %12.1f\n", -drop);
         goto loop;
 
     case 32: /*  bestmoveclass  */
-        clearbadm();
-        Log " " EL bestmoveclass(0);
+        clr_bad_move();
+        Log " " EL best_move_class(0);
         goto loop;
 
     case 33: /*  pops  */
@@ -945,21 +945,21 @@ loop:
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL trymoves(nn);
+        Log "%d", nn EL try_moves(nn);
         goto loop;
 
     case 36: /* item */
         nn = readanint(kk);
         if (nn < 0)
             goto error;
-        Log "%d", nn EL kk = id2ind(nn);
+        Log "%d", nn EL kk = find_sample_index(nn);
         printf("Thing%8d  at index%8d\n", nn, kk);
         goto loop;
 
     case 37: /* trep */
         if (readsparam(kk) < 0)
             goto error;
-        thinglist(sparam);
+        item_list(sparam);
         goto loop;
 
     case 38: /* select */

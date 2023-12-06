@@ -17,7 +17,7 @@ files. The declarations herein then become converted to " declarations.
 /*	To assist in printing class serials  */
 char decsers[8];
 
-char *sers(Class *cll) {
+char *serial_to_str(Class *cll) {
     int i, j, k;
     for (i = 0; i < 6; i++) decsers[i] = ' ';
     decsers[6] = 0;

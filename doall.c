@@ -6,14 +6,14 @@
 static double rcons = (1.0 / (2048.0 * 1024.0 * 1024.0));
 #define M32 0xFFFFFFFF
 #define B32 0x80000000
-int sran() {
+int rand_int() {
     int js;
     rseed = 69069 * rseed + 103322787;
     js = rseed & M32;
     return (js);
 }
 
-int uran() {
+int rand_uint() {
     int js;
     rseed = 69069 * rseed + 103322787;
     js = rseed & M32;
@@ -22,7 +22,7 @@ int uran() {
     return (js & M32);
 }
 
-double fran() {
+double rand_float() {
     int js;
     rseed = 69069 * rseed + 103322787;
     js = rseed & M32;
@@ -36,7 +36,7 @@ double fran() {
     (Dad = 1, Leaf = 2, Sub = 4), so if typ = 7, will find all classes.*/
 /*	Sets the classes in 'sons[]'  */
 /*	Puts count of classes found in numson */
-void findall(int class_type) {
+void find_all(int class_type) {
     int i, j;
     Class *cls;
 
@@ -290,14 +290,14 @@ int find_and_estimate(int *all, int niter, int ncycles) {
     if (niter >= (ncycles - 1)) {
         *all = (Dad + Leaf + Sub);
     }
-    findall(*all);
+    find_all(*all);
 
     for (int k = 0; k < numson; k++) {
         clear_costs(sons[k]);
     }
 
     for (int j = 0; j < samp->num_cases; j++) {
-        docase(j, *all, 1);
+        do_case(j, *all, 1);
         // docase ignores classes with ignore bit in cls->vv[] for the
         // case unless seeall is on.
     }
@@ -401,7 +401,7 @@ int count_score_changes() {
     }
     return scorechanges;
 }
-int doall(int ncycles, int all) {
+int do_all(int ncycles, int all) {
     int niter, nfail, ic, ncydone, ncyask;
     double oldcost, leafsum, oldleafsum = 0.0;
     int kicked = 0;
@@ -412,7 +412,7 @@ int doall(int ncycles, int all) {
     oldcost = rootcl->best_cost;
     /*	Get sum of class costs, meaningful only if 'all' = Leaf  */
 
-    findall(Leaf);
+    find_all(Leaf);
     for (ic = 0; ic < numson; ic++) {
         oldleafsum += sons[ic]->best_cost;
     }
@@ -440,13 +440,13 @@ int doall(int ncycles, int all) {
             tidy(1);
             if (niter >= (ncycles - 1))
                 all = (Dad + Leaf + Sub);
-            findall(all);
+            find_all(all);
             for (int k = 0; k < numson; k++) {
                 clear_costs(sons[k]);
             }
 
             for (int j = 0; j < samp->num_cases; j++) {
-                docase(j, all, 1);
+                do_case(j, all, 1);
                 /*	docase ignores classes with ignore bit in cls->vv[] for the case
                     unless seeall is on.  */
             }
@@ -587,7 +587,7 @@ int doall1(int ncycles, int all) {
     oldcost = rootcl->best_cost;
     /*	Get sum of class costs, meaningful only if 'all' = Leaf  */
     oldleafsum = 0.0;
-    findall(Leaf);
+    find_all(Leaf);
     for (k = 0; k < numson; k++) {
         oldleafsum += sons[k]->best_cost;
     }
@@ -647,7 +647,7 @@ int doall1(int ncycles, int all) {
     Then runs ncostvarall on all dads, with param adjustment. The
     result is to recost and readjust the tree hierarchy.
     */
-int dodads(int ncy) {
+int do_dads(int ncy) {
     Class *dad;
     double oldcost;
     int nn, nfail;
@@ -656,7 +656,7 @@ int dodads(int ncy) {
         ncy = 1;
 
     /*	Capture no-prior params for subless leaves  */
-    findall(Leaf);
+    find_all(Leaf);
     nfail = control;
     control = Noprior;
     for (nn = 0; nn < numson; nn++) {
@@ -729,17 +729,17 @@ int dodads(int ncy) {
 /*	Uses this table of old costs to see if useful change in last 5 cycles */
 double olddogcosts[6];
 
-int dogood(int ncy, double target) {
+int do_good(int ncy, double target) {
     int j, nn, nfail;
     double oldcost;
 
-    doall(1, 1);
+    do_all(1, 1);
     for (nn = 0; nn < 6; nn++)
         olddogcosts[nn] = rootcl->best_cost + 10000.0;
     nfail = 0;
     for (nn = 0; nn < ncy; nn++) {
         oldcost = rootcl->best_cost;
-        doall(2, 0);
+        do_all(2, 0);
         if (rootcl->best_cost < (oldcost - MinGain))
             nfail = 0;
         else
@@ -788,7 +788,7 @@ typedef struct PSauxst {
     double xn;
 } PSaux;
 
-void docase(int cse, int all, int derivs) {
+void do_case(int cse, int all, int derivs) {
     double mincost, sum, rootcost, low, diff, w1, w2;
     Class *sub1, *sub2;
     PSaux *psaux;
@@ -847,7 +847,7 @@ void docase(int cse, int all, int derivs) {
             }
             clc++;
             if (fix == Random) {
-                w1 = 2.0 * fran();
+                w1 = 2.0 * rand_float();
                 cls->total_case_cost += w1;
                 cls->fac_case_cost += w1;
                 cls->nofac_case_cost += w1;
@@ -970,7 +970,7 @@ void docase(int cse, int all, int derivs) {
             /*	Assign randomly if sub age 0, or to-best if sub age < MinAge */
             if (sub1->age < MinAge) {
                 if (sub1->age == 0) {
-                    w1 = (sran() < 0) ? 1.0 : 0.0;
+                    w1 = (rand_int() < 0) ? 1.0 : 0.0;
                 } else {
                     w1 = (diff < 0) ? 1.0 : 0.0;
                 }

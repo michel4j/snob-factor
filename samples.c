@@ -2,11 +2,11 @@
 #define SAMPLES 1
 #include "glob.h"
 
-int qssamp();
+int sort_sample();
 
 /*	----------------------  printdatum  -------------------------  */
 /*	To print datum for variable i, case n, in sample     */
-void printdatum(int i, int n) {
+void print_var_datam(int i, int n) {
     Sample *samp;
     VSetVar *avi;
     SampleVar *svi;
@@ -31,7 +31,7 @@ void printdatum(int i, int n) {
 /*	------------------------ readvset ------------------------------ */
 /*	To read in a vset from a file. Returns index of vset  */
 /*	Returns negative if fail*/
-int readvset() {
+int read_vset() {
 
     int i, itype, indx;
     int kread;
@@ -86,7 +86,7 @@ gotit:
     vst->num_active = vst->length;
 
     /*	Make a vec of nv VSetVar blocks  */
-    vlist = (VSetVar *)gtsp(3, nv * sizeof(VSetVar));
+    vlist = (VSetVar *)alloc_blocks(3, nv * sizeof(VSetVar));
     if (!vlist) {
         printf("Cannot allocate memory for variables blocks\n");
         i = -3;
@@ -134,7 +134,7 @@ gotit:
         avi->type = itype;
 
         /*	Make the vaux block  */
-        vaux = (char *)gtsp(3, vtp->attr_aux_size);
+        vaux = (char *)alloc_blocks(3, vtp->attr_aux_size);
         if (!vaux) {
             printf("Cant make auxilliary var block\n");
             i = -6;
@@ -162,7 +162,7 @@ error:
 /*	---------------------  readsample -------------------------  */
 /*	To open a sample file and read in all about the sample.
     Returns index of new sample in samples array   */
-int readsample(char *fname) {
+int load_sample(const char *fname) {
 
     int i, n;
     int kread;
@@ -190,7 +190,7 @@ int readsample(char *fname) {
         goto error;
     }
     /*	See if sample already loaded  */
-    if (sname2id(sampname, 0) >= 0) {
+    if (find_sample(sampname, 0) >= 0) {
         printf("Sample %s already present\n", sampname);
         i = -8;
         goto error;
@@ -204,7 +204,7 @@ int readsample(char *fname) {
         goto error;
     }
     /*	Check vset known  */
-    kread = vname2id(vstnam);
+    kread = find_vset(vstnam);
     if (kread < 0) {
         printf("Variableset %s unknown\n", vstnam);
         i = -8;
@@ -235,7 +235,7 @@ gotit:
     vlist = vst->variables;
 
     /*	Make a vec of nv SampleVar blocks  */
-    svars = (SampleVar *)gtsp(0, nv * sizeof(SampleVar));
+    svars = (SampleVar *)alloc_blocks(0, nv * sizeof(SampleVar));
     if (!svars) {
         printf("Cannot allocate memory for variables blocks\n");
         i = -3;
@@ -258,7 +258,7 @@ gotit:
         vtp = avi->vtype;
 
         /*	Make the saux block  */
-        saux = (char *)gtsp(0, vtp->smpl_aux_size);
+        saux = (char *)alloc_blocks(0, vtp->smpl_aux_size);
         if (!saux) {
             printf("Cant make auxilliary var block\n");
             i = -6;
@@ -289,7 +289,7 @@ gotit:
     samp->num_cases = nc;
     samp->num_active = 0;
     /*	Make a vector of nc records each of size reclen  */
-    recs = samp->records = loc = (char *)gtsp(0, nc * reclen);
+    recs = samp->records = loc = (char *)alloc_blocks(0, nc * reclen);
     if (!loc) {
         printf("No space for data\n");
         i = -8;
@@ -340,7 +340,7 @@ gotit:
     printf("Number of active cases = %d\n", samp->num_active);
     close_buffer();
     ctx.buffer = source;
-    if (qssamp(samp)) {
+    if (sort_sample(samp)) {
         printf("Sort failure on sample\n");
         return (-1);
     }
@@ -358,7 +358,7 @@ error:
 /*	-----------------------  sname2id  ------------------------  */
 /*	To find sample id given its name. Returns -1 if unknown  */
 /*	'expect' shows if sample expected to be present  */
-int sname2id(char *nam, int expect)
+int find_sample(char *nam, int expect)
 {
     int i;
 
@@ -380,7 +380,7 @@ searched:
 
 /*	-----------------------  vname2id  ------------------------  */
 /*	To find vset id given its name. Returns -1 if unknown  */
-int vname2id(char *nam)
+int find_vset(char *nam)
 {
     int i, ii;
 
@@ -448,7 +448,7 @@ again:
 
 recurse:
     /*	Pick a random central value  */
-    nt = nn * fran();
+    nt = nn * rand_float();
     if (nt == nn)
         nt = nn / 2;
     cen = bot + nt * len;
@@ -502,7 +502,7 @@ doboth:
     return;
 }
 
-int qssamp(Sample *samp)
+int sort_sample(Sample *samp)
 {
     int nc, len;
 
@@ -521,7 +521,7 @@ int qssamp(Sample *samp)
 
 /*	--------------------  id2ind  ------------------------------  */
 /*	Given a item ident, returns index in sample, or -1 if not found  */
-int id2ind(int id)
+int find_sample_index(int id)
 {
     int iu, il, ic, cid, len;
     char *recs;
@@ -554,8 +554,7 @@ chopped:
 /*	------------------------  thinglist  -------------------   */
 /*	Records best class and score for all things in a sample.
  */
-int thinglist(tlstname)
-char *tlstname;
+int item_list(char *tlstname)
 {
     FILE *tlst;
     int nn, dadser, i, bc, tid, bl;
@@ -593,10 +592,10 @@ nextcl1:
         goto treeloop;
     fprintf(tlst, "0 0\n");
 
-    findall(Dad + Leaf);
+    find_all(Dad + Leaf);
 
     for (nn = 0; nn < samp->num_cases; nn++) {
-        docase(nn, Leaf + Dad, 0);
+        do_case(nn, Leaf + Dad, 0);
         bl = bc = -1;
         bw = 0.0;
         bs = samp->num_cases + 1;

@@ -14,7 +14,7 @@ static int allocated = 0; /*  Total block space allocated  */
         size + SpUnit, where SpUnit must be the smallest power of 2
         required for item alignment, or some larger power of 2.
         */
-void *gtsp(int gr, int size) {
+void *alloc_blocks(int gr, int size) {
     Block *blk;
 
     blk = (Block *)malloc(size + SpUnit);
@@ -49,7 +49,7 @@ void *gtsp(int gr, int size) {
 /*	----------------------  freesp (gr)----------------- */
 /*	To free all blocks on chain 'gr' (0=sample, 1=popln,
                         2 = popln:sample,  3 = variable-set)	*/
-void freesp(int gr) {
+void free_blocks(int gr) {
     Block *blk, *nblk;
     switch (gr) {
     case 0:
@@ -81,9 +81,9 @@ void freesp(int gr) {
     return;
 }
 
-/*	------------------ repspace ---------------------------  */
+/*	------------------ report_space ---------------------------  */
 /*	To report allocated space  */
-int repspace(pp)
+int report_space(pp)
 int pp;
 {
     if (pp)
