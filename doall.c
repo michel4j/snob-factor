@@ -397,7 +397,7 @@ int count_score_changes() {
     return scorechanges;
 }
 
-int do_all(int ncycles, int all) {
+int do_all1(int ncycles, int all) {
     int niter, nfail, k, ncydone, ncyask;
     double oldcost, oldleafsum = 0;
     int repeat, num_son;
@@ -465,6 +465,182 @@ int do_all(int ncycles, int all) {
         score changes.  */
     ScoreChanges = count_score_changes();
     return (niter);
+}
+
+int do_all(int ncycles, int all) {
+    int niter, nfail, ic, ncydone, ncyask;
+    double oldcost, leafsum, oldleafsum = 0.0;
+    int kicked = 0, num_son;
+    Class *root, *dad, *cls;
+
+    root = CurCtx.popln->classes[CurCtx.popln->root];
+    nfail = niter = ncydone = 0;
+    ncyask = ncycles;
+    all = (all) ? (Dad + Leaf + Sub) : Leaf;
+    oldcost = root->best_cost;
+    /*	Get sum of class costs, meaningful only if 'all' = Leaf  */
+
+    num_son = find_all(Leaf);
+    for (ic = 0; ic < num_son; ic++) {
+        oldleafsum += Sons[ic]->best_cost;
+    }
+
+    while (niter < ncycles) {
+        if ((niter % NewSubsTime) == 0) {
+            NewSubs = 1;
+            if (SeeAll < 2)
+                SeeAll = 2;
+        } else
+            NewSubs = 0;
+        if ((ncycles - niter) <= 2)
+            SeeAll = ncycles - niter;
+        if (ncycles < 2)
+            SeeAll = 2;
+        if (NoSubs)
+            NewSubs = 0;
+        if ((niter > NewSubs) && (SeeAll == 1))
+            track_best(0);
+
+        int repeat = 0;
+        do {
+            if (Fix == Random)
+                SeeAll = 3;
+            tidy(1);
+            if (niter >= (ncycles - 1))
+                all = (Dad + Leaf + Sub);
+            num_son = find_all(all);
+            for (int k = 0; k < num_son; k++) {
+                clear_costs(Sons[k]);
+            }
+
+            for (int j = 0; j < CurCtx.sample->num_cases; j++) {
+                do_case(j, all, 1, num_son);
+                /*	do_case ignores classes with ignore bit in cls->vv[] for the case
+                    unless SeeAll is on.  */
+            }
+
+            // All classes in sons[] now have stats assigned to them.
+            // If all=Leaf, the classes are all leaves, so we just re-estimate
+            // their parameters and get their pcosts for fac and plain uses,
+            // using 'adjust'. But first, check all newcnt-s for vanishing
+            // classes.
+            if (Control & (AdjPr + AdjTr)) {
+                for (int k = 0; k < num_son; k++) {
+                    if (Sons[k]->newcnt < MinSize) {
+                        Sons[k]->weights_sum = 0.0;
+                        Sons[k]->type = Vacant;
+                        SeeAll = 2;
+                        NewSubs = 0;
+                        repeat = 1;
+                        break;
+                    }
+                }
+            }
+        } while (repeat);
+
+        if (!(all == (Dad + Leaf + Sub))) {
+            leafsum = 0.0;
+            for (ic = 0; ic < num_son; ic++) {
+                adjust_class(Sons[ic], 0);
+                /*	The second para tells adjust not to do as-dad params  */
+                leafsum += Sons[ic]->best_cost;
+            }
+            if (SeeAll == 0) {
+                rep('.');
+            } else {
+                if (leafsum < (oldleafsum - MinGain)) {
+                    nfail = 0;
+                    oldleafsum = leafsum;
+                    rep('L');
+                } else {
+                    nfail++;
+                    rep('l');
+                }
+            }
+        } else {
+
+            /* all = 7, so we have dads, leaves and subs to do.
+               We do from bottom up, collecting as-dad pcosts.
+            */
+            cls = root;
+
+            int alladjusted = 0;
+            do {
+                cls->dad_par_cost = 0.0;
+                if (cls->num_sons >= 2) {
+                    dad = cls;
+                    cls = CurCtx.popln->classes[cls->son_id];
+                    continue;
+                }
+
+                while (!alladjusted) {
+                    adjust_class(cls, 1);
+                    if (cls->dad_id < 0) {
+                        alladjusted = 1;
+                        break;
+                    }
+                    dad = CurCtx.popln->classes[cls->dad_id];
+                    dad->dad_par_cost += cls->best_par_cost;
+                    if (cls->sib_id >= 0) {
+                        cls = CurCtx.popln->classes[cls->sib_id];
+                        break;
+                    } else {
+                        cls = dad; /*	dad is now complete   */
+                    }
+                }
+            } while (!alladjusted);
+
+            /*	Test for an improvement  */
+            if (SeeAll == 0) {
+                rep('.');
+            } else {
+                if (root->best_cost < (oldcost - MinGain)) {
+                    nfail = 0;
+                    oldcost = root->best_cost;
+                    rep('A');
+                } else {
+                    nfail++;
+                    rep('a');
+                }
+            }
+        }
+
+        if (nfail > GiveUp) {
+            if (all != Leaf)
+                break;
+            /*	But if we were doing just leaves, wind up with a couple of
+                'do_all' cycles  */
+            all = Dad + Leaf + Sub;
+            ncycles = 2;
+            niter = nfail = 0;
+            continue;
+        }
+        if ((!UseLib) && (!UseStdIn) && hark(commsbuf.inl)) {
+            kicked = 1;
+            break;
+        }
+
+        if (SeeAll > 0)
+            SeeAll--;
+        ncydone++;
+        niter++;
+    }
+    if (ncydone >= ncyask)
+        ncydone = -1;
+
+    if (kicked) {
+        log_msg(2, "\nDOALL: Interrupted after %4d steps", ncydone);
+    }
+
+    /*	Scan leaf classes whose use is 'Fac' to accumulate significant
+        score changes.  */
+    ScoreChanges = 0;
+    for (int k = 0; k <= CurCtx.popln->hi_class; k++) {
+        cls = CurCtx.popln->classes[k];
+        if (cls && (cls->type == Leaf) && (cls->use == Fac))
+            ScoreChanges += cls->score_change_count;
+    }
+    return (ncydone);
 }
 
 /*    ----------------------  do_dads  -----------------------------  */
