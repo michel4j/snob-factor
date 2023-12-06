@@ -31,7 +31,21 @@ void print_var_datam(int i, int n) {
 /*	------------------------ readvset ------------------------------ */
 /*	To read in a vset from a file. Returns index of vset  */
 /*	Returns negative if fail*/
+
 int read_vset() {
+    char filename[80];
+    int kread;
+    printf("Enter variable-set file name:\n");
+    kread = read_str(filename, 1);
+    if (kread < 0) {
+        log_msg(2, "Error in name of variable-set file");
+        return (-2);
+    } else {
+        return load_vset(filename);
+    }
+}
+
+int load_vset(const char *filename) {
 
     int i, itype, indx;
     int kread;
@@ -56,8 +70,7 @@ gotit:
     CurCtx.vset = CurVSet;
     CurVSet->variables = 0;
     CurVSet->blocks = 0;
-    printf("Enter variable-set file name:\n");
-    kread = read_str(CurVSet->filename, 1);
+    strcpy(CurVSet->filename, filename);
     strcpy(buf->cname, CurVSet->filename);
     CurCtx.buffer = buf;
     if (open_buffser()) {
