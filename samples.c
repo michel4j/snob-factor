@@ -235,16 +235,16 @@ int load_sample(const char *fname) {
     goto nospace;
 
 gotit:
-    CurSample = Samples[i] = (Sample *)malloc(sizeof(Sample));
-    if (!CurSample)
+    CurCtx.sample = Samples[i] = (Sample *)malloc(sizeof(Sample));
+    if (!CurCtx.sample)
         goto nospace;
-    CurCtx.sample = CurSample;
-    CurSample->blocks = 0;
-    CurSample->id = i;
-    strcpy(CurSample->filename, buf->cname);
-    strcpy(CurSample->name, sampname);
+
+    CurCtx.sample->blocks = 0;
+    CurCtx.sample->id = i;
+    strcpy(CurCtx.sample->filename, buf->cname);
+    strcpy(CurCtx.sample->name, sampname);
     /*	Set variable-set name in sample  */
-    strcpy(CurSample->vset_name, CurVSet->name);
+    strcpy(CurCtx.sample->vset_name, CurVSet->name);
     /*	Num of variables   */
     NumVars = CurVSet->length;
     VSetVarList = CurVSet->variables;
@@ -256,7 +256,7 @@ gotit:
         i = -3;
         goto error;
     }
-    CurSample->variables = SmplVarList;
+    CurCtx.sample->variables = SmplVarList;
 
     /*	Read in the info for each variable into svars   */
     for (i = 0; i < NumVars; i++) {
@@ -301,16 +301,16 @@ gotit:
         i = -11;
         goto error;
     }
-    CurSample->num_cases = NumCases;
-    CurSample->num_active = 0;
+    CurCtx.sample->num_cases = NumCases;
+    CurCtx.sample->num_active = 0;
     /*	Make a vector of nc records each of size reclen  */
-    Records = CurSample->records = CurField = (char *)alloc_blocks(0, NumCases * RecLen);
+    Records = CurCtx.sample->records = CurField = (char *)alloc_blocks(0, NumCases * RecLen);
     if (!CurField) {
         printf("No space for data\n");
         i = -8;
         goto error;
     }
-    CurSample->record_length = RecLen;
+    CurCtx.sample->record_length = RecLen;
 
     /*	Read in the data cases, each preceded by an active flag and ident   */
     for (n = 0; n < NumCases; n++) {
@@ -327,7 +327,7 @@ gotit:
             *CurField = 0;
         } else {
             *CurField = 1;
-            CurSample->num_active++;
+            CurCtx.sample->num_active++;
         }
         CurField++;
         memcpy(CurField, &caseid, sizeof(int));
@@ -352,14 +352,14 @@ gotit:
             CurField += (CurVType->data_size + 1);
         }
     }
-    printf("Number of active cases = %d\n", CurSample->num_active);
+    printf("Number of active cases = %d\n", CurCtx.sample->num_active);
     close_buffer();
     CurCtx.buffer = CurSource;
-    if (sort_sample(CurSample)) {
+    if (sort_sample(CurCtx.sample)) {
         printf("Sort failure on sample\n");
         return (-1);
     }
-    return (CurSample->id);
+    return (CurCtx.sample->id);
 
 nospace:
     printf("No space for another sample\n");
@@ -541,13 +541,13 @@ int find_sample_index(int id)
     int iu, il, ic, cid, len;
     char *recs;
 
-    if ((!CurSample) || (CurSample->num_cases == 0)) {
+    if ((!CurCtx.sample) || (CurCtx.sample->num_cases == 0)) {
         printf("No defined sample\n");
         return (-1);
     }
-    recs = CurSample->records + 1;
-    len = CurSample->record_length;
-    iu = CurSample->num_cases;
+    recs = CurCtx.sample->records + 1;
+    len = CurCtx.sample->record_length;
+    iu = CurCtx.sample->num_cases;
     il = 0;
 chop:
     ic = (iu + il) >> 1;
@@ -583,7 +583,7 @@ int item_list(char *tlstname)
     if (!CurCtx.sample)
         return (-2);
     set_population();
-    if (!CurSample->num_cases)
+    if (!CurCtx.sample->num_cases)
         return (-3);
 
     /*	Open a file  */
@@ -610,11 +610,11 @@ nextcl1:
 
     num_son = find_all(Dad + Leaf);
 
-    for (nn = 0; nn < CurSample->num_cases; nn++) {
+    for (nn = 0; nn < CurCtx.sample->num_cases; nn++) {
         do_case(nn, Leaf + Dad, 0, num_son);
         bl = bc = -1;
         bw = 0.0;
-        bs = CurSample->num_cases + 1;
+        bs = CurCtx.sample->num_cases + 1;
         for (i = 0; i < num_son; i++) {
             cls = Sons[i];
             if ((cls->case_weight > 0.5) && (cls->weights_sum < bs)) {

@@ -50,7 +50,7 @@ int make_class() {
         i = find_sample(popln->sample_name, 1);
         if (i < 0)
             return (-2);
-        CurCtx.sample = CurSample = Samples[i];
+        CurCtx.sample = Samples[i];
     }
 
     NumVars = CurVSet->length;

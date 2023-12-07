@@ -981,7 +981,7 @@ loop:
         if (CurCtx.popln)
             destroy_population(CurCtx.popln->id);
         popln = CurCtx.popln = 0;
-        CurSample = CurCtx.sample = Samples[k];
+        CurCtx.sample = Samples[k];
         i = init_population();
         if (i < 0) {
             printf("Cannot make first population for sample\n");

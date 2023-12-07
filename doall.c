@@ -296,7 +296,7 @@ void find_and_estimate(int *all, int niter, int ncycles) {
             clear_costs(Sons[k]);
         }
 
-        for (int j = 0; j < CurSample->num_cases; j++) {
+        for (int j = 0; j < CurCtx.sample->num_cases; j++) {
             do_case(j, *all, 1, num_son);
             /*	docase ignores classes with ignore bit in cls->vv[] for the case unless SeeAll is on.  */
         }

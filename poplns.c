@@ -6,15 +6,14 @@
 /*	-----------------------  setpop  --------------------------    */
 void set_population() {
     Population *popln = CurCtx.popln;
-    CurSample = CurCtx.sample;
     CurVSet = CurCtx.vset;
     NumVars = CurVSet->length;
     VSetVarList = CurVSet->variables;
-    if (CurSample) {
-        NumCases = CurSample->num_cases;
-        SmplVarList = CurSample->variables;
-        RecLen = CurSample->record_length;
-        Records = CurSample->records;
+    if (CurCtx.sample) {
+        NumCases = CurCtx.sample->num_cases;
+        SmplVarList = CurCtx.sample->variables;
+        RecLen = CurCtx.sample->record_length;
+        Records = CurCtx.sample->records;
     } else {
         NumCases = 0;
         SmplVarList = 0;
@@ -67,13 +66,12 @@ int make_population(int fill) {
 
     int indx, i;
 
-    CurSample = CurCtx.sample;
     CurVSet = CurCtx.vset;
-    if (CurSample)
-        NumCases = CurSample->num_cases;
+    if (CurCtx.sample)
+        NumCases = CurCtx.sample->num_cases;
     else
         NumCases = 0;
-    if ((!CurSample) && fill) {
+    if ((!CurCtx.sample) && fill) {
         printf("Makepop cannot fill because no sample defined\n");
         return (-1);
     }
@@ -125,7 +123,7 @@ gotit:
         popln->classes[i] = 0;
 
     if (fill) {
-        strcpy(popln->sample_name, CurSample->name);
+        strcpy(popln->sample_name, CurCtx.sample->name);
         popln->sample_size = NumCases;
     }
     CurRoot = popln->root = make_class();
@@ -157,10 +155,10 @@ int init_population() {
     int ipop;
 
     clr_bad_move();
-    CurSample = CurCtx.sample;
+    CurCtx.sample = CurCtx.sample;
     CurVSet = CurCtx.vset;
     ipop = -1;
-    if (!CurSample) {
+    if (!CurCtx.sample) {
         printf("No sample defined for firstpop\n");
         goto finish;
     }
@@ -339,9 +337,8 @@ int copy_population(int p1, int fill, char *newname) {
         goto sampfound;
     }
     /*	Use current sample if compatible  */
-    CurSample = CurCtx.sample;
-    if (CurSample && (!strcmp(CurSample->vset_name, CurVSet->name))) {
-        sindx = CurSample->id;
+    if (CurCtx.sample && (!strcmp(CurCtx.sample->vset_name, CurVSet->name))) {
+        sindx = CurCtx.sample->id;
         goto sampfound;
     }
     /*	Fill is indicated but no sample is defined.  */
@@ -351,10 +348,10 @@ int copy_population(int p1, int fill, char *newname) {
 
 sampfound:
     if (sindx >= 0) {
-        CurSample = CurCtx.sample = Samples[sindx];
-        NumCases = CurSample->num_cases;
+        CurCtx.sample = Samples[sindx];
+        NumCases = CurCtx.sample->num_cases;
     } else {
-        CurSample = CurCtx.sample = 0;
+        CurCtx.sample = 0;
         fill = NumCases = 0;
     }
 
@@ -378,9 +375,9 @@ sampfound:
 
     popln = CurCtx.popln = Populations[indx];
     set_population();
-    if (CurSample) {
-        strcpy(popln->sample_name, CurSample->name);
-        popln->sample_size = CurSample->num_cases;
+    if (CurCtx.sample) {
+        strcpy(popln->sample_name, CurCtx.sample->name);
+        popln->sample_size = CurCtx.sample->num_cases;
     } else {
         strcpy(popln->sample_name, "??");
         popln->sample_size = 0;
@@ -394,7 +391,7 @@ sampfound:
     /*	In case the pop is unattached (fpop->nc = 0), prepare a nominal
     count to insert in leaf classes  */
     if (fill & (!fpop->sample_size)) {
-        nomcnt = CurSample->num_active;
+        nomcnt = CurCtx.sample->num_active;
         nomcnt = nomcnt / fpop->num_leaves;
     }
 
@@ -449,7 +446,7 @@ fakeit: /*  initialize scorevectors  */
     }
     cls->weights_sum = nomcnt;
     if (cls->dad_id < 0) /* Root class */
-        cls->weights_sum = CurSample->num_active;
+        cls->weights_sum = CurCtx.sample->num_active;
 
 classdone:
     if (fill)
@@ -532,7 +529,7 @@ void print_tree() {
         return;
     }
     set_population();
-    printf("Popln%3d on sample%3d,%4d classes,%6d things", popln->id + 1, CurSample->id + 1, popln->num_classes, CurSample->num_cases);
+    printf("Popln%3d on sample%3d,%4d classes,%6d things", popln->id + 1, CurCtx.sample->id + 1, popln->num_classes, CurCtx.sample->num_cases);
     printf("  Cost %10.2f\n", popln->classes[popln->root]->best_cost);
     printf("\n  Assign mode ");
     if (Fix == Partial)
@@ -571,7 +568,7 @@ int get_best_pop() {
         set_population();
 
         strcpy(BSTname, "BST_");
-        strcpy(BSTname + 4, CurSample->name);
+        strcpy(BSTname + 4, CurCtx.sample->name);
         i = find_population(BSTname);
         if (i < 0) {
             /*	No such popln exists.  Make one using copypop  */
@@ -579,9 +576,9 @@ int get_best_pop() {
         }
         if (i < 0) {
             /*	Set bestcost in samp from current cost  */
-            CurSample->best_cost = CurCtx.popln->classes[CurRoot]->best_cost;
+            CurCtx.sample->best_cost = CurCtx.popln->classes[CurRoot]->best_cost;
             /*	Set goodtime as current pop age  */
-            CurSample->best_time = CurCtx.popln->classes[CurRoot]->age;
+            CurCtx.sample->best_time = CurCtx.popln->classes[CurRoot]->age;
         }
     }
     return (i);
@@ -626,8 +623,8 @@ void track_best(int verify) {
     /*	Seems better, so kill old 'bestmodel' and make a new one */
     set_population();
     kk = copy_population(popln->id, 0, BSTname);
-    CurSample->best_cost = popln->classes[CurRoot]->best_cost;
-    CurSample->best_time = popln->classes[CurRoot]->age;
+    CurCtx.sample->best_cost = popln->classes[CurRoot]->best_cost;
+    CurCtx.sample->best_time = popln->classes[CurRoot]->age;
     return;
 }
 
@@ -852,17 +849,17 @@ int load_population(char *nam) {
         if (j < 0) {
             printf("Sample %s unknown.\n", name);
             NumCases = 0;
-            CurSample = CurCtx.sample = 0;
+            CurCtx.sample = 0;
         } else {
-            CurSample = CurCtx.sample = Samples[j];
-            if (CurSample->num_cases != fnc) {
+            CurCtx.sample = Samples[j];
+            if (CurCtx.sample->num_cases != fnc) {
                 printf("Size conflict Model%9d vs. Sample%9d\n", fnc, NumCases);
                 goto error;
             }
             NumCases = fnc;
         }
     } else { /* file model unattached.  */
-        CurSample = CurCtx.sample = 0;
+        CurCtx.sample = 0;
         NumCases = 0;
     }
 
@@ -998,7 +995,7 @@ int set_work_population(int pp) {
         popln->sample_size = 0;
     }
 
-    CurCtx.sample = CurSample = oldctx.sample;
+    CurCtx.sample = oldctx.sample;
     windx = copy_population(pp, 1, "work");
     if (windx < 0)
         goto error;
@@ -1073,7 +1070,7 @@ void correlpops(int xid) {
         goto finish;
     }
     /*	Should be able to proceed  */
-    fnact = CurSample->num_active;
+    fnact = CurCtx.sample->num_active;
     Control = AdjSc;
     SeeAll = 4;
     NoSubs++;
