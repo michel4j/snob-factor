@@ -217,11 +217,11 @@ int readserial(int prm) {
     if (nn == -1 || nn == -2) return nn;
 
     nn *= 4;
-    if (terminator == 'a') nn += 1;
-    else if (terminator == 'b') nn += 2;
+    if (Terminator == 'a') nn += 1;
+    else if (Terminator == 'b') nn += 2;
 
     // Advance buffer if needed
-    if (terminator == 'a' || terminator == 'b') {
+    if (Terminator == 'a' || Terminator == 'b') {
         CurCtx.buffer->nch++;
     }
 
@@ -466,8 +466,8 @@ int main() {
         VarSets[k] = 0;
     do_types();
 
-    /*	Set source to commsbuf and initialize  */
-    CurSource = &commsbuf;
+    /*	Set source to CommsBuffer and initialize  */
+    CurSource = &CommsBuffer;
     CurCtx.buffer = CurSource;
     CurSource->cfile = 0;
     CurSource->nch = 0;
@@ -769,8 +769,8 @@ loop:
             goto error;
         if (CurSource->cfile)
             close_buffer();
-        strcpy(cfilebuf.cname, sparam);
-        CurSource = &cfilebuf;
+        strcpy(CFileBuffer.cname, sparam);
+        CurSource = &CFileBuffer;
         CurCtx.buffer = CurSource;
         if (open_buffser()) {
             printf("Cant open file %s\n", sparam);

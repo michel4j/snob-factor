@@ -63,8 +63,8 @@ of the other, provided neither is the root  */
 double insert_dad(int ser1, int ser2, int *dadid)
 {
     Class *cls1, *cls2, *ndad, *odad;
-    EVinst *evi, *fevi;
-    CVinst *cvi, *fcvi;
+    ExplnVar *evi, *fevi;
+    ClassVar *cvi, *fcvi;
     int nch, iv, k1, k2;
     double origcost, newcost, drop;
     int oldid, newid, od1, od2;
@@ -122,7 +122,7 @@ configok:
     for (iv = 0; iv < NumVars; iv++) {
         fcvi = odad->basics[iv];
         cvi = ndad->basics[iv];
-        nch = CurAttrList[iv].basic_size;
+        nch = VSetVarList[iv].basic_size;
         memcpy(cvi, fcvi, nch);
     }
 
@@ -130,7 +130,7 @@ configok:
     for (iv = 0; iv < NumVars; iv++) {
         fevi = odad->stats[iv];
         evi = ndad->stats[iv];
-        nch = CurAttrList[iv].stats_size;
+        nch = VSetVarList[iv].stats_size;
         memcpy(evi, fevi, nch);
     }
 

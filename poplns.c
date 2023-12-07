@@ -9,18 +9,18 @@ void set_population() {
     CurSample = CurCtx.sample;
     CurVSet = CurCtx.vset;
     NumVars = CurVSet->length;
-    CurAttrList = CurVSet->variables;
+    VSetVarList = CurVSet->variables;
     if (CurSample) {
         NumCases = CurSample->num_cases;
-        CurVarList = CurSample->variables;
+        SmplVarList = CurSample->variables;
         CurRecLen = CurSample->record_length;
         CurRecords = CurSample->records;
     } else {
         NumCases = 0;
-        CurVarList = 0;
+        SmplVarList = 0;
         CurRecords = 0;
     }
-    CurPopVarList = CurPopln->variables;
+    PopVarList = CurPopln->variables;
     CurRoot = CurPopln->root;
     CurRootClass = CurPopln->classes[CurRoot];
     return;
@@ -107,7 +107,7 @@ gotit:
         goto nospace;
     /*	Copy from variable-set AVinsts to PVinsts  */
     for (i = 0; i < NumVars; i++) {
-        CurAttr = CurAttrList + i;
+        CurAttr = VSetVarList + i;
         CurVType = CurAttr->vtype;
         CurPopVar = pvars + i;
         CurPopVar->id = CurAttr->id;
@@ -182,7 +182,7 @@ finish:
 
 void make_subclasses(int kk){
     Class *clp, *clsa, *clsb;
-    CVinst *cvi, *scvi;
+    ClassVar *cvi, *scvi;
     double cntk;
     int i, kka, kkb, iv, nch;
 
@@ -236,7 +236,7 @@ void make_subclasses(int kk){
     for (iv = 0; iv < NumVars; iv++) {
         cvi = CurClass->basics[iv];
         scvi = clsa->basics[iv];
-        nch = CurAttrList[iv].basic_size;
+        nch = VSetVarList[iv].basic_size;
         memcpy(scvi, cvi, nch);
         scvi = clsb->basics[iv];
         memcpy(scvi, cvi, nch);
@@ -310,8 +310,8 @@ int copy_population(int p1, int fill, char *newname){
     Population *fpop;
     Context oldctx;
     Class *cls, *fcls;
-    CVinst *cvi, *fcvi;
-    EVinst *evi, *fevi;
+    ClassVar *cvi, *fcvi;
+    ExplnVar *evi, *fevi;
     double nomcnt;
     int indx, sindx, kk, jdad, nch, n, i, iv, hiser;
 
@@ -421,7 +421,7 @@ newclass:
     for (iv = 0; iv < NumVars; iv++) {
         fcvi = fcls->basics[iv];
         cvi = cls->basics[iv];
-        nch = CurAttrList[iv].basic_size;
+        nch = VSetVarList[iv].basic_size;
         memcpy(cvi, fcvi, nch);
     }
 
@@ -429,7 +429,7 @@ newclass:
     for (iv = 0; iv < NumVars; iv++) {
         fevi = fcls->stats[iv];
         evi = cls->stats[iv];
-        nch = CurAttrList[iv].stats_size;
+        nch = VSetVarList[iv].stats_size;
         memcpy(evi, fevi, nch);
     }
     if (fill == 0)
@@ -690,8 +690,8 @@ int save_population(int p1, int fill, char *newname){
     char oldname[80], *jp;
     Context oldctx;
     Class *cls;
-    CVinst *cvi;
-    EVinst *evi;
+    ClassVar *cvi;
+    ExplnVar *evi;
     int leng, nch, i, iv, nc, jcl;
 
     memcpy(&oldctx, &CurCtx, sizeof(Context));
@@ -782,7 +782,7 @@ newclass:
     /*	Copy Basics..  */
     for (iv = 0; iv < NumVars; iv++) {
         cvi = cls->basics[iv];
-        nch = CurAttrList[iv].basic_size;
+        nch = VSetVarList[iv].basic_size;
         recordit(fl, cvi, nch);
         leng += nch;
     }
@@ -790,7 +790,7 @@ newclass:
     /*	Copy stats  */
     for (iv = 0; iv < NumVars; iv++) {
         evi = cls->stats[iv];
-        nch = CurAttrList[iv].stats_size;
+        nch = VSetVarList[iv].stats_size;
         recordit(fl, evi, nch);
         leng += nch;
     }
@@ -822,8 +822,8 @@ int load_population(char *nam){
     Context oldctx;
     int i, j, k, indx, fncl, fnc, nch, iv;
     Class *cls;
-    CVinst *cvi;
-    EVinst *evi;
+    ClassVar *cvi;
+    ExplnVar *evi;
     FILE *fl;
 
     indx = -999;
@@ -907,7 +907,7 @@ haveclass:
     }
     for (iv = 0; iv < NumVars; iv++) {
         cvi = cls->basics[iv];
-        nch = CurAttrList[iv].basic_size;
+        nch = VSetVarList[iv].basic_size;
         jp = (char *)cvi;
         for (k = 0; k < nch; k++) {
             *jp = fgetc(fl);
@@ -916,7 +916,7 @@ haveclass:
     }
     for (iv = 0; iv < NumVars; iv++) {
         evi = cls->stats[iv];
-        nch = CurAttrList[iv].stats_size;
+        nch = VSetVarList[iv].stats_size;
         jp = (char *)evi;
         for (k = 0; k < nch; k++) {
             *jp = fgetc(fl);

@@ -16,8 +16,8 @@ name.
 /*	Routines to read an item dont consume the character which terminates
 the item   */
 
-Buffer cfilebuf, commsbuf; /* Buffers for command input */
-int terminator;
+Buffer CFileBuffer, CommsBuffer; /* Buffers for command input */
+int Terminator;
 
 /*	--------------------------- bufopen() --------------------------  */
 /*	Given a Buffer with a name in it, sets up and initializes the named file*/
@@ -125,7 +125,7 @@ nextch:
         buf->inl[i + 1] = 0;
         buf->nch = 0;
         /*	Copy out line of control file  */
-        if (buf == &cfilebuf)
+        if (buf == &CFileBuffer)
             printf("=== %s\n", buf->inl);
         return (0);
     }
@@ -169,7 +169,7 @@ int read_int(int *x, int cnl) {
     int sign, i, v;
 
     buf = CurCtx.buffer;
-    v = sign = terminator = 0;
+    v = sign = Terminator = 0;
 
 skip:
     i = buf->inl[buf->nch++];
@@ -207,7 +207,7 @@ begun:
     if (sign)
         v = -v;
     *x = v;
-    terminator = i;
+    Terminator = i;
     buf->nch--;
     return (0);
 
@@ -410,17 +410,17 @@ void close_buffer() {
 /*	------------------------  revert () ---------------------  */
 /*	To revert to comms-file input  */
 /*	If flag, revert due to an interrupt via hark, so use existing
-commsbuf line. Otherwise, get a new line  */
+CommsBuffer line. Otherwise, get a new line  */
 void revert(int flag) {
     if (CurSource->cfile)
         printf("Command file %s\n terminated at line %d\n", CurSource->cname, CurSource->line);
     close_buffer();
-    CurSource = &commsbuf;
+    CurSource = &CommsBuffer;
     CurCtx.buffer = CurSource;
     if (flag)
         CurSource->nch = 0;
     else
-        new_line(commsbuf.inl);
+        new_line(CommsBuffer.inl);
     return;
 }
 

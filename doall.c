@@ -443,7 +443,7 @@ int do_all(int ncycles, int all) {
             niter = nfail = 0;
             continue;
         }
-        if ((!UseStdIn) && hark(commsbuf.inl)) {
+        if ((!UseStdIn) && hark(CommsBuffer.inl)) {
             kicked = 1;
             break;
         }
@@ -629,13 +629,13 @@ void do_case(int cse, int all, int derivs, int num_son) {
     /*	Unpack data into 'xn' fields of the Saux for each variable. The
     'xn' field is at the beginning of the Saux. Also the "missing" flag. */
     for (i = 0; i < NumVars; i++) {
-        CurField = CurRecord + CurVarList[i].offset;
-        psaux = (PSaux *)CurVarList[i].saux;
+        CurField = CurRecord + SmplVarList[i].offset;
+        psaux = (PSaux *)SmplVarList[i].saux;
         if (*CurField == 1) {
             psaux->missing = 1;
         } else {
             psaux->missing = 0;
-            memcpy(&(psaux->xn), CurField + 1, CurAttrList[i].vtype->data_size);
+            memcpy(&(psaux->xn), CurField + 1, VSetVarList[i].vtype->data_size);
         }
     }
 

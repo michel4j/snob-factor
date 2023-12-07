@@ -48,8 +48,8 @@ ptrs to CVinsts and CVinsts filled in also EVinsts and ptrs.
 
 int make_class() {
     PVinst *pvars;
-    CVinst **cvars, *cvi;
-    EVinst **evars, *evi;
+    ClassVar **cvars, *cvi;
+    ExplnVar **evars, *evi;
     int i, kk;
 
     NumCases = CurCtx.popln->sample_size;
@@ -83,30 +83,30 @@ gotit:
     CurClass->id = kk;
 
     /*	Make vector of ptrs to CVinsts   */
-    cvars = CurClass->basics = (CVinst **)alloc_blocks(1, NumVars * sizeof(CVinst *));
+    cvars = CurClass->basics = (ClassVar **)alloc_blocks(1, NumVars * sizeof(ClassVar *));
     if (!cvars)
         goto nospace;
 
-    /*	Now make the CVinst blocks, which are of varying size   */
+    /*	Now make the ClassVar blocks, which are of varying size   */
     for (i = 0; i < NumVars; i++) {
         CurPopVar = pvars + i;
-        CurAttr = CurAttrList + i;
-        cvi = cvars[i] = (CVinst *)alloc_blocks(1, CurAttr->basic_size);
+        CurAttr = VSetVarList + i;
+        cvi = cvars[i] = (ClassVar *)alloc_blocks(1, CurAttr->basic_size);
         if (!cvi)
             goto nospace;
         /*	Fill in standard stuff  */
         cvi->id = CurAttr->id;
     }
 
-    /*	Make EVinst blocks and vector of pointers  */
-    evars = CurClass->stats = (EVinst **)alloc_blocks(1, NumVars * sizeof(EVinst *));
+    /*	Make ExplnVar blocks and vector of pointers  */
+    evars = CurClass->stats = (ExplnVar **)alloc_blocks(1, NumVars * sizeof(ExplnVar *));
     if (!evars)
         goto nospace;
 
     for (i = 0; i < NumVars; i++) {
         CurPopVar = pvars + i;
-        CurAttr = CurAttrList + i;
-        evi = evars[i] = (EVinst *)alloc_blocks(1, CurAttr->stats_size);
+        CurAttr = VSetVarList + i;
+        evi = evars[i] = (ExplnVar *)alloc_blocks(1, CurAttr->stats_size);
         if (!evi)
             goto nospace;
         evi->id = CurPopVar->id;
@@ -195,7 +195,7 @@ void print1class(Class *clp, int full) {
     if (!full)
         return;
     for (i = 0; i < CurVSet->length; i++) {
-        CurVType = CurAttrList[i].vtype;
+        CurVType = VSetVarList[i].vtype;
         (*CurVType->show)(clp, i);
     }
     return;
@@ -241,7 +241,7 @@ void clear_costs(Class *ccl) {
     if (!SeeAll)
         CurClass->scancnt = 0;
     for (i = 0; i < CurVSet->length; i++) {
-        CurVType = CurAttrList[i].vtype;
+        CurVType = VSetVarList[i].vtype;
         (*CurVType->clear_stats)(i);
     }
     return;
@@ -267,7 +267,7 @@ void set_best_costs(Class *ccl) {
         CurClass->best_case_cost = CurClass->cftcost;
     }
     for (i = 0; i < CurVSet->length; i++) {
-        CurVType = CurAttrList[i].vtype;
+        CurVType = VSetVarList[i].vtype;
         (*CurVType->set_best_pars)(i);
     }
     return;
@@ -325,7 +325,7 @@ started:
     Scores.CaseFacScoreSq = Scores.CaseFacScore * Scores.CaseFacScore;
     Scores.CaseFacScoreD1 = Scores.CaseFacScoreD2 = Scores.EstFacScoreD2 = Scores.CaseFacScoreD3 = 0.0;
     for (i = 0; i < CurVSet->length; i++) {
-        CurAttr = CurAttrList + i;
+        CurAttr = VSetVarList + i;
         if (CurAttr->inactive)
             goto vdone;
         CurVType = CurAttr->vtype;
@@ -388,7 +388,7 @@ void cost_all_vars(Class *ccl) {
     }
     Scores.CaseCost = Scores.CaseNoFacCost = Scores.CaseFacCost = CurClass->mlogab; /* Abundance cost */
     for (int iv = 0; iv < CurVSet->length; iv++) {
-        CurAttr = CurAttrList + iv;
+        CurAttr = VSetVarList + iv;
         if (CurAttr->inactive)
             goto vdone;
         CurVType = CurAttr->vtype;
@@ -444,7 +444,7 @@ void deriv_all_vars(Class *ccl) {
         CurClass->totvv += Scores.CaseFacScore * CurCaseWeight;
     }
     for (int iv = 0; iv < NumVars; iv++) {
-        CurAttr = CurAttrList + iv;
+        CurAttr = VSetVarList + iv;
         if (CurAttr->inactive)
             goto vdone;
         CurVType = CurAttr->vtype;
@@ -510,7 +510,7 @@ void adjust_class(Class *ccl, int dod) {
     of cls's sons, so we don't zero it here. 'ncostvarall' will add to it.  */
     CurClass->nofac_par_cost = CurClass->fac_par_cost = 0.0;
     for (iv = 0; iv < CurVSet->length; iv++) {
-        CurAttr = CurAttrList + iv;
+        CurAttr = VSetVarList + iv;
         if (CurAttr->inactive)
             goto vdone;
         CurVType = CurAttr->vtype;
@@ -558,7 +558,7 @@ void adjust_class(Class *ccl, int dod) {
     small = 0;
     leafcost = 0.0; /* Used to add up evi->cnts */
     for (iv = 0; iv < NumVars; iv++) {
-        if (CurAttrList[iv].inactive)
+        if (VSetVarList[iv].inactive)
             goto vidle;
         small++;
         leafcost += CurClass->stats[iv]->num_values;
@@ -638,17 +638,17 @@ typechecked:
 /*	If not 'valid', don't cost, and fake params  */
 void parent_cost_all_vars(Class *ccl, int valid) {
     Class *son;
-    EVinst *evi;
+    ExplnVar *evi;
     int i, son_id, nson;
     double abcost, rrelab;
 
     set_class(ccl);
     abcost = 0.0;
     for (i = 0; i < CurVSet->length; i++) {
-        CurAttr = CurAttrList + i;
+        CurAttr = VSetVarList + i;
         CurVType = CurAttr->vtype;
         (*CurVType->cost_var_nonleaf)(i, valid);
-        evi = (EVinst *)CurClass->stats[i];
+        evi = (ExplnVar *)CurClass->stats[i];
         if (!CurAttr->inactive) {
             abcost += evi->npcost;
         }

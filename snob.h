@@ -107,8 +107,8 @@ typedef struct VSetVarStruct {
     int id;
     int type;
     int inactive;      /* Inactive attribute flag */
-    int basic_size; /*  Sizeof basic block (CVinst) for this var */
-    int stats_size; /* Sizeof stats block (EVinst) for this var */
+    int basic_size; /*  Sizeof basic block (ClassVar) for this var */
+    int stats_size; /* Sizeof stats block (ExplnVar) for this var */
     VarType *vtype;
     char *vaux;
     char name[80];
@@ -163,19 +163,19 @@ typedef struct SampleStruct {
 
 /*	----------------------   Classes  ---------------------------     */
 
-typedef struct CVinstStruct { /*Structure for basic info on a var in a class*/
+typedef struct ClassVarStruct { /*Structure for basic info on a var in a class*/
     int id;
     int signif;
     int infac; /* shows if affected by factor  */
-} CVinst;
+} ClassVar;
 
-typedef struct EVinstStruct { /* Stuff for var in class in expln */
+typedef struct ExplnVarStruct { /* Stuff for var in class in expln */
     double num_values;               /*  Num of values */
     double btcost, ntcost, stcost, ftcost;
     double bpcost, npcost, spcost, fpcost;
     double sum_scores_sq; /* weighted sum of squared scores */
     int id;
-} EVinst;
+} ExplnVar;
 
 typedef struct ClassStruct {
     double relab;
@@ -234,8 +234,8 @@ typedef struct ClassStruct {
     int id;
     short *factor_scores;       /* Factor scores */
                      /* Scores times 4096 held as signed shorts in +-30000 */
-    CVinst **basics; /* ptr to vec of ptrs to variable basics */
-    EVinst **stats;  /* ptr to vec of ptrs to variable stats blocks*/
+    ClassVar **basics; /* ptr to vec of ptrs to variable basics */
+    ExplnVar **stats;  /* ptr to vec of ptrs to variable stats blocks*/
 } Class;
 
 /*	--------------------------  Population  ----------------------  */
@@ -302,8 +302,8 @@ int hark(char *lline);
 
 /*	In inputs.c  */
 #ifndef INPUTS
-extern int terminator;
-extern Buffer cfilebuf, commsbuf;
+extern int Terminator;
+extern Buffer CFileBuffer, CommsBuffer;
 #endif
 
 int open_buffser();

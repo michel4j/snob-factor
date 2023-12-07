@@ -130,11 +130,11 @@ void expbinary_define(typindx) int typindx;
 /*	----------------------- setvar --------------------------  */
 void set_var(iv) int iv;
 {
-    CurAttr = CurAttrList + iv;
+    CurAttr = VSetVarList + iv;
     CurVType = CurAttr->vtype;
-    CurPopVar = CurPopVarList + iv;
+    CurPopVar = PopVarList + iv;
     paux = (Paux *)CurPopVar->paux;
-    CurVar = CurVarList + iv;
+    CurVar = SmplVarList + iv;
     vaux = (Vaux *)CurAttr->vaux;
     saux = (Saux *)CurVar->saux;
     cvi = (Basic *)CurClass->basics[iv];
@@ -188,9 +188,9 @@ blocks for variable, and place in VSetVar basicsize, statssize.
     */
 void set_sizes(int iv) {
 
-    CurAttr = CurAttrList + iv;
+    CurAttr = VSetVarList + iv;
 
-    /*	Set sizes of CVinst (basic) and EVinst (stats) in VSetVar  */
+    /*	Set sizes of ClassVar (basic) and ExplnVar (stats) in VSetVar  */
     CurAttr->basic_size = sizeof(Basic);
     CurAttr->stats_size = sizeof(Stats);
     return;
