@@ -53,14 +53,14 @@ EXT VarSet *CurVSet;
 EXT Sample *CurSample;
 EXT Population *CurPopln;
 EXT VSetVar *CurAttr;
-EXT PVinst *CurPopVar;
+EXT PopVar *CurPopVar;
 EXT SampleVar *CurVar;
 EXT VarType *CurVType;
 EXT int NumCases; /* Number of cases */
 EXT int NumVars;  /* Number of variables */
 
 EXT VSetVar *VSetVarList;
-EXT PVinst *PopVarList;
+EXT PopVar *PopVarList;
 EXT SampleVar *SmplVarList;
 
 /*	re Classes  */

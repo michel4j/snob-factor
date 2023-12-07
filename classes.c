@@ -33,8 +33,8 @@ void set_class(Class *cls) {
 /*	---------------------  setclass2 --------------------------   */
 void set_class_with_scores(Class *cls) {
     CurClass = cls;
-    CurClass->case_score = Scores.CaseFacInt = CurClass->factor_scores[CurItem];
-    CurCaseWeight = CurClass->case_weight;
+    cls->case_score = Scores.CaseFacInt = cls->factor_scores[CurItem];
+    CurCaseWeight = cls->case_weight;
     CurDad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
 }
 
@@ -47,9 +47,10 @@ ptrs to CVinsts and CVinsts filled in also EVinsts and ptrs.
     Returns index of class, or negative if no good  */
 
 int make_class() {
-    PVinst *pvars;
+    PopVar *pvars;
     ClassVar **cvars, *cvi;
     ExplnVar **evars, *evi;
+    Class *cls;
     int i, kk;
 
     NumCases = CurCtx.popln->sample_size;
@@ -75,15 +76,15 @@ int make_class() {
     goto nospace;
 
 gotit:
-    CurClass = (Class *)alloc_blocks(1, sizeof(Class));
-    if (!CurClass)
+    cls = (Class *)alloc_blocks(1, sizeof(Class));
+    if (!cls)
         goto nospace;
-    CurPopln->classes[kk] = CurClass;
+    CurPopln->classes[kk] = cls;
     CurPopln->hi_class = kk; /* Highest used index in population->classes */
-    CurClass->id = kk;
+    cls->id = kk;
 
     /*	Make vector of ptrs to CVinsts   */
-    cvars = CurClass->basics = (ClassVar **)alloc_blocks(1, NumVars * sizeof(ClassVar *));
+    cvars = cls->basics = (ClassVar **)alloc_blocks(1, NumVars * sizeof(ClassVar *));
     if (!cvars)
         goto nospace;
 
@@ -99,7 +100,7 @@ gotit:
     }
 
     /*	Make ExplnVar blocks and vector of pointers  */
-    evars = CurClass->stats = (ExplnVar **)alloc_blocks(1, NumVars * sizeof(ExplnVar *));
+    evars = cls->stats = (ExplnVar **)alloc_blocks(1, NumVars * sizeof(ExplnVar *));
     if (!evars)
         goto nospace;
 
@@ -113,47 +114,47 @@ gotit:
     }
 
     /*	Stomp on ptrs as yet undefined  */
-    CurClass->factor_scores = 0;
-    CurClass->type = 0;
+    cls->factor_scores = 0;
+    cls->type = 0;
     goto donebasic;
 
 vacant1: /* Vacant type shows structure set up but vacated.
      Use, but set new (Vacant) type,  */
-    CurClass = CurPopln->classes[kk];
-    cvars = CurClass->basics;
-    evars = CurClass->stats;
-    CurClass->type = Vacant;
+    cls = CurPopln->classes[kk];
+    cvars = cls->basics;
+    evars = cls->stats;
+    cls->type = Vacant;
 
 donebasic:
-    CurClass->best_cost = CurClass->nofac_cost = CurClass->fac_cost = 0.0;
-    CurClass->weights_sum = 0.0;
+    cls->best_cost = cls->nofac_cost = cls->fac_cost = 0.0;
+    cls->weights_sum = 0.0;
     /*	Invalidate hierarchy links  */
-    CurClass->dad_id = CurClass->sib_id = CurClass->son_id = -1;
-    CurClass->num_sons = 0;
+    cls->dad_id = cls->sib_id = cls->son_id = -1;
+    cls->num_sons = 0;
     for (i = 0; i < NumVars; i++)
         cvars[i]->signif = 1;
     CurPopln->num_classes++;
     if (kk > CurPopln->hi_class)
         CurPopln->hi_class = kk;
-    if (CurClass->type == Vacant)
+    if (cls->type == Vacant)
         goto vacant2;
 
     /*	If nc = 0, this completes the make.  */
     if (NumCases == 0)
         goto finish;
-    CurClass->factor_scores = (short *)alloc_blocks(2, NumCases * sizeof(short));
+    cls->factor_scores = (short *)alloc_blocks(2, NumCases * sizeof(short));
     goto expanded;
 
 vacant2:
-    CurClass->type = 0;
+    cls->type = 0;
 
 expanded:
     for (i = 0; i < NumVars; i++)
         evars[i]->num_values = 0.0;
 finish:
-    CurClass->age = 0;
-    CurClass->hold_type = CurClass->hold_use = 0;
-    CurClass->weights_sum = 0.0;
+    cls->age = 0;
+    cls->hold_type = cls->hold_use = 0;
+    cls->weights_sum = 0.0;
     return (kk);
 
 nospace:
@@ -166,37 +167,37 @@ nospace:
 /*	If kk = -1, prints all non-subs. If kk = -2, prints all  */
 char *typstr[] = {"typ?", " DAD", "LEAF", "typ?", " Sub"};
 char *usestr[] = {"Tny", "Pln", "Fac"};
-void print1class(Class *clp, int full) {
+void print_one_class(Class *cls, int full) {
     int i;
     double vrms;
 
-    printf("\nS%s", serial_to_str(clp));
-    printf(" %s", typstr[((int)clp->type)]);
-    if (clp->dad_id < 0)
+    printf("\nS%s", serial_to_str(cls));
+    printf(" %s", typstr[((int)cls->type)]);
+    if (cls->dad_id < 0)
         printf("    Root");
     else
-        printf(" Dad%s", serial_to_str(CurPopln->classes[((int)clp->dad_id)]));
-    printf(" Age%4d  Sz%6.1f  Use %s", clp->age, clp->weights_sum, usestr[((int)clp->use)]);
-    printf("%c", (clp->use == Fac) ? ' ' : '(');
-    vrms = sqrt(clp->sum_score_sq / clp->weights_sum);
+        printf(" Dad%s", serial_to_str(CurPopln->classes[((int)cls->dad_id)]));
+    printf(" Age%4d  Sz%6.1f  Use %s", cls->age, cls->weights_sum, usestr[((int)cls->use)]);
+    printf("%c", (cls->use == Fac) ? ' ' : '(');
+    vrms = sqrt(cls->sum_score_sq / cls->weights_sum);
     printf("Vv%6.2f", vrms);
-    printf("%c", (CurClass->boost_count) ? 'B' : ' ');
-    printf(" +-%5.3f", (clp->vav));
-    printf(" Avv%6.3f", clp->avg_factor_scores);
-    printf("%c", (clp->use == Fac) ? ' ' : ')');
-    if (clp->type == Dad) {
-        printf("%4d sons", clp->num_sons);
+    printf("%c", (cls->boost_count) ? 'B' : ' ');
+    printf(" +-%5.3f", (cls->vav));
+    printf(" Avv%6.3f", cls->avg_factor_scores);
+    printf("%c", (cls->use == Fac) ? ' ' : ')');
+    if (cls->type == Dad) {
+        printf("%4d sons", cls->num_sons);
     }
     printf("\n");
-    printf("Pcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->nofac_par_cost, clp->fac_par_cost, clp->dad_par_cost, clp->best_par_cost);
-    printf("Tcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->cstcost, clp->cftcost - CurClass->cfvcost, clp->cntcost, clp->best_case_cost);
-    printf("Vcost     ---------  F:%9.2f\n", clp->cfvcost);
-    printf("totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", clp->nofac_cost, clp->fac_cost, clp->dad_cost, clp->best_cost);
+    printf("Pcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", cls->nofac_par_cost, cls->fac_par_cost, cls->dad_par_cost, cls->best_par_cost);
+    printf("Tcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", cls->cstcost, cls->cftcost - cls->cfvcost, cls->cntcost, cls->best_case_cost);
+    printf("Vcost     ---------  F:%9.2f\n", cls->cfvcost);
+    printf("totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", cls->nofac_cost, cls->fac_cost, cls->dad_cost, cls->best_cost);
     if (!full)
         return;
     for (i = 0; i < CurVSet->length; i++) {
         CurVType = VSetVarList[i].vtype;
-        (*CurVType->show)(clp, i);
+        (*CurVType->show)(cls, i);
     }
     return;
 }
@@ -205,7 +206,7 @@ void print_class(int kk, int full) {
     Class *clp;
     if (kk >= 0) {
         clp = CurPopln->classes[kk];
-        print1class(clp, full);
+        print_one_class(clp, full);
         return;
     }
     if (kk < -2) {
@@ -217,7 +218,7 @@ void print_class(int kk, int full) {
 
     do {
         if ((kk == -2) || (clp->type != Sub))
-            print1class(clp, full);
+            print_one_class(clp, full);
         next_class(&clp);
     } while (clp);
 

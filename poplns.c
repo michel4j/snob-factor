@@ -63,7 +63,7 @@ or score vectors, and the popln is not connected to the current sample.
 OTHERWIZE, the root class is fully configured for the current sample.
     */
 int make_population(int fill){
-    PVinst *pvars;
+    PopVar *pvars;
     Class *cls;
 
     int indx, i;
@@ -102,7 +102,7 @@ gotit:
     CurPopln->num_classes = 0; /*  Initially no class  */
 
     /*	Make vector of PVinsts    */
-    pvars = CurPopln->variables = (PVinst *)alloc_blocks(1, NumVars * sizeof(PVinst));
+    pvars = CurPopln->variables = (PopVar *)alloc_blocks(1, NumVars * sizeof(PopVar));
     if (!pvars)
         goto nospace;
     /*	Copy from variable-set AVinsts to PVinsts  */
