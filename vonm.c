@@ -4,7 +4,6 @@
     t = v * ld.
     */
 
-#define VONM 1
 #include "glob.h"
 
 typedef struct Vmpackst {
@@ -162,8 +161,7 @@ void vonm_define(typindx) int typindx;
 }
 
 /*	-------------------  setvar -----------------------------  */
-void set_var(iv) int iv;
-{
+void set_var(int iv) {
     CurAttr = CurAttrList + iv;
     CurVType = CurAttr->vtype;
     CurPopVar = CurPopVarList + iv;
@@ -182,17 +180,13 @@ void set_var(iv) int iv;
 
 /*	--------------------  readvaux  ----------------------------  */
 /*      Read in auxiliary info into vaux, return 0 if OK else 1  */
-int read_attr_aux(vax)
-Vaux *vax;
-{ return (0); }
+int read_attr_aux(Vaux *vax) { return (0); }
 
 /*	---------------------  readsaux ---------------------------   */
 /*	To read any auxiliary info about a variable of this type in some
 sample.
     */
-int read_smpl_aux(sax)
-Saux *sax;
-{
+int read_smpl_aux(Saux *sax) {
     int i;
 
     /*	Read in auxiliary info into saux, return 0 if OK else 1  */
@@ -240,7 +234,7 @@ int read_datum(char *loc, int iv) {
     return (i);
 }
 
-/*	---------------------  printdat --------------------------  */
+/*	---------------------  print_datum --------------------------  */
 /*	To print a Datum value   */
 void print_datum(char *loc) {
     /*	Print datum from address loc   */
@@ -249,8 +243,7 @@ void print_datum(char *loc) {
 }
 
 /*	---------------------  setsizes  -----------------------   */
-void set_sizes(iv) int iv;
-{
+void set_sizes(int iv) {
     CurAttr = CurAttrList + iv;
     CurAttr->basic_size = sizeof(Basic);
     CurAttr->stats_size = sizeof(Stats);
@@ -258,8 +251,7 @@ void set_sizes(iv) int iv;
 }
 
 /*	----------------------  set_best_pars --------------------------  */
-void set_best_pars(iv) int iv;
-{
+void set_best_pars(int iv) {
 
     set_var(iv);
 
@@ -288,8 +280,7 @@ void set_best_pars(iv) int iv;
 /*	------------------------  clear_stats  ------------------------  */
 /*	Clears stats to accumulate in cost_var, and derives useful functions
 of basic params  */
-void clear_stats(iv) int iv;
-{
+void clear_stats(int iv) {
     set_var(iv);
     evi->cnt = 0.0;
     evi->stcost = evi->ftcost = 0.0;
@@ -310,7 +301,6 @@ void clear_stats(iv) int iv;
     cvi->fmufish = cvi->ldsq = 0.0;
     cvi->slgi0 = cvi->flgi0 = 1.8379; /* about log 2 Pi */
     cvi->ldsq = cvi->ld * cvi->ld;
-    return;
 }
 
 /*	-------------------------  score_var  ------------------------   */
@@ -334,8 +324,7 @@ mc3 = 0.5 * Fmu * wsprd
 
     Score prior cost are accounted in scorevarall.
     */
-void score_var(iv) int iv;
-{
+void score_var(int iv) {
 
     double cosw, sinw, tt, wd1;
     double dwdt, dwdv, r2, dr2dw;
@@ -368,8 +357,7 @@ void score_var(iv) int iv;
             =  {(hy.cx + hx.sx) sin (w) + (hx.cx - hy.sx) cos (w)}
         */
 
-    wd1 = ((cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * sinw +
-           (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * cosw);
+    wd1 = ((cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * sinw + (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * cosw);
 
     /*	The mc3 term 0.5 * Fmu * r2 * (vsq * ldsprd + ldsq * vsprd)
         is treated in two parts, as we don't yet know vsprd. The part in
@@ -401,8 +389,7 @@ void score_var(iv) int iv;
 
 /*	-----------------------  cost_var  --------------------------   */
 /*	Accumulates item cost into CaseNoFacCost, CaseFacCost    */
-void cost_var(iv, fac) int iv, fac;
-{
+void cost_var(int iv, int fac) {
     double del, cost, tt, tsprd, cosw, sinw, r2;
     set_var(iv);
     if (saux->missing)
@@ -435,8 +422,7 @@ void cost_var(iv, fac) int iv, fac;
     sinw = tt * r2;
     r2 = r2 * r2;
 
-    cost -= (cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * cosw -
-            (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * sinw;
+    cost -= (cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * cosw - (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * sinw;
 
     /*	And cost term mc3, depending on tsprd:  */
     tsprd = CurCaseFacScoreSq * cvi->ldsprd + cvi->ldsq * cvvsprd;
@@ -453,8 +439,7 @@ facdone:
 /*	Given the item weight in cwt, calcs derivs of cost wrt basic
 params and accumulates in paramd1, paramd2.
 Factor derivs done only if fac.  */
-void deriv_var(iv, fac) int iv, fac;
-{
+void deriv_var(int iv, int fac) {
     double tt, tsprd, r2, cosw, sinw, wtr2, wd1, dwdt, dr2dw;
     double coser, siner;
     set_var(iv);
@@ -500,8 +485,7 @@ void deriv_var(iv, fac) int iv, fac;
     evi->fwd2 += tsprd * wtr2;
 
     /*	To get deriv wrt ld, deriv of mc1 wrt w is:  */
-    wd1 = ((cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * sinw +
-           (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * cosw);
+    wd1 = ((cvi->fhy * saux->xn.cosxx + cvi->fhx * saux->xn.sinxx) * sinw + (cvi->fhx * saux->xn.cosxx - cvi->fhy * saux->xn.sinxx) * cosw);
 
     /*	The mc3 term 0.5 * Fmu * wsprd = 0.5 * Fmu * tsprd * r2
         gives a further deriv wrt w:	*/
@@ -523,8 +507,7 @@ facdone:
 
 /*	-------------------  adjust  ---------------------------    */
 /*	To adjust parameters of a vonmises variable     */
-void adjust(iv, fac) int iv, fac;
-{
+void adjust(int iv, int fac) {
     double adj, temp1, cnt, ldd2;
     double del1, del2, spcost, fpcost;
     double dadhx, dadhy, dhsprd;
@@ -573,22 +556,16 @@ hasage:
     temp1 = 1.0 / dhsprd;
 
     /*	Compute parameter costs as they are  */
-    del1 = (dadhx - cvi->shx) * (dadhx - cvi->shx) +
-           (dadhy - cvi->shy) * (dadhy - cvi->shy);
-    spcost = 2.0 * HALF_LOG_2PI + log(dhsprd) +
-             0.5 * temp1 * (del1 + 2.0 * cvi->shsprd) - log(cvi->shsprd) +
-             2.0 * LATTICE;
+    del1 = (dadhx - cvi->shx) * (dadhx - cvi->shx) + (dadhy - cvi->shy) * (dadhy - cvi->shy);
+    spcost = 2.0 * HALF_LOG_2PI + log(dhsprd) + 0.5 * temp1 * (del1 + 2.0 * cvi->shsprd) - log(cvi->shsprd) + 2.0 * LATTICE;
 
     if (!fac) {
         fpcost = spcost + 100.0;
         cvi->infac = 1;
         goto facdone1;
     }
-    del2 = (dadhx - cvi->fhx) * (dadhx - cvi->fhx) +
-           (dadhy - cvi->fhy) * (dadhy - cvi->fhy);
-    fpcost = 2.0 * HALF_LOG_2PI + log(dhsprd) +
-             0.5 * temp1 * (del2 + 2.0 * cvi->fhsprd) - log(cvi->fhsprd) +
-             2.0 * LATTICE;
+    del2 = (dadhx - cvi->fhx) * (dadhx - cvi->fhx) + (dadhy - cvi->fhy) * (dadhy - cvi->fhy);
+    fpcost = 2.0 * HALF_LOG_2PI + log(dhsprd) + 0.5 * temp1 * (del2 + 2.0 * cvi->fhsprd) - log(cvi->fhsprd) + 2.0 * LATTICE;
     /*    The prior for load ld is N (0, 1)  */
     fpcost += HALF_LOG_2PI + 0.5 * (cvi->ldsq + cvi->ldsprd);
     fpcost -= 0.5 * log(cvi->ldsprd) + LATTICE;
@@ -742,26 +719,19 @@ adjdone:
 }
 
 /*	------------------------  show  -----------------------   */
-void show(ccl, iv) Class *ccl;
-int iv;
-{
+void show(Class *ccl, int iv) {
     double mu, kappa;
 
     set_class(ccl);
     set_var(iv);
 
-    printf("V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv + 1, evi->cnt,
-           (cvi->infac) ? " In" : "Out", evi->adj);
+    printf("V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out", evi->adj);
     if (CurClass->num_sons < 2)
         goto skipn;
-    printf(" N: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", evi->npcost, cvi->nhx,
-           cvi->nhy, sqrt(cvi->nhsprd));
+    printf(" N: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", evi->npcost, cvi->nhx, cvi->nhy, sqrt(cvi->nhsprd));
 skipn:
-    printf(" S: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n",
-           evi->spcost + evi->stcost, cvi->shx, cvi->shy, sqrt(cvi->shsprd));
-    printf(" F: Cost%8.1f  Hx%8.3f  Hy%8.3f  Ld%8.3f +-%5.2f\n",
-           evi->fpcost + evi->ftcost, cvi->fhx, cvi->fhy, cvi->ld,
-           sqrt(cvi->ldsprd));
+    printf(" S: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", evi->spcost + evi->stcost, cvi->shx, cvi->shy, sqrt(cvi->shsprd));
+    printf(" F: Cost%8.1f  Hx%8.3f  Hy%8.3f  Ld%8.3f +-%5.2f\n", evi->fpcost + evi->ftcost, cvi->fhx, cvi->fhy, cvi->ld, sqrt(cvi->ldsprd));
     kappa = sqrt(cvi->bhx * cvi->bhx + cvi->bhy * cvi->bhy);
     mu = atan2(cvi->bhx, cvi->bhy);
     printf(" B:  Mean ");
@@ -877,8 +847,7 @@ Writing the quadratic as    a*s^2 + b*s -c = 0,   we want the root
 
     */
 
-void nonleaf_cost_var(iv, vald) int iv, vald;
-{
+void nonleaf_cost_var(int iv, int vald) {
     Basic *soncvi;
     Class *son;
     double pcost;
@@ -975,11 +944,9 @@ adjloop:
 
 adjdone: /*	Calc cost  */
     del = (nhx - dadhx) * (nhx - dadhx) + (nhy - dadhy) * (nhy - dadhy);
-    pcost = 2.0 * HALF_LOG_2PI + 2.0 * log(dadhsprd) +
-            (0.5 * del + nhsprd / nson) / dadhsprd + nhsprd / dadhsprd;
+    pcost = 2.0 * HALF_LOG_2PI + 2.0 * log(dadhsprd) + (0.5 * del + nhsprd / nson) / dadhsprd + nhsprd / dadhsprd;
     /*	Add hlog Fisher, lattice  */
-    pcost += 0.5 * log(nson * nson * (nson + nints)) -
-             2.0 * log(nhsprd + 1.0e-8) + 3.0 * LATTICE;
+    pcost += 0.5 * log(nson * nson * (nson + nints)) - 2.0 * log(nhsprd + 1.0e-8) + 3.0 * LATTICE;
 
     /*	Add roundoff for 3 params (nhx, nhy, nhsprd)  */
     pcost += 1.5;
@@ -6048,9 +6015,7 @@ Basic structure.
     dfh		deriv of fh wrt kap
     */
 
-void kapcode(hx, hy, vmst) double hx, hy;
-double *vmst;
-{
+void kapcode(double hx, double hy, double *vmst) {
     double del, skap, c2, c3;
     double va, vb, da, db;
     double kap;
@@ -6104,10 +6069,8 @@ asymp:
 
     del = 1.0 / kap;
 
-    vmp->lgi0 = kap + 0.5 * log(twopi * del) +
-                ((0.067 * del + 0.0625) * del + 0.125) * del;
-    vmp->aa =
-        1.0 - 0.5 * del - del * del * (0.125 + del * (0.125 + del * 0.201));
+    vmp->lgi0 = kap + 0.5 * log(twopi * del) + ((0.067 * del + 0.0625) * del + 0.125) * del;
+    vmp->aa = 1.0 - 0.5 * del - del * del * (0.125 + del * (0.125 + del * 0.201));
     vmp->daa = del * del * (0.5 + del * (0.25 + del * (0.375 + del * 0.804)));
 
 derivsdone:
@@ -6121,8 +6084,7 @@ derivsdone:
         so from cost term N * Fh * fhsprd :  */
     aonk = aa * rkappa;
     *fsh = fh = sqrt(aonk * (1.0 - aonk - aa * aa));
-    dfh = -aonk * rkappa + 2.0 * aonk * aonk * rkappa + aonk * aonk * aa +
-          da * rkappa * (1.0 - 2.0 * aonk - 3.0 * aa * aa);
+    dfh = -aonk * rkappa + 2.0 * aonk * aonk * rkappa + aonk * aonk * aa + da * rkappa * (1.0 - 2.0 * aonk - 3.0 * aa * aa);
     /*	This gives deriv of Fh^2 wrt kappa  */
     *dfsh = dfh * (0.5 / fh);
 #endif

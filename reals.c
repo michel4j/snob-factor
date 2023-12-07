@@ -1,7 +1,6 @@
 /*	A prototypical file for a variable type      */
 /*	actually for plain Gaussians   */
 
-#define NOTGLOB 1
 #include "glob.h"
 
 static void set_var();
@@ -150,17 +149,13 @@ void set_var(iv) int iv;
 
 /*	--------------------  readvaux  ----------------------------  */
 /*      Read in auxiliary info into vaux, return 0 if OK else 1  */
-int read_attr_aux(vax)
-Vaux *vax;
-{ return (0); }
+int read_attr_aux(Vaux *vax) { return (0); }
 
 /*	---------------------  readsaux ---------------------------   */
 /*	To read any auxiliary info about a variable of this type in some
 sample.
     */
-int read_smpl_aux(sax)
-Saux *sax;
-{
+int read_smpl_aux(Saux *sax) {
     int i;
 
     /*	Read in auxiliary info into saux, return 0 if OK else 1  */
@@ -187,7 +182,7 @@ int read_datum(char *loc, int iv) {
     return (i);
 }
 
-/*	---------------------  printdat --------------------------  */
+/*	---------------------  print_datum --------------------------  */
 /*	To print a Datum value   */
 void print_datum(char *loc) {
     /*	Print datum from address loc   */
@@ -196,7 +191,7 @@ void print_datum(char *loc) {
 }
 
 /*	---------------------  setsizes  -----------------------   */
-void set_sizes(iv) int iv;
+void set_sizes(int iv) 
 {
     CurAttr = CurAttrList + iv;
     CurAttr->basic_size = sizeof(Basic);
@@ -205,7 +200,7 @@ void set_sizes(iv) int iv;
 }
 
 /*	----------------------  set_best_pars --------------------------  */
-void set_best_pars(iv) int iv;
+void set_best_pars(int iv)
 {
 
     set_var(iv);
@@ -238,7 +233,7 @@ void set_best_pars(iv) int iv;
 /*	------------------------  clear_stats  ------------------------  */
 /*	Clears stats to accumulate in cost_var, and derives useful functions
 of basic params  */
-void clear_stats(iv) int iv;
+void clear_stats(int iv)
 {
     double tmp;
     set_var(iv);
@@ -258,14 +253,13 @@ void clear_stats(iv) int iv;
     tmp = 1.0 / evi->fsig;
     evi->frsds = tmp * tmp;
     evi->ldsq = cvi->ld * cvi->ld;
-    return;
 }
 
 /*	-------------------------  score_var  ------------------------   */
 /*	To eval derivs of a case cost wrt score, scorespread. Adds to
 vvd1, vvd2.
-    */
-void score_var(iv) int iv;
+*/
+void score_var(int iv)
 {
 
     double del, md2;
@@ -286,7 +280,7 @@ void score_var(iv) int iv;
 
 /*	-----------------------  cost_var  --------------------------   */
 /*	Accumulates item cost into CaseNoFacCost, CaseFacCost    */
-void cost_var(iv, fac) int iv, fac;
+void cost_var( int iv,  int fac)
 {
     double del, var, cost;
     set_var(iv);
@@ -299,8 +293,7 @@ void cost_var(iv, fac) int iv, fac;
     /*	Do no-fac cost first  */
     del = cvi->smu - saux->xn;
     var = del * del + cvi->smusprd + saux->epssq;
-    cost = 0.5 * var * evi->srsds + cvi->ssdlsprd + HALF_LOG_2PI + cvi->ssdl -
-           saux->leps;
+    cost = 0.5 * var * evi->srsds + cvi->ssdlsprd + HALF_LOG_2PI + cvi->ssdl - saux->leps;
     evi->parkstcost = cost;
     CaseNoFacCost += cost;
 
@@ -308,11 +301,9 @@ void cost_var(iv, fac) int iv, fac;
     if (!fac)
         goto facdone;
     del += CurCaseFacScore * cvi->ld;
-    var = del * del + cvi->fmusprd + saux->epssq + CurCaseFacScoreSq * cvi->ldsprd +
-          cvvsprd * evi->ldsq;
+    var = del * del + cvi->fmusprd + saux->epssq + CurCaseFacScoreSq * cvi->ldsprd + cvvsprd * evi->ldsq;
     evi->var = var;
-    cost = HALF_LOG_2PI + 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd * 2.0 -
-           saux->leps;
+    cost = HALF_LOG_2PI + 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd * 2.0 - saux->leps;
 
 facdone:
     CaseFacCost += cost;
@@ -325,7 +316,7 @@ facdone:
 /*	Given the item weight in cwt, calcs derivs of cost wrt basic
 params and accumulates in paramd1, paramd2.
 Factor derivs done only if fac.  */
-void deriv_var(iv, fac) int iv, fac;
+void deriv_var( int iv,  int fac)
 {
     double del, var, frsds;
     set_var(iv);
@@ -365,7 +356,7 @@ facdone:
 
 /*	-------------------  adjust  ---------------------------    */
 /*	To adjust parameters of a real variable     */
-void adjust(iv, fac) int iv, fac;
+void adjust( int iv,  int fac)
 {
     double adj, srsds, frsds, temp1, temp2, cnt;
     double del1, del2, del3, del4, spcost, fpcost;
@@ -424,8 +415,7 @@ void adjust(iv, fac) int iv, fac;
         dsdlsprd = 1.0;
     }
     /*	Make a stab at class tcost  */
-    CurClass->cstcost +=
-        cnt * (HALF_LOG_2PI + cvi->ssdl - saux->leps + 0.5 + CurClass->mlogab) + 1.0;
+    CurClass->cstcost += cnt * (HALF_LOG_2PI + cvi->ssdl - saux->leps + 0.5 + CurClass->mlogab) + 1.0;
     CurClass->cftcost = CurClass->cstcost + 100.0 * cnt;
 
 hasage:
@@ -436,11 +426,9 @@ hasage:
 
     /*	Compute parameter costs as they are  */
     del1 = dadmu - cvi->smu;
-    spcost =
-        HALF_LOG_2PI + 0.5 * (log(dmusprd) + temp1 * (del1 * del1 + cvi->smusprd));
+    spcost = HALF_LOG_2PI + 0.5 * (log(dmusprd) + temp1 * (del1 * del1 + cvi->smusprd));
     del2 = dadsdl - cvi->ssdl;
-    spcost +=
-        HALF_LOG_2PI + 0.5 * (log(dsdlsprd) + temp2 * (del2 * del2 + cvi->ssdlsprd));
+    spcost += HALF_LOG_2PI + 0.5 * (log(dsdlsprd) + temp2 * (del2 * del2 + cvi->ssdlsprd));
     spcost -= 0.5 * log(cvi->smusprd * cvi->ssdlsprd);
     spcost += 2.0 * LATTICE;
 
@@ -450,11 +438,9 @@ hasage:
         goto facdone1;
     }
     del3 = cvi->fmu - dadmu;
-    fpcost =
-        HALF_LOG_2PI + 0.5 * (log(dmusprd) + temp1 * (del3 * del3 + cvi->fmusprd));
+    fpcost = HALF_LOG_2PI + 0.5 * (log(dmusprd) + temp1 * (del3 * del3 + cvi->fmusprd));
     del4 = cvi->fsdl - dadsdl;
-    fpcost +=
-        HALF_LOG_2PI + 0.5 * (log(dsdlsprd) + temp2 * (del4 * del4 + cvi->fsdlsprd));
+    fpcost += HALF_LOG_2PI + 0.5 * (log(dsdlsprd) + temp2 * (del4 * del4 + cvi->fsdlsprd));
     /*    The prior for load ld id N (0, sigsq)  */
     fpcost += HALF_LOG_2PI + 0.5 * (evi->ldsq + cvi->ldsprd) * frsds + cvi->fsdl;
     fpcost -= 0.5 * log(cvi->fmusprd * cvi->fsdlsprd * cvi->ldsprd);
@@ -579,25 +565,19 @@ adjdone:
 }
 
 /*	------------------------  show  -----------------------   */
-void show(ccl, iv) Class *ccl;
-int iv;
+void show(Class *ccl, int iv) 
 {
 
     set_class(ccl);
     set_var(iv);
 
-    printf("V%3d  Cnt%6.1f  %s\n", iv + 1, evi->cnt,
-           (cvi->infac) ? " In" : "Out");
+    printf("V%3d  Cnt%6.1f  %s\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out");
     if (CurClass->num_sons < 2)
         goto skipn;
-    printf(" N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", evi->npcost,
-           cvi->nmu, sqrt(cvi->nmusprd), exp(cvi->nsdl),
-           exp(cvi->nsdl) * sqrt(cvi->nsdlsprd));
+    printf(" N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", evi->npcost, cvi->nmu, sqrt(cvi->nmusprd), exp(cvi->nsdl), exp(cvi->nsdl) * sqrt(cvi->nsdlsprd));
 skipn:
-    printf(" S: Cost%8.1f  Mu%8.3f  SD%8.3f\n", evi->spcost + evi->stcost,
-           cvi->smu, exp(cvi->ssdl));
-    printf(" F: Cost%8.1f  Mu%8.3f  SD%8.3f  Ld%8.3f\n",
-           evi->fpcost + evi->ftcost, cvi->fmu, exp(cvi->fsdl), cvi->ld);
+    printf(" S: Cost%8.1f  Mu%8.3f  SD%8.3f\n", evi->spcost + evi->stcost, cvi->smu, exp(cvi->ssdl));
+    printf(" F: Cost%8.1f  Mu%8.3f  SD%8.3f  Ld%8.3f\n", evi->fpcost + evi->ftcost, cvi->fmu, exp(cvi->fsdl), cvi->ld);
     return;
 }
 
@@ -705,7 +685,7 @@ Writing the quadratic as    a*s^2 + b*s -c = 0,   we want the root
 
     */
 
-void nonleaf_cost_var(iv, vald) int iv, vald;
+void nonleaf_cost_var(int iv, int vald)
 {
     Basic *soncvi;
     Class *son;
@@ -799,11 +779,9 @@ adjloop:
 
 adjdone: /*	Calc cost  */
     del = pp - dadpp;
-    pcost += HALF_LOG_2PI + 1.5 * log(dppsprd) +
-             0.5 * (del * del + ppsprd / nson) / dppsprd + ppsprd / dppsprd;
+    pcost += HALF_LOG_2PI + 1.5 * log(dppsprd) + 0.5 * (del * del + ppsprd / nson) / dppsprd + ppsprd / dppsprd;
     /*	Add hlog Fisher, lattice  */
-    pcost += 0.5 * log(nson * (0.5 * nson + nints)) - 1.5 * log(ppsprd) +
-             2.0 * LATTICE;
+    pcost += 0.5 * log(nson * (0.5 * nson + nints)) - 1.5 * log(ppsprd) + 2.0 * LATTICE;
 
     /*	Add roundoff for 2 params  (pp, ppsprd)  */
     pcost += 1.0;
@@ -816,5 +794,3 @@ adjdone: /*	Calc cost  */
 
     return;
 }
-#ifdef JJ
-#endif

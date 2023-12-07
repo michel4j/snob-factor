@@ -1,5 +1,4 @@
 /*	File of stuff for Multistate variables.   */
-
 #include "glob.h"
 
 #define MaxState 20 /* Max number of discrete states per variable */
@@ -7,7 +6,7 @@ static void set_var();
 static int read_attr_aux();
 static int read_smpl_aux();
 static int read_datum();
-static void printdat();
+static void print_datum();
 static void set_sizes();
 static void set_best_pars();
 static void clear_stats();
@@ -17,7 +16,7 @@ static void deriv_var();
 static void nonleaf_cost_var();
 static void adjust();
 static void show();
-static void setprobs();
+static void set_probs();
 
 typedef struct Vauxst {
     int states;
@@ -162,7 +161,7 @@ void expmults_define(typindx) int typindx;
     CurVType->read_aux_attr = &read_attr_aux;
     CurVType->read_aux_smpl = &read_smpl_aux;
     CurVType->read_datum = &read_datum;
-    CurVType->print_datum = &printdat;
+    CurVType->print_datum = &print_datum;
     CurVType->set_sizes = &set_sizes;
     CurVType->set_best_pars = &set_best_pars;
     CurVType->clear_stats = &clear_stats;
@@ -185,8 +184,7 @@ void expmults_define(typindx) int typindx;
 }
 
 /*	----------------------- setvar --------------------------  */
-void set_var(iv) int iv;
-{
+void set_var(int iv) {
     CurAttr = CurAttrList + iv;
     CurVType = CurAttr->vtype;
     CurPopVar = CurPopVarList + iv;
@@ -217,9 +215,7 @@ void set_var(iv) int iv;
 /*	To read any auxiliary info about a variable of this type in some
 sample.
     */
-int read_attr_aux(vax)
-Vaux *vax;
-{
+int read_attr_aux(Vaux *vax) {
     int i;
     double lstates;
 
@@ -230,8 +226,7 @@ Vaux *vax;
         return (1);
     }
     if (vax->states > MaxState) {
-        printf("Variable has more than %d states (%d)\n", MaxState,
-               vax->states);
+        printf("Variable has more than %d states (%d)\n", MaxState, vax->states);
         return (2);
     }
     lstates = log((double)(vax->states));
@@ -256,9 +251,7 @@ Vaux *vax;
 
 /*	-------------------  readsaux ------------------------------  */
 /*	To read auxilliary info re sample for this attribute   */
-int read_smpl_aux(sax)
-Saux *sax;
-{
+int read_smpl_aux(Saux *sax) {
     /*	Multistate has no auxilliary info re sample  */
     return (0);
 }
@@ -284,10 +277,9 @@ int read_datum(char *loc, int iv) {
     return (0);
 }
 
-/*	---------------------  printdat --------------------------  */
+/*	---------------------  print_datum --------------------------  */
 /*	To print a Datum value   */
-void printdat(loc) Datum *loc;
-{
+void print_datum(Datum *loc) {
     /*	Print datum from address loc   */
     printf("%3d", (*((Datum *)loc) + 1));
     return;
@@ -297,8 +289,7 @@ void printdat(loc) Datum *loc;
 /*	To use info in ctx.vset to set sizes of basic and stats
 blocks for variable, and place in VSetVar basicsize, statssize.
     */
-void set_sizes(iv) int iv;
-{
+void set_sizes(int iv) {
 
     CurAttr = CurAttrList + iv;
     vaux = (Vaux *)CurAttr->vaux;
@@ -312,8 +303,7 @@ void set_sizes(iv) int iv;
 }
 
 /*	----------------------- set_best_pars -----------------------  */
-void set_best_pars(iv) int iv;
-{
+void set_best_pars(int iv) {
 
     set_var(iv);
 
@@ -336,11 +326,11 @@ void set_best_pars(iv) int iv;
     return;
 }
 
-/*	--------------------  setprobs -------------------------------- */
+/*	--------------------  set_probs -------------------------------- */
 /*	Routine to set state probs for a item using fap, fbp, cvv */
 /*	Sets probs in pr[], -log probs in qr[].  */
 /*	Also calcs b1p, b2p, b3p, b1p2, gg  */
-void setprobs() {
+void set_probs() {
     double sum, tt, lsum;
     int k, ig;
 
@@ -381,8 +371,7 @@ void setprobs() {
 /*	---------------------------  clearstats  --------------------   */
 /*	Clears stats to accumulate in cost_var, and derives useful functions
 of basic params   */
-void clear_stats(iv) int iv;
-{
+void clear_stats(int iv) {
     double sum, tt;
     int k;
 
@@ -443,18 +432,16 @@ void clear_stats(iv) int iv;
 /*	-------------------------  score_var  ------------------------   */
 /*	To eval derivs of a case wrt score, scorespread. Adds to vvd1,vvd2.
  */
-void score_var(iv) int iv;
-{
+void score_var(int iv) {
     double t1d1, t2d1, t3d1;
     set_var(iv);
     if (CurAttr->inactive)
         return;
     if (saux->missing)
         return;
-    setprobs(); /* Will calc pr[], qr[], gg, ff  */
+    set_probs(); /* Will calc pr[], qr[], gg, ff  */
     t1d1 = b1p - fbp[saux->xn];
-    t2d1 = -(0.5 * states * rstatesm) * (cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd) *
-           ff * b1p;
+    t2d1 = -(0.5 * states * rstatesm) * (cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd) * ff * b1p;
     t3d1 = CurCaseFacScore * cvi->bpsprd * ff;
 
     CaseFacScoreD1 += t1d1 + t3d1 + t2d1;
@@ -468,8 +455,7 @@ void score_var(iv) int iv;
 
 /*	---------------------  cost_var  ---------------------------  */
 /*	Accumulate item cost into CaseNoFacCost, fcasecost  */
-void cost_var(iv, fac) int iv, fac;
-{
+void cost_var(int iv, int fac) {
     double cost;
 
     set_var(iv);
@@ -486,7 +472,7 @@ void cost_var(iv, fac) int iv, fac;
     /*	Only do faccost if fac  */
     if (!fac)
         goto facdone;
-    setprobs();
+    set_probs();
     cost = -log(pr[saux->xn]); /* -log prob of xn */
     evi->conff = 0.5 * ff * (cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd);
     evi->ff = ff;
@@ -505,8 +491,7 @@ facdone:
 /*	------------------  deriv_var  ------------------------------  */
 /*	Given item weight in cwt, calcs derivs of item cost wrt basic
 params and accumulates in paramd1, paramd2  */
-void deriv_var(iv, fac) int iv, fac;
-{
+void deriv_var(int iv, int fac) {
     double cons1, cons2, inc;
     int k;
 
@@ -549,8 +534,7 @@ void deriv_var(iv, fac) int iv, fac;
     cons1 = 2.0 * b1p2 - b2p;
     cons2 = CurCaseWeight * cvvsprd * Mbeta * rstates;
     Fork {
-        inc = 0.5 * CurCaseWeight * cvvsprd * pr[k] *
-              (fbp[k] * fbp[k] - 2.0 * fbp[k] * b1p + cons1);
+        inc = 0.5 * CurCaseWeight * cvvsprd * pr[k] * (fbp[k] * fbp[k] - 2.0 * fbp[k] * b1p + cons1);
         fapd1[k] += inc;
         fbpd1[k] += CurCaseFacScore * inc;
         /*	Terms I forgot :  */
@@ -567,8 +551,7 @@ facdone:
 
 /*	-------------------  adjust  ---------------------------    */
 /*	To adjust parameters of a multistate variable     */
-void adjust( int iv, int fac)
-{
+void adjust(int iv, int fac) {
 
     double adj, apd2, cnt, vara, del, tt, sum, spcost, fpcost;
     int k, n;
@@ -745,7 +728,7 @@ adjloop:
     evi->bpd2 += 1.0;
     /*	Stabilization  */
     CurCaseFacScore = 0.0;
-    setprobs();
+    set_probs();
     Fork fapd1[k] += 0.5 * pr[k];
     evi->apd2 += 0.5 * states * ff;
     /*	This section uses a slow but apparently safe adjustment of fa[[], fbp[]
@@ -795,8 +778,7 @@ adjdone:
 
 /*	------------------------  prprint  -------------------  */
 /*	prints the exponential params in 'ap' converted to probs   */
-void prprint(ap) double *ap;
-{
+void prprint(double *ap) {
     int k;
     double max, sum;
 
@@ -816,14 +798,12 @@ void prprint(ap) double *ap;
 }
 
 /*	------------------------  show  -----------------------   */
-void show(Class *ccl, int iv)
-{
+void show(Class *ccl, int iv) {
     int k;
 
     set_class(ccl);
     set_var(iv);
-    printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt,
-           (cvi->infac) ? " In" : "Out", evi->adj);
+    printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out", evi->adj);
 
     if (CurClass->num_sons < 2)
         goto skipn;
@@ -846,7 +826,7 @@ skipf:;
 }
 
 /*	----------------------  nonleaf_cost_var -----------------------------  */
-void nonleaf_cost_var(iv) int iv;
+void nonleaf_cost_var(int iv, int vald) 
 {
     Basic *soncvi;
     Class *son;
@@ -913,8 +893,7 @@ adjloop:
     /*      The V of comments is tstvn + nson * del * del */
     del = 0.0;
     Fork {
-        nap[k] =
-            (dapsprd * qr[k] + apsprd * dadnap[k]) / (nson * dapsprd + apsprd);
+        nap[k] = (dapsprd * qr[k] + apsprd * dadnap[k]) / (nson * dapsprd + apsprd);
         del = nap[k] - qr[k];
         tstvn += del * del * nson; /* adding variance round new nap */
     }
@@ -933,15 +912,10 @@ adjloop:
         del = nap[k] - dadnap[k];
         pcost += del * del;
     }
-    pcost = 0.5 * (pcost + statesm * apsprd / nson) / dapsprd +
-            statesm * (HALF_LOG_2PI + 0.5 * log(dapsprd));
+    pcost = 0.5 * (pcost + statesm * apsprd / nson) / dapsprd + statesm * (HALF_LOG_2PI + 0.5 * log(dapsprd));
     /*      Add hlog Fisher, lattice  */
-    pcost += 0.5 * log(0.5 * nson * statesm + nints) +
-             0.5 * statesm * log((double)nson) -
-             0.5 * (statesm + 2.0) * log(apsprd) + states * LATTICE;
+    pcost += 0.5 * log(0.5 * nson * statesm + nints) + 0.5 * statesm * log((double)nson) - 0.5 * (statesm + 2.0) * log(apsprd) + states * LATTICE;
     /*	Add roundoff for states params  */
     pcost += 0.5 * states;
     evi->npcost = pcost;
-    return;
 }
-/*zzzz*/
