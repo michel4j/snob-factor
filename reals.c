@@ -679,8 +679,7 @@ Writing the quadratic as    a*s^2 + b*s -c = 0,   we want the root
 
     */
 
-void cost_var_nonleaf(int iv, int vald)
-{
+void cost_var_nonleaf(int iv, int vald, Class *cls) {
     Basic *soncvi;
     Class *son;
     double pcost, tcost; /* Item, param and total item costs */
@@ -690,7 +689,7 @@ void cost_var_nonleaf(int iv, int vald)
     double spp, sppsprd;
     int nints, nson, ison, k, n;
 
-    set_var(iv, CurClass);
+    set_var(iv, cls);
     if (!vald) { /* Cannot define as-dad params, so fake it */
         evi->npcost = 0.0;
         cvi->nmu = cvi->smu;
@@ -703,7 +702,7 @@ void cost_var_nonleaf(int iv, int vald)
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
-    nson = CurClass->num_sons;
+    nson = cls->num_sons;
     pcost = tcost = 0.0;
 
     /*	There are two independent parameters, nmu and nsdl, to fiddle.
@@ -730,7 +729,7 @@ ploop:
     tstvn = 0.0; /* Total sum of sons' (t_n^2 + del_n)  */
     tssn = 0.0;  /* Total sons' s_n */
 
-    for (ison = CurClass->son_id; ison > 0; ison = son->sib_id) {
+    for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
         son = CurPopln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         spp = *(&soncvi->bmu + k);

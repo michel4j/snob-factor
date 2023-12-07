@@ -826,7 +826,7 @@ skipf:;
 }
 
 /*	----------------------  cost_var_nonleaf -----------------------------  */
-void cost_var_nonleaf(int iv, int vald, Class *CurClass) {
+void cost_var_nonleaf(int iv, int vald, Class *cls) {
     Basic *soncvi;
     Class *son;
     double del, co0, co1, co2, tstvn, tssn;
@@ -834,12 +834,12 @@ void cost_var_nonleaf(int iv, int vald, Class *CurClass) {
     double apsprd;
     int n, k, ison, nson, nints;
 
-    set_var(iv, CurClass);
+    set_var(iv, cls);
     if (CurAttr->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
-    nson = CurClass->num_sons;
+    nson = cls->num_sons;
     if (nson < 2) { /* cannot define parameters */
         evi->npcost = evi->ntcost = 0.0;
         Fork nap[k] = sap[k];
@@ -858,7 +858,7 @@ void cost_var_nonleaf(int iv, int vald, Class *CurClass) {
     sometimes becomes (statesm * nson) in this case. We use the static vector
     'pr[]' to accumulate the sum of the sons' bap[]s, in place of the 'tstn' of
     the reals code. */
-    for (ison = CurClass->son_id; ison > 0; ison = son->sib_id) {
+    for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
         son = CurPopln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         Fork {

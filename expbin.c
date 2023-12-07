@@ -576,19 +576,19 @@ skipn:
 }
 
 /*	----------------------  cost_var_nonleaf -----------------------------  */
-void cost_var_nonleaf(int iv, int vald, Class *CurClass) {
+void cost_var_nonleaf(int iv, int vald, Class *cls) {
     Basic *soncvi;
     Class *son;
     double del, co0, co1, co2, tstvn, tssn;
     double apsprd, pcost, map, tap;
     int n, ison, nson, nints;
 
-    set_var(iv, CurClass);
+    set_var(iv, cls);
     if (CurAttr->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }
-    nson = CurClass->num_sons;
+    nson = cls->num_sons;
     if (nson < 2) { /* cannot define parameters */
         evi->npcost = evi->ntcost = 0.0;
         cvi->nap = cvi->sap;
@@ -603,7 +603,7 @@ void cost_var_nonleaf(int iv, int vald, Class *CurClass) {
 
     apsprd = cvi->napsprd;
     /*	The calculation is like that in reals.c (q.v.)   */
-    for (ison = CurClass->son_id; ison > 0; ison = son->sib_id) {
+    for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
         son = CurPopln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         tap += soncvi->bap;
