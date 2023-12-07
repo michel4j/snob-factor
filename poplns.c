@@ -13,12 +13,12 @@ void set_population() {
     if (CurSample) {
         NumCases = CurSample->num_cases;
         SmplVarList = CurSample->variables;
-        CurRecLen = CurSample->record_length;
-        CurRecords = CurSample->records;
+        RecLen = CurSample->record_length;
+        Records = CurSample->records;
     } else {
         NumCases = 0;
         SmplVarList = 0;
-        CurRecords = 0;
+        Records = 0;
     }
     PopVarList = CurPopln->variables;
     CurRoot = CurPopln->root;
@@ -445,7 +445,7 @@ newclass:
 
 fakeit: /*  initialize scorevectors  */
     for (n = 0; n < NumCases; n++) {
-        CurRecord = CurRecords + n * CurRecLen;
+        CurRecord = Records + n * RecLen;
         cls->factor_scores[n] = 0;
     }
     cls->weights_sum = nomcnt;
@@ -1112,7 +1112,7 @@ void correlpops(int xid){
     for (n = 0; n < NumCases; n++) {
         CurCtx.popln = wpop;
         set_population();
-        CurRecord = CurRecords + n * CurRecLen;
+        CurRecord = Records + n * RecLen;
         if (!*CurRecord)
             goto ndone;
         num_son = find_all(Leaf);

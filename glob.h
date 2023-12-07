@@ -29,8 +29,8 @@ EXT Buffer *CurSource; /* Ptr to command source buffer */
 EXT char *CurRecord;  /*  Common ptr to a data record  */
 EXT int CurItem;      /*  Index of current item  */
 EXT char *CurField;   /*  Common ptr to a data field  */
-EXT int CurRecLen;    /*  reclen of current sample  */
-EXT char *CurRecords; /*  Common ptr to data records block of a sample */
+EXT int RecLen;    /*  reclen of current sample  */
+EXT char *Records; /*  Common ptr to data records block of a sample */
 
 /*	re hark  */
 EXT int Heard;       /* Flag showing a new command line has been detected */

@@ -620,7 +620,7 @@ void do_case(int cse, int all, int derivs, int num_son) {
     PSaux *psaux;
     int clc, i;
 
-    CurRecord = CurRecords + cse * CurRecLen; /*  Set ptr to case record  */
+    CurRecord = Records + cse * RecLen; /*  Set ptr to case record  */
     CurItem = cse;
     if (!*CurRecord) { // Inactive item
         return;

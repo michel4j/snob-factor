@@ -263,7 +263,7 @@ gotit:
         SmplVarList[i].offset = 0;
         SmplVarList[i].nval = 0;
     }
-    CurRecLen = 1 + sizeof(int); /* active flag and ident  */
+    RecLen = 1 + sizeof(int); /* active flag and ident  */
     for (i = 0; i < NumVars; i++) {
         CurVar = SmplVarList + i;
         CurVar->id = i;
@@ -287,8 +287,8 @@ gotit:
         }
 
         /*	Set the offset of the (missing, value) pair  */
-        CurVar->offset = CurRecLen;
-        CurRecLen += (1 + CurVType->data_size); /* missing flag and value */
+        CurVar->offset = RecLen;
+        RecLen += (1 + CurVType->data_size); /* missing flag and value */
     }                                 /* End of variables loop */
 
     /*	Now attempt to read in the data. The first item is the number of cases*/
@@ -302,13 +302,13 @@ gotit:
     CurSample->num_cases = NumCases;
     CurSample->num_active = 0;
     /*	Make a vector of nc records each of size reclen  */
-    CurRecords = CurSample->records = CurField = (char *)alloc_blocks(0, NumCases * CurRecLen);
+    Records = CurSample->records = CurField = (char *)alloc_blocks(0, NumCases * RecLen);
     if (!CurField) {
         printf("No space for data\n");
         i = -8;
         goto error;
     }
-    CurSample->record_length = CurRecLen;
+    CurSample->record_length = RecLen;
 
     /*	Read in the data cases, each preceded by an active flag and ident   */
     for (n = 0; n < NumCases; n++) {
