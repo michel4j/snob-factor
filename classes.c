@@ -226,7 +226,7 @@ void print_class(int kk, int full) {
 
 /*	-------------------------  cleartcosts  ------  */
 /*	Clears tcosts (cntcost, cftcost, cstcost). Also clears newcnt,
-newvsq, and calls clearstats for all variables   */
+newvsq, and calls clear_stats for all variables   */
 void clear_costs(Class *ccl) {
     int i;
 
@@ -330,7 +330,7 @@ started:
             goto vdone;
         CurVType = CurAttr->vtype;
         (*CurVType->score_var)(i);
-    /*	scorevar should add to vvd1, vvd2, vvd3, mvvd2.  */
+    /*	score_var should add to vvd1, vvd2, vvd3, mvvd2.  */
     vdone:;
     }
     CaseFacScoreD1 += CurCaseFacScore;
@@ -373,7 +373,7 @@ done:
 }
 
 /*	----------------------  costvarall  --------------------------  */
-/*	Does costvar on all vars of class for the current item, setting
+/*	Does cost_var on all vars of class for the current item, setting
 cls->casecost according to use of class  */
 void cost_all_vars(Class *ccl) {
     int fac;

@@ -2,20 +2,20 @@
 
 #include "glob.h"
 
-static void setvar();
-static int readvaux();
-static int readsaux();
-static int readdat();
+static void set_var();
+static int read_attr_aux();
+static int read_smpl_aux();
+static int read_datum();
 static void printdat();
-static void setsizes();
-static void setbestparam();
-static void clearstats();
-static void scorevar();
-static void costvar();
-static void derivvar();
-static void ncostvar();
+static void set_sizes();
+static void set_best_pars();
+static void clear_stats();
+static void score_var();
+static void cost_var();
+static void deriv_var();
+static void nonleaf_cost_var();
 static void adjust();
-static void vprint();
+static void show();
 
 typedef struct Vauxst {
     int states;
@@ -109,26 +109,26 @@ void expbinary_define(typindx) int typindx;
     CurVType->attr_aux_size = sizeof(Vaux);
     CurVType->pop_aux_size = sizeof(Paux);
     CurVType->smpl_aux_size = sizeof(Saux);
-    CurVType->read_aux_attr = &readvaux;
-    CurVType->read_aux_smpl = &readsaux;
-    CurVType->read_datum = &readdat;
+    CurVType->read_aux_attr = &read_attr_aux;
+    CurVType->read_aux_smpl = &read_smpl_aux;
+    CurVType->read_datum = &read_datum;
     CurVType->print_datum = &printdat;
-    CurVType->set_sizes = &setsizes;
-    CurVType->set_best_pars = &setbestparam;
-    CurVType->clear_stats = &clearstats;
-    CurVType->score_var = &scorevar;
-    CurVType->cost_var = &costvar;
-    CurVType->deriv_var = &derivvar;
-    CurVType->cost_var_nonleaf = &ncostvar;
+    CurVType->set_sizes = &set_sizes;
+    CurVType->set_best_pars = &set_best_pars;
+    CurVType->clear_stats = &clear_stats;
+    CurVType->score_var = &score_var;
+    CurVType->cost_var = &cost_var;
+    CurVType->deriv_var = &deriv_var;
+    CurVType->cost_var_nonleaf = &nonleaf_cost_var;
     CurVType->adjust = &adjust;
-    CurVType->show = &vprint;
-    CurVType->set_var = &setvar;
+    CurVType->show = &show;
+    CurVType->set_var = &set_var;
 
     return;
 }
 
 /*	----------------------- setvar --------------------------  */
-void setvar(iv) int iv;
+void set_var(iv) int iv;
 {
     CurAttr = CurAttrList + iv;
     CurVType = CurAttr->vtype;
@@ -146,13 +146,13 @@ void setvar(iv) int iv;
 /*	To read any auxiliary info about a variable of this type in some
 sample.
     */
-int readvaux(vax)
+int read_attr_aux(vax)
 Vaux *vax;
 { return (0); }
 
 /*	-------------------  readsaux ------------------------------  */
 /*	To read auxilliary info re sample for this attribute   */
-int readsaux(sax)
+int read_smpl_aux(sax)
 Saux *sax;
 {
     /*	Multistate has no auxilliary info re sample  */
@@ -161,7 +161,7 @@ Saux *sax;
 
 /*	-------------------  readdat -------------------------------  */
 /*	To read a value for this variable type         */
-int readdat(char *loc, int iv)
+int read_datum(char *loc, int iv)
 {
     int i;
     Datum xn;
@@ -192,7 +192,7 @@ void printdat(Datum *loc)
 /*	To use info in ctx.vset to set sizes of basic and stats
 blocks for variable, and place in VSetVar basicsize, statssize.
     */
-void setsizes( int iv)
+void set_sizes( int iv)
 {
 
     CurAttr = CurAttrList + iv;
@@ -203,11 +203,11 @@ void setsizes( int iv)
     return;
 }
 
-/*	----------------------- setbestparam -----------------------  */
-void setbestparam(int iv)
+/*	----------------------- set_best_pars -----------------------  */
+void set_best_pars(int iv)
 {
 
-    setvar(iv);
+    set_var(iv);
 
     if (CurClass->type == Dad) {
         cvi->bap = cvi->nap;
@@ -228,14 +228,14 @@ void setbestparam(int iv)
     return;
 }
 
-/*	---------------------------  clearstats  --------------------   */
-/*	Clears stats to accumulate in costvar, and derives useful functions
+/*	---------------------------  clear_stats  --------------------   */
+/*	Clears stats to accumulate in cost_var, and derives useful functions
 of basic params   */
-void clearstats(int iv)
+void clear_stats(int iv)
 {
     double round, pr0, pr1;
 
-    setvar(iv);
+    set_var(iv);
     evi->cnt = 0.0;
     evi->stcost = evi->ftcost = 0.0;
     evi->vsq = 0.0;
@@ -263,13 +263,13 @@ void clearstats(int iv)
     return;
 }
 
-/*	-------------------------  scorevar  ------------------------   */
+/*	-------------------------  score_var  ------------------------   */
 /*	To eval derivs of a case wrt score, scorespread. Adds to vvd1,vvd2.
  */
-void scorevar(int iv)
+void score_var(int iv)
 {
     double cc, pr0, pr1, ff, ft, dbyv, hdffbydv, hdftbydv;
-    setvar(iv);
+    set_var(iv);
     if (CurAttr->inactive)
         return;
     if (saux->missing)
@@ -314,14 +314,14 @@ void scorevar(int iv)
     return;
 }
 
-/*	---------------------  costvar  ---------------------------  */
+/*	---------------------  cost_var  ---------------------------  */
 /*	Accumulate item cost into CaseNoFacCost, CaseFacCost  */
-void costvar(int iv, int fac)
+void cost_var(int iv, int fac)
 {
     double cost;
     double cc, ff, ft, hdffbydc, hdftbydc, pr0, pr1, small;
 
-    setvar(iv);
+    set_var(iv);
     if (saux->missing)
         return;
     if (CurClass->age == 0) {
@@ -380,13 +380,13 @@ facdone:
     return;
 }
 
-/*	------------------  derivvar  ------------------------------  */
+/*	------------------  deriv_var  ------------------------------  */
 /*	Given item weight in cwt, calcs derivs of item cost wrt basic
 params and accumulates in paramd1, paramd2  */
-void derivvar(int iv, int fac)
+void deriv_var(int iv, int fac)
 {
 
-    setvar(iv);
+    set_var(iv);
     if (saux->missing)
         return;
     /*	Do no-fac first  */
@@ -420,7 +420,7 @@ void adjust(int iv, int fac)
     double adj, apd2, cnt, vara, del, tt, spcost, fpcost;
     int n;
 
-    setvar(iv);
+    set_var(iv);
     cnt = evi->cnt;
 
     if (CurDad) { /* Not root */
@@ -567,11 +567,11 @@ adjdone:
     return;
 }
 
-/*	------------------------  vprint  -----------------------   */
-void vprint(Class* ccl, int iv){
+/*	------------------------  show  -----------------------   */
+void show(Class* ccl, int iv){
 
     set_class(ccl);
-    setvar(iv);
+    set_var(iv);
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out", evi->adj);
 
@@ -591,15 +591,15 @@ skipn:
     return;
 }
 
-/*	----------------------  ncostvar -----------------------------  */
-void ncostvar(int iv) {
+/*	----------------------  nonleaf_cost_var -----------------------------  */
+void nonleaf_cost_var(int iv) {
     Basic *soncvi;
     Class *son;
     double del, co0, co1, co2, tstvn, tssn;
     double apsprd, pcost, map, tap;
     int n, ison, nson, nints;
 
-    setvar(iv);
+    set_var(iv);
     if (CurAttr->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;

@@ -21,20 +21,20 @@ void kapcode(double hx, double hy, double *vmst);
 
 #define NullSprd ((double)10.0) /* Root prior spread */
 
-static void setvar();
-static int readvaux();
-static int readsaux();
-static int readdat();
-static void printdat();
-static void setsizes();
-static void setbestparam();
-static void clearstats();
-static void scorevar();
-static void costvar();
-static void derivvar();
-static void ncostvar();
+static void set_var();
+static int read_attr_aux();
+static int read_smpl_aux();
+static int read_datum();
+static void print_datum();
+static void set_sizes();
+static void set_best_pars();
+static void clear_stats();
+static void score_var();
+static void cost_var();
+static void deriv_var();
+static void nonleaf_cost_var();
 static void adjust();
-static void vprint();
+static void show();
 
 typedef struct Datumst {
     double xx;
@@ -145,24 +145,24 @@ void vonm_define(typindx) int typindx;
     vtp->attr_aux_size = sizeof(Vaux);
     vtp->pop_aux_size = sizeof(Paux);
     vtp->smpl_aux_size = sizeof(Saux);
-    vtp->read_aux_attr = &readvaux;
-    vtp->read_aux_smpl = &readsaux;
-    vtp->read_datum = &readdat;
-    vtp->print_datum = &printdat;
-    vtp->set_sizes = &setsizes;
-    vtp->set_best_pars = &setbestparam;
-    vtp->clear_stats = &clearstats;
-    vtp->score_var = &scorevar;
-    vtp->cost_var = &costvar;
-    vtp->deriv_var = &derivvar;
-    vtp->cost_var_nonleaf = &ncostvar;
+    vtp->read_aux_attr = &read_attr_aux;
+    vtp->read_aux_smpl = &read_smpl_aux;
+    vtp->read_datum = &read_datum;
+    vtp->print_datum = &print_datum;
+    vtp->set_sizes = &set_sizes;
+    vtp->set_best_pars = &set_best_pars;
+    vtp->clear_stats = &clear_stats;
+    vtp->score_var = &score_var;
+    vtp->cost_var = &cost_var;
+    vtp->deriv_var = &deriv_var;
+    vtp->cost_var_nonleaf = &nonleaf_cost_var;
     vtp->adjust = &adjust;
-    vtp->show = &vprint;
-    vtp->set_var = &setvar;
+    vtp->show = &show;
+    vtp->set_var = &set_var;
 }
 
 /*	-------------------  setvar -----------------------------  */
-void setvar(iv) int iv;
+void set_var(iv) int iv;
 {
     CurAttr = CurAttrList + iv;
     CurVType = CurAttr->vtype;
@@ -182,7 +182,7 @@ void setvar(iv) int iv;
 
 /*	--------------------  readvaux  ----------------------------  */
 /*      Read in auxiliary info into vaux, return 0 if OK else 1  */
-int readvaux(vax)
+int read_attr_aux(vax)
 Vaux *vax;
 { return (0); }
 
@@ -190,7 +190,7 @@ Vaux *vax;
 /*	To read any auxiliary info about a variable of this type in some
 sample.
     */
-int readsaux(sax)
+int read_smpl_aux(sax)
 Saux *sax;
 {
     int i;
@@ -218,7 +218,7 @@ Saux *sax;
 
 /*	-------------------  readdat -------------------------------  */
 /*	To read a value for this variable type	 */
-int readdat(char *loc, int iv) {
+int read_datum(char *loc, int iv) {
     int i;
     int unit;
     double epsfac;
@@ -242,14 +242,14 @@ int readdat(char *loc, int iv) {
 
 /*	---------------------  printdat --------------------------  */
 /*	To print a Datum value   */
-void printdat(char *loc) {
+void print_datum(char *loc) {
     /*	Print datum from address loc   */
     printf("%9.2f", *((double *)loc));
     return;
 }
 
 /*	---------------------  setsizes  -----------------------   */
-void setsizes(iv) int iv;
+void set_sizes(iv) int iv;
 {
     CurAttr = CurAttrList + iv;
     CurAttr->basic_size = sizeof(Basic);
@@ -257,11 +257,11 @@ void setsizes(iv) int iv;
     return;
 }
 
-/*	----------------------  setbestparam --------------------------  */
-void setbestparam(iv) int iv;
+/*	----------------------  set_best_pars --------------------------  */
+void set_best_pars(iv) int iv;
 {
 
-    setvar(iv);
+    set_var(iv);
 
     if (CurClass->type == Dad) {
         cvi->bhx = cvi->nhx;
@@ -285,12 +285,12 @@ void setbestparam(iv) int iv;
     return;
 }
 
-/*	------------------------  clearstats  ------------------------  */
-/*	Clears stats to accumulate in costvar, and derives useful functions
+/*	------------------------  clear_stats  ------------------------  */
+/*	Clears stats to accumulate in cost_var, and derives useful functions
 of basic params  */
-void clearstats(iv) int iv;
+void clear_stats(iv) int iv;
 {
-    setvar(iv);
+    set_var(iv);
     evi->cnt = 0.0;
     evi->stcost = evi->ftcost = 0.0;
     evi->vsq = 0.0;
@@ -313,7 +313,7 @@ void clearstats(iv) int iv;
     return;
 }
 
-/*	-------------------------  scorevar  ------------------------   */
+/*	-------------------------  score_var  ------------------------   */
 /*	To eval derivs of a case cost wrt score, scorespread. Adds to
 vvd1, vvd2.
     The general form for VonMises message costs has the following
@@ -334,13 +334,13 @@ mc3 = 0.5 * Fmu * wsprd
 
     Score prior cost are accounted in scorevarall.
     */
-void scorevar(iv) int iv;
+void score_var(iv) int iv;
 {
 
     double cosw, sinw, tt, wd1;
     double dwdt, dwdv, r2, dr2dw;
 
-    setvar(iv);
+    set_var(iv);
     if (CurAttr->inactive)
         return;
 
@@ -399,12 +399,12 @@ void scorevar(iv) int iv;
     return;
 }
 
-/*	-----------------------  costvar  --------------------------   */
+/*	-----------------------  cost_var  --------------------------   */
 /*	Accumulates item cost into CaseNoFacCost, CaseFacCost    */
-void costvar(iv, fac) int iv, fac;
+void cost_var(iv, fac) int iv, fac;
 {
     double del, cost, tt, tsprd, cosw, sinw, r2;
-    setvar(iv);
+    set_var(iv);
     if (saux->missing)
         return;
     if (CurClass->age == 0) {
@@ -449,15 +449,15 @@ facdone:
     return;
 }
 
-/*	--------------------  derivvar  --------------------------  */
+/*	--------------------  deriv_var  --------------------------  */
 /*	Given the item weight in cwt, calcs derivs of cost wrt basic
 params and accumulates in paramd1, paramd2.
 Factor derivs done only if fac.  */
-void derivvar(iv, fac) int iv, fac;
+void deriv_var(iv, fac) int iv, fac;
 {
     double tt, tsprd, r2, cosw, sinw, wtr2, wd1, dwdt, dr2dw;
     double coser, siner;
-    setvar(iv);
+    set_var(iv);
     if (saux->missing)
         return;
     /*	Do non-fac first  */
@@ -530,7 +530,7 @@ void adjust(iv, fac) int iv, fac;
     double dadhx, dadhy, dhsprd;
     double hxd1, hyd1, hkd1, hkd2;
 
-    setvar(iv);
+    set_var(iv);
     adj = InitialAdj;
     cnt = evi->cnt;
 
@@ -741,14 +741,14 @@ adjdone:
     return;
 }
 
-/*	------------------------  vprint  -----------------------   */
-void vprint(ccl, iv) Class *ccl;
+/*	------------------------  show  -----------------------   */
+void show(ccl, iv) Class *ccl;
 int iv;
 {
     double mu, kappa;
 
     set_class(ccl);
-    setvar(iv);
+    set_var(iv);
 
     printf("V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv + 1, evi->cnt,
            (cvi->infac) ? " In" : "Out", evi->adj);
@@ -773,7 +773,7 @@ skipn:
     return;
 }
 
-/*	----------------------  ncostvar  ------------------------   */
+/*	----------------------  nonleaf_cost_var  ------------------------   */
 /*	To compute parameter cost for non-leaf (intrnl) class use   */
 
 /*	The coding in an internal class of a simple scalar parameter such as
@@ -877,7 +877,7 @@ Writing the quadratic as    a*s^2 + b*s -c = 0,   we want the root
 
     */
 
-void ncostvar(iv, vald) int iv, vald;
+void nonleaf_cost_var(iv, vald) int iv, vald;
 {
     Basic *soncvi;
     Class *son;
@@ -887,7 +887,7 @@ void ncostvar(iv, vald) int iv, vald;
     double tsxn, tsyn, tsvn, tssn, sbhx, sbhy, sbhsprd;
     int nints, nson, ison, n;
 
-    setvar(iv);
+    set_var(iv);
     if (!vald) { /* Cannot define as-dad params, so fake it */
         evi->npcost = 0.0;
         cvi->nhx = cvi->shx;
