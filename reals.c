@@ -130,8 +130,8 @@ void reals_define(typindx) int typindx;
 
 /*	-------------------  setvar -----------------------------  */
 void set_var(int iv, Class *cls) {
-
-    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
+    Population *popln = CurCtx.popln;
+    Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
 
     CurAttr = VSetVarList + iv;
     CurVType = CurAttr->vtype;
@@ -355,8 +355,8 @@ void adjust(int iv, int fac, Class *cls) {
     double del1, del2, del3, del4, spcost, fpcost;
     double dadmu, dadsdl, dmusprd, dsdlsprd;
     double av, var, del, sdld1;
-
-    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
+    Population *popln = CurCtx.popln;
+    Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
 
     del3 = del4 = 0.0;
     set_var(iv, cls);
@@ -687,8 +687,8 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     double tssn, tstn, tstvn;
     double spp, sppsprd;
     int nints, nson, ison, k, n;
-
-    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
+    Population *popln = CurCtx.popln;
+    Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
 
     set_var(iv, cls);
     if (!vald) { /* Cannot define as-dad params, so fake it */
@@ -731,7 +731,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
         tssn = 0.0;  /* Total sons' s_n */
 
         for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
-            son = CurPopln->classes[ison];
+            son = popln->classes[ison];
             soncvi = (Basic *)son->basics[iv];
             spp = *(&soncvi->bmu + k);
             sppsprd = *(&soncvi->bmusprd + k);

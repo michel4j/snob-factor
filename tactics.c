@@ -1,6 +1,4 @@
 /*	-----------------  fiddles with tree structure  ----------------  */
-#define NOTGLOB 1
-#define TACTICS 1
 #include "glob.h"
 
 /*     --------------------  flatten  --------------------------------  */
@@ -11,28 +9,28 @@ void flatten() {
 
     int i;
     Class *cls;
-
+    Population *popln = CurCtx.popln;
     set_population();
     tidy(0);
     if (CurRootClass->num_sons == 0) {
         printf("Nothing to flatten\n");
         return;
     }
-    for (i = 0; i <= CurPopln->hi_class; i++) {
+    for (i = 0; i <= popln->hi_class; i++) {
         if (i == CurRoot)
             goto donecls;
-        cls = CurPopln->classes[i];
+        cls = popln->classes[i];
         if (cls->type == Vacant)
             goto donecls;
         if (cls->num_sons) { /*  Kill it  */
             cls->type = Vacant;
             cls->dad_id = Deadkilled;
-            CurPopln->num_classes--;
+            popln->num_classes--;
         } else {
             if (cls->type == Sub) {
                 cls->type = Leaf;
-                cls->serial = CurPopln->next_serial << 2;
-                CurPopln->next_serial++;
+                cls->serial = popln->next_serial << 2;
+                popln->next_serial++;
             }
             cls->dad_id = CurRoot;
         }
@@ -70,6 +68,7 @@ double insert_dad(int ser1, int ser2, int *dadid)
     double origcost, newcost, drop;
     int oldid, newid, od1, od2;
 
+    Population *popln = CurCtx.popln;
     origcost = CurRootClass->best_par_cost;
     *dadid = -1;
     k1 = serial_to_id(ser1);
@@ -78,10 +77,10 @@ double insert_dad(int ser1, int ser2, int *dadid)
     k2 = serial_to_id(ser2);
     if (k2 < 0)
         goto nullit;
-    cls1 = CurPopln->classes[k1];
+    cls1 = popln->classes[k1];
     if (cls1->type == Sub)
         goto nullit;
-    cls2 = CurPopln->classes[k2];
+    cls2 = popln->classes[k2];
     if (cls2->type == Sub)
         goto nullit;
     od1 = cls1->dad_id;
@@ -90,7 +89,7 @@ double insert_dad(int ser1, int ser2, int *dadid)
         other son	*/
     if (od1 == od2) {
         oldid = od1;
-        odad = CurPopln->classes[oldid];
+        odad = popln->classes[oldid];
         if (odad->num_sons < 3)
             goto nullit;
         goto configok;
@@ -107,16 +106,16 @@ double insert_dad(int ser1, int ser2, int *dadid)
     goto nullit;
 
 configok:
-    odad = CurPopln->classes[oldid];
+    odad = popln->classes[oldid];
     newid = make_class();
     if (newid < 0)
         goto nullit;
-    ndad = CurPopln->classes[newid]; /*  The new dad  */
+    ndad = popln->classes[newid]; /*  The new dad  */
                                 /*	Copy old dad's basics, stats into new dad  */
     nch = ((char *)&odad->id) - ((char *)odad);
     memcpy(ndad, odad, nch);
-    ndad->serial = CurPopln->next_serial << 2;
-    CurPopln->next_serial++;
+    ndad->serial = popln->next_serial << 2;
+    popln->next_serial++;
     ndad->age = MinFacAge - 3;
     ndad->hold_type = 0;
     /*      Copy Basics. the structures should have been made.  */
@@ -166,7 +165,7 @@ int best_insert_dad(int force)
     int i1, i2, hiid, succ;
     int bser1, bser2, ser1, ser2, newp, newid, newser;
     double res, bestdrop, origcost;
-
+    
     /*	We look for all pairs of non-Sub serials except root.
         For each pair, we copy the population to TrialPop, switch context to
     TrialPop, and do an insdad on the pair. We note the pair giving the largest
@@ -185,10 +184,10 @@ int best_insert_dad(int force)
     newser = 0;
     set_population();
     origcost = CurRootClass->best_cost;
-    hiid = CurPopln->hi_class;
-    if (CurPopln->num_classes < 4) {
+    hiid = CurCtx.popln->hi_class;
+    if (CurCtx.popln->num_classes < 4) {
         flp();
-        printf("Model has only%2d class\n", CurPopln->num_classes);
+        printf("Model has only%2d class\n", CurCtx.popln->num_classes);
         succ = -1;
         goto alldone;
     }
@@ -198,7 +197,7 @@ int best_insert_dad(int force)
 outer:
     if (i1 == CurRoot)
         goto i1done;
-    cls1 = CurPopln->classes[i1];
+    cls1 = CurCtx.popln->classes[i1];
     if (!cls1)
         goto i1done;
     if ((cls1->type == Vacant) || (cls1->type == Sub))
@@ -208,7 +207,7 @@ outer:
 inner:
     if (i2 == CurRoot)
         goto i2done;
-    cls2 = CurPopln->classes[i2];
+    cls2 = CurCtx.popln->classes[i2];
     if (!cls2)
         goto i2done;
     if ((cls2->type == Vacant) || (cls2->type == Sub))
@@ -220,7 +219,7 @@ inner:
         goto i2done;
 
     /*	Copy population to TrialPop, unfilled  */
-    newp = copy_population(CurPopln->id, 0, "TrialPop");
+    newp = copy_population(CurCtx.popln->id, 0, "TrialPop");
     if (newp < 0)
         goto popfails;
     CurCtx.popln = Populations[newp];
@@ -255,7 +254,7 @@ alldone:
         goto finish;
     }
     /*	Copy population to TrialPop, filled  */
-    newp = copy_population(CurPopln->id, 1, "TrialPop");
+    newp = copy_population(CurCtx.popln->id, 1, "TrialPop");
     if (newp < 0)
         goto popfails;
     CurCtx.popln = Populations[newp];
@@ -264,7 +263,7 @@ alldone:
     printf("TRYING INSERT %6d,%6d\n", bser1 >> 2, bser2 >> 2);
     res = insert_dad(bser1, bser2, &newid);
     /*	But check it is not killed off   */
-    newser = CurPopln->classes[newid]->serial;
+    newser = CurCtx.popln->classes[newid]->serial;
     Control = 0;
     do_all(1, 1);
     Control = AdjAll;
@@ -272,7 +271,7 @@ alldone:
         printf("BestInsDad ends prematurely\n");
         return (0);
     }
-    if (newser != CurPopln->classes[newid]->serial)
+    if (newser != CurCtx.popln->classes[newid]->serial)
         newser = 0;
     /*	See if the trial model has improved over original  */
     succ = 1;
@@ -302,7 +301,7 @@ winner:
     clr_bad_move();
     /*	Reverse roles of 'work' and TrialPop  */
     strcpy(oldctx.popln->name, "TrialPop");
-    strcpy(CurPopln->name, "work");
+    strcpy(CurCtx.popln->name, "work");
     if (succ)
         track_best(1);
 
@@ -329,10 +328,11 @@ double splice_dad(int ser)
     Class *son, *cls;
     int kk, kkd, kks;
     double drop, origcost, newcost;
+    Population *popln = CurCtx.popln;
 
     drop = -1.0e20;
     kk = serial_to_id(ser);
-    cls = CurPopln->classes[kk];
+    cls = popln->classes[kk];
     if (cls->type != Dad)
         goto finish;
     if (kk == CurRoot)
@@ -345,12 +345,12 @@ double splice_dad(int ser)
     /*	All seems OK. Fix idads in kk's sons  */
     origcost = CurRootClass->best_par_cost;
     for (kks = cls->son_id; kks >= 0; kks = son->sib_id) {
-        son = CurPopln->classes[kks];
+        son = popln->classes[kks];
         son->dad_id = kkd;
     }
     /*	Now kill off class kk  */
     cls->type = Vacant;
-    CurPopln->num_classes--;
+    popln->num_classes--;
     /*	Fix linkages  */
     tidy(0);
     do_dads(20);
@@ -378,13 +378,13 @@ int best_remove_dad() {
     /*	Do one pass of doall to set costs  */
     do_all(1, 1);
     origcost = CurRootClass->best_cost;
-    hiid = CurPopln->hi_class;
+    hiid = CurCtx.popln->hi_class;
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     i1 = 0;
 loop:
     if (i1 == CurRoot)
         goto i1done;
-    cls = CurPopln->classes[i1];
+    cls = CurCtx.popln->classes[i1];
     if (!cls)
         goto i1done;
     if (cls->type != Dad)
@@ -392,7 +392,7 @@ loop:
     ser = cls->serial;
     if (chk_bad_move(2, 0, ser))
         goto i1done;
-    newp = copy_population(CurPopln->id, 0, "TrialPop");
+    newp = copy_population(CurCtx.popln->id, 0, "TrialPop");
     if (newp < 0)
         goto popfails;
     CurCtx.popln = Populations[newp];
@@ -417,7 +417,7 @@ i1done:
         printf("No possible dad deletions\n");
         goto finish;
     }
-    newp = copy_population(CurPopln->id, 1, "TrialPop");
+    newp = copy_population(CurCtx.popln->id, 1, "TrialPop");
     if (newp < 0)
         goto popfails;
     CurCtx.popln = Populations[newp];
@@ -454,7 +454,7 @@ winner:
     printf("ACCEPTED !!!\n");
     print_tree();
     strcpy(oldctx.popln->name, "TrialPop");
-    strcpy(CurPopln->name, "work");
+    strcpy(CurCtx.popln->name, "work");
     track_best(1);
 
 finish:
@@ -521,17 +521,18 @@ void ranclass( int nn)
     int n, ic, ib, num_son;
     double bs;
     Class *sub, *dad, *cls;
+    Population *popln = CurCtx.popln;
 
     set_population();
-    if (!CurPopln) {
+    if (!popln) {
         printf("Ranclass needs a model\n");
         goto finish;
     }
-    if (!CurPopln->sample_size) {
+    if (!popln->sample_size) {
         printf("Model has no sample\n");
         goto finish;
     }
-    if (nn > (CurPopln->cls_vec_len - 2)) {
+    if (nn > (popln->cls_vec_len - 2)) {
         printf("Too many classes\n");
         goto finish;
     }
@@ -553,7 +554,7 @@ again:
         cls = Sons[ic];
         if (cls->num_sons < 2)
             goto icdone;
-        sub = CurPopln->classes[cls->son_id];
+        sub = popln->classes[cls->son_id];
         if (sub->age < MinAge)
             goto icdone;
         if (cls->weights_sum > bs) {
@@ -597,6 +598,9 @@ double move_class(int ser1, int ser2)
     int k1, k2, od2;
     double origcost, newcost, drop;
 
+    Population *popln = CurCtx.popln;
+
+
     origcost = CurRootClass->best_par_cost;
     k1 = serial_to_id(ser1);
     if (k1 < 0)
@@ -604,10 +608,10 @@ double move_class(int ser1, int ser2)
     k2 = serial_to_id(ser2);
     if (k2 < 0)
         goto nullit;
-    cls1 = CurPopln->classes[k1];
+    cls1 = popln->classes[k1];
     if (cls1->type == Sub)
         goto nullit;
-    cls2 = CurPopln->classes[k2];
+    cls2 = popln->classes[k2];
     if (cls2->type != Dad) {
         printf("Class %4d is not a dad\n", ser2);
         goto nullit;
@@ -623,14 +627,14 @@ double move_class(int ser1, int ser2)
             printf("Class %4d is ancestor of class %4d\n", ser1, ser2);
             goto nullit;
         }
-        odad = CurPopln->classes[od2];
+        odad = popln->classes[od2];
     }
     /*	All seems OK, so make change in links   */
     cls1->dad_id = k2;
     /*	Fix linkages  */
     tidy(0);
     do_dads(30);
-    if (CurPopln->sample_size) {
+    if (popln->sample_size) {
         do_all(4, 0);
         if (Heard)
             goto kicked;
@@ -689,10 +693,10 @@ int best_move_class(int force)
     set_population();
     do_all(1, 1); /* To set costs */
     origcost = CurRootClass->best_cost;
-    hiid = CurPopln->hi_class;
-    if (CurPopln->num_classes < 4) {
+    hiid = CurCtx.popln->hi_class;
+    if (CurCtx.popln->num_classes < 4) {
         flp();
-        printf("Model has only%2d class\n", CurPopln->num_classes);
+        printf("Model has only%2d class\n", CurCtx.popln->num_classes);
         succ = -1;
         goto alldone;
     }
@@ -702,7 +706,7 @@ int best_move_class(int force)
 outer:
     if (i1 == CurRoot)
         goto i1done;
-    cls1 = CurPopln->classes[i1];
+    cls1 = CurCtx.popln->classes[i1];
     if (!cls1)
         goto i1done;
     if ((cls1->type == Vacant) || (cls1->type == Sub))
@@ -712,7 +716,7 @@ outer:
 inner:
     if (i2 == i1)
         goto i2done;
-    cls2 = CurPopln->classes[i2];
+    cls2 = CurCtx.popln->classes[i2];
     if (!cls2)
         goto i2done;
     if (cls2->type != Dad)
@@ -723,14 +727,14 @@ inner:
     for (od2 = cls2->dad_id; od2 >= 0; od2 = odad->dad_id) {
         if (od2 == i1)
             goto i2done;
-        odad = CurPopln->classes[od2];
+        odad = CurCtx.popln->classes[od2];
     }
     ser2 = cls2->serial;
     if (chk_bad_move(3, ser1, ser2))
         goto i2done;
 
     /*	Copy pop to TrialPop, unfilled  */
-    newp = copy_population(CurPopln->id, 0, "TrialPop");
+    newp = copy_population(CurCtx.popln->id, 0, "TrialPop");
     if (newp < 0)
         goto popfails;
     CurCtx.popln = Populations[newp];
@@ -762,7 +766,7 @@ alldone:
         goto finish;
     }
     /*	Copy pop to TrialPop, filled  */
-    newp = copy_population(CurPopln->id, 1, "TrialPop");
+    newp = copy_population(CurCtx.popln->id, 1, "TrialPop");
     if (newp < 0)
         goto popfails;
     CurCtx.popln = Populations[newp];
@@ -803,7 +807,7 @@ winner:
     clr_bad_move();
     /*	Reverse roles of 'work' and TrialPop  */
     strcpy(oldctx.popln->name, "TrialPop");
-    strcpy(CurPopln->name, "work");
+    strcpy(CurCtx.popln->name, "work");
     if (succ)
         track_best(1);
 

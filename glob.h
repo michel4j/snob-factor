@@ -47,7 +47,6 @@ EXT char *Records;   /*  Common ptr to data records block of a sample */
 /*	re Poplns  */
 EXT VarSet *CurVSet;
 EXT Sample *CurSample;
-EXT Population *CurPopln;
 EXT VSetVar *CurAttr;
 EXT PopVar *CurPopVar;
 EXT SampleVar *CurVar;

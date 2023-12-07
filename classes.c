@@ -1,18 +1,18 @@
 /*	Stuff dealing with classes as members of polpns     */
-#define CLASSES 1
 #include "glob.h"
 
 /*	-----------------------  s2id  ---------------------------   */
 /*	Finds class index (id) from serial, or -3 if error    */
 int serial_to_id(int ss) {
     int k;
-    Class *clp;
+    Class *cls;
     set_population();
+    Population *popln = CurCtx.popln;
 
     if (ss >= 1) {
-        for (k = 0; k <= CurPopln->hi_class; k++) {
-            clp = CurPopln->classes[k];
-            if (clp && (clp->type != Vacant) && (clp->serial == ss))
+        for (k = 0; k <= popln->hi_class; k++) {
+            cls = popln->classes[k];
+            if (cls && (cls->type != Vacant) && (cls->serial == ss))
                 return (k);
         }
     }
@@ -24,11 +24,8 @@ int serial_to_id(int ss) {
     return (-3);
 }
 
-
 /*	---------------------  set_class_score --------------------------   */
-void set_class_score(Class *cls) {
-    cls->case_score = Scores.CaseFacInt = cls->factor_scores[CurItem];
-}
+void set_class_score(Class *cls) { cls->case_score = Scores.CaseFacInt = cls->factor_scores[CurItem]; }
 
 /*	---------------------   makeclass  -------------------------   */
 /*	Makes the basic structure of a class (Class) with vector of
@@ -44,24 +41,24 @@ int make_class() {
     ExplnVar **evars, *evi;
     Class *cls;
     int i, kk;
-
+    Population *popln = CurCtx.popln;
     NumCases = CurCtx.popln->sample_size;
     /*	If nc, check that popln has an attached sample  */
     if (NumCases) {
-        i = find_sample(CurPopln->sample_name, 1);
+        i = find_sample(popln->sample_name, 1);
         if (i < 0)
             return (-2);
         CurCtx.sample = CurSample = Samples[i];
     }
 
     NumVars = CurVSet->length;
-    pvars = CurPopln->variables;
+    pvars = popln->variables;
     /*	Find a vacant slot in the popln's classes vec   */
-    for (kk = 0; kk < CurPopln->cls_vec_len; kk++) {
-        if (!CurPopln->classes[kk])
+    for (kk = 0; kk < popln->cls_vec_len; kk++) {
+        if (!popln->classes[kk])
             goto gotit;
         /*	Also test for a vacated class   */
-        if (CurPopln->classes[kk]->type == Vacant)
+        if (popln->classes[kk]->type == Vacant)
             goto vacant1;
     }
     printf("Popln full of classes\n");
@@ -71,8 +68,8 @@ gotit:
     cls = (Class *)alloc_blocks(1, sizeof(Class));
     if (!cls)
         goto nospace;
-    CurPopln->classes[kk] = cls;
-    CurPopln->hi_class = kk; /* Highest used index in population->classes */
+    popln->classes[kk] = cls;
+    popln->hi_class = kk; /* Highest used index in population->classes */
     cls->id = kk;
 
     /*	Make vector of ptrs to CVinsts   */
@@ -112,7 +109,7 @@ gotit:
 
 vacant1: /* Vacant type shows structure set up but vacated.
      Use, but set new (Vacant) type,  */
-    cls = CurPopln->classes[kk];
+    cls = popln->classes[kk];
     cvars = cls->basics;
     evars = cls->stats;
     cls->type = Vacant;
@@ -125,9 +122,9 @@ donebasic:
     cls->num_sons = 0;
     for (i = 0; i < NumVars; i++)
         cvars[i]->signif = 1;
-    CurPopln->num_classes++;
-    if (kk > CurPopln->hi_class)
-        CurPopln->hi_class = kk;
+    popln->num_classes++;
+    if (kk > popln->hi_class)
+        popln->hi_class = kk;
     if (cls->type == Vacant)
         goto vacant2;
 
@@ -157,18 +154,19 @@ nospace:
 /*	-----------------------  printclass  -----------------------  */
 /*	To print parameters of a class    */
 /*	If kk = -1, prints all non-subs. If kk = -2, prints all  */
-char *typstr[] = {"typ?", " DAD", "LEAF", "typ?", " Sub"};
-char *usestr[] = {"Tny", "Pln", "Fac"};
+const char *typstr[] = {"typ?", " DAD", "LEAF", "typ?", " Sub"};
+const char *usestr[] = {"Tny", "Pln", "Fac"};
 void print_one_class(Class *cls, int full) {
     int i;
     double vrms;
+    Population *popln = CurCtx.popln;
 
     printf("\nS%s", serial_to_str(cls));
     printf(" %s", typstr[((int)cls->type)]);
     if (cls->dad_id < 0)
         printf("    Root");
     else
-        printf(" Dad%s", serial_to_str(CurPopln->classes[((int)cls->dad_id)]));
+        printf(" Dad%s", serial_to_str(popln->classes[((int)cls->dad_id)]));
     printf(" Age%4d  Sz%6.1f  Use %s", cls->age, cls->weights_sum, usestr[((int)cls->use)]);
     printf("%c", (cls->use == Fac) ? ' ' : '(');
     vrms = sqrt(cls->sum_score_sq / cls->weights_sum);
@@ -195,10 +193,10 @@ void print_one_class(Class *cls, int full) {
 }
 
 void print_class(int kk, int full) {
-    Class *clp;
+    Class *cls;
     if (kk >= 0) {
-        clp = CurPopln->classes[kk];
-        print_one_class(clp, full);
+        cls = CurCtx.popln->classes[kk];
+        print_one_class(cls, full);
         return;
     }
     if (kk < -2) {
@@ -206,13 +204,13 @@ void print_class(int kk, int full) {
         return;
     }
     set_population();
-    clp = CurRootClass;
+    cls = CurRootClass;
 
     do {
-        if ((kk == -2) || (clp->type != Sub))
-            print_one_class(clp, full);
-        next_class(&clp);
-    } while (clp);
+        if ((kk == -2) || (cls->type != Sub))
+            print_one_class(cls, full);
+        next_class(&cls);
+    } while (cls);
 
     return;
 }
@@ -320,7 +318,7 @@ started:
         if (CurAttr->inactive)
             goto vdone;
         CurVType = CurAttr->vtype;
-        (*CurVType->score_var)(i,cls);
+        (*CurVType->score_var)(i, cls);
     /*	score_var should add to vvd1, vvd2, vvd3, mvvd2.  */
     vdone:;
     }
@@ -347,7 +345,7 @@ fake:
         del -= 1.0;
     Scores.CaseFacInt = del + rand_float();
     Scores.CaseFacInt = Scores.CaseFacInt << 1; /* Round to nearest even times ScoreScale */
-    Scores.CaseFacInt |= igbit;    /* Restore original ignore bit */
+    Scores.CaseFacInt |= igbit;                 /* Restore original ignore bit */
     if (!igbit) {
         oldicvv -= Scores.CaseFacInt;
         if (oldicvv < 0)
@@ -460,8 +458,9 @@ void adjust_class(Class *cls, int dod) {
     int iv, fac, npars, small;
     Class *son;
     double leafcost;
-    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
-    
+    Population *popln = CurCtx.popln;
+    Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
+
     /*	Get root (logarithmic average of vvsprds)  */
     cls->vav = exp(0.5 * cls->vav / (cls->newcnt + 0.1));
     if (Control & AdjSc)
@@ -493,7 +492,7 @@ void adjust_class(Class *cls, int dod) {
 
     /*	Set npars to show if class may be treated as a dad  */
     npars = 1;
-    if ((cls->age < MinAge) || (cls->num_sons < 2) || (CurPopln->classes[cls->son_id]->age < MinSubAge))
+    if ((cls->age < MinAge) || (cls->num_sons < 2) || (popln->classes[cls->son_id]->age < MinSubAge))
         npars = 0;
     if (cls->type == Dad)
         npars = 1;
@@ -608,14 +607,14 @@ usechecked:
         if (dad)
             dad->hold_type += 3;
         /*	Make subs into leafs  */
-        son = CurPopln->classes[cls->son_id];
+        son = popln->classes[cls->son_id];
         son->type = Leaf;
-        son->serial = 4 * CurPopln->next_serial;
-        CurPopln->next_serial++;
-        son = CurPopln->classes[son->sib_id];
+        son->serial = 4 * popln->next_serial;
+        popln->next_serial++;
+        son = popln->classes[son->sib_id];
         son->type = Leaf;
-        son->serial = 4 * CurPopln->next_serial;
-        CurPopln->next_serial++;
+        son->serial = 4 * popln->next_serial;
+        popln->next_serial++;
     }
 
 typechecked:
@@ -633,6 +632,7 @@ void parent_cost_all_vars(Class *cls, int valid) {
     ExplnVar *evi;
     int i, son_id, nson;
     double abcost, rrelab;
+    Population *popln = CurCtx.popln;
 
     abcost = 0.0;
     for (i = 0; i < CurVSet->length; i++) {
@@ -661,7 +661,7 @@ void parent_cost_all_vars(Class *cls, int valid) {
         */
     rrelab = 1.0 / cls->relab;
     for (son_id = cls->son_id; son_id >= 0; son_id = son->sib_id) {
-        son = CurPopln->classes[son_id];
+        son = popln->classes[son_id];
         abcost -= 0.5 * log(son->relab * rrelab);
     }
     /*	Add other terms from Fisher  */
@@ -679,15 +679,16 @@ void parent_cost_all_vars(Class *cls, int valid) {
 void delete_sons(int kk) {
     Class *cls, *son;
     int kks;
+    Population *popln = CurCtx.popln;
 
     if (!(Control & AdjTr))
         return;
-    cls = CurPopln->classes[kk];
+    cls = popln->classes[kk];
     if (cls->num_sons <= 0)
         return;
     SeeAll = 4;
     for (kks = cls->son_id; kks > 0; kks = son->sib_id) {
-        son = CurPopln->classes[kks];
+        son = popln->classes[kks];
         son->type = Vacant;
         son->dad_id = Deadkilled;
         delete_sons(kks);
@@ -706,17 +707,18 @@ its subs into leaves.  Returns 0 if successful.  */
 int split_leaf(int kk) {
     Class *son, *cls;
     int kks;
-    cls = CurPopln->classes[kk];
+    Population *popln = CurCtx.popln;
+    cls = popln->classes[kk];
     if ((cls->type != Leaf) || (cls->num_sons < 2) || cls->hold_type) {
         return (1);
     }
     cls->type = Dad;
     cls->hold_type = HoldTime;
     for (kks = cls->son_id; kks >= 0; kks = son->sib_id) {
-        son = CurPopln->classes[kks];
+        son = popln->classes[kks];
         son->type = Leaf;
-        son->serial = 4 * CurPopln->next_serial;
-        CurPopln->next_serial++;
+        son->serial = 4 * popln->next_serial;
+        popln->next_serial++;
     }
     SeeAll = 4;
     return (0);
@@ -727,24 +729,24 @@ int split_leaf(int kk) {
 void delete_all_classes() {
     int k;
     Class *cls;
+    Population *popln = CurCtx.popln;
 
-    CurPopln = CurCtx.popln;
-    CurRoot = CurPopln->root;
-    for (k = 0; k <= CurPopln->hi_class; k++) {
-        cls = CurPopln->classes[k];
+    CurRoot = popln->root;
+    for (k = 0; k <= popln->hi_class; k++) {
+        cls = popln->classes[k];
         if (cls->id != CurRoot) {
             cls->type = Vacant;
             cls->dad_id = Deadkilled;
         }
     }
-    CurPopln->num_classes = 1;
-    CurPopln->hi_class = CurRoot;
-    CurRootClass = cls = CurPopln->classes[CurRoot];
+    popln->num_classes = 1;
+    popln->hi_class = CurRoot;
+    CurRootClass = cls = popln->classes[CurRoot];
     cls->son_id = -1;
     cls->sib_id = -1;
     cls->num_sons = 0;
     cls->serial = 4;
-    CurPopln->next_serial = 2;
+    popln->next_serial = 2;
     cls->age = 0;
     cls->hold_type = cls->hold_use = 0;
     cls->type = Leaf;

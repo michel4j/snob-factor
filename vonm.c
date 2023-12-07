@@ -162,7 +162,8 @@ void vonm_define(int typindx)
 
 /*	-------------------  setvar -----------------------------  */
 void set_var(int iv, Class *cls) {
-    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
+    Population *popln = CurCtx.popln;
+    Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
     CurAttr = VSetVarList + iv;
     CurVType = CurAttr->vtype;
     CurPopVar = PopVarList + iv;
@@ -278,7 +279,8 @@ void set_best_pars(int iv, Class *cls) {
 /*	Clears stats to accumulate in cost_var, and derives useful functions
 of basic params  */
 void clear_stats(int iv, Class *cls) {
-    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
+    Population *popln = CurCtx.popln;
+    Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
     set_var(iv, cls);
     evi->cnt = 0.0;
     evi->stcost = evi->ftcost = 0.0;
@@ -512,7 +514,9 @@ void adjust(int iv, int fac, Class *cls) {
     double del1, del2, spcost, fpcost;
     double dadhx, dadhy, dhsprd;
     double hxd1, hyd1, hkd1, hkd2;
-    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
+    Population *popln = CurCtx.popln;
+    Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
+
     set_var(iv, cls);
     adj = InitialAdj;
     cnt = evi->cnt;
@@ -853,7 +857,9 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     double del, co0, co1, co2, meanx, meany;
     double tsxn, tsyn, tsvn, tssn, sbhx, sbhy, sbhsprd;
     int nints, nson, ison, n;
-    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
+
+    Population *popln = CurCtx.popln;
+    Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
     set_var(iv, cls);
     if (!vald) { /* Cannot define as-dad params, so fake it */
         evi->npcost = 0.0;
@@ -893,7 +899,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     tssn = 0.0; /* Total sons' s_n */
 
     for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
-        son = CurPopln->classes[ison];
+        son = popln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         sbhx = soncvi->bhx;
         sbhy = soncvi->bhy;

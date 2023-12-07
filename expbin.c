@@ -136,7 +136,6 @@ void set_var(int iv, Class *cls) {
     saux = (Saux *)CurVar->saux;
     cvi = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
-
 }
 
 /*	---------------------  readvaux ---------------------------   */
@@ -402,7 +401,8 @@ void adjust(int iv, int fac, Class *cls) {
     double pr0, pr1, cc;
     double adj, apd2, cnt, vara, del, tt, spcost, fpcost;
     int n;
-    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
+    Population *popln = CurCtx.popln;
+    Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
 
     set_var(iv, cls);
     cnt = evi->cnt;
@@ -577,6 +577,8 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     double apsprd, pcost, map, tap;
     int n, ison, nson, nints;
 
+    Population *popln = CurCtx.popln;
+
     set_var(iv, cls);
     if (CurAttr->inactive) {
         evi->npcost = evi->ntcost = 0.0;
@@ -598,7 +600,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     apsprd = cvi->napsprd;
     /*	The calculation is like that in reals.c (q.v.)   */
     for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
-        son = CurPopln->classes[ison];
+        son = popln->classes[ison];
         soncvi = (Basic *)son->basics[iv];
         tap += soncvi->bap;
         tstvn += soncvi->bap * soncvi->bap;

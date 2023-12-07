@@ -572,7 +572,8 @@ int item_list(char *tlstname)
     FILE *tlst;
     int nn, dadser, i, bc, tid, bl, num_son;
     double bw, bs;
-    Class *clp;
+    Class *cls;
+    Population *popln = CurCtx.popln;
 
     /*	Check we have an attched sample and model  */
     if (!CurCtx.popln)
@@ -588,20 +589,20 @@ int item_list(char *tlstname)
     if (!tlst)
         return (-4);
     /*	Output a tree list in a primitive form  */
-    clp = CurRootClass;
+    cls = CurRootClass;
 
 treeloop:
-    if (clp->type == Sub)
+    if (cls->type == Sub)
         goto nextcl1;
-    fprintf(tlst, "%8d", clp->serial >> 2);
-    if (clp->dad_id >= 0)
-        dadser = CurPopln->classes[clp->dad_id]->serial;
+    fprintf(tlst, "%8d", cls->serial >> 2);
+    if (cls->dad_id >= 0)
+        dadser = popln->classes[cls->dad_id]->serial;
     else
         dadser = -4;
     fprintf(tlst, "%8d\n", dadser >> 2);
 nextcl1:
-    next_class(&clp);
-    if (clp)
+    next_class(&cls);
+    if (cls)
         goto treeloop;
     fprintf(tlst, "0 0\n");
 
@@ -613,14 +614,14 @@ nextcl1:
         bw = 0.0;
         bs = CurSample->num_cases + 1;
         for (i = 0; i < num_son; i++) {
-            clp = Sons[i];
-            if ((clp->case_weight > 0.5) && (clp->weights_sum < bs)) {
+            cls = Sons[i];
+            if ((cls->case_weight > 0.5) && (cls->weights_sum < bs)) {
                 bc = i;
-                bs = clp->weights_sum;
+                bs = cls->weights_sum;
             }
-            if ((clp->type == Leaf) && (clp->case_weight > bw)) {
+            if ((cls->type == Leaf) && (cls->case_weight > bw)) {
                 bl = i;
-                bw = clp->case_weight;
+                bw = cls->case_weight;
             }
         }
 
