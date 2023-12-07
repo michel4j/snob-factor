@@ -164,12 +164,12 @@ void vonm_define(int typindx)
 void set_var(int iv, Class *cls) {
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
-    CurAttr = VSetVarList + iv;
-    CurVType = CurAttr->vtype;
+    VSetVar *vset_var = VSetVarList + iv;
+    CurVType = vset_var->vtype;
     CurPopVar = PopVarList + iv;
     paux = (Paux *)CurPopVar->paux;
     CurVar = SmplVarList + iv;
-    vaux = (Vaux *)CurAttr->vaux;
+    vaux = (Vaux *)vset_var->vaux;
     saux = (Saux *)CurVar->saux;
     cvi = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
@@ -242,9 +242,9 @@ void print_datum(char *loc) {
 
 /*	---------------------  setsizes  -----------------------   */
 void set_sizes(int iv) {
-    CurAttr = VSetVarList + iv;
-    CurAttr->basic_size = sizeof(Basic);
-    CurAttr->stats_size = sizeof(Stats);
+    VSetVar *vset_var = VSetVarList + iv;
+    vset_var->basic_size = sizeof(Basic);
+    vset_var->stats_size = sizeof(Stats);
     return;
 }
 
@@ -328,9 +328,9 @@ void score_var(int iv, Class *cls) {
 
     double cosw, sinw, tt, wd1;
     double dwdt, dwdv, r2, dr2dw;
-
+    VSetVar *vset_var = VSetVarList + iv;
     set_var(iv, cls);
-    if (CurAttr->inactive)
+    if (vset_var->inactive)
         return;
 
     if (saux->missing)
@@ -860,6 +860,8 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
 
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
+    VSetVar *vset_var = VSetVarList + iv;
+
     set_var(iv, cls);
     if (!vald) { /* Cannot define as-dad params, so fake it */
         evi->npcost = 0.0;
@@ -868,7 +870,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
         cvi->nhsprd = cvi->shsprd * evi->cnt;
         return;
     }
-    if (CurAttr->inactive) {
+    if (vset_var->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }

@@ -47,7 +47,6 @@ EXT char *Records;   /*  Common ptr to data records block of a sample */
 /*	re Poplns  */
 EXT VarSet *CurVSet;
 EXT Sample *CurSample;
-EXT VSetVar *CurAttr;
 EXT PopVar *CurPopVar;
 EXT SampleVar *CurVar;
 EXT VarType *CurVType;
@@ -65,7 +64,6 @@ EXT int CurRoot;
 EXT int RSeed; /*	Seed for random routines */
 EXT int NoSubs;
 EXT int NewSubs;
-EXT int Deaded; /* Shows some class killed */
 EXT Class *Sons[MAX_CLASSES];
 EXT int NextIc[MAX_CLASSES];
 

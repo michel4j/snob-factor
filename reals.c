@@ -132,13 +132,13 @@ void reals_define(typindx) int typindx;
 void set_var(int iv, Class *cls) {
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
+    VSetVar *vset_var = VSetVarList + iv;
 
-    CurAttr = VSetVarList + iv;
-    CurVType = CurAttr->vtype;
+    CurVType = vset_var->vtype;
     CurPopVar = PopVarList + iv;
     paux = (Paux *)CurPopVar->paux;
     CurVar = SmplVarList + iv;
-    vaux = (Vaux *)CurAttr->vaux;
+    vaux = (Vaux *)vset_var->vaux;
     saux = (Saux *)CurVar->saux;
     cvi = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
@@ -186,15 +186,15 @@ int read_datum(char *loc, int iv) {
 void print_datum(char *loc) {
     /*	Print datum from address loc   */
     printf("%9.2f", *((double *)loc));
-    return;
+
 }
 
 /*	---------------------  setsizes  -----------------------   */
 void set_sizes(int iv) {
-    CurAttr = VSetVarList + iv;
-    CurAttr->basic_size = sizeof(Basic);
-    CurAttr->stats_size = sizeof(Stats);
-    return;
+    VSetVar *vset_var = VSetVarList + iv;
+    vset_var->basic_size = sizeof(Basic);
+    vset_var->stats_size = sizeof(Stats);
+
 }
 
 /*	----------------------  set_best_pars --------------------------  */
@@ -224,7 +224,6 @@ void set_best_pars(int iv, Class *cls) {
         evi->btcost = evi->stcost;
         evi->bpcost = evi->spcost;
     }
-    return;
 }
 
 /*	------------------------  clear_stats  ------------------------  */
@@ -258,9 +257,9 @@ vvd1, vvd2.
 void score_var(int iv, Class *cls) {
 
     double del, md2;
-
+    VSetVar *vset_var = VSetVarList + iv;
     set_var(iv, cls);
-    if (CurAttr->inactive)
+    if (vset_var->inactive)
         return;
 
     if (saux->missing)
@@ -689,6 +688,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     int nints, nson, ison, k, n;
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
+    VSetVar *vset_var = VSetVarList + iv;
 
     set_var(iv, cls);
     if (!vald) { /* Cannot define as-dad params, so fake it */
@@ -699,7 +699,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
         cvi->nsdlsprd = cvi->ssdlsprd * evi->cnt;
         return;
     }
-    if (CurAttr->inactive) {
+    if (vset_var->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }

@@ -123,7 +123,6 @@ void tidy(int hit) {
     int i, kkd, ndead, newhicl, cause;
     Population *popln = CurCtx.popln;
 
-    Deaded = 0;
     if (!popln->sample_size)
         hit = 0;
 
@@ -168,8 +167,6 @@ void tidy(int hit) {
                 ndead++;
             }
         }
-
-        Deaded += ndead;
         if (ndead)
             continue;
 
@@ -236,7 +233,6 @@ void tidy(int hit) {
         }
     }
 
-    Deaded = 0;
     // Re-count classes, leaves etc.
     popln->num_classes = popln->num_leaves = newhicl = kkd = 0;
     for (i = 0; i <= popln->hi_class; i++) {

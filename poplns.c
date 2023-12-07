@@ -63,6 +63,7 @@ int make_population(int fill) {
     PopVar *pvars;
     Class *cls;
     Population *popln;
+    VSetVar *vset_var;
 
     int indx, i;
 
@@ -105,10 +106,10 @@ gotit:
         goto nospace;
     /*	Copy from variable-set AVinsts to PVinsts  */
     for (i = 0; i < NumVars; i++) {
-        CurAttr = VSetVarList + i;
-        CurVType = CurAttr->vtype;
+        vset_var = VSetVarList + i;
+        CurVType = vset_var->vtype;
         CurPopVar = pvars + i;
-        CurPopVar->id = CurAttr->id;
+        CurPopVar->id = vset_var->id;
         CurPopVar->paux = (char *)alloc_blocks(1, CurVType->pop_aux_size);
         if (!CurPopVar->paux)
             goto nospace;

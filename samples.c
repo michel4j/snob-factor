@@ -51,6 +51,7 @@ int load_vset(const char *filename) {
     int kread;
     Buffer bufst, *buf;
     char *vaux;
+    VSetVar *vset_var;
 
     buf = &bufst;
     for (i = 0; i < MAX_VSETS; i++)
@@ -113,12 +114,12 @@ gotit:
         VSetVarList[i].vaux = 0;
     }
     for (i = 0; i < NumVars; i++) {
-        CurAttr = VSetVarList + i;
-        CurAttr->id = i;
+        vset_var = VSetVarList + i;
+        vset_var->id = i;
 
         /*	Read name  */
         new_line();
-        kread = read_str(CurAttr->name, 1);
+        kread = read_str(vset_var->name, 1);
         if (kread < 0) {
             printf("Error in name of variable %d\n", i + 1);
             i = -10;
@@ -132,9 +133,9 @@ gotit:
             i = -5;
             goto error;
         }
-        CurAttr->inactive = 0;
+        vset_var->inactive = 0;
         if (itype < 0) {
-            CurAttr->inactive = 1;
+            vset_var->inactive = 1;
             itype = -itype;
         }
         if ((itype < 1) || (itype > NTypes)) {
@@ -143,8 +144,8 @@ gotit:
             goto error;
         }
         itype = itype - 1; /*  Convert types to start at 0  */
-        CurVType = CurAttr->vtype = Types + itype;
-        CurAttr->type = itype;
+        CurVType = vset_var->vtype = Types + itype;
+        vset_var->type = itype;
 
         /*	Make the vaux block  */
         vaux = (char *)alloc_blocks(3, CurVType->attr_aux_size);
@@ -153,7 +154,7 @@ gotit:
             i = -6;
             goto error;
         }
-        CurAttr->vaux = vaux;
+        vset_var->vaux = vaux;
 
         /*	Read auxilliary information   */
         if ((*CurVType->read_aux_attr)(vaux)) {
@@ -183,6 +184,7 @@ int load_sample(const char *fname) {
     Buffer bufst, *buf;
     Context oldctx;
     char *saux, vstnam[80], sampname[80];
+    VSetVar *vset_var;
 
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     buf = &bufst;
@@ -267,8 +269,8 @@ gotit:
     for (i = 0; i < NumVars; i++) {
         CurVar = SmplVarList + i;
         CurVar->id = i;
-        CurAttr = VSetVarList + i;
-        CurVType = CurAttr->vtype;
+        vset_var = VSetVarList + i;
+        CurVType = vset_var->vtype;
 
         /*	Make the saux block  */
         saux = (char *)alloc_blocks(0, CurVType->smpl_aux_size);
@@ -334,8 +336,8 @@ gotit:
         attribute should start.  */
         for (i = 0; i < NumVars; i++) {
             CurVar = SmplVarList + i;
-            CurAttr = VSetVarList + i;
-            CurVType = CurAttr->vtype;
+            vset_var = VSetVarList + i;
+            CurVType = vset_var->vtype;
             kread = (*CurVType->read_datum)(CurField + 1, i);
             if (kread < 0) {
                 printf("Data error case %d var %d\n", n + 1, i + 1);

@@ -184,12 +184,12 @@ void expmults_define(typindx) int typindx;
 
 /*	----------------------- setvar --------------------------  */
 void set_var(int iv, Class* cls) {
-    CurAttr = VSetVarList + iv;
-    CurVType = CurAttr->vtype;
+    VSetVar *vset_var = VSetVarList + iv;
+    CurVType = vset_var->vtype;
     CurPopVar = PopVarList + iv;
     paux = (Paux *)CurPopVar->paux;
     CurVar = SmplVarList + iv;
-    vaux = (Vaux *)CurAttr->vaux;
+    vaux = (Vaux *)vset_var->vaux;
     saux = (Saux *)CurVar->saux;
     cvi = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
@@ -288,15 +288,14 @@ void print_datum(Datum *loc) {
 blocks for variable, and place in VSetVar basicsize, statssize.
     */
 void set_sizes(int iv) {
-
-    CurAttr = VSetVarList + iv;
-    vaux = (Vaux *)CurAttr->vaux;
+    VSetVar *vset_var = VSetVarList + iv;
+    vaux = (Vaux *)vset_var->vaux;
     states = vaux->states;
 
     /*	Set sizes of ClassVar (basic) and ExplnVar (stats) in VSetVar  */
     /*	Each inst has a number of vectors appended, of length 'states' */
-    CurAttr->basic_size = sizeof(Basic) + (5 * states - 1) * sizeof(double);
-    CurAttr->stats_size = sizeof(Stats) + (5 * states - 1) * sizeof(double);
+    vset_var->basic_size = sizeof(Basic) + (5 * states - 1) * sizeof(double);
+    vset_var->stats_size = sizeof(Stats) + (5 * states - 1) * sizeof(double);
     return;
 }
 
@@ -432,8 +431,10 @@ void clear_stats(int iv, Class *cls) {
  */
 void score_var(int iv, Class* cls) {
     double t1d1, t2d1, t3d1;
+    VSetVar *vset_var = VSetVarList + iv;
+
     set_var(iv, cls);
-    if (CurAttr->inactive)
+    if (vset_var->inactive)
         return;
     if (saux->missing)
         return;
@@ -834,8 +835,10 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     double apsprd;
     int n, k, ison, nson, nints;
     Population *popln = CurCtx.popln;
+    VSetVar *vset_var = VSetVarList + iv;
+
     set_var(iv, cls);
-    if (CurAttr->inactive) {
+    if (vset_var->inactive) {
         evi->npcost = evi->ntcost = 0.0;
         return;
     }

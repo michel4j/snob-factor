@@ -42,6 +42,8 @@ int make_class() {
     Class *cls;
     int i, kk;
     Population *popln = CurCtx.popln;
+    VSetVar *vset_var;
+
     NumCases = CurCtx.popln->sample_size;
     /*	If nc, check that popln has an attached sample  */
     if (NumCases) {
@@ -80,12 +82,12 @@ gotit:
     /*	Now make the ClassVar blocks, which are of varying size   */
     for (i = 0; i < NumVars; i++) {
         CurPopVar = pvars + i;
-        CurAttr = VSetVarList + i;
-        cvi = cvars[i] = (ClassVar *)alloc_blocks(1, CurAttr->basic_size);
+        vset_var = VSetVarList + i;
+        cvi = cvars[i] = (ClassVar *)alloc_blocks(1, vset_var->basic_size);
         if (!cvi)
             goto nospace;
         /*	Fill in standard stuff  */
-        cvi->id = CurAttr->id;
+        cvi->id = vset_var->id;
     }
 
     /*	Make ExplnVar blocks and vector of pointers  */
@@ -95,8 +97,8 @@ gotit:
 
     for (i = 0; i < NumVars; i++) {
         CurPopVar = pvars + i;
-        CurAttr = VSetVarList + i;
-        evi = evars[i] = (ExplnVar *)alloc_blocks(1, CurAttr->stats_size);
+        vset_var = VSetVarList + i;
+        evi = evars[i] = (ExplnVar *)alloc_blocks(1, vset_var->stats_size);
         if (!evi)
             goto nospace;
         evi->id = CurPopVar->id;
@@ -272,6 +274,7 @@ young. If class age = MinFacAge, will guess scores but not cost them */
 void score_all_vars(Class *cls) {
     int i, igbit, oldicvv;
     double del;
+    VSetVar *vset_var;
 
     set_class_score(cls);
     if ((cls->age < MinFacAge) || (cls->use == Tiny)) {
@@ -315,10 +318,10 @@ started:
     Scores.CaseFacScoreSq = Scores.CaseFacScore * Scores.CaseFacScore;
     Scores.CaseFacScoreD1 = Scores.CaseFacScoreD2 = Scores.EstFacScoreD2 = Scores.CaseFacScoreD3 = 0.0;
     for (i = 0; i < CurVSet->length; i++) {
-        CurAttr = VSetVarList + i;
-        if (CurAttr->inactive)
+        vset_var = VSetVarList + i;
+        if (vset_var->inactive)
             goto vdone;
-        CurVType = CurAttr->vtype;
+        CurVType = vset_var->vtype;
         (*CurVType->score_var)(i, cls);
     /*	score_var should add to vvd1, vvd2, vvd3, mvvd2.  */
     vdone:;
@@ -368,6 +371,7 @@ cls->casecost according to use of class  */
 void cost_all_vars(Class *cls) {
     int fac;
     double tmp;
+    VSetVar *vset_var;
 
     set_class_score(cls);
     if ((cls->age < MinFacAge) || (cls->use == Tiny))
@@ -378,10 +382,10 @@ void cost_all_vars(Class *cls) {
     }
     Scores.CaseCost = Scores.CaseNoFacCost = Scores.CaseFacCost = cls->mlogab; /* Abundance cost */
     for (int iv = 0; iv < CurVSet->length; iv++) {
-        CurAttr = VSetVarList + iv;
-        if (CurAttr->inactive)
+        vset_var = VSetVarList + iv;
+        if (vset_var->inactive)
             goto vdone;
-        CurVType = CurAttr->vtype;
+        CurVType = vset_var->vtype;
         (*CurVType->cost_var)(iv, fac, cls);
     /*	will add to CaseNoFacCost, CaseFacCost  */
     vdone:;
@@ -419,6 +423,7 @@ finish:
 /*	To collect derivative statistics for all vars of a class   */
 void deriv_all_vars(Class *cls) {
     int fac;
+    VSetVar *vset_var;
     const double case_weight = cls->case_weight;
 
     set_class_score(cls);
@@ -435,10 +440,10 @@ void deriv_all_vars(Class *cls) {
         cls->totvv += Scores.CaseFacScore * case_weight;
     }
     for (int iv = 0; iv < NumVars; iv++) {
-        CurAttr = VSetVarList + iv;
-        if (CurAttr->inactive)
+        vset_var = VSetVarList + iv;
+        if (vset_var->inactive)
             goto vdone;
-        CurVType = CurAttr->vtype;
+        CurVType = vset_var->vtype;
         (*CurVType->deriv_var)(iv, fac, cls);
     vdone:;
     }
@@ -460,6 +465,7 @@ void adjust_class(Class *cls, int dod) {
     Class *son;
     double leafcost;
     Population *popln = CurCtx.popln;
+    VSetVar *vset_var;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
 
     /*	Get root (logarithmic average of vvsprds)  */
@@ -502,10 +508,10 @@ void adjust_class(Class *cls, int dod) {
     of cls's sons, so we don't zero it here. 'ncostvarall' will add to it.  */
     cls->nofac_par_cost = cls->fac_par_cost = 0.0;
     for (iv = 0; iv < CurVSet->length; iv++) {
-        CurAttr = VSetVarList + iv;
-        if (CurAttr->inactive)
+        vset_var = VSetVarList + iv;
+        if (vset_var->inactive)
             goto vdone;
-        CurVType = CurAttr->vtype;
+        CurVType = vset_var->vtype;
         (*CurVType->adjust)(iv, fac, cls);
     vdone:;
     }
@@ -634,14 +640,15 @@ void parent_cost_all_vars(Class *cls, int valid) {
     int i, son_id, nson;
     double abcost, rrelab;
     Population *popln = CurCtx.popln;
+    VSetVar *vset_var;
 
     abcost = 0.0;
     for (i = 0; i < CurVSet->length; i++) {
-        CurAttr = VSetVarList + i;
-        CurVType = CurAttr->vtype;
+        vset_var = VSetVarList + i;
+        CurVType = vset_var->vtype;
         (*CurVType->cost_var_nonleaf)(i, valid, cls);
         evi = (ExplnVar *)cls->stats[i];
-        if (!CurAttr->inactive) {
+        if (!vset_var->inactive) {
             abcost += evi->npcost;
         }
     }
