@@ -123,8 +123,6 @@ void expbinary_define(typindx) int typindx;
     CurVType->adjust = &adjust;
     CurVType->show = &show;
     CurVType->set_var = &set_var;
-
-    return;
 }
 
 /*	----------------------- setvar --------------------------  */
@@ -138,7 +136,7 @@ void set_var(int iv, Class *cls) {
     saux = (Saux *)CurVar->saux;
     cvi = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
-    return;
+
 }
 
 /*	---------------------  readvaux ---------------------------   */
@@ -473,7 +471,7 @@ void adjust(int iv, int fac, Class *cls) {
         fpcost += 0.5 * vara; /* The squared deviations term */
         fpcost += HALF_LOG_2PI + LATTICE - 0.5 * log(cvi->bpsprd);
     }
-    
+
     /*	Store param costs  */
     evi->spcost = spcost;
     evi->fpcost = fpcost;
@@ -552,7 +550,6 @@ adjdone:
 /*	------------------------  show  -----------------------   */
 void show(Class *cls, int iv) {
 
-    set_class(cls);
     set_var(iv, cls);
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out", evi->adj);
 

@@ -25,28 +25,24 @@ EXT int NSamples;
 /*	re inputs for main  */
 EXT Buffer *CurSource; /* Ptr to command source buffer */
 
-/*	re Sample records  */
-EXT char *CurRecord;  /*  Common ptr to a data record  */
-EXT int CurItem;      /*  Index of current item  */
-EXT char *CurField;   /*  Common ptr to a data field  */
-EXT int RecLen;    /*  reclen of current sample  */
-EXT char *Records; /*  Common ptr to data records block of a sample */
-
 /*	re hark  */
 EXT int Heard;       /* Flag showing a new command line has been detected */
 EXT int UseStdIn;    /* Flag showing input from sdtdin */
 EXT int Interactive; // Flag showing if snob is being called interactively
 EXT int Debug;       // Flag to turn toggle debug messages
 EXT int UseBin;
-
+EXT int Control, DControl; /*	To control what is adjusted  */
+EXT int DFix, Fix;         /*	To determine how weights are distributed  */
 EXT int trapkk, trapage, trapcnt;
 
-/*	To control what is adjusted  */
-EXT int Control, DControl;
-
-/*	To determine how weights are distributed  */
-EXT int DFix, Fix;
 EXT Score Scores;
+
+/*	re Sample records  */
+EXT char *CurRecord; /*  Common ptr to a data record  */
+EXT int CurItem;     /*  Index of current item  */
+EXT char *CurField;  /*  Common ptr to a data field  */
+EXT int RecLen;      /*  reclen of current sample  */
+EXT char *Records;   /*  Common ptr to data records block of a sample */
 
 /*	re Poplns  */
 EXT VarSet *CurVSet;

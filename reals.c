@@ -562,7 +562,6 @@ adjdone:
 /*	------------------------  show  -----------------------   */
 void show(Class *cls, int iv) {
 
-    set_class(cls);
     set_var(iv, cls);
 
     printf("V%3d  Cnt%6.1f  %s\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out");

@@ -333,7 +333,6 @@ double splice_dad(int ser)
     drop = -1.0e20;
     kk = serial_to_id(ser);
     cls = CurPopln->classes[kk];
-    set_class(cls);
     if (cls->type != Dad)
         goto finish;
     if (kk == CurRoot)

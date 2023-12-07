@@ -801,7 +801,6 @@ void prprint(double *ap) {
 void show(Class *cls, int iv) {
     int k;
 
-    set_class(cls);
     set_var(iv, cls);
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out", evi->adj);
 

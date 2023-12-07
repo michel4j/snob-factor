@@ -32,22 +32,22 @@ to the next class in a depth-first traversal, or 0 if there is none  */
 void next_class(Class **ptr)
 {
     Class *clp;
-
+    Population *popln = CurCtx.popln;
     clp = *ptr;
     if (clp->son_id >= 0) {
-        *ptr = CurPopln->classes[clp->son_id];
+        *ptr = popln->classes[clp->son_id];
         goto done;
     }
 loop:
     if (clp->sib_id >= 0) {
-        *ptr = CurPopln->classes[clp->sib_id];
+        *ptr = popln->classes[clp->sib_id];
         goto done;
     }
     if (clp->dad_id < 0) {
         *ptr = 0;
         goto done;
     }
-    clp = CurPopln->classes[clp->dad_id];
+    clp = popln->classes[clp->dad_id];
     goto loop;
 
 done:
@@ -65,6 +65,7 @@ OTHERWIZE, the root class is fully configured for the current sample.
 int make_population(int fill){
     PopVar *pvars;
     Class *cls;
+    //Population *CurPopln;
 
     int indx, i;
 
@@ -189,7 +190,7 @@ void make_subclasses(int kk){
     if (NoSubs)
         return;
     cls = CurPopln->classes[kk];
-    set_class(cls);
+
     clsa = clsb = 0;
     /*	Check that class has no subs   */
     if (cls->num_sons > 0) {
@@ -221,8 +222,6 @@ void make_subclasses(int kk){
     clsb = CurPopln->classes[kkb];
     clsa->serial = cls->serial + 1;
     clsb->serial = cls->serial + 2;
-
-    set_class(cls);
 
     /*	Fix hierarchy links.  */
     cls->num_sons = 2;

@@ -24,12 +24,8 @@ int serial_to_id(int ss) {
     return (-3);
 }
 
-/*	---------------------  setclass1 --------------------------   */
-void set_class(Class *cls) {
 
-}
-
-/*	---------------------  setclass2 --------------------------   */
+/*	---------------------  set_class_score --------------------------   */
 void set_class_score(Class *cls) {
     cls->case_score = Scores.CaseFacInt = cls->factor_scores[CurItem];
 }
@@ -227,7 +223,6 @@ newvsq, and calls clear_stats for all variables   */
 void clear_costs(Class *cls) {
     int i;
 
-    set_class(cls);
     cls->mlogab = -log(cls->relab);
     cls->cstcost = cls->cftcost = cls->cntcost = 0.0;
     cls->cfvcost = 0.0;
@@ -249,7 +244,6 @@ void clear_costs(Class *cls) {
 void set_best_costs(Class *cls) {
     int i;
 
-    set_class(cls);
     if (cls->type == Dad) {
         cls->best_cost = cls->dad_cost;
         cls->best_par_cost = cls->dad_par_cost;
@@ -468,7 +462,6 @@ void adjust_class(Class *cls, int dod) {
     double leafcost;
     Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
     
-    set_class(cls);
     /*	Get root (logarithmic average of vvsprds)  */
     cls->vav = exp(0.5 * cls->vav / (cls->newcnt + 0.1));
     if (Control & AdjSc)
@@ -641,7 +634,6 @@ void parent_cost_all_vars(Class *cls, int valid) {
     int i, son_id, nson;
     double abcost, rrelab;
 
-    set_class(cls);
     abcost = 0.0;
     for (i = 0; i < CurVSet->length; i++) {
         CurAttr = VSetVarList + i;
