@@ -67,7 +67,6 @@ EXT SampleVar *SmplVarList;
 EXT Class *CurDad;
 EXT int CurRoot;
 EXT Class *CurRootClass;
-EXT double CurCaseWeight; /*  weight of case in class  */
 
 /*	re Doall   */
 EXT int RSeed; /*	Seed for random routines */

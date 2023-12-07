@@ -371,28 +371,29 @@ facdone:
 /*	Given item weight in cwt, calcs derivs of item cost wrt basic
 params and accumulates in paramd1, paramd2  */
 void deriv_var(int iv, int fac, Class* cls) {
+    const double case_weight = cls ->case_weight;
 
     set_var(iv, cls);
     if (saux->missing)
         return;
     /*	Do no-fac first  */
-    evi->cnt += CurCaseWeight;
+    evi->cnt += case_weight;
     /*	For non-fac, just accum weight of 1s in cnt1  */
     if (saux->xn == 1)
-        evi->cnt1 += CurCaseWeight;
+        evi->cnt1 += case_weight;
     /*	Accum. weighted item cost  */
-    evi->stcost += CurCaseWeight * evi->scst[saux->xn];
-    evi->ftcost += CurCaseWeight * evi->parkftcost;
+    evi->stcost += case_weight * evi->scst[saux->xn];
+    evi->ftcost += case_weight * evi->parkftcost;
 
     /*	Now for factor form  */
     if (!fac)
         goto facdone;
-    evi->vsq += CurCaseWeight * Scores.CaseFacScoreSq;
-    evi->fapd1 += CurCaseWeight * evi->dbya;
-    evi->fbpd1 += CurCaseWeight * evi->dbyb;
+    evi->vsq += case_weight * Scores.CaseFacScoreSq;
+    evi->fapd1 += case_weight * evi->dbya;
+    evi->fbpd1 += case_weight * evi->dbyb;
     /*	Accum actual 2nd derivs  */
-    evi->apd2 += CurCaseWeight * evi->parkft;
-    evi->bpd2 += CurCaseWeight * evi->parkft * Scores.CaseFacScoreSq;
+    evi->apd2 += case_weight * evi->parkft;
+    evi->bpd2 += case_weight * evi->parkft * Scores.CaseFacScoreSq;
 facdone:
     return;
 }

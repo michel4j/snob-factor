@@ -442,18 +442,20 @@ Factor derivs done only if fac.  */
 void deriv_var(int iv, int fac, Class* cls) {
     double tt, tsprd, r2, cosw, sinw, wtr2, wd1, dwdt, dr2dw;
     double coser, siner;
+    const double case_weight = cls->case_weight;
+
     set_var(iv, cls);
     if (saux->missing)
         return;
     /*	Do non-fac first  */
-    evi->cnt += CurCaseWeight;
+    evi->cnt += case_weight;
     /*	For non-fac, rather than getting derivatives I just collect
         the sufficient statistics, sum of xn.sinxx, xn.cosxx  */
-    evi->tssin += CurCaseWeight * saux->xn.sinxx;
-    evi->tscos += CurCaseWeight * saux->xn.cosxx;
+    evi->tssin += case_weight * saux->xn.sinxx;
+    evi->tscos += case_weight * saux->xn.cosxx;
     /*	Accumulate weighted item cost  */
-    evi->stcost += CurCaseWeight * evi->parkstcost;
-    evi->ftcost += CurCaseWeight * evi->parkftcost;
+    evi->stcost += case_weight * evi->parkstcost;
+    evi->ftcost += case_weight * evi->parkftcost;
 
     /*	Now for factor form  */
     if (!fac)
@@ -471,16 +473,16 @@ void deriv_var(int iv, int fac, Class* cls) {
         accumulation as tfcos, tssin  */
 
     coser = saux->xn.cosxx * cosw + saux->xn.sinxx * sinw;
-    evi->tfcos += CurCaseWeight * coser;
+    evi->tfcos += case_weight * coser;
     siner = saux->xn.sinxx * cosw - saux->xn.cosxx * sinw;
-    evi->tfsin += CurCaseWeight * siner;
+    evi->tfsin += case_weight * siner;
 
     /*	These should be sufficient to get derivs of mc1 wrt hx, hy,
         also derivs of mc2, but there remains mc3, and load. */
 
     /*	Cost mc3 = 0.5 * Fmu * tsprd * r2  */
     tsprd = Scores.CaseFacScoreSq * cvi->ldsprd + cvi->ldsq * Scores.cvvsprd;
-    wtr2 = CurCaseWeight * r2;
+    wtr2 = case_weight * r2;
     /*	Accumulate wsprd = tsprd * r2  */
     evi->fwd2 += tsprd * wtr2;
 
@@ -493,7 +495,7 @@ void deriv_var(int iv, int fac, Class* cls) {
 
     /*	The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
     /*	and so to a deriv wrt ld of: (vv * wd1 * dwdt)  */
-    evi->ldd1 += CurCaseWeight * Scores.CaseFacScore * wd1 * dwdt;
+    evi->ldd1 += case_weight * Scores.CaseFacScore * wd1 * dwdt;
 
     /*	There is also a deriv wrt ld via tsprd.  */
     evi->ldd1 += cvi->fmufish * wtr2 * cvi->ld * Scores.cvvsprd;

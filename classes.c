@@ -32,7 +32,6 @@ void set_class(Class *cls) {
 /*	---------------------  setclass2 --------------------------   */
 void set_class_with_scores(Class *cls) {
     cls->case_score = Scores.CaseFacInt = cls->factor_scores[CurItem];
-    CurCaseWeight = cls->case_weight;
     CurDad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
 }
 
@@ -428,9 +427,10 @@ finish:
 /*	To collect derivative statistics for all vars of a class   */
 void deriv_all_vars(Class *cls) {
     int fac;
+    const double case_weight = cls->case_weight;
 
     set_class_with_scores(cls);
-    cls->newcnt += CurCaseWeight;
+    cls->newcnt += case_weight;
     if ((cls->age < MinFacAge) || (cls->use == Tiny))
         fac = 0;
     else {
@@ -438,9 +438,9 @@ void deriv_all_vars(Class *cls) {
         Scores.CaseFacScore = cls->case_fac_score;
         Scores.CaseFacScoreSq = cls->case_fac_score_sq;
         Scores.cvvsprd = cls->cvvsprd;
-        cls->newvsq += CurCaseWeight * Scores.CaseFacScoreSq;
-        cls->vav += CurCaseWeight * cls->clvsprd;
-        cls->totvv += Scores.CaseFacScore * CurCaseWeight;
+        cls->newvsq += case_weight * Scores.CaseFacScoreSq;
+        cls->vav += case_weight * cls->clvsprd;
+        cls->totvv += Scores.CaseFacScore * case_weight;
     }
     for (int iv = 0; iv < NumVars; iv++) {
         CurAttr = VSetVarList + iv;
@@ -452,10 +452,10 @@ void deriv_all_vars(Class *cls) {
     }
 
     /*	Collect case item costs   */
-    cls->cstcost += CurCaseWeight * cls->nofac_case_cost;
-    cls->cftcost += CurCaseWeight * cls->fac_case_cost;
-    cls->cntcost += CurCaseWeight * cls->dad_case_cost;
-    cls->cfvcost += CurCaseWeight * cls->coding_case_cost;
+    cls->cstcost += case_weight * cls->nofac_case_cost;
+    cls->cftcost += case_weight * cls->fac_case_cost;
+    cls->cntcost += case_weight * cls->dad_case_cost;
+    cls->cfvcost += case_weight * cls->coding_case_cost;
 
     return;
 }

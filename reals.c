@@ -313,19 +313,20 @@ facdone:
 params and accumulates in paramd1, paramd2.
 Factor derivs done only if fac.  */
 void deriv_var(int iv, int fac, Class* cls) {
+    const double case_weight = cls->case_weight;
     double del, var, frsds;
     set_var(iv, cls);
     if (saux->missing)
         return;
     /*	Do non-fac first  */
-    evi->cnt += CurCaseWeight;
+    evi->cnt += case_weight;
     /*	For non-fac, rather than getting derivatives I just collect
         the sufficient statistics, sum of xn, sum of xn^2  */
-    evi->tx += CurCaseWeight * saux->xn;
-    evi->txx += CurCaseWeight * (saux->xn * saux->xn + saux->epssq);
+    evi->tx += case_weight * saux->xn;
+    evi->txx += case_weight * (saux->xn * saux->xn + saux->epssq);
     /*	Accumulate weighted item cost  */
-    evi->stcost += CurCaseWeight * evi->parkstcost;
-    evi->ftcost += CurCaseWeight * evi->parkftcost;
+    evi->stcost += case_weight * evi->parkstcost;
+    evi->ftcost += case_weight * evi->parkftcost;
 
     /*	Now for factor form  */
     if (!fac)
@@ -339,12 +340,12 @@ void deriv_var(int iv, int fac, Class* cls) {
         var has been kept in stats.  */
     /*	Add to derivatives:  */
     var = evi->var;
-    evi->fsdld1 += CurCaseWeight * (1.0 - frsds * var);
-    evi->fsdld2 += 2.0 * CurCaseWeight;
-    evi->fmud1 += CurCaseWeight * del * frsds;
-    evi->fmud2 += CurCaseWeight * frsds;
-    evi->ldd1 += CurCaseWeight * frsds * (del * Scores.CaseFacScore + cvi->ld * Scores.cvvsprd);
-    evi->ldd2 += CurCaseWeight * frsds * (Scores.CaseFacScoreSq + Scores.cvvsprd);
+    evi->fsdld1 += case_weight * (1.0 - frsds * var);
+    evi->fsdld2 += 2.0 * case_weight;
+    evi->fmud1 += case_weight * del * frsds;
+    evi->fmud2 += case_weight * frsds;
+    evi->ldd1 += case_weight * frsds * (del * Scores.CaseFacScore + cvi->ld * Scores.cvvsprd);
+    evi->ldd2 += case_weight * frsds * (Scores.CaseFacScoreSq + Scores.cvvsprd);
 facdone:
     return;
 }
