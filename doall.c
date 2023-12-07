@@ -130,8 +130,8 @@ void tidy(int hit) {
         ndead = 0;
         for (i = 0; i <= popln->hi_class; i++) {
             cls = popln->classes[i];
-            if ((!cls) || (cls->type == Vacant) || (i == CurRoot)) {
-                if (i == CurRoot) {
+            if ((!cls) || (cls->type == Vacant) || (i == popln->root)) {
+                if (i == popln->root) {
                     cls->num_sons = 0;
                     cls->son_id = cls->sib_id = -1;
                 }
@@ -175,7 +175,7 @@ void tidy(int hit) {
         kkd = 0;
         for (i = 0; i <= popln->hi_class; i++) {
             cls = popln->classes[i];
-            if ((cls->type == Vacant) || (i == CurRoot)) {
+            if ((cls->type == Vacant) || (i == popln->root)) {
                 continue;
             }
             dad = popln->classes[cls->dad_id];

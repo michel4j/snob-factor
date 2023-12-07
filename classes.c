@@ -53,7 +53,7 @@ int make_class() {
         CurCtx.sample = Samples[i];
     }
 
-    NumVars = CurVSet->length;
+    NumVars = CurCtx.vset->length;
     pvars = popln->variables;
     /*	Find a vacant slot in the popln's classes vec   */
     for (kk = 0; kk < popln->cls_vec_len; kk++) {
@@ -187,7 +187,7 @@ void print_one_class(Class *cls, int full) {
     printf("totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", cls->nofac_cost, cls->fac_cost, cls->dad_cost, cls->best_cost);
     if (!full)
         return;
-    for (i = 0; i < CurVSet->length; i++) {
+    for (i = 0; i < CurCtx.vset->length; i++) {
         CurVType = VSetVarList[i].vtype;
         (*CurVType->show)(cls, i);
     }
@@ -233,7 +233,7 @@ void clear_costs(Class *cls) {
     cls->totvv = 0.0;
     if (!SeeAll)
         cls->scancnt = 0;
-    for (i = 0; i < CurVSet->length; i++) {
+    for (i = 0; i < CurCtx.vset->length; i++) {
         CurVType = VSetVarList[i].vtype;
         (*CurVType->clear_stats)(i, cls);
     }
@@ -258,7 +258,7 @@ void set_best_costs(Class *cls) {
         cls->best_par_cost = cls->fac_par_cost;
         cls->best_case_cost = cls->cftcost;
     }
-    for (i = 0; i < CurVSet->length; i++) {
+    for (i = 0; i < CurCtx.vset->length; i++) {
         CurVType = VSetVarList[i].vtype;
         (*CurVType->set_best_pars)(i, cls);
     }
@@ -317,7 +317,7 @@ started:
 
     Scores.CaseFacScoreSq = Scores.CaseFacScore * Scores.CaseFacScore;
     Scores.CaseFacScoreD1 = Scores.CaseFacScoreD2 = Scores.EstFacScoreD2 = Scores.CaseFacScoreD3 = 0.0;
-    for (i = 0; i < CurVSet->length; i++) {
+    for (i = 0; i < CurCtx.vset->length; i++) {
         vset_var = VSetVarList + i;
         if (vset_var->inactive)
             goto vdone;
@@ -381,7 +381,7 @@ void cost_all_vars(Class *cls) {
         Scores.CaseFacScoreSq = Scores.CaseFacScore * Scores.CaseFacScore;
     }
     Scores.CaseCost = Scores.CaseNoFacCost = Scores.CaseFacCost = cls->mlogab; /* Abundance cost */
-    for (int iv = 0; iv < CurVSet->length; iv++) {
+    for (int iv = 0; iv < CurCtx.vset->length; iv++) {
         vset_var = VSetVarList + iv;
         if (vset_var->inactive)
             goto vdone;
@@ -507,7 +507,7 @@ void adjust_class(Class *cls, int dod) {
     /*	cls->cnpcost was zeroed in doall, and has accumulated the cbpcosts
     of cls's sons, so we don't zero it here. 'ncostvarall' will add to it.  */
     cls->nofac_par_cost = cls->fac_par_cost = 0.0;
-    for (iv = 0; iv < CurVSet->length; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         vset_var = VSetVarList + iv;
         if (vset_var->inactive)
             goto vdone;
@@ -643,7 +643,7 @@ void parent_cost_all_vars(Class *cls, int valid) {
     VSetVar *vset_var;
 
     abcost = 0.0;
-    for (i = 0; i < CurVSet->length; i++) {
+    for (i = 0; i < CurCtx.vset->length; i++) {
         vset_var = VSetVarList + i;
         CurVType = vset_var->vtype;
         (*CurVType->cost_var_nonleaf)(i, valid, cls);
@@ -739,17 +739,16 @@ void delete_all_classes() {
     Class *cls;
     Population *popln = CurCtx.popln;
 
-    CurRoot = popln->root;
     for (k = 0; k <= popln->hi_class; k++) {
         cls = popln->classes[k];
-        if (cls->id != CurRoot) {
+        if (cls->id != popln->root) {
             cls->type = Vacant;
             cls->dad_id = Deadkilled;
         }
     }
     popln->num_classes = 1;
-    popln->hi_class = CurRoot;
-    cls = popln->classes[CurRoot];
+    popln->hi_class = popln->root;
+    cls = popln->classes[popln->root];
     cls->son_id = -1;
     cls->sib_id = -1;
     cls->num_sons = 0;

@@ -488,7 +488,7 @@ int main() {
     if (kk < 0)
         exit(2);
     else
-        CurVSet = CurCtx.vset = VarSets[kk];
+        CurCtx.vset = VarSets[kk];
 
     SeeAll = 2;
     printf("Enter sample file name:\n");
@@ -512,7 +512,7 @@ int main() {
     if (trapkk >= 0)
         scanf("%d", &trapage);
 #endif
-    print_class(CurRoot, 0);
+    print_class(CurCtx.popln->root, 0);
 error:
     printf("??? line %6d\n", CurSource->line);
     new_line();
@@ -603,7 +603,7 @@ loop:
         goto loop;
     case 3: /* killclass */
         k = readserial(kk);
-        if (k == CurRoot) {
+        if (k == CurCtx.popln->root) {
             printf("Won't kill Root\n");
             goto loop;
         }

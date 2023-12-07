@@ -6,9 +6,8 @@
 /*	-----------------------  setpop  --------------------------    */
 void set_population() {
     Population *popln = CurCtx.popln;
-    CurVSet = CurCtx.vset;
-    NumVars = CurVSet->length;
-    VSetVarList = CurVSet->variables;
+    NumVars = CurCtx.vset->length;
+    VSetVarList = CurCtx.vset->variables;
     if (CurCtx.sample) {
         NumCases = CurCtx.sample->num_cases;
         SmplVarList = CurCtx.sample->variables;
@@ -20,7 +19,6 @@ void set_population() {
         Records = 0;
     }
     PopVarList = popln->variables;
-    CurRoot = popln->root;
 }
 
 /*	-----------------------  nextclass  ---------------------  */
@@ -66,7 +64,6 @@ int make_population(int fill) {
 
     int indx, i;
 
-    CurVSet = CurCtx.vset;
     if (CurCtx.sample)
         NumCases = CurCtx.sample->num_cases;
     else
@@ -89,7 +86,7 @@ gotit:
     popln->id = indx;
     popln->sample_size = 0;
     strcpy(popln->sample_name, "??");
-    strcpy(popln->vst_name, CurVSet->name);
+    strcpy(popln->vst_name, CurCtx.vset->name);
     popln->blocks = popln->model_blocks = 0;
     CurCtx.popln = popln;
     for (i = 0; i < 80; i++)
@@ -126,10 +123,10 @@ gotit:
         strcpy(popln->sample_name, CurCtx.sample->name);
         popln->sample_size = NumCases;
     }
-    CurRoot = popln->root = make_class();
-    if (CurRoot < 0)
+    popln->root = make_class();
+    if (popln->root < 0)
         goto nospace;
-    cls = popln->classes[CurRoot];
+    cls = popln->classes[popln->root];
     cls->serial = 4;
     popln->next_serial = 2;
     cls->dad_id = -2; /* root has no dad */
@@ -155,8 +152,7 @@ int init_population() {
     int ipop;
 
     clr_bad_move();
-    CurCtx.sample = CurCtx.sample;
-    CurVSet = CurCtx.vset;
+
     ipop = -1;
     if (!CurCtx.sample) {
         printf("No sample defined for firstpop\n");
@@ -327,7 +323,7 @@ int copy_population(int p1, int fill, char *newname) {
         indx = -101;
         goto finish;
     }
-    CurVSet = CurCtx.vset = VarSets[kk];
+    CurCtx.vset = VarSets[kk];
     sindx = -1;
     NumCases = 0;
     if (!fill)
@@ -337,7 +333,7 @@ int copy_population(int p1, int fill, char *newname) {
         goto sampfound;
     }
     /*	Use current sample if compatible  */
-    if (CurCtx.sample && (!strcmp(CurCtx.sample->vset_name, CurVSet->name))) {
+    if (CurCtx.sample && (!strcmp(CurCtx.sample->vset_name, CurCtx.vset->name))) {
         sindx = CurCtx.sample->id;
         goto sampfound;
     }
@@ -386,7 +382,7 @@ sampfound:
     hiser = 0;
 
     /*	We must begin copying classes, begining with fpop's root  */
-    fcls = fpop->classes[CurRoot];
+    fcls = fpop->classes[popln->root];
     jdad = -1;
     /*	In case the pop is unattached (fpop->nc = 0), prepare a nominal
     count to insert in leaf classes  */
@@ -547,7 +543,7 @@ void print_tree() {
         printf(" Tree");
     printf("\n");
     pdeep = 0;
-    print_subtree(CurRoot);
+    print_subtree(popln->root);
     return;
 }
 
@@ -576,9 +572,9 @@ int get_best_pop() {
         }
         if (i < 0) {
             /*	Set bestcost in samp from current cost  */
-            CurCtx.sample->best_cost = CurCtx.popln->classes[CurRoot]->best_cost;
+            CurCtx.sample->best_cost = CurCtx.popln->classes[CurCtx.popln->root]->best_cost;
             /*	Set goodtime as current pop age  */
-            CurCtx.sample->best_time = CurCtx.popln->classes[CurRoot]->age;
+            CurCtx.sample->best_time = CurCtx.popln->classes[CurCtx.popln->root]->age;
         }
     }
     return (i);
@@ -607,7 +603,7 @@ void track_best(int verify) {
     bstpop = Populations[bstid];
     bstroot = bstpop->root;
     bstcst = bstpop->classes[bstroot]->best_cost;
-    if (popln->classes[CurRoot]->best_cost >= bstcst)
+    if (popln->classes[popln->root]->best_cost >= bstcst)
         return;
     /*	Current looks better, but do a doall to ensure cost is correct */
     /*	But only bother if 'verify'  */
@@ -616,15 +612,15 @@ void track_best(int verify) {
         Control = 0;
         do_all(1, 1);
         Control = kk;
-        if (popln->classes[CurRoot]->best_cost >= (bstcst))
+        if (popln->classes[popln->root]->best_cost >= (bstcst))
             return;
     }
 
     /*	Seems better, so kill old 'bestmodel' and make a new one */
     set_population();
     kk = copy_population(popln->id, 0, BSTname);
-    CurCtx.sample->best_cost = popln->classes[CurRoot]->best_cost;
-    CurCtx.sample->best_time = popln->classes[CurRoot]->age;
+    CurCtx.sample->best_cost = popln->classes[popln->root]->best_cost;
+    CurCtx.sample->best_time = popln->classes[popln->root]->age;
     return;
 }
 
@@ -726,7 +722,7 @@ namefixed:
     /*	switch context to TrialPop  */
     CurCtx.popln = Populations[i];
     set_population();
-    CurVSet = CurCtx.vset = VarSets[find_vset(popln->vst_name)];
+    CurCtx.vset = VarSets[find_vset(popln->vst_name)];
     nc = popln->sample_size;
     if (!fill)
         nc = 0;
@@ -836,8 +832,8 @@ int load_population(char *nam) {
         printf("Model needs variableset %s\n", name);
         goto error;
     }
-    CurVSet = CurCtx.vset = VarSets[j];
-    NumVars = CurVSet->length;
+    CurCtx.vset = VarSets[j];
+    NumVars = CurCtx.vset->length;
     fscanf(fl, "%s", name);          /* Reading sample name */
     fscanf(fl, "%d%d", &fncl, &fnc); /* num of classes, cases */
                                      /*	Advance to real data */
@@ -982,9 +978,9 @@ int set_work_population(int pp) {
         printf("Load cannot find variable set\n");
         goto error;
     }
-    CurVSet = CurCtx.vset = VarSets[j];
+    CurCtx.vset = VarSets[j];
     /*	Check VarSet  */
-    if (strcmp(CurVSet->name, oldctx.sample->vset_name)) {
+    if (strcmp(CurCtx.vset->name, oldctx.sample->vset_name)) {
         printf("Picked popln has incompatible VariableSet\n");
         goto error;
     }

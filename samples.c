@@ -64,25 +64,24 @@ nospce:
 
 gotit:
     indx = i;
-    CurVSet = VarSets[i] = (VarSet *)malloc(sizeof(VarSet));
-    if (!CurVSet)
+    CurCtx.vset = VarSets[i] = (VarSet *)malloc(sizeof(VarSet));
+    if (!CurCtx.vset)
         goto nospce;
-    CurVSet->id = indx;
-    CurCtx.vset = CurVSet;
-    CurVSet->variables = 0;
-    CurVSet->blocks = 0;
-    strcpy(CurVSet->filename, filename);
-    strcpy(buf->cname, CurVSet->filename);
+    CurCtx.vset->id = indx;
+    CurCtx.vset->variables = 0;
+    CurCtx.vset->blocks = 0;
+    strcpy(CurCtx.vset->filename, filename);
+    strcpy(buf->cname, CurCtx.vset->filename);
     CurCtx.buffer = buf;
     if (open_buffser()) {
-        printf("Cant open variable-set file %s\n", CurVSet->filename);
+        printf("Cant open variable-set file %s\n", CurCtx.vset->filename);
         i = -2;
         goto error;
     }
 
     /*	Begin to read variable-set file. First entry is its name   */
     new_line();
-    kread = read_str(CurVSet->name, 1);
+    kread = read_str(CurCtx.vset->name, 1);
     if (kread < 0) {
         printf("Error in name of variable-set\n");
         i = -9;
@@ -96,8 +95,8 @@ gotit:
         i = -4;
         goto error;
     }
-    CurVSet->length = NumVars;
-    CurVSet->num_active = CurVSet->length;
+    CurCtx.vset->length = NumVars;
+    CurCtx.vset->num_active = CurCtx.vset->length;
 
     /*	Make a vec of nv VSetVar blocks  */
     VSetVarList = (VSetVar *)alloc_blocks(3, NumVars * sizeof(VSetVar));
@@ -106,7 +105,7 @@ gotit:
         i = -3;
         goto error;
     }
-    CurVSet->variables = VSetVarList;
+    CurCtx.vset->variables = VSetVarList;
 
     /*	Read in the info for each variable into vlist   */
     for (i = 0; i < NumVars; i++) {
@@ -225,7 +224,7 @@ int load_sample(const char *fname) {
         i = -8;
         goto error;
     }
-    CurVSet = CurCtx.vset = VarSets[kread];
+    CurCtx.vset = VarSets[kread];
 
     /*	Find a vacant sample slot  */
     for (i = 0; i < MAX_SAMPLES; i++) {
@@ -244,10 +243,10 @@ gotit:
     strcpy(CurCtx.sample->filename, buf->cname);
     strcpy(CurCtx.sample->name, sampname);
     /*	Set variable-set name in sample  */
-    strcpy(CurCtx.sample->vset_name, CurVSet->name);
+    strcpy(CurCtx.sample->vset_name, CurCtx.vset->name);
     /*	Num of variables   */
-    NumVars = CurVSet->length;
-    VSetVarList = CurVSet->variables;
+    NumVars = CurCtx.vset->length;
+    VSetVarList = CurCtx.vset->variables;
 
     /*	Make a vec of nv SampleVar blocks  */
     SmplVarList = (SampleVar *)alloc_blocks(0, NumVars * sizeof(SampleVar));

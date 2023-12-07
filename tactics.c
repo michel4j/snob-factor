@@ -18,7 +18,7 @@ void flatten() {
         return;
     }
     for (i = 0; i <= popln->hi_class; i++) {
-        if (i == CurRoot)
+        if (i == popln->root)
             goto donecls;
         cls = popln->classes[i];
         if (cls->type == Vacant)
@@ -33,7 +33,7 @@ void flatten() {
                 cls->serial = popln->next_serial << 2;
                 popln->next_serial++;
             }
-            cls->dad_id = CurRoot;
+            cls->dad_id = popln->root;
         }
     donecls:;
     }
@@ -199,7 +199,7 @@ int best_insert_dad(int force)
 
     i1 = 0;
 outer:
-    if (i1 == CurRoot)
+    if (i1 == CurCtx.popln->root)
         goto i1done;
     cls1 = CurCtx.popln->classes[i1];
     if (!cls1)
@@ -209,7 +209,7 @@ outer:
     ser1 = cls1->serial;
     i2 = i1 + 1;
 inner:
-    if (i2 == CurRoot)
+    if (i2 == CurCtx.popln->root)
         goto i2done;
     cls2 = CurCtx.popln->classes[i2];
     if (!cls2)
@@ -343,7 +343,7 @@ double splice_dad(int ser)
     cls = popln->classes[kk];
     if (cls->type != Dad)
         goto finish;
-    if (kk == CurRoot)
+    if (kk == popln->root)
         goto finish;
     kkd = cls->dad_id;
     if (kkd < 0)
@@ -393,7 +393,7 @@ int best_remove_dad() {
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     i1 = 0;
 loop:
-    if (i1 == CurRoot)
+    if (i1 == popln->root)
         goto i1done;
     cls = CurCtx.popln->classes[i1];
     if (!cls)
@@ -718,7 +718,7 @@ int best_move_class(int force)
 
     i1 = 0;
 outer:
-    if (i1 == CurRoot)
+    if (i1 == CurCtx.popln->root)
         goto i1done;
     cls1 = CurCtx.popln->classes[i1];
     if (!cls1)
