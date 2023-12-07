@@ -64,7 +64,7 @@ EXT PopVar *PopVarList;
 EXT SampleVar *SmplVarList;
 
 /*	re Classes  */
-EXT Class *CurClass, *CurDad;
+EXT Class *CurDad;
 EXT int CurRoot;
 EXT Class *CurRootClass;
 EXT double CurCaseWeight; /*  weight of case in class  */

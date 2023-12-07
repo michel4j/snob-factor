@@ -26,13 +26,11 @@ int serial_to_id(int ss) {
 
 /*	---------------------  setclass1 --------------------------   */
 void set_class(Class *cls) {
-    CurClass = cls;
     CurDad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
 }
 
 /*	---------------------  setclass2 --------------------------   */
 void set_class_with_scores(Class *cls) {
-    CurClass = cls;
     cls->case_score = Scores.CaseFacInt = cls->factor_scores[CurItem];
     CurCaseWeight = cls->case_weight;
     CurDad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
