@@ -102,7 +102,7 @@ void initialize(int lib, int debug, int threads) {
     DControl = Control = AdjAll;
 
     if (threads > 0) {
-        omp_set_num_threads(4);
+        // omp_set_num_threads(4);
     }
 
     default_tune();

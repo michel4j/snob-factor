@@ -5109,6 +5109,7 @@ asymp:
 /*	Code for doing spot checks on kapcode  */
 
 #include <stdio.h>
+#include <stdlib.h>
 /*	To generate tabels of the function:
 
     LI0 = log 2*Int_{0..PI} {exp (kappa * cos (x)) dx}

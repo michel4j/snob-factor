@@ -21,7 +21,7 @@ char *stopp = "stop\n";
     'I': valid input line
     'A': acknowlege by hark
     */
-main() {
+int main() {
     int nnon;
 
     seq = '1';

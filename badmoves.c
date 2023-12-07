@@ -1,4 +1,4 @@
-#define BADMOVES 1
+
 #include "glob.h"
 
 static char *movestr[] = {" ", "Insert", "Delete", "Move"};
