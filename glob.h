@@ -60,7 +60,6 @@ EXT SampleVar *SmplVarList;
 
 /*	re Classes  */
 EXT int CurRoot;
-EXT Class *CurRootClass;
 
 /*	re Doall   */
 EXT int RSeed; /*	Seed for random routines */

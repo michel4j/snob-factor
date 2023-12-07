@@ -287,8 +287,9 @@ void update_seeall_newsubs(int niter, int ncycles) {
 }
 
 void find_and_estimate(int *all, int niter, int ncycles) {
-    int repeat = 0, num_son;
+    int repeat, num_son;
     do {
+        repeat = 0;
         if (Fix == Random)
             SeeAll = 3;
         tidy(1);
@@ -301,8 +302,7 @@ void find_and_estimate(int *all, int niter, int ncycles) {
 
         for (int j = 0; j < CurSample->num_cases; j++) {
             do_case(j, *all, 1, num_son);
-            /*	docase ignores classes with ignore bit in cls->vv[] for the case
-                unless SeeAll is on.  */
+            /*	docase ignores classes with ignore bit in cls->vv[] for the case unless SeeAll is on.  */
         }
 
         // All classes in Sons[] now have stats assigned to them.

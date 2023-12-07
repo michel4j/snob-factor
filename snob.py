@@ -39,12 +39,12 @@ EXAMPLES = [
     'd2',
     'vm',
 ]
-#EXAMPLES = ['6m1c']
+EXAMPLES = ['sd1']
 
 from pathlib import Path
                 
 if __name__ == '__main__':
-    snob.initialize(1, 0, 16)
+    snob.initialize(0, 0, 16)
 
     for name in EXAMPLES:
         vset_file = str(Path('./examples') / f'{name}.v')
