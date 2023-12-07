@@ -420,7 +420,7 @@ int main() {
     double drop;
     char *chp;
     Context oldctx;
-    Class *cls;
+    Class *cls, *root;
     Population *popln;
 
     RSeed = 1234567;
@@ -530,6 +530,9 @@ loop:
         revert(1);
         Heard = 0;
     }
+    
+
+    
     if (NoSubs || (Control != AdjAll)) {
         if (NoSubs)
             printf("NOSUBS  ");
@@ -542,7 +545,8 @@ loop:
             if (!(Control & AdjTr))
                 printf(" TREE");
         }
-        printf("  Cost%8.1f\n", CurRootClass->best_cost);
+        root = CurCtx.popln->classes[CurCtx.popln->root];
+        printf("  Cost%8.1f\n", root->best_cost);
     }
     if (!CurCtx.popln) {
         kk = 13;

@@ -22,8 +22,6 @@ void set_population() {
     }
     PopVarList = popln->variables;
     CurRoot = popln->root;
-    CurRootClass = popln->classes[CurRoot];
-    return;
 }
 
 /*	-----------------------  nextclass  ---------------------  */

@@ -574,7 +574,7 @@ int item_list(char *tlstname)
     double bw, bs;
     Class *cls;
     Population *popln = CurCtx.popln;
-
+    Class *root = CurCtx.popln->classes[CurCtx.popln->root];
     /*	Check we have an attched sample and model  */
     if (!CurCtx.popln)
         return (-1);
@@ -589,7 +589,7 @@ int item_list(char *tlstname)
     if (!tlst)
         return (-4);
     /*	Output a tree list in a primitive form  */
-    cls = CurRootClass;
+    cls = root;
 
 treeloop:
     if (cls->type == Sub)

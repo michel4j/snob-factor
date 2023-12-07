@@ -194,6 +194,7 @@ void print_one_class(Class *cls, int full) {
 
 void print_class(int kk, int full) {
     Class *cls;
+    Class *root = CurCtx.popln->classes[CurCtx.popln->root];
     if (kk >= 0) {
         cls = CurCtx.popln->classes[kk];
         print_one_class(cls, full);
@@ -204,7 +205,7 @@ void print_class(int kk, int full) {
         return;
     }
     set_population();
-    cls = CurRootClass;
+    cls = root;
 
     do {
         if ((kk == -2) || (cls->type != Sub))
@@ -741,7 +742,7 @@ void delete_all_classes() {
     }
     popln->num_classes = 1;
     popln->hi_class = CurRoot;
-    CurRootClass = cls = popln->classes[CurRoot];
+    cls = popln->classes[CurRoot];
     cls->son_id = -1;
     cls->sib_id = -1;
     cls->num_sons = 0;

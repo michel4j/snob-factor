@@ -40,10 +40,12 @@ int find_all(int class_type) {
     int i, j, num_son;
     Class *cls;
     Population *popln = CurCtx.popln;
+    Class *root = CurCtx.popln->classes[CurCtx.popln->root];
+
     set_population();
     tidy(1);
     j = 0;
-    cls = CurRootClass;
+    cls = root;
 
     while (cls) {
         if (class_type & cls->type) {
@@ -348,9 +350,9 @@ double update_leaf_classes(double *oldleafsum, int *nfail, int num_son) {
 
 
 void update_all_classes(double *oldcost, int *nfail) {
-
-    Class *dad, *cls = CurRootClass;
     Population *popln = CurCtx.popln;
+    Class *root = popln->classes[popln->root];
+    Class *dad, *cls = root;
     int adjusted = 0;
 
     while (!adjusted) {
@@ -385,9 +387,9 @@ void update_all_classes(double *oldcost, int *nfail) {
     if (SeeAll == 0) {
         rep('.');
     } else {
-        if (CurRootClass->best_cost < (*oldcost - MinGain)) {
+        if (root->best_cost < (*oldcost - MinGain)) {
             (*nfail) = 0;
-            *oldcost = CurRootClass->best_cost;
+            *oldcost = root->best_cost;
             rep('A');
         } else {
             (*nfail)++;
@@ -401,6 +403,7 @@ int count_score_changes() {
         score changes.  */
     Class *cls;
     Population *popln = CurCtx.popln;
+
     int scorechanges = 0;
     for (int k = 0; k <= popln->hi_class; k++) {
         cls = popln->classes[k];
@@ -413,11 +416,14 @@ int count_score_changes() {
 int do_all(int ncycles, int all) {
     int niter, nfail, ic, ncydone, ncyask, kicked = 0, num_son;
     double oldcost, oldleafsum;
+    
+    Population *popln = CurCtx.popln;
+    Class *root = popln->classes[popln->root];
 
     nfail = niter = ncydone = 0;
     ncyask = ncycles;
     all = (all) ? (Dad + Leaf + Sub) : Leaf;
-    oldcost = CurRootClass->best_cost;
+    oldcost = root->best_cost;
     /*	Get sum of class costs, meaningful only if 'all' = Leaf  */
     oldleafsum = 0.0;
     num_son = find_all(Leaf);
@@ -482,7 +488,7 @@ int do_dads(int ncy) {
     double oldcost;
     int nn, nfail, num_son;
     Population *popln = CurCtx.popln;
-
+    Class *root = popln->classes[popln->root];
     if (!(Control & AdjPr))
         ncy = 1;
 
@@ -497,12 +503,12 @@ int do_dads(int ncy) {
     nn = nfail = 0;
 
     do {
-        oldcost = CurRootClass->dad_par_cost;
-        if (CurRootClass->type != Dad) {
+        oldcost = root->dad_par_cost;
+        if (root->type != Dad) {
             return (0);
         }
         /*	Begin a recursive scan of classes down to leaves   */
-        cls = CurRootClass;
+        cls = root;
 
     newdad:
         if (cls->type == Leaf)
@@ -537,12 +543,12 @@ int do_dads(int ncy) {
         goto complete;
 
     alladjusted:
-        CurRootClass->best_par_cost = CurRootClass->dad_par_cost;
-        CurRootClass->best_cost = CurRootClass->dad_par_cost + CurRootClass->cntcost;
+        root->best_par_cost = root->dad_par_cost;
+        root->best_cost = root->dad_par_cost + root->cntcost;
         /*	Test for convergence  */
         nn++;
         nfail++;
-        if (CurRootClass->dad_par_cost < (oldcost - MinGain))
+        if (root->dad_par_cost < (oldcost - MinGain))
             nfail = 0;
         rep((nfail) ? 'd' : 'D');
         if (nfail > 3) {
@@ -563,15 +569,17 @@ double olddogcosts[6];
 int do_good(int ncy, double target) {
     int j, nn, nfail;
     double oldcost;
+    Population *popln = CurCtx.popln;
+    Class *root = popln->classes[popln->root];
 
     do_all(1, 1);
     for (nn = 0; nn < 6; nn++)
-        olddogcosts[nn] = CurRootClass->best_cost + 10000.0;
+        olddogcosts[nn] = root->best_cost + 10000.0;
     nfail = 0;
     for (nn = 0; nn < ncy; nn++) {
-        oldcost = CurRootClass->best_cost;
+        oldcost = root->best_cost;
         do_all(2, 0);
-        if (CurRootClass->best_cost < (oldcost - MinGain))
+        if (root->best_cost < (oldcost - MinGain))
             nfail = 0;
         else
             nfail++;
@@ -580,12 +588,12 @@ int do_good(int ncy, double target) {
             goto kicked;
         if (nfail > 2)
             goto done;
-        if (CurRootClass->best_cost < target)
+        if (root->best_cost < target)
             goto bullseye;
         /*	See if new cost significantly better than cost 5 cycles ago */
         for (j = 0; j < 5; j++)
             olddogcosts[j] = olddogcosts[j + 1];
-        olddogcosts[5] = CurRootClass->best_cost;
+        olddogcosts[5] = root->best_cost;
         if ((olddogcosts[0] - olddogcosts[5]) < 0.2)
             goto done;
     }
@@ -625,6 +633,7 @@ void do_case(int cse, int all, int derivs, int num_son) {
     PSaux *psaux;
     int clc, i;
     Population *popln = CurCtx.popln;
+    Class *root = popln->classes[popln->root];
 
     CurRecord = Records + cse * RecLen; /*  Set ptr to case record  */
     CurItem = cse;
@@ -729,7 +738,7 @@ void do_case(int cse, int all, int derivs, int num_son) {
             rootcost = mincost;
         else
             rootcost = mincost - log(sum);
-        CurRootClass->dad_case_cost = CurRootClass->total_case_cost = rootcost;
+        root->dad_case_cost = root->total_case_cost = rootcost;
         sum = 1.0 / sum;
         clc = 0;
         while (clc < num_son) {
@@ -815,7 +824,7 @@ void do_case(int cse, int all, int derivs, int num_son) {
 
         /*	We have now assigned caseweights to all Leafs and Subs.
             Collect weights from leaves into Dads, setting their casecosts  */
-        if (CurRootClass->type != Leaf) { /* skip when root is only leaf */
+        if (root->type != Leaf) { /* skip when root is only leaf */
             for (clc = num_son - 1; clc >= 0; clc--) {
                 cls = Sons[clc];
                 if ((cls->type == Sub) || ((!SeeAll) && (cls->factor_scores[CurItem] & 1))) {
@@ -840,7 +849,7 @@ void do_case(int cse, int all, int derivs, int num_son) {
             }
         }
     }
-    CurRootClass->case_weight = 1.0;
+    root->case_weight = 1.0;
     /*	Now all classes have casewt assigned, I hope. Can proceed to
     collect statistics from this case  */
     if (!derivs) {

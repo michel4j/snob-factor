@@ -10,9 +10,10 @@ void flatten() {
     int i;
     Class *cls;
     Population *popln = CurCtx.popln;
+    Class *root = popln->classes[popln->root];
     set_population();
     tidy(0);
-    if (CurRootClass->num_sons == 0) {
+    if (root->num_sons == 0) {
         printf("Nothing to flatten\n");
         return;
     }
@@ -38,8 +39,8 @@ void flatten() {
     }
     NoSubs++;
     tidy(0);
-    CurRootClass->type = Dad;
-    CurRootClass->hold_type = Forever;
+    root->type = Dad;
+    root->hold_type = Forever;
     do_all(1, 1);
     do_dads(3);
     do_all(3, 0);
@@ -69,7 +70,9 @@ double insert_dad(int ser1, int ser2, int *dadid)
     int oldid, newid, od1, od2;
 
     Population *popln = CurCtx.popln;
-    origcost = CurRootClass->best_par_cost;
+    Class *root = popln->classes[popln->root];
+
+    origcost = root->best_par_cost;
     *dadid = -1;
     k1 = serial_to_id(ser1);
     if (k1 < 0)
@@ -143,7 +146,7 @@ configok:
     /*	Fix linkages  */
     tidy(0);
     do_dads(20);
-    newcost = CurRootClass->best_par_cost;
+    newcost = root->best_par_cost;
     drop = origcost - newcost;
     *dadid = newid;
     goto done;
@@ -161,7 +164,7 @@ to try  */
 int best_insert_dad(int force)
 {
     Context oldctx;
-    Class *cls1, *cls2;
+    Class *cls1, *cls2, *root;
     int i1, i2, hiid, succ;
     int bser1, bser2, ser1, ser2, newp, newid, newser;
     double res, bestdrop, origcost;
@@ -183,7 +186,8 @@ int best_insert_dad(int force)
     bser1 = bser2 = -1;
     newser = 0;
     set_population();
-    origcost = CurRootClass->best_cost;
+    root = CurCtx.popln->classes[CurCtx.popln->root];
+    origcost = root->best_cost;
     hiid = CurCtx.popln->hi_class;
     if (CurCtx.popln->num_classes < 4) {
         flp();
@@ -224,6 +228,7 @@ inner:
         goto popfails;
     CurCtx.popln = Populations[newp];
     set_population();
+    root = CurCtx.popln->classes[CurCtx.popln->root];
     res = insert_dad(ser1, ser2, &newid);
     if (newid < 0) {
         goto i2done;
@@ -236,6 +241,7 @@ inner:
 i2done:
     memcpy(&CurCtx, &oldctx, sizeof(Context));
     set_population(); /* Return to original popln */
+    root = CurCtx.popln->classes[CurCtx.popln->root];
     i2++;
     if (i2 <= hiid)
         goto inner;
@@ -259,6 +265,7 @@ alldone:
         goto popfails;
     CurCtx.popln = Populations[newp];
     set_population();
+    root = CurCtx.popln->classes[CurCtx.popln->root];
     flp();
     printf("TRYING INSERT %6d,%6d\n", bser1 >> 2, bser2 >> 2);
     res = insert_dad(bser1, bser2, &newid);
@@ -275,7 +282,7 @@ alldone:
         newser = 0;
     /*	See if the trial model has improved over original  */
     succ = 1;
-    if (CurRootClass->best_cost < origcost)
+    if (root->best_cost < origcost)
         goto winner;
     succ = 0;
     if (force)
@@ -329,6 +336,7 @@ double splice_dad(int ser)
     int kk, kkd, kks;
     double drop, origcost, newcost;
     Population *popln = CurCtx.popln;
+    Class *root = popln->classes[popln->root];
 
     drop = -1.0e20;
     kk = serial_to_id(ser);
@@ -343,7 +351,7 @@ double splice_dad(int ser)
     if (cls->num_sons <= 0)
         goto finish;
     /*	All seems OK. Fix idads in kk's sons  */
-    origcost = CurRootClass->best_par_cost;
+    origcost = root->best_par_cost;
     for (kks = cls->son_id; kks >= 0; kks = son->sib_id) {
         son = popln->classes[kks];
         son->dad_id = kkd;
@@ -354,7 +362,7 @@ double splice_dad(int ser)
     /*	Fix linkages  */
     tidy(0);
     do_dads(20);
-    newcost = CurRootClass->best_par_cost;
+    newcost = root->best_par_cost;
     drop = origcost - newcost;
 finish:
     return (drop);
@@ -366,18 +374,21 @@ as work if an improvement.  */
 /*	Returns 1 if accepted, 0 if tried and no good, -1 if none to try */
 int best_remove_dad() {
     Context oldctx;
-    Class *cls;
+    Class *cls, *root;
     int i1, hiid, newp;
     int bser, ser;
     double res, bestdrop, origcost;
+    Population *popln = CurCtx.popln;
+
 
     NoSubs++;
     bestdrop = -1.0e20;
     bser = -1;
     set_population();
+    root = popln->classes[popln->root];
     /*	Do one pass of doall to set costs  */
     do_all(1, 1);
-    origcost = CurRootClass->best_cost;
+    origcost = root->best_cost;
     hiid = CurCtx.popln->hi_class;
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     i1 = 0;
@@ -395,8 +406,9 @@ loop:
     newp = copy_population(CurCtx.popln->id, 0, "TrialPop");
     if (newp < 0)
         goto popfails;
-    CurCtx.popln = Populations[newp];
+    popln = CurCtx.popln = Populations[newp];
     set_population();
+    root = popln->classes[popln->root];
     res = splice_dad(ser);
     if (res < -1000000.0) {
         goto i1done;
@@ -420,8 +432,9 @@ i1done:
     newp = copy_population(CurCtx.popln->id, 1, "TrialPop");
     if (newp < 0)
         goto popfails;
-    CurCtx.popln = Populations[newp];
+    popln = CurCtx.popln = Populations[newp];
     set_population();
+    root = popln->classes[popln->root];
     flp();
     printf("TRYING DELETE %6d\n", bser >> 2);
     res = splice_dad(bser);
@@ -432,7 +445,7 @@ i1done:
         printf("BestDelDad ends prematurely\n");
         return (0);
     }
-    if (CurRootClass->best_cost < origcost)
+    if (root->best_cost < origcost)
         goto winner;
     set_bad_move(2, 0, bser); /* log failure in badmoves */
     bser = 0;
@@ -522,7 +535,7 @@ void ranclass( int nn)
     double bs;
     Class *sub, *dad, *cls;
     Population *popln = CurCtx.popln;
-
+    Class *root = popln->classes[popln->root];
     set_population();
     if (!popln) {
         printf("Ranclass needs a model\n");
@@ -584,7 +597,7 @@ windup:
     do_all(6, 0);
     do_all(4, 1);
     print_tree();
-    CurRootClass->hold_type = 0;
+    root->hold_type = 0;
 
 finish:
     return;
@@ -599,9 +612,9 @@ double move_class(int ser1, int ser2)
     double origcost, newcost, drop;
 
     Population *popln = CurCtx.popln;
+    Class *root = popln->classes[popln->root];
 
-
-    origcost = CurRootClass->best_par_cost;
+    origcost = root->best_par_cost;
     k1 = serial_to_id(ser1);
     if (k1 < 0)
         goto nullit;
@@ -643,7 +656,7 @@ double move_class(int ser1, int ser2)
         if (Heard)
             goto kicked;
     }
-    newcost = CurRootClass->best_par_cost;
+    newcost = root->best_par_cost;
     drop = origcost - newcost;
     goto done;
 
@@ -671,7 +684,7 @@ possible.	*/
 int best_move_class(int force)
 {
     Context oldctx;
-    Class *cls1, *cls2, *odad;
+    Class *cls1, *cls2, *odad, *root;
     int i1, i2, hiid;
     int bser1, bser2, ser1, ser2, od2, newp, succ;
     double res, bestdrop, origcost;
@@ -691,8 +704,9 @@ int best_move_class(int force)
     bestdrop = -1.0e20;
     bser1 = bser2 = -1;
     set_population();
+    root = CurCtx.popln->classes[CurCtx.popln->root];
     do_all(1, 1); /* To set costs */
-    origcost = CurRootClass->best_cost;
+    origcost = root->best_cost;
     hiid = CurCtx.popln->hi_class;
     if (CurCtx.popln->num_classes < 4) {
         flp();
@@ -739,6 +753,7 @@ inner:
         goto popfails;
     CurCtx.popln = Populations[newp];
     set_population();
+    root = CurCtx.popln->classes[CurCtx.popln->root];
     res = move_class(ser1, ser2);
     if (res > bestdrop) {
         bestdrop = res;
@@ -771,6 +786,7 @@ alldone:
         goto popfails;
     CurCtx.popln = Populations[newp];
     set_population();
+    root = CurCtx.popln->classes[CurCtx.popln->root];
     flp();
     printf("TRYING MOVE CLASS %6d TO DAD %6d\n", bser1 >> 2, bser2 >> 2);
     res = move_class(bser1, bser2);
@@ -782,7 +798,7 @@ alldone:
     /*	Setting dogood's target to origcost-1 allows early exit  */
     /*	See if the trial model has improved over original  */
     succ = 1;
-    if (CurRootClass->best_cost < origcost)
+    if (root->best_cost < origcost)
         goto winner;
     succ = 0;
     if (force)
