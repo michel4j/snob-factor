@@ -420,6 +420,7 @@ int main() {
     double drop;
     char *chp;
     Context oldctx;
+    Class *cls;
 
     RSeed = 1234567;
     default_tune();
@@ -554,11 +555,11 @@ loop:
     if (!CurSource->cfile) {
         flp();
         CurPopln = CurCtx.popln;
-        CurClass = CurPopln->classes[CurPopln->root];
+        cls = CurPopln->classes[CurPopln->root];
         printf("P%1d  %4d classes, %4d leaves,  Pcost%8.1f", CurPopln->id + 1,
-               CurPopln->num_classes, CurPopln->num_leaves, CurClass->best_par_cost);
+               CurPopln->num_classes, CurPopln->num_leaves, cls->best_par_cost);
         if (CurPopln->sample_size)
-            printf("  Tcost%10.1f,  Cost%10.1f", CurClass->best_case_cost, CurClass->best_cost);
+            printf("  Tcost%10.1f,  Cost%10.1f", cls->best_case_cost, cls->best_cost);
         printf("\n");
         printf("Sample %2d %s\n", (CurCtx.sample) ? CurCtx.sample->id + 1 : 0,
                (CurCtx.sample) ? CurCtx.sample->name : "NULL");

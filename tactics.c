@@ -10,6 +10,7 @@ which had no children as leaves, direct sons of root. Prepares for a rebuild */
 void flatten() {
 
     int i;
+    Class *cls;
 
     set_population();
     tidy(0);
@@ -20,20 +21,20 @@ void flatten() {
     for (i = 0; i <= CurPopln->hi_class; i++) {
         if (i == CurRoot)
             goto donecls;
-        CurClass = CurPopln->classes[i];
-        if (CurClass->type == Vacant)
+        cls = CurPopln->classes[i];
+        if (cls->type == Vacant)
             goto donecls;
-        if (CurClass->num_sons) { /*  Kill it  */
-            CurClass->type = Vacant;
-            CurClass->dad_id = Deadkilled;
+        if (cls->num_sons) { /*  Kill it  */
+            cls->type = Vacant;
+            cls->dad_id = Deadkilled;
             CurPopln->num_classes--;
         } else {
-            if (CurClass->type == Sub) {
-                CurClass->type = Leaf;
-                CurClass->serial = CurPopln->next_serial << 2;
+            if (cls->type == Sub) {
+                cls->type = Leaf;
+                cls->serial = CurPopln->next_serial << 2;
                 CurPopln->next_serial++;
             }
-            CurClass->dad_id = CurRoot;
+            cls->dad_id = CurRoot;
         }
     donecls:;
     }
@@ -325,30 +326,31 @@ sons of its dad.
     */
 double splice_dad(int ser)
 {
-    Class *son;
+    Class *son, *cls;
     int kk, kkd, kks;
     double drop, origcost, newcost;
 
     drop = -1.0e20;
     kk = serial_to_id(ser);
-    set_class(CurPopln->classes[kk]);
-    if (CurClass->type != Dad)
+    cls = CurPopln->classes[kk];
+    set_class(cls);
+    if (cls->type != Dad)
         goto finish;
     if (kk == CurRoot)
         goto finish;
-    kkd = CurClass->dad_id;
+    kkd = cls->dad_id;
     if (kkd < 0)
         goto finish;
-    if (CurClass->num_sons <= 0)
+    if (cls->num_sons <= 0)
         goto finish;
     /*	All seems OK. Fix idads in kk's sons  */
     origcost = CurRootClass->best_par_cost;
-    for (kks = CurClass->son_id; kks >= 0; kks = son->sib_id) {
+    for (kks = cls->son_id; kks >= 0; kks = son->sib_id) {
         son = CurPopln->classes[kks];
         son->dad_id = kkd;
     }
     /*	Now kill off class kk  */
-    CurClass->type = Vacant;
+    cls->type = Vacant;
     CurPopln->num_classes--;
     /*	Fix linkages  */
     tidy(0);
@@ -519,7 +521,7 @@ void ranclass( int nn)
 {
     int n, ic, ib, num_son;
     double bs;
-    Class *sub, *dad;
+    Class *sub, *dad, *cls;
 
     set_population();
     if (!CurPopln) {
@@ -536,7 +538,7 @@ void ranclass( int nn)
     }
 
     NoSubs = 0;
-    deleteallclasses();
+    delete_all_classes();
     n = 1;
     if (nn < 2)
         goto finish;
@@ -549,14 +551,14 @@ again:
     ib = -1;
     bs = 0.0;
     for (ic = 0; ic < num_son; ic++) {
-        CurClass = Sons[ic];
-        if (CurClass->num_sons < 2)
+        cls = Sons[ic];
+        if (cls->num_sons < 2)
             goto icdone;
-        sub = CurPopln->classes[CurClass->son_id];
+        sub = CurPopln->classes[cls->son_id];
         if (sub->age < MinAge)
             goto icdone;
-        if (CurClass->weights_sum > bs) {
-            bs = CurClass->weights_sum;
+        if (cls->weights_sum > bs) {
+            bs = cls->weights_sum;
             ib = ic;
         }
     icdone:;
