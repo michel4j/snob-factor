@@ -337,7 +337,7 @@ void set_probs() {
     b3p = b2p = b1p = 0.0; /* For calculating dispersion of bp[] */
     sum = 0.0;
     Fork {
-        tt = fabs(CurCaseFacScore - fbp[k]);
+        tt = fabs(Scores.CaseFacScore - fbp[k]);
         /*	Do table interpolation in gausorg   */
         tt = tt * Gns;
         ig = tt;
@@ -441,15 +441,15 @@ void score_var(int iv) {
         return;
     set_probs(); /* Will calc pr[], qr[], gg, ff  */
     t1d1 = b1p - fbp[saux->xn];
-    t2d1 = -(0.5 * states * rstatesm) * (cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd) * ff * b1p;
-    t3d1 = CurCaseFacScore * cvi->bpsprd * ff;
+    t2d1 = -(0.5 * states * rstatesm) * (cvi->fapsprd + Scores.CaseFacScoreSq * cvi->bpsprd) * ff * b1p;
+    t3d1 = Scores.CaseFacScore * cvi->bpsprd * ff;
 
-    CaseFacScoreD1 += t1d1 + t3d1 + t2d1;
-    CaseFacScoreD2 += gg;
+    Scores.CaseFacScoreD1 += t1d1 + t3d1 + t2d1;
+    Scores.CaseFacScoreD2 += gg;
     /*xx	vvd2 += Mbeta * evi->mgg;  */
-    EstFacScoreD2 += (gg > evi->mgg) ? gg : evi->mgg;
+    Scores.EstFacScoreD2 += (gg > evi->mgg) ? gg : evi->mgg;
     /*	Since we don't know vsprd, just calc and accumulate deriv of 'gg' */
-    CaseFacScoreD3 += b3p - b1p * (3.0 * gg + b1p2);
+    Scores.CaseFacScoreD3 += b3p - b1p * (3.0 * gg + b1p2);
     return;
 }
 
@@ -467,23 +467,23 @@ void cost_var(int iv, int fac) {
     }
     /*	Do nofac costing first  */
     cost = scst[saux->xn];
-    CaseNoFacCost += cost;
+    Scores.CaseNoFacCost += cost;
 
     /*	Only do faccost if fac  */
     if (!fac)
         goto facdone;
     set_probs();
     cost = -log(pr[saux->xn]); /* -log prob of xn */
-    evi->conff = 0.5 * ff * (cvi->fapsprd + CurCaseFacScoreSq * cvi->bpsprd);
+    evi->conff = 0.5 * ff * (cvi->fapsprd + Scores.CaseFacScoreSq * cvi->bpsprd);
     evi->ff = ff;
     evi->parkb1p = b1p;
     evi->parkb2p = b2p;
     cost += evi->conff;
     /*	In cost calculation, use gg as is without Mbeta mod  */
-    cost += 0.5 * cvvsprd * gg;
+    cost += 0.5 * Scores.cvvsprd * gg;
 
 facdone:
-    CaseFacCost += cost;
+    Scores.CaseFacCost += cost;
     evi->parkftcost = cost;
     return;
 }
@@ -507,7 +507,7 @@ void deriv_var(int iv, int fac) {
     evi->ftcost += CurCaseWeight * evi->parkftcost;
 
     /*	Now for factor form  */
-    evi->vsq += CurCaseWeight * CurCaseFacScoreSq;
+    evi->vsq += CurCaseWeight * Scores.CaseFacScoreSq;
     if (!fac)
         goto facdone;
     b1p = evi->parkb1p;
@@ -515,10 +515,10 @@ void deriv_var(int iv, int fac) {
     b2p = evi->parkb2p;
     /*	From 1st cost term:  */
     fapd1[saux->xn] -= CurCaseWeight;
-    fbpd1[saux->xn] -= CurCaseWeight * CurCaseFacScore;
+    fbpd1[saux->xn] -= CurCaseWeight * Scores.CaseFacScore;
     Fork {
         fapd1[k] += CurCaseWeight * pr[k];
-        fbpd1[k] += CurCaseWeight * pr[k] * CurCaseFacScore;
+        fbpd1[k] += CurCaseWeight * pr[k] * Scores.CaseFacScore;
     }
 
     /*	Second cost term :  */
@@ -527,24 +527,24 @@ void deriv_var(int iv, int fac) {
     Fork {
         inc = cons1 - pr[k] * cons2;
         fapd1[k] += inc;
-        fbpd1[k] += CurCaseFacScore * inc;
+        fbpd1[k] += Scores.CaseFacScore * inc;
     }
 
     /*	Third cost term:  */
     cons1 = 2.0 * b1p2 - b2p;
-    cons2 = CurCaseWeight * cvvsprd * Mbeta * rstates;
+    cons2 = CurCaseWeight * Scores.cvvsprd * Mbeta * rstates;
     Fork {
-        inc = 0.5 * CurCaseWeight * cvvsprd * pr[k] * (fbp[k] * fbp[k] - 2.0 * fbp[k] * b1p + cons1);
+        inc = 0.5 * CurCaseWeight * Scores.cvvsprd * pr[k] * (fbp[k] * fbp[k] - 2.0 * fbp[k] * b1p + cons1);
         fapd1[k] += inc;
-        fbpd1[k] += CurCaseFacScore * inc;
+        fbpd1[k] += Scores.CaseFacScore * inc;
         /*	Terms I forgot :  */
-        fbpd1[k] += CurCaseWeight * cvvsprd * pr[k] * (fbp[k] - b1p);
+        fbpd1[k] += CurCaseWeight * Scores.cvvsprd * pr[k] * (fbp[k] - b1p);
         fbpd1[k] += cons2 * fbp[k];
     }
 
     /*	Second derivs (i.e. derivs wrt fapsprd, bpsprd)  */
     evi->apd2 += CurCaseWeight * evi->ff;
-    evi->bpd2 += CurCaseWeight * evi->ff * CurCaseFacScoreSq;
+    evi->bpd2 += CurCaseWeight * evi->ff * Scores.CaseFacScoreSq;
 facdone:
     return;
 }
@@ -727,7 +727,7 @@ adjloop:
     evi->apd2 += 1.0 / dapsprd;
     evi->bpd2 += 1.0;
     /*	Stabilization  */
-    CurCaseFacScore = 0.0;
+    Scores.CaseFacScore = 0.0;
     set_probs();
     Fork fapd1[k] += 0.5 * pr[k];
     evi->apd2 += 0.5 * states * ff;

@@ -644,7 +644,7 @@ void do_case(int cse, int all, int derivs, int num_son) {
     clc = 0;
     while (clc < num_son) {
         set_class_with_scores(Sons[clc]);
-        if ((!SeeAll) && (CaseFacInt & 1)) { /* Ignore this and decendants */
+        if ((!SeeAll) && (Scores.CaseFacInt & 1)) { /* Ignore this and decendants */
             clc = NextIc[clc];
             continue;
         } else if (!SeeAll)

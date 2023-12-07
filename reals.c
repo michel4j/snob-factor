@@ -270,11 +270,11 @@ void score_var(int iv)
 
     if (saux->missing)
         return;
-    del = cvi->fmu + CurCaseFacScore * cvi->ld - saux->xn;
-    CaseFacScoreD1 += evi->frsds * (del * cvi->ld + CurCaseFacScore * cvi->ldsprd);
+    del = cvi->fmu + Scores.CaseFacScore * cvi->ld - saux->xn;
+    Scores.CaseFacScoreD1 += evi->frsds * (del * cvi->ld + Scores.CaseFacScore * cvi->ldsprd);
     md2 = evi->frsds * (evi->ldsq + cvi->ldsprd);
-    CaseFacScoreD2 += md2;
-    EstFacScoreD2 += 1.1 * md2;
+    Scores.CaseFacScoreD2 += md2;
+    Scores.EstFacScoreD2 += 1.1 * md2;
     return;
 }
 
@@ -295,18 +295,18 @@ void cost_var( int iv,  int fac)
     var = del * del + cvi->smusprd + saux->epssq;
     cost = 0.5 * var * evi->srsds + cvi->ssdlsprd + HALF_LOG_2PI + cvi->ssdl - saux->leps;
     evi->parkstcost = cost;
-    CaseNoFacCost += cost;
+    Scores.CaseNoFacCost += cost;
 
     /*	Only do faccost if fac  */
     if (!fac)
         goto facdone;
-    del += CurCaseFacScore * cvi->ld;
-    var = del * del + cvi->fmusprd + saux->epssq + CurCaseFacScoreSq * cvi->ldsprd + cvvsprd * evi->ldsq;
+    del += Scores.CaseFacScore * cvi->ld;
+    var = del * del + cvi->fmusprd + saux->epssq + Scores.CaseFacScoreSq * cvi->ldsprd + Scores.cvvsprd * evi->ldsq;
     evi->var = var;
     cost = HALF_LOG_2PI + 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd * 2.0 - saux->leps;
 
 facdone:
-    CaseFacCost += cost;
+    Scores.CaseFacCost += cost;
     evi->parkftcost = cost;
 
     return;
@@ -336,7 +336,7 @@ void deriv_var( int iv,  int fac)
     if (!fac)
         goto facdone;
     frsds = evi->frsds;
-    del = cvi->fmu + CurCaseFacScore * cvi->ld - saux->xn;
+    del = cvi->fmu + Scores.CaseFacScore * cvi->ld - saux->xn;
     /*	From cost_var, we have:
         cost = 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd*2.0 + consts
             where var is given by:
@@ -348,8 +348,8 @@ void deriv_var( int iv,  int fac)
     evi->fsdld2 += 2.0 * CurCaseWeight;
     evi->fmud1 += CurCaseWeight * del * frsds;
     evi->fmud2 += CurCaseWeight * frsds;
-    evi->ldd1 += CurCaseWeight * frsds * (del * CurCaseFacScore + cvi->ld * cvvsprd);
-    evi->ldd2 += CurCaseWeight * frsds * (CurCaseFacScoreSq + cvvsprd);
+    evi->ldd1 += CurCaseWeight * frsds * (del * Scores.CaseFacScore + cvi->ld * Scores.cvvsprd);
+    evi->ldd2 += CurCaseWeight * frsds * (Scores.CaseFacScoreSq + Scores.cvvsprd);
 facdone:
     return;
 }

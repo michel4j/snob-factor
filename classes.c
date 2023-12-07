@@ -33,7 +33,7 @@ void set_class(Class *cls) {
 /*	---------------------  setclass2 --------------------------   */
 void set_class_with_scores(Class *cls) {
     CurClass = cls;
-    CurClass->case_score = CaseFacInt = CurClass->factor_scores[CurItem];
+    CurClass->case_score = Scores.CaseFacInt = CurClass->factor_scores[CurItem];
     CurCaseWeight = CurClass->case_weight;
     CurDad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
 }
@@ -285,45 +285,45 @@ void score_all_vars(Class *ccl) {
 
     set_class_with_scores(ccl);
     if ((CurClass->age < MinFacAge) || (CurClass->use == Tiny)) {
-        CurCaseFacScore = CurClass->avg_factor_scores = CurClass->sum_score_sq = 0.0;
-        CaseFacInt = 0;
+        Scores.CaseFacScore = CurClass->avg_factor_scores = CurClass->sum_score_sq = 0.0;
+        Scores.CaseFacInt = 0;
         goto done;
     }
     if (CurClass->sum_score_sq > 0.0)
         goto started;
     /*	Generate a fake score to get started.   */
     CurClass->boost_count = 0;
-    cvvsprd = 0.1 / NumVars;
+    Scores.cvvsprd = 0.1 / NumVars;
     oldicvv = igbit = 0;
-    CurCaseFacScore = (rand_int() < 0) ? 1.0 : -1.0;
+    Scores.CaseFacScore = (rand_int() < 0) ? 1.0 : -1.0;
     goto fake;
 
 started:
     /*	Get current score  */
-    oldicvv = CaseFacInt;
-    igbit = CaseFacInt & 1;
-    CurCaseFacScore = CaseFacInt * ScoreRscale;
+    oldicvv = Scores.CaseFacInt;
+    igbit = Scores.CaseFacInt & 1;
+    Scores.CaseFacScore = Scores.CaseFacInt * ScoreRscale;
     /*	Subtract average from last pass  */
     /*xx
         cvv -= cls->avg_factor_scores;
     */
     if (CurClass->boost_count && ((Control & AdjSP) == AdjSP)) {
-        CurCaseFacScore *= CurClass->score_boost;
-        if (CurCaseFacScore > Maxv)
-            CurCaseFacScore = Maxv;
-        else if (CurCaseFacScore < -Maxv)
-            CurCaseFacScore = -Maxv;
-        del = CurCaseFacScore * HScoreScale;
+        Scores.CaseFacScore *= CurClass->score_boost;
+        if (Scores.CaseFacScore > Maxv)
+            Scores.CaseFacScore = Maxv;
+        else if (Scores.CaseFacScore < -Maxv)
+            Scores.CaseFacScore = -Maxv;
+        del = Scores.CaseFacScore * HScoreScale;
         if (del < 0.0)
             del -= 1.0;
-        CaseFacInt = del + 0.5;
-        CaseFacInt = CaseFacInt << 1; /* Round to nearest even times ScoreScale */
+        Scores.CaseFacInt = del + 0.5;
+        Scores.CaseFacInt = Scores.CaseFacInt << 1; /* Round to nearest even times ScoreScale */
         igbit = 0;
-        CurCaseFacScore = CaseFacInt * ScoreRscale;
+        Scores.CaseFacScore = Scores.CaseFacInt * ScoreRscale;
     }
 
-    CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
-    CaseFacScoreD1 = CaseFacScoreD2 = EstFacScoreD2 = CaseFacScoreD3 = 0.0;
+    Scores.CaseFacScoreSq = Scores.CaseFacScore * Scores.CaseFacScore;
+    Scores.CaseFacScoreD1 = Scores.CaseFacScoreD2 = Scores.EstFacScoreD2 = Scores.CaseFacScoreD3 = 0.0;
     for (i = 0; i < CurVSet->length; i++) {
         CurAttr = CurAttrList + i;
         if (CurAttr->inactive)
@@ -333,42 +333,42 @@ started:
     /*	score_var should add to vvd1, vvd2, vvd3, mvvd2.  */
     vdone:;
     }
-    CaseFacScoreD1 += CurCaseFacScore;
-    CaseFacScoreD2 += 1.0;
-    EstFacScoreD2 += 1.0; /*  From prior  */
+    Scores.CaseFacScoreD1 += Scores.CaseFacScore;
+    Scores.CaseFacScoreD2 += 1.0;
+    Scores.EstFacScoreD2 += 1.0; /*  From prior  */
     /*	There is a cost term 0.5 * cvvsprd from the prior (whence the additional
         1 in vvd2).  */
-    cvvsprd = 1.0 / CaseFacScoreD2;
+    Scores.cvvsprd = 1.0 / Scores.CaseFacScoreD2;
     /*	Also, overall cost includes 0.5*cvvsprd*vvd2, so there is a derivative
     term wrt cvv of 0.5*cvvsprd*vvd3  */
-    CaseFacScoreD1 += 0.5 * cvvsprd * CaseFacScoreD3;
-    del = CaseFacScoreD1 / EstFacScoreD2;
+    Scores.CaseFacScoreD1 += 0.5 * Scores.cvvsprd * Scores.CaseFacScoreD3;
+    del = Scores.CaseFacScoreD1 / Scores.EstFacScoreD2;
     if (Control & AdjSc) {
-        CurCaseFacScore -= del;
+        Scores.CaseFacScore -= del;
     }
 fake:
-    if (CurCaseFacScore > Maxv)
-        CurCaseFacScore = Maxv;
-    else if (CurCaseFacScore < -Maxv)
-        CurCaseFacScore = -Maxv;
-    del = CurCaseFacScore * HScoreScale;
+    if (Scores.CaseFacScore > Maxv)
+        Scores.CaseFacScore = Maxv;
+    else if (Scores.CaseFacScore < -Maxv)
+        Scores.CaseFacScore = -Maxv;
+    del = Scores.CaseFacScore * HScoreScale;
     if (del < 0.0)
         del -= 1.0;
-    CaseFacInt = del + rand_float();
-    CaseFacInt = CaseFacInt << 1; /* Round to nearest even times ScoreScale */
-    CaseFacInt |= igbit;    /* Restore original ignore bit */
+    Scores.CaseFacInt = del + rand_float();
+    Scores.CaseFacInt = Scores.CaseFacInt << 1; /* Round to nearest even times ScoreScale */
+    Scores.CaseFacInt |= igbit;    /* Restore original ignore bit */
     if (!igbit) {
-        oldicvv -= CaseFacInt;
+        oldicvv -= Scores.CaseFacInt;
         if (oldicvv < 0)
             oldicvv = -oldicvv;
         if (oldicvv > SigScoreChange)
             CurClass->score_change_count++;
     }
-    CurClass->case_fac_score = CurCaseFacScore = CaseFacInt * ScoreRscale;
-    CurClass->case_fac_score_sq = CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
-    CurClass->cvvsprd = cvvsprd;
+    CurClass->case_fac_score = Scores.CaseFacScore = Scores.CaseFacInt * ScoreRscale;
+    CurClass->case_fac_score_sq = Scores.CaseFacScoreSq = Scores.CaseFacScore * Scores.CaseFacScore;
+    CurClass->cvvsprd = Scores.cvvsprd;
 done:
-    CurClass->factor_scores[CurItem] = CurClass->case_score = CaseFacInt;
+    CurClass->factor_scores[CurItem] = CurClass->case_score = Scores.CaseFacInt;
     return;
 }
 
@@ -384,9 +384,9 @@ void cost_all_vars(Class *ccl) {
         fac = 0;
     else {
         fac = 1;
-        CurCaseFacScoreSq = CurCaseFacScore * CurCaseFacScore;
+        Scores.CaseFacScoreSq = Scores.CaseFacScore * Scores.CaseFacScore;
     }
-    NCaseCost = CaseNoFacCost = CaseFacCost = CurClass->mlogab; /* Abundance cost */
+    Scores.CaseCost = Scores.CaseNoFacCost = Scores.CaseFacCost = CurClass->mlogab; /* Abundance cost */
     for (int iv = 0; iv < CurVSet->length; iv++) {
         CurAttr = CurAttrList + iv;
         if (CurAttr->inactive)
@@ -397,8 +397,8 @@ void cost_all_vars(Class *ccl) {
     vdone:;
     }
 
-    CurClass->total_case_cost = CurClass->nofac_case_cost = CaseNoFacCost;
-    CurClass->fac_case_cost = CaseNoFacCost + 10.0;
+    CurClass->total_case_cost = CurClass->nofac_case_cost = Scores.CaseNoFacCost;
+    CurClass->fac_case_cost = Scores.CaseNoFacCost + 10.0;
     if (CurClass->num_sons < 2)
         CurClass->dad_case_cost = 0.0;
     CurClass->coding_case_cost = 0.0;
@@ -410,17 +410,17 @@ void cost_all_vars(Class *ccl) {
     However, we appeal to the large number of score parameters, which gives a
     more negative 'lattice' ((log 12)/2 for one parameter) approaching -(1/2)
     log (2 Pi e) which results in the reduced cost :  */
-    CurClass->clvsprd = log(cvvsprd);
-    tmp = 0.5 * (CurCaseFacScoreSq + cvvsprd - CurClass->clvsprd - 1.0);
+    CurClass->clvsprd = log(Scores.cvvsprd);
+    tmp = 0.5 * (Scores.CaseFacScoreSq + Scores.cvvsprd - CurClass->clvsprd - 1.0);
     /*	Over all scores for the class, the lattice effect will add approx
             ( log (2 Pi cnt)) / 2  + 1
         to the class cost. This is added later, once cnt is known.
         */
-    CaseFacCost += tmp;
-    CurClass->fac_case_cost = CaseFacCost;
+    Scores.CaseFacCost += tmp;
+    CurClass->fac_case_cost = Scores.CaseFacCost;
     CurClass->coding_case_cost = tmp;
     if (CurClass->use == Fac)
-        CurClass->total_case_cost = CaseFacCost;
+        CurClass->total_case_cost = Scores.CaseFacCost;
 finish:
     return;
 }
@@ -436,12 +436,12 @@ void deriv_all_vars(Class *ccl) {
         fac = 0;
     else {
         fac = 1;
-        CurCaseFacScore = CurClass->case_fac_score;
-        CurCaseFacScoreSq = CurClass->case_fac_score_sq;
-        cvvsprd = CurClass->cvvsprd;
-        CurClass->newvsq += CurCaseWeight * CurCaseFacScoreSq;
+        Scores.CaseFacScore = CurClass->case_fac_score;
+        Scores.CaseFacScoreSq = CurClass->case_fac_score_sq;
+        Scores.cvvsprd = CurClass->cvvsprd;
+        CurClass->newvsq += CurCaseWeight * Scores.CaseFacScoreSq;
         CurClass->vav += CurCaseWeight * CurClass->clvsprd;
-        CurClass->totvv += CurCaseFacScore * CurCaseWeight;
+        CurClass->totvv += Scores.CaseFacScore * CurCaseWeight;
     }
     for (int iv = 0; iv < NumVars; iv++) {
         CurAttr = CurAttrList + iv;

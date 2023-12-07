@@ -67,12 +67,6 @@ EXT SampleVar *CurVarList;
 /*	re Classes  */
 EXT Class *CurClass, *CurDad;
 EXT double CurCaseWeight; /*  weight of case in class  */
-EXT double CurCaseFacScore, CurCaseFacScoreSq, cvvsprd;
-EXT int CaseFacInt; /*  integer form of cvv*4096 */
-EXT double NCaseCost, CaseNoFacCost, CaseFacCost;
-EXT double CaseFacScoreD1, CaseFacScoreD2; /* derivs of case cost wrt score  */
-EXT double EstFacScoreD2;                  /* An over-estimate of vvd2 used in score ajust */
-EXT double CaseFacScoreD3;                 /*  derivative of vvd2 wrt score  */
 
 /*	re Doall   */
 EXT int RSeed; /*	Seed for random routines */
