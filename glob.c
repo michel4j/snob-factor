@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 /* Initialize some variables */
-int UseLib = 0;
+int Interactive = 0;
 int Debug = 0;
 
 /*    To assist in printing class serials  */
@@ -84,15 +84,15 @@ void log_msg(int level, const char *format, ...) {
 }
 
 /// @brief Initialize SNOB parameters
-/// @param lib integer specifying if running from a library or not 1 = library, 0 = interactive
+/// @param interact integer specifying if running from a library or not 1 = interactive, 0 = non interactive
 /// @param debug turn on verbose printing of progress
 /// @param threads number of threads to use during parallel portions, 0 = use OpenMP environment variables instead
 
 static int Initialized = 0;
 
-void initialize(int lib, int debug, int threads) {
+void initialize(int interact, int debug, int threads) {
     int k;
-    UseLib = lib;
+    Interactive = interact;
     Debug = debug;
     UseBin = 0;
 

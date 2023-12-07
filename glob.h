@@ -33,10 +33,10 @@ EXT int CurRecLen;    /*  reclen of current sample  */
 EXT char *CurRecords; /*  Common ptr to data records block of a sample */
 
 /*	re hark  */
-EXT int Heard;    /* Flag showing a new command line has been detected */
-EXT int UseStdIn; /* Flag showing input from sdtdin */
-EXT int UseLib;   // Flag showing if snob is being called as a library
-EXT int Debug;    // Flag to turn toggle debug messages
+EXT int Heard;       /* Flag showing a new command line has been detected */
+EXT int UseStdIn;    /* Flag showing input from sdtdin */
+EXT int Interactive; // Flag showing if snob is being called interactively
+EXT int Debug;       // Flag to turn toggle debug messages
 EXT int UseBin;
 
 EXT int trapkk, trapage, trapcnt;

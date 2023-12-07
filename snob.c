@@ -9,7 +9,7 @@
 
 /*    ---------------------  main  ---------------------------  */
 int main(int argc, char *argv[]) {
-    int index, cycles = 3;
+    int index, cycles = 1;
 
     clock_t cpu_start, cpu_end;
     struct timespec wall_start, wall_end;
@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     cpu_start = clock();
     timespec_get(&wall_start, TIME_UTC);
 
-    initialize(1, 0, 8);
+    initialize(0, 0, 8);
 
     index = load_vset(argv[1]);
     if (index < 0) {

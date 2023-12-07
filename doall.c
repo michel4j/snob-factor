@@ -443,7 +443,7 @@ int do_all(int ncycles, int all) {
             niter = nfail = 0;
             continue;
         }
-        if ((!UseStdIn) && hark(CommsBuffer.inl)) {
+        if ((Interactive) && (!UseStdIn) && hark(CommsBuffer.inl)) {
             kicked = 1;
             break;
         }

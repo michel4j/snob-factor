@@ -61,8 +61,7 @@ int new_line() {
             j++;
             if (j > 3) {
                 UseStdIn = 1;
-                printf("There being no comms file,\
- input will be taken from StdInput\n");
+                printf("There being no comms file, input will be taken from StdInput\n");
                 goto retry;
             }
         }
