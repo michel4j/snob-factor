@@ -64,7 +64,6 @@ EXT PopVar *PopVarList;
 EXT SampleVar *SmplVarList;
 
 /*	re Classes  */
-EXT Class *CurDad;
 EXT int CurRoot;
 EXT Class *CurRootClass;
 

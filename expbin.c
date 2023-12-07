@@ -128,8 +128,7 @@ void expbinary_define(typindx) int typindx;
 }
 
 /*	----------------------- setvar --------------------------  */
-void set_var(int iv, Class* cls)
-{
+void set_var(int iv, Class *cls) {
     CurAttr = VSetVarList + iv;
     CurVType = CurAttr->vtype;
     CurPopVar = PopVarList + iv;
@@ -257,7 +256,7 @@ void clear_stats(int iv, Class *cls) {
 /*	-------------------------  score_var  ------------------------   */
 /*	To eval derivs of a case wrt score, scorespread. Adds to vvd1,vvd2.
  */
-void score_var(int iv, Class* cls) {
+void score_var(int iv, Class *cls) {
     double cc, pr0, pr1, ff, ft, dbyv, hdffbydv, hdftbydv;
     set_var(iv, cls);
     if (CurAttr->inactive)
@@ -306,7 +305,7 @@ void score_var(int iv, Class* cls) {
 
 /*	---------------------  cost_var  ---------------------------  */
 /*	Accumulate item cost into CaseNoFacCost, CaseFacCost  */
-void cost_var(int iv, int fac, Class* cls) {
+void cost_var(int iv, int fac, Class *cls) {
     double cost;
     double cc, ff, ft, hdffbydc, hdftbydc, pr0, pr1, small;
 
@@ -370,8 +369,8 @@ facdone:
 /*	------------------  deriv_var  ------------------------------  */
 /*	Given item weight in cwt, calcs derivs of item cost wrt basic
 params and accumulates in paramd1, paramd2  */
-void deriv_var(int iv, int fac, Class* cls) {
-    const double case_weight = cls ->case_weight;
+void deriv_var(int iv, int fac, Class *cls) {
+    const double case_weight = cls->case_weight;
 
     set_var(iv, cls);
     if (saux->missing)
@@ -400,17 +399,18 @@ facdone:
 
 /*	-------------------  adjust  ---------------------------    */
 /*	To adjust parameters of a multistate variable     */
-void adjust(int iv, int fac, Class* cls) {
+void adjust(int iv, int fac, Class *cls) {
 
     double pr0, pr1, cc;
     double adj, apd2, cnt, vara, del, tt, spcost, fpcost;
     int n;
+    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
 
     set_var(iv, cls);
     cnt = evi->cnt;
 
-    if (CurDad) { /* Not root */
-        dcvi = (Basic *)CurDad->basics[iv];
+    if (dad) { /* Not root */
+        dcvi = (Basic *)dad->basics[iv];
         dadnap = dcvi->nap;
         dapsprd = dcvi->napsprd;
     } else { /* Root */
@@ -425,26 +425,23 @@ void adjust(int iv, int fac, Class* cls) {
         cvi->fbp = 0.0;
         cvi->napsprd = cvi->fapsprd = cvi->sapsprd = dapsprd;
         cvi->bpsprd = 1.0;
-        goto hasage;
+
+    } else if (!cls->age) {
+        /*	If class age zero, make some preliminary estimates  */
+        evi->oldftcost = 0.0;
+        evi->adj = 1.0;
+        pr1 = (evi->cnt1 + 0.5) / (evi->cnt + 1.0);
+        pr0 = 1.0 - pr1;
+        cvi->fap = cvi->sap = 0.5 * log(pr1 / pr0);
+        cvi->fbp = 0.0;
+        /*	Set sapsprd  */
+        apd2 = cnt + 1.0 / dapsprd;
+        cvi->fapsprd = cvi->sapsprd = cvi->bpsprd = 1.0 / apd2;
+        /*	Make a stab at item cost   */
+        cls->cstcost -= evi->cnt1 * log(pr1) + (cnt - evi->cnt1) * log(pr0);
+        cls->cftcost = cls->cstcost + 100.0 * cnt;
     }
 
-    /*	If class age zero, make some preliminary estimates  */
-    if (cls->age)
-        goto hasage;
-    evi->oldftcost = 0.0;
-    evi->adj = 1.0;
-    pr1 = (evi->cnt1 + 0.5) / (evi->cnt + 1.0);
-    pr0 = 1.0 - pr1;
-    cvi->fap = cvi->sap = 0.5 * log(pr1 / pr0);
-    cvi->fbp = 0.0;
-    /*	Set sapsprd  */
-    apd2 = cnt + 1.0 / dapsprd;
-    cvi->fapsprd = cvi->sapsprd = cvi->bpsprd = 1.0 / apd2;
-    /*	Make a stab at item cost   */
-    cls->cstcost -= evi->cnt1 * log(pr1) + (cnt - evi->cnt1) * log(pr0);
-    cls->cftcost = cls->cstcost + 100.0 * cnt;
-
-hasage:
     /*	Calculate spcost for non-fac params  */
     vara = 0.0;
     del = cvi->sap - dadnap;
@@ -462,22 +459,21 @@ hasage:
     if (!fac) {
         fpcost = spcost + 100.0;
         cvi->infac = 1;
-        goto facdone1;
+    } else {
+        /*	Get factor pcost  */
+        del = cvi->fap - dadnap;
+        vara = del * del + cvi->fapsprd;
+        fpcost = 0.5 * vara / dapsprd; /* The squared deviations term */
+        fpcost += 0.5 * log(dapsprd);  /* log sigma */
+        fpcost += (HALF_LOG_2PI + LATTICE);
+        fpcost -= 0.5 * log(cvi->fapsprd);
+
+        /*	And for fbp[]:  (N(0,1) prior)  */
+        vara = cvi->fbp * cvi->fbp + cvi->bpsprd;
+        fpcost += 0.5 * vara; /* The squared deviations term */
+        fpcost += HALF_LOG_2PI + LATTICE - 0.5 * log(cvi->bpsprd);
     }
-    /*	Get factor pcost  */
-    del = cvi->fap - dadnap;
-    vara = del * del + cvi->fapsprd;
-    fpcost = 0.5 * vara / dapsprd; /* The squared deviations term */
-    fpcost += 0.5 * log(dapsprd);  /* log sigma */
-    fpcost += (HALF_LOG_2PI + LATTICE);
-    fpcost -= 0.5 * log(cvi->fapsprd);
-
-    /*	And for fbp[]:  (N(0,1) prior)  */
-    vara = cvi->fbp * cvi->fbp + cvi->bpsprd;
-    fpcost += 0.5 * vara; /* The squared deviations term */
-    fpcost += HALF_LOG_2PI + LATTICE - 0.5 * log(cvi->bpsprd);
-
-facdone1:
+    
     /*	Store param costs  */
     evi->spcost = spcost;
     evi->fpcost = fpcost;

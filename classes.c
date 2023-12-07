@@ -26,13 +26,12 @@ int serial_to_id(int ss) {
 
 /*	---------------------  setclass1 --------------------------   */
 void set_class(Class *cls) {
-    CurDad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
+
 }
 
 /*	---------------------  setclass2 --------------------------   */
-void set_class_with_scores(Class *cls) {
+void set_class_score(Class *cls) {
     cls->case_score = Scores.CaseFacInt = cls->factor_scores[CurItem];
-    CurDad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
 }
 
 /*	---------------------   makeclass  -------------------------   */
@@ -281,7 +280,7 @@ void score_all_vars(Class *cls) {
     int i, igbit, oldicvv;
     double del;
 
-    set_class_with_scores(cls);
+    set_class_score(cls);
     if ((cls->age < MinFacAge) || (cls->use == Tiny)) {
         Scores.CaseFacScore = cls->avg_factor_scores = cls->sum_score_sq = 0.0;
         Scores.CaseFacInt = 0;
@@ -377,7 +376,7 @@ void cost_all_vars(Class *cls) {
     int fac;
     double tmp;
 
-    set_class_with_scores(cls);
+    set_class_score(cls);
     if ((cls->age < MinFacAge) || (cls->use == Tiny))
         fac = 0;
     else {
@@ -429,7 +428,7 @@ void deriv_all_vars(Class *cls) {
     int fac;
     const double case_weight = cls->case_weight;
 
-    set_class_with_scores(cls);
+    set_class_score(cls);
     cls->newcnt += case_weight;
     if ((cls->age < MinFacAge) || (cls->use == Tiny))
         fac = 0;
@@ -467,7 +466,8 @@ void adjust_class(Class *cls, int dod) {
     int iv, fac, npars, small;
     Class *son;
     double leafcost;
-
+    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
+    
     set_class(cls);
     /*	Get root (logarithmic average of vvsprds)  */
     cls->vav = exp(0.5 * cls->vav / (cls->newcnt + 0.1));
@@ -480,8 +480,8 @@ void adjust_class(Class *cls, int dod) {
             cls->hold_type--;
         if ((cls->hold_use) && (cls->hold_use < Forever))
             cls->hold_use--;
-        if (CurDad) {
-            cls->relab = (CurDad->relab * (cls->weights_sum + 0.5)) / (CurDad->weights_sum + 0.5 * CurDad->num_sons);
+        if (dad) {
+            cls->relab = (dad->relab * (cls->weights_sum + 0.5)) / (dad->weights_sum + 0.5 * dad->num_sons);
             cls->mlogab = -log(cls->relab);
         } else {
             cls->relab = 1.0;
@@ -490,7 +490,7 @@ void adjust_class(Class *cls, int dod) {
     }
     /*	But if a young subclass, make relab half of dad's  */
     if ((cls->type == Sub) && (cls->age < MinSubAge)) {
-        cls->relab = 0.5 * CurDad->relab;
+        cls->relab = 0.5 * dad->relab;
     }
 
     if ((cls->age < MinFacAge) || (cls->use == Tiny))
@@ -612,8 +612,8 @@ usechecked:
         printf("Changing type of class%s from Leaf to Dad\n", serial_to_str(cls));
         SeeAll = 4;
         cls->type = Dad;
-        if (CurDad)
-            CurDad->hold_type += 3;
+        if (dad)
+            dad->hold_type += 3;
         /*	Make subs into leafs  */
         son = CurPopln->classes[cls->son_id];
         son->type = Leaf;

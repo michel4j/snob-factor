@@ -180,7 +180,6 @@ void expmults_define(typindx) int typindx;
         xg = ig * Gh;
         gausorg[ig] = exp(-0.5 * xg * xg);
     }
-    return;
 }
 
 /*	----------------------- setvar --------------------------  */
@@ -208,7 +207,6 @@ void set_var(int iv, Class* cls) {
     pr = scst + states;
     fapd1 = pr + states;
     fbpd1 = fapd1 + states;
-    return;
 }
 
 /*	---------------------  readvaux ---------------------------   */
@@ -556,12 +554,13 @@ void adjust(int iv, int fac, Class* cls) {
 
     double adj, apd2, cnt, vara, del, tt, sum, spcost, fpcost;
     int k, n;
+    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
 
     set_var(iv, cls);
     cnt = evi->cnt;
 
-    if (CurDad) { /* Not root */
-        dcvi = (Basic *)CurDad->basics[iv];
+    if (dad) { /* Not root */
+        dcvi = (Basic *)dad->basics[iv];
         dadnap = &(dcvi->origin);
         dapsprd = dcvi->napsprd;
     } else { /* Root */

@@ -348,13 +348,14 @@ double update_leaf_classes(double *oldleafsum, int *nfail, int num_son) {
 
 void update_all_classes(double *oldcost, int *nfail) {
 
-    Class *cls = CurRootClass;
+    Class *dad, *cls = CurRootClass;
+
     int adjusted = 0;
 
     while (!adjusted) {
         cls->dad_par_cost = 0.0;
         if (cls->num_sons >= 2) {
-            CurDad = cls;
+            dad = cls;
             cls = CurPopln->classes[cls->son_id];
             continue;
         } else {
@@ -365,8 +366,8 @@ void update_all_classes(double *oldcost, int *nfail) {
                     adjusted = 1;
                     complete = 1;
                 } else {
-                    CurDad = CurPopln->classes[cls->dad_id];
-                    CurDad->dad_par_cost += cls->best_par_cost;
+                    dad = CurPopln->classes[cls->dad_id];
+                    dad->dad_par_cost += cls->best_par_cost;
                     if (cls->sib_id >= 0) {
                         cls = CurPopln->classes[cls->sib_id];
                         complete = 1;
@@ -374,7 +375,7 @@ void update_all_classes(double *oldcost, int *nfail) {
                     }
                 }
                 //	dad is now complete
-                cls = CurDad;
+                cls = dad;
             }
         }
     }
@@ -646,7 +647,7 @@ void do_case(int cse, int all, int derivs, int num_son) {
     clc = 0;
     while (clc < num_son) {
         cls = Sons[clc];
-        set_class_with_scores(Sons[clc]);
+        set_class_score(Sons[clc]);
         if ((!SeeAll) && (Scores.CaseFacInt & 1)) { /* Ignore this and decendants */
             clc = NextIc[clc];
             continue;

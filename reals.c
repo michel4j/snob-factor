@@ -129,8 +129,10 @@ void reals_define(typindx) int typindx;
 }
 
 /*	-------------------  setvar -----------------------------  */
-void set_var(int iv, Class *cls)
-{
+void set_var(int iv, Class *cls) {
+
+    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
+
     CurAttr = VSetVarList + iv;
     CurVType = CurAttr->vtype;
     CurPopVar = PopVarList + iv;
@@ -140,11 +142,8 @@ void set_var(int iv, Class *cls)
     saux = (Saux *)CurVar->saux;
     cvi = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
-    if (CurDad)
-        dcvi = (Basic *)CurDad->basics[iv];
-    else
-        dcvi = 0;
-    return;
+    dcvi = (dad) ? (Basic *)dad->basics[iv] : 0;
+
 }
 
 /*	--------------------  readvaux  ----------------------------  */
@@ -191,8 +190,7 @@ void print_datum(char *loc) {
 }
 
 /*	---------------------  setsizes  -----------------------   */
-void set_sizes(int iv) 
-{
+void set_sizes(int iv) {
     CurAttr = VSetVarList + iv;
     CurAttr->basic_size = sizeof(Basic);
     CurAttr->stats_size = sizeof(Stats);
@@ -257,7 +255,7 @@ void clear_stats(int iv, Class *cls) {
 /*	To eval derivs of a case cost wrt score, scorespread. Adds to
 vvd1, vvd2.
 */
-void score_var(int iv, Class* cls) {
+void score_var(int iv, Class *cls) {
 
     double del, md2;
 
@@ -277,7 +275,7 @@ void score_var(int iv, Class* cls) {
 
 /*	-----------------------  cost_var  --------------------------   */
 /*	Accumulates item cost into CaseNoFacCost, CaseFacCost    */
-void cost_var(int iv, int fac, Class* cls) {
+void cost_var(int iv, int fac, Class *cls) {
     double del, var, cost;
     set_var(iv, cls);
     if (saux->missing)
@@ -312,7 +310,7 @@ facdone:
 /*	Given the item weight in cwt, calcs derivs of cost wrt basic
 params and accumulates in paramd1, paramd2.
 Factor derivs done only if fac.  */
-void deriv_var(int iv, int fac, Class* cls) {
+void deriv_var(int iv, int fac, Class *cls) {
     const double case_weight = cls->case_weight;
     double del, var, frsds;
     set_var(iv, cls);
@@ -352,11 +350,13 @@ facdone:
 
 /*	-------------------  adjust  ---------------------------    */
 /*	To adjust parameters of a real variable     */
-void adjust(int iv, int fac, Class* cls) {
+void adjust(int iv, int fac, Class *cls) {
     double adj, srsds, frsds, temp1, temp2, cnt;
     double del1, del2, del3, del4, spcost, fpcost;
     double dadmu, dadsdl, dmusprd, dsdlsprd;
     double av, var, del, sdld1;
+
+    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
 
     del3 = del4 = 0.0;
     set_var(iv, cls);
@@ -364,7 +364,7 @@ void adjust(int iv, int fac, Class* cls) {
     cnt = evi->cnt;
 
     /*	Get prior constants from dad, or if root, fake them  */
-    if (!CurDad) { /* Class is root */
+    if (!dad) { /* Class is root */
         if (cls->age > 0) {
             dadmu = cvi->smu;
             dadsdl = cvi->ssdl;
@@ -403,7 +403,7 @@ void adjust(int iv, int fac, Class* cls) {
     cvi->ldsprd = var / cnt;
     cvi->ld = 0.0;
     cvi->ssdlsprd = cvi->fsdlsprd = 1.0 / cnt;
-    if (!CurDad) { /*  First stab at root  */
+    if (!dad) { /*  First stab at root  */
         dadmu = cvi->smu;
         dadsdl = cvi->ssdl;
         dmusprd = exp(2.0 * dadsdl);
@@ -560,8 +560,7 @@ adjdone:
 }
 
 /*	------------------------  show  -----------------------   */
-void show(Class *cls, int iv) 
-{
+void show(Class *cls, int iv) {
 
     set_class(cls);
     set_var(iv, cls);
@@ -690,6 +689,8 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     double spp, sppsprd;
     int nints, nson, ison, k, n;
 
+    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
+
     set_var(iv, cls);
     if (!vald) { /* Cannot define as-dad params, so fake it */
         evi->npcost = 0.0;
@@ -712,77 +713,76 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     sdl... in the two times round the loop  */
 
     k = 0;
-ploop:
-    /*	Get prior constants from dad, or if root, fake them  */
-    if (!CurDad) { /* Class is root */
-        dadpp = *(&cvi->smu + k);
-        dppsprd = *(&cvi->smusprd + k) * evi->cnt;
-    } else {
-        dadpp = *(&dcvi->nmu + k);
-        dppsprd = *(&dcvi->nmusprd + k);
+    while (k < 2) {
+        /*	Get prior constants from dad, or if root, fake them  */
+        if (!dad) { /* Class is root */
+            dadpp = *(&cvi->smu + k);
+            dppsprd = *(&cvi->smusprd + k) * evi->cnt;
+        } else {
+            dadpp = *(&dcvi->nmu + k);
+            dppsprd = *(&dcvi->nmusprd + k);
+        }
+        pp = *(&cvi->nmu + k);
+        ppsprd = *(&cvi->nmusprd + k);
+
+        /*	We need to accumlate things over sons. We need:   */
+        nints = 0;   /* Number of internal sons (M) */
+        tstn = 0.0;  /* Total sons' t_n */
+        tstvn = 0.0; /* Total sum of sons' (t_n^2 + del_n)  */
+        tssn = 0.0;  /* Total sons' s_n */
+
+        for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
+            son = CurPopln->classes[ison];
+            soncvi = (Basic *)son->basics[iv];
+            spp = *(&soncvi->bmu + k);
+            sppsprd = *(&soncvi->bmusprd + k);
+            tstn += spp;
+            tstvn += spp * spp;
+            if (son->type == Dad) { /* used as parent */
+                nints++;
+                tssn += sppsprd;
+                tstvn += sppsprd / son->num_sons;
+            } else
+                tstvn += sppsprd;
+        }
+        /*	Calc coeffs for quadratic c_2 * s^2 + c_1 * s - c_0  */
+        co2 = (1.0 + 0.5 / nson) / dppsprd;
+        co1 = nints + 0.5 * (nson - 3.0);
+        /*	Can now compute V in the above comments.  tssn = S of the comments */
+        /*	First we get the V around the sons' mean, then update pp and correct
+            the value of V  */
+        mean = tstn / nson;   /* Mean of sons' param  */
+        tstvn -= mean * tstn; /*	Variance around mean  */
+        if (!(Control & AdjPr))
+            goto adjdone;
+
+        /*	Iterate the adjustment of param, spread  */
+        n = 5;
+    adjloop:
+        /*	Update param  */
+        pp = (dppsprd * tstn + ppsprd * dadpp) / (nson * dppsprd + ppsprd);
+        del = pp - mean;
+        /*	The V of comments is tstvn + nson * del * del */
+        co0 = 0.5 * (tstvn + nson * del * del) + tssn;
+        /*	Solve for new spread  */
+        ppsprd = 2.0 * co0 / (co1 + sqrt(co1 * co1 + 4.0 * co0 * co2));
+        n--;
+        if (n)
+            goto adjloop;
+        *(&cvi->nmu + k) = pp;
+        *(&cvi->nmusprd + k) = ppsprd;
+
+    adjdone: /*	Calc cost  */
+        del = pp - dadpp;
+        pcost += HALF_LOG_2PI + 1.5 * log(dppsprd) + 0.5 * (del * del + ppsprd / nson) / dppsprd + ppsprd / dppsprd;
+        /*	Add hlog Fisher, lattice  */
+        pcost += 0.5 * log(nson * (0.5 * nson + nints)) - 1.5 * log(ppsprd) + 2.0 * LATTICE;
+
+        /*	Add roundoff for 2 params  (pp, ppsprd)  */
+        pcost += 1.0;
+        /*	This completes the shenanigans for one param. See if another */
+        k++;
     }
-    pp = *(&cvi->nmu + k);
-    ppsprd = *(&cvi->nmusprd + k);
-
-    /*	We need to accumlate things over sons. We need:   */
-    nints = 0;   /* Number of internal sons (M) */
-    tstn = 0.0;  /* Total sons' t_n */
-    tstvn = 0.0; /* Total sum of sons' (t_n^2 + del_n)  */
-    tssn = 0.0;  /* Total sons' s_n */
-
-    for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
-        son = CurPopln->classes[ison];
-        soncvi = (Basic *)son->basics[iv];
-        spp = *(&soncvi->bmu + k);
-        sppsprd = *(&soncvi->bmusprd + k);
-        tstn += spp;
-        tstvn += spp * spp;
-        if (son->type == Dad) { /* used as parent */
-            nints++;
-            tssn += sppsprd;
-            tstvn += sppsprd / son->num_sons;
-        } else
-            tstvn += sppsprd;
-    }
-    /*	Calc coeffs for quadratic c_2 * s^2 + c_1 * s - c_0  */
-    co2 = (1.0 + 0.5 / nson) / dppsprd;
-    co1 = nints + 0.5 * (nson - 3.0);
-    /*	Can now compute V in the above comments.  tssn = S of the comments */
-    /*	First we get the V around the sons' mean, then update pp and correct
-        the value of V  */
-    mean = tstn / nson;   /* Mean of sons' param  */
-    tstvn -= mean * tstn; /*	Variance around mean  */
-    if (!(Control & AdjPr))
-        goto adjdone;
-
-    /*	Iterate the adjustment of param, spread  */
-    n = 5;
-adjloop:
-    /*	Update param  */
-    pp = (dppsprd * tstn + ppsprd * dadpp) / (nson * dppsprd + ppsprd);
-    del = pp - mean;
-    /*	The V of comments is tstvn + nson * del * del */
-    co0 = 0.5 * (tstvn + nson * del * del) + tssn;
-    /*	Solve for new spread  */
-    ppsprd = 2.0 * co0 / (co1 + sqrt(co1 * co1 + 4.0 * co0 * co2));
-    n--;
-    if (n)
-        goto adjloop;
-    *(&cvi->nmu + k) = pp;
-    *(&cvi->nmusprd + k) = ppsprd;
-
-adjdone: /*	Calc cost  */
-    del = pp - dadpp;
-    pcost += HALF_LOG_2PI + 1.5 * log(dppsprd) + 0.5 * (del * del + ppsprd / nson) / dppsprd + ppsprd / dppsprd;
-    /*	Add hlog Fisher, lattice  */
-    pcost += 0.5 * log(nson * (0.5 * nson + nints)) - 1.5 * log(ppsprd) + 2.0 * LATTICE;
-
-    /*	Add roundoff for 2 params  (pp, ppsprd)  */
-    pcost += 1.0;
-    /*	This completes the shenanigans for one param. See if another */
-    k++;
-    if (k < 2)
-        goto ploop;
 
     evi->npcost = pcost;
 

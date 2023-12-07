@@ -162,6 +162,7 @@ void vonm_define(int typindx)
 
 /*	-------------------  setvar -----------------------------  */
 void set_var(int iv, Class *cls) {
+    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
     CurAttr = VSetVarList + iv;
     CurVType = CurAttr->vtype;
     CurPopVar = PopVarList + iv;
@@ -171,11 +172,7 @@ void set_var(int iv, Class *cls) {
     saux = (Saux *)CurVar->saux;
     cvi = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
-    if (CurDad)
-        dcvi = (Basic *)CurDad->basics[iv];
-    else
-        dcvi = 0;
-    return;
+    dcvi = (dad) ? (Basic *)dad->basics[iv] : 0;
 }
 
 /*	--------------------  readvaux  ----------------------------  */
@@ -281,6 +278,7 @@ void set_best_pars(int iv, Class *cls) {
 /*	Clears stats to accumulate in cost_var, and derives useful functions
 of basic params  */
 void clear_stats(int iv, Class *cls) {
+    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
     set_var(iv, cls);
     evi->cnt = 0.0;
     evi->stcost = evi->ftcost = 0.0;
@@ -293,7 +291,7 @@ void clear_stats(int iv, Class *cls) {
         return;
 
     /*	Set some plausible values for initial pass  */
-    if ((CurDad) && (cls->age == 0))
+    if ((dad) && (cls->age == 0))
         return;
     cvi->shx = cvi->shy = cvi->fhx = cvi->fhy = 0.0;
     cvi->shsprd = cvi->fhsprd = 1.0;
@@ -324,7 +322,7 @@ mc3 = 0.5 * Fmu * wsprd
 
     Score prior cost are accounted in scorevarall.
     */
-void score_var(int iv, Class* cls) {
+void score_var(int iv, Class *cls) {
 
     double cosw, sinw, tt, wd1;
     double dwdt, dwdv, r2, dr2dw;
@@ -389,7 +387,7 @@ void score_var(int iv, Class* cls) {
 
 /*	-----------------------  cost_var  --------------------------   */
 /*	Accumulates item cost into CaseNoFacCost, CaseFacCost    */
-void cost_var(int iv, int fac, Class* cls) {
+void cost_var(int iv, int fac, Class *cls) {
     double del, cost, tt, tsprd, cosw, sinw, r2;
     set_var(iv, cls);
     if (saux->missing)
@@ -439,7 +437,7 @@ facdone:
 /*	Given the item weight in cwt, calcs derivs of cost wrt basic
 params and accumulates in paramd1, paramd2.
 Factor derivs done only if fac.  */
-void deriv_var(int iv, int fac, Class* cls) {
+void deriv_var(int iv, int fac, Class *cls) {
     double tt, tsprd, r2, cosw, sinw, wtr2, wd1, dwdt, dr2dw;
     double coser, siner;
     const double case_weight = cls->case_weight;
@@ -509,18 +507,18 @@ facdone:
 
 /*	-------------------  adjust  ---------------------------    */
 /*	To adjust parameters of a vonmises variable     */
-void adjust(int iv, int fac, Class* cls) {
+void adjust(int iv, int fac, Class *cls) {
     double adj, temp1, cnt, ldd2;
     double del1, del2, spcost, fpcost;
     double dadhx, dadhy, dhsprd;
     double hxd1, hyd1, hkd1, hkd2;
-
+    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
     set_var(iv, cls);
     adj = InitialAdj;
     cnt = evi->cnt;
 
     /*	Get prior constants from dad, or if root, fake them  */
-    if (!CurDad) { /* Class is root */
+    if (!dad) { /* Class is root */
         dadhx = dadhy = 0.0;
         dhsprd = NullSprd;
     } else {
@@ -857,7 +855,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     double del, co0, co1, co2, meanx, meany;
     double tsxn, tsyn, tsvn, tssn, sbhx, sbhy, sbhsprd;
     int nints, nson, ison, n;
-
+    Class *dad = (cls->dad_id >= 0) ? CurPopln->classes[cls->dad_id] : 0;
     set_var(iv, cls);
     if (!vald) { /* Cannot define as-dad params, so fake it */
         evi->npcost = 0.0;
@@ -877,7 +875,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
         for both, in both internal and leaf or sub classes.  */
 
     /*	Get prior constants from dad, or if root, fake them  */
-    if (!CurDad) { /* Class is root */
+    if (!dad) { /* Class is root */
         dadhx = dadhy = 0.0;
         dadhsprd = NullSprd;
     } else {

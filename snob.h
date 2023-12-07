@@ -350,7 +350,7 @@ void adjust_class(Class *ccl, int dod);
 void delete_sons(int kk);
 void print_class(int kk, int full);
 void set_class(Class *ccl);
-void set_class_with_scores(Class *ccl);
+void set_class_score(Class *ccl);
 int split_leaf(int kk);
 void delete_all_classes();
 int next_leaf(Population *cpop, int iss);
