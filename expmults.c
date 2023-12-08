@@ -2,21 +2,6 @@
 #include "glob.h"
 
 #define MaxState 20 /* Max number of discrete states per variable */
-static void set_var();
-static int read_attr_aux();
-static int read_smpl_aux();
-static int read_datum();
-static void print_datum();
-static void set_sizes();
-static void set_best_pars();
-static void clear_stats();
-static void score_var();
-static void cost_var();
-static void deriv_var();
-static void cost_var_nonleaf();
-static void adjust();
-static void show();
-static void set_probs();
 
 typedef struct Vauxst {
     int states;
@@ -136,6 +121,21 @@ static double dapsprd; /* Dad's napsprd */
 static double gaustab[Gnt];
 static double *gausorg; /* ptr to gaustab[1] */
 
+static void set_var(int iv, Class *cls);
+static int read_attr_aux(void *vax);
+static int read_smpl_aux(void *sax);
+static int read_datum(char *loc, int iv);
+static void print_datum(char *loc);
+static void set_sizes(int iv);
+static void set_best_pars(int iv, Class *cls);
+static void clear_stats(int iv, Class *cls);
+static void score_var(int iv, Class *cls);
+static void cost_var(int iv, int fac, Class *cls);
+static void deriv_var(int iv, int fac, Class *cls);
+static void cost_var_nonleaf(int iv, int vald, Class *cls);
+static void adjust(int iv, int fac, Class *cls);
+static void show(Class *cls, int iv);
+
 /*--------------------------  define ------------------------------- */
 /*	This routine is used to set up a VarType entry in the global "types"
 array.  It is the only function whose name needs to be altered for different
@@ -184,7 +184,7 @@ void expmults_define(typindx) int typindx;
 }
 
 /*	----------------------- setvar --------------------------  */
-void set_var(int iv, Class* cls) {
+void set_var(int iv, Class *cls) {
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     PopVar *pop_var = &CurCtx.popln->variables[iv];
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
@@ -194,7 +194,7 @@ void set_var(int iv, Class* cls) {
     saux = (Saux *)smpl_var->saux;
     cvi = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
-    
+
     states = vaux->states;
     statesm = states - 1;
     rstates = 1.0 / states;
@@ -215,9 +215,10 @@ void set_var(int iv, Class* cls) {
 /*	To read any auxiliary info about a variable of this type in some
 sample.
     */
-int read_attr_aux(Vaux *vax) {
+int read_attr_aux(void *vaux) {
     int i;
     double lstates;
+    Vaux *vax = (Vaux *)vaux;
 
     /*	Read in auxiliary info into vaux, return 0 if OK else 1  */
     i = read_int(&(vax->states), 1);
@@ -251,10 +252,7 @@ int read_attr_aux(Vaux *vax) {
 
 /*	-------------------  readsaux ------------------------------  */
 /*	To read auxilliary info re sample for this attribute   */
-int read_smpl_aux(Saux *sax) {
-    /*	Multistate has no auxilliary info re sample  */
-    return (0);
-}
+int read_smpl_aux(void *sax) { return (0); } /*	Multistate has no auxilliary info re sample  */
 
 /*	-------------------  readdat -------------------------------  */
 /*	To read a value for this variable type         */
@@ -263,7 +261,7 @@ int read_datum(char *loc, int iv) {
     Datum xn;
 
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
-    vaux = (Vaux *)vset_var->vaux;   
+    vaux = (Vaux *)vset_var->vaux;
 
     states = vaux->states;
     /*	Read datum into xn, return error.  */
@@ -281,7 +279,7 @@ int read_datum(char *loc, int iv) {
 
 /*	---------------------  print_datum --------------------------  */
 /*	To print a Datum value   */
-void print_datum(Datum *loc) {
+void print_datum(char *loc) {
     /*	Print datum from address loc   */
     printf("%3d", (*((Datum *)loc) + 1));
     return;
@@ -433,7 +431,7 @@ void clear_stats(int iv, Class *cls) {
 /*	-------------------------  score_var  ------------------------   */
 /*	To eval derivs of a case wrt score, scorespread. Adds to vvd1,vvd2.
  */
-void score_var(int iv, Class* cls) {
+void score_var(int iv, Class *cls) {
     double t1d1, t2d1, t3d1;
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
 
@@ -458,7 +456,7 @@ void score_var(int iv, Class* cls) {
 
 /*	---------------------  cost_var  ---------------------------  */
 /*	Accumulate item cost into CaseNoFacCost, fcasecost  */
-void cost_var(int iv, int fac, Class* cls) {
+void cost_var(int iv, int fac, Class *cls) {
     double cost;
 
     set_var(iv, cls);
@@ -494,7 +492,7 @@ facdone:
 /*	------------------  deriv_var  ------------------------------  */
 /*	Given item weight in cwt, calcs derivs of item cost wrt basic
 params and accumulates in paramd1, paramd2  */
-void deriv_var(int iv, int fac, Class* cls) {
+void deriv_var(int iv, int fac, Class *cls) {
     double cons1, cons2, inc;
     const double case_weight = cls->case_weight;
     int k;
@@ -555,7 +553,7 @@ facdone:
 
 /*	-------------------  adjust  ---------------------------    */
 /*	To adjust parameters of a multistate variable     */
-void adjust(int iv, int fac, Class* cls) {
+void adjust(int iv, int fac, Class *cls) {
 
     double adj, apd2, cnt, vara, del, tt, sum, spcost, fpcost;
     int k, n;

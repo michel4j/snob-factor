@@ -20,20 +20,6 @@ void kapcode(double hx, double hy, double *vmst);
 
 #define NullSprd ((double)10.0) /* Root prior spread */
 
-static void set_var();
-static int read_attr_aux();
-static int read_smpl_aux();
-static int read_datum();
-static void print_datum();
-static void set_sizes();
-static void set_best_pars();
-static void clear_stats();
-static void score_var();
-static void cost_var();
-static void deriv_var();
-static void cost_var_nonleaf();
-static void adjust();
-static void show();
 
 typedef struct Datumst {
     double xx;
@@ -123,6 +109,22 @@ static Vaux *vaux;
 static Basic *cvi, *dcvi;
 static Stats *evi;
 
+
+static void set_var(int iv, Class *cls);
+static int read_attr_aux(void *vax);
+static int read_smpl_aux(void *sax);
+static int read_datum(char *loc, int iv);
+static void print_datum(char *loc);
+static void set_sizes(int iv);
+static void set_best_pars(int iv, Class *cls);
+static void clear_stats(int iv, Class *cls);
+static void score_var(int iv, Class *cls);
+static void cost_var(int iv, int fac, Class *cls);
+static void deriv_var(int iv, int fac, Class *cls);
+static void cost_var_nonleaf(int iv, int vald, Class *cls);
+static void adjust(int iv, int fac, Class *cls);
+static void show(Class *cls, int iv);
+
 /*--------------------------  define ------------------------------- */
 /*	This routine is used to set up a VarType entry in the global "types"
 array.  It is the only function whose name needs to be altered for different
@@ -179,14 +181,15 @@ void set_var(int iv, Class *cls) {
 
 /*	--------------------  readvaux  ----------------------------  */
 /*      Read in auxiliary info into vaux, return 0 if OK else 1  */
-int read_attr_aux(Vaux *vax) { return (0); }
+int read_attr_aux(void *vax) { return (0); }
 
 /*	---------------------  readsaux ---------------------------   */
 /*	To read any auxiliary info about a variable of this type in some
 sample.
     */
-int read_smpl_aux(Saux *sax) {
+int read_smpl_aux(void *saux) {
     int i;
+    Saux *sax = (Saux *)saux;
 
     /*	Read in auxiliary info into saux, return 0 if OK else 1  */
     i = read_int(&(sax->unit), 1);

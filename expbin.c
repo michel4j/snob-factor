@@ -2,21 +2,6 @@
 
 #include "glob.h"
 
-static void set_var();
-static int read_attr_aux();
-static int read_smpl_aux();
-static int read_datum();
-static void print_datum();
-static void set_sizes();
-static void set_best_pars();
-static void clear_stats();
-static void score_var();
-static void cost_var();
-static void deriv_var();
-static void cost_var_nonleaf();
-static void adjust();
-static void show();
-
 typedef struct Vauxst {
     int states;
     double rstatesm;  /* 1 / (states-1) */
@@ -90,6 +75,21 @@ static Stats *evi;
 static double dadnap;
 static double dapsprd; /* Dad's napsprd */
 
+static void set_var(int iv, Class *cls);
+static int read_attr_aux(void *vax);
+static int read_smpl_aux(void *sax);
+static int read_datum(char *loc, int iv);
+static void print_datum(char *loc);
+static void set_sizes(int iv);
+static void set_best_pars(int iv, Class *cls);
+static void clear_stats(int iv, Class *cls);
+static void score_var(int iv, Class *cls);
+static void cost_var(int iv, int fac, Class *cls);
+static void deriv_var(int iv, int fac, Class *cls);
+static void cost_var_nonleaf(int iv, int vald, Class *cls);
+static void adjust(int iv, int fac, Class *cls);
+static void show(Class *cls, int iv);
+
 /*--------------------------  define ------------------------------- */
 /*	This routine is used to set up a VarType entry in the global "types"
 array.  It is the only function whose name needs to be altered for different
@@ -143,14 +143,11 @@ void set_var(int iv, Class *cls) {
 /*	To read any auxiliary info about a variable of this type in some
 sample.
     */
-int read_attr_aux(Vaux *vax) { return (0); }
+int read_attr_aux(void *vax) { return (0); }
 
 /*	-------------------  readsaux ------------------------------  */
 /*	To read auxilliary info re sample for this attribute   */
-int read_smpl_aux(Saux *sax) {
-    /*	Multistate has no auxilliary info re sample  */
-    return (0);
-}
+int read_smpl_aux(void *sax) { return (0); } /*	Multistate has no auxilliary info re sample  */
 
 /*	-------------------  readdat -------------------------------  */
 /*	To read a value for this variable type         */
@@ -173,7 +170,7 @@ int read_datum(char *loc, int iv) {
 
 /*	---------------------  print_datum --------------------------  */
 /*	To print a Datum value   */
-void print_datum(Datum *loc) {
+void print_datum(char *loc) {
     /*	Print datum from address loc   */
     printf("%3d", (*((Datum *)loc) + 1));
     return;

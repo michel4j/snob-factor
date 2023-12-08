@@ -80,7 +80,6 @@ gotit:
 
     /*	Now make the ClassVar blocks, which are of varying size   */
     for (i = 0; i < NumVars; i++) {
-        pop_var = &popln->variables[i];
         vset_var = &CurCtx.vset->variables[i];
         cvi = cvars[i] = (ClassVar *)alloc_blocks(1, vset_var->basic_size);
         if (!cvi)
@@ -494,7 +493,7 @@ void adjust_class(Class *cls, int dod) {
         }
     }
     /*	But if a young subclass, make relab half of dad's  */
-    if ((cls->type == Sub) && (cls->age < MinSubAge)) {
+    if ((dad) && (cls->type == Sub) && (cls->age < MinSubAge)) {
         cls->relab = 0.5 * dad->relab;
     }
 
