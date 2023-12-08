@@ -33,7 +33,6 @@ EXT int Debug;       // Flag to turn toggle debug messages
 EXT int UseBin;
 EXT int Control, DControl; /*	To control what is adjusted  */
 EXT int DFix, Fix;         /*	To determine how weights are distributed  */
-EXT int trapkk, trapage, trapcnt;
 
 EXT Score Scores;
 
