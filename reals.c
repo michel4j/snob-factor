@@ -130,16 +130,17 @@ void reals_define(typindx) int typindx;
 
 /*	-------------------  setvar -----------------------------  */
 void set_var(int iv, Class *cls) {
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
+    PopVar *pop_var = &CurCtx.popln->variables[iv];
+    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
-    VSetVar *vset_var = VSetVarList + iv;
 
     CurVType = vset_var->vtype;
-    CurPopVar = PopVarList + iv;
-    paux = (Paux *)CurPopVar->paux;
-    CurVar = SmplVarList + iv;
+    paux = (Paux *)pop_var->paux;
     vaux = (Vaux *)vset_var->vaux;
-    saux = (Saux *)CurVar->saux;
+    saux = (Saux *)smpl_var->saux;
     cvi = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
     dcvi = (dad) ? (Basic *)dad->basics[iv] : 0;
@@ -191,7 +192,7 @@ void print_datum(char *loc) {
 
 /*	---------------------  setsizes  -----------------------   */
 void set_sizes(int iv) {
-    VSetVar *vset_var = VSetVarList + iv;
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
     vset_var->basic_size = sizeof(Basic);
     vset_var->stats_size = sizeof(Stats);
 
@@ -257,7 +258,7 @@ vvd1, vvd2.
 void score_var(int iv, Class *cls) {
 
     double del, md2;
-    VSetVar *vset_var = VSetVarList + iv;
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
     set_var(iv, cls);
     if (vset_var->inactive)
         return;
@@ -688,7 +689,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     int nints, nson, ison, k, n;
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
-    VSetVar *vset_var = VSetVarList + iv;
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
 
     set_var(iv, cls);
     if (!vald) { /* Cannot define as-dad params, so fake it */

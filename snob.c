@@ -9,7 +9,7 @@
 
 /*    ---------------------  main  ---------------------------  */
 int main(int argc, char *argv[]) {
-    int index, cycles = 20;
+    int index, cycles = 2;
 
     clock_t cpu_start, cpu_end;
     struct timespec wall_start, wall_end;

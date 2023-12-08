@@ -184,13 +184,14 @@ void expmults_define(typindx) int typindx;
 
 /*	----------------------- setvar --------------------------  */
 void set_var(int iv, Class* cls) {
-    VSetVar *vset_var = VSetVarList + iv;
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
+    PopVar *pop_var = &CurCtx.popln->variables[iv];
+    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+
     CurVType = vset_var->vtype;
-    CurPopVar = PopVarList + iv;
-    paux = (Paux *)CurPopVar->paux;
-    CurVar = SmplVarList + iv;
+    paux = (Paux *)pop_var->paux;
     vaux = (Vaux *)vset_var->vaux;
-    saux = (Saux *)CurVar->saux;
+    saux = (Saux *)smpl_var->saux;
     cvi = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
     states = vaux->states;
@@ -260,7 +261,9 @@ int read_datum(char *loc, int iv) {
     int i;
     Datum xn;
 
-    vaux = (Vaux *)(VSetVarList[iv].vaux);
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
+    vaux = (Vaux *)vset_var->vaux;   
+
     states = vaux->states;
     /*	Read datum into xn, return error.  */
     i = read_int(&xn, 1);
@@ -288,7 +291,7 @@ void print_datum(Datum *loc) {
 blocks for variable, and place in VSetVar basicsize, statssize.
     */
 void set_sizes(int iv) {
-    VSetVar *vset_var = VSetVarList + iv;
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
     vaux = (Vaux *)vset_var->vaux;
     states = vaux->states;
 
@@ -431,7 +434,7 @@ void clear_stats(int iv, Class *cls) {
  */
 void score_var(int iv, Class* cls) {
     double t1d1, t2d1, t3d1;
-    VSetVar *vset_var = VSetVarList + iv;
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
 
     set_var(iv, cls);
     if (vset_var->inactive)
@@ -835,7 +838,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     double apsprd;
     int n, k, ison, nson, nints;
     Population *popln = CurCtx.popln;
-    VSetVar *vset_var = VSetVarList + iv;
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
 
     set_var(iv, cls);
     if (vset_var->inactive) {

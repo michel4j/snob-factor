@@ -503,15 +503,6 @@ int main() {
     flp();
     printf("Firstpop returns %d\n", kk);
     cspace = report_space(1);
-
-    trapcnt = 0;
-#ifdef TRAP
-    printf("Enter trap class, age; or -1 for notrap: ");
-    scanf("%d", &trapkk);
-    trapcnt = 0;
-    if (trapkk >= 0)
-        scanf("%d", &trapage);
-#endif
     print_class(CurCtx.popln->root, 0);
 error:
     printf("??? line %6d\n", CurSource->line);

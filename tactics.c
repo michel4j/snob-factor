@@ -125,7 +125,7 @@ configok:
     for (iv = 0; iv < NumVars; iv++) {
         fcvi = odad->basics[iv];
         cvi = ndad->basics[iv];
-        nch = VSetVarList[iv].basic_size;
+        nch = CurCtx.vset->variables[iv].basic_size;
         memcpy(cvi, fcvi, nch);
     }
 
@@ -133,7 +133,7 @@ configok:
     for (iv = 0; iv < NumVars; iv++) {
         fevi = odad->stats[iv];
         evi = ndad->stats[iv];
-        nch = VSetVarList[iv].stats_size;
+        nch = CurCtx.vset->variables[iv].stats_size;
         memcpy(evi, fevi, nch);
     }
 

@@ -646,7 +646,7 @@ void do_case(int cse, int all, int derivs, int num_son) {
             psaux->missing = 1;
         } else {
             psaux->missing = 0;
-            memcpy(&(psaux->xn), CurField + 1, VSetVarList[i].vtype->data_size);
+            memcpy(&(psaux->xn), CurField + 1, CurCtx.vset->variables[i].vtype->data_size);
         }
     }
 

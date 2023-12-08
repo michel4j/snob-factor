@@ -127,13 +127,14 @@ void expbinary_define(typindx) int typindx;
 
 /*	----------------------- setvar --------------------------  */
 void set_var(int iv, Class *cls) {
-    VSetVar *vset_var = VSetVarList + iv;
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
+    PopVar *pop_var = &CurCtx.popln->variables[iv];
+    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+
     CurVType = vset_var->vtype;
-    CurPopVar = PopVarList + iv;
-    paux = (Paux *)CurPopVar->paux;
-    CurVar = SmplVarList + iv;
+    paux = (Paux *)pop_var->paux;
     vaux = (Vaux *)vset_var->vaux;
-    saux = (Saux *)CurVar->saux;
+    saux = (Saux *)smpl_var->saux;
     cvi = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
 }
@@ -184,7 +185,7 @@ blocks for variable, and place in VSetVar basicsize, statssize.
     */
 void set_sizes(int iv) {
 
-    VSetVar *vset_var = VSetVarList + iv;
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
 
     /*	Set sizes of ClassVar (basic) and ExplnVar (stats) in VSetVar  */
     vset_var->basic_size = sizeof(Basic);
@@ -255,7 +256,7 @@ void clear_stats(int iv, Class *cls) {
  */
 void score_var(int iv, Class *cls) {
     double cc, pr0, pr1, ff, ft, dbyv, hdffbydv, hdftbydv;
-    VSetVar *vset_var = VSetVarList + iv;
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
 
     set_var(iv, cls);
     if (vset_var->inactive)
@@ -580,7 +581,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     int n, ison, nson, nints;
 
     Population *popln = CurCtx.popln;
-    VSetVar *vset_var = VSetVarList + iv;
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
 
     set_var(iv, cls);
     if (vset_var->inactive) {

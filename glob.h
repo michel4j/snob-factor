@@ -44,13 +44,10 @@ EXT int RecLen;      /*  reclen of current sample  */
 EXT char *Records;   /*  Common ptr to data records block of a sample */
 
 /*	re Poplns  */
-EXT PopVar *CurPopVar;
-EXT SampleVar *CurVar;
 EXT VarType *CurVType;
 EXT int NumCases; /* Number of cases */
 EXT int NumVars;  /* Number of variables */
 
-EXT VSetVar *VSetVarList;
 EXT PopVar *PopVarList;
 EXT SampleVar *SmplVarList;
 

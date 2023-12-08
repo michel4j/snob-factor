@@ -162,15 +162,17 @@ void vonm_define(int typindx)
 
 /*	-------------------  setvar -----------------------------  */
 void set_var(int iv, Class *cls) {
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
+    PopVar *pop_var = &CurCtx.popln->variables[iv];
+    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
-    VSetVar *vset_var = VSetVarList + iv;
+
     CurVType = vset_var->vtype;
-    CurPopVar = PopVarList + iv;
-    paux = (Paux *)CurPopVar->paux;
-    CurVar = SmplVarList + iv;
+    paux = (Paux *)pop_var->paux;
     vaux = (Vaux *)vset_var->vaux;
-    saux = (Saux *)CurVar->saux;
+    saux = (Saux *)smpl_var->saux;
     cvi = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
     dcvi = (dad) ? (Basic *)dad->basics[iv] : 0;
@@ -215,14 +217,16 @@ int read_datum(char *loc, int iv) {
     int unit;
     double epsfac;
     Datum xn;
+    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+
 
     /*	Read datum into xn.xx, return error.  */
     i = read_double(&(xn.xx), 1);
     if (!i) {
         /*	Get the unit code from Saux   */
-        unit = ((Saux *)(CurVar->saux))->unit;
+        unit = ((Saux *)(smpl_var->saux))->unit;
         /*	Get quantization effect from Saux  */
-        epsfac = ((Saux *)(CurVar->saux))->epsfac;
+        epsfac = ((Saux *)(smpl_var->saux))->epsfac;
         if (unit)
             xn.xx *= (PI / 180.0);
         xn.sinxx = epsfac * sin(xn.xx);
@@ -242,7 +246,7 @@ void print_datum(char *loc) {
 
 /*	---------------------  setsizes  -----------------------   */
 void set_sizes(int iv) {
-    VSetVar *vset_var = VSetVarList + iv;
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
     vset_var->basic_size = sizeof(Basic);
     vset_var->stats_size = sizeof(Stats);
     return;
@@ -328,7 +332,7 @@ void score_var(int iv, Class *cls) {
 
     double cosw, sinw, tt, wd1;
     double dwdt, dwdv, r2, dr2dw;
-    VSetVar *vset_var = VSetVarList + iv;
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
     set_var(iv, cls);
     if (vset_var->inactive)
         return;
@@ -860,7 +864,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
 
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
-    VSetVar *vset_var = VSetVarList + iv;
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
 
     set_var(iv, cls);
     if (!vald) { /* Cannot define as-dad params, so fake it */
