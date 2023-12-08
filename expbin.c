@@ -101,28 +101,29 @@ when installing a new type of variable. It is also necessary to change the
 void expbinary_define(typindx) int typindx;
 /*	typindx is the index in types[] of this type   */
 {
-    CurVType = Types + typindx;
-    CurVType->id = typindx;
+    VarType *vtype;
+    vtype = &Types[typindx];
+    vtype->id = typindx;
     /* 	Set type name as string up to 59 chars  */
-    CurVType->name = "ExpBinary";
-    CurVType->data_size = sizeof(Datum);
-    CurVType->attr_aux_size = sizeof(Vaux);
-    CurVType->pop_aux_size = sizeof(Paux);
-    CurVType->smpl_aux_size = sizeof(Saux);
-    CurVType->read_aux_attr = &read_attr_aux;
-    CurVType->read_aux_smpl = &read_smpl_aux;
-    CurVType->read_datum = &read_datum;
-    CurVType->print_datum = &print_datum;
-    CurVType->set_sizes = &set_sizes;
-    CurVType->set_best_pars = &set_best_pars;
-    CurVType->clear_stats = &clear_stats;
-    CurVType->score_var = &score_var;
-    CurVType->cost_var = &cost_var;
-    CurVType->deriv_var = &deriv_var;
-    CurVType->cost_var_nonleaf = &cost_var_nonleaf;
-    CurVType->adjust = &adjust;
-    CurVType->show = &show;
-    CurVType->set_var = &set_var;
+    vtype->name = "ExpBinary";
+    vtype->data_size = sizeof(Datum);
+    vtype->attr_aux_size = sizeof(Vaux);
+    vtype->pop_aux_size = sizeof(Paux);
+    vtype->smpl_aux_size = sizeof(Saux);
+    vtype->read_aux_attr = &read_attr_aux;
+    vtype->read_aux_smpl = &read_smpl_aux;
+    vtype->read_datum = &read_datum;
+    vtype->print_datum = &print_datum;
+    vtype->set_sizes = &set_sizes;
+    vtype->set_best_pars = &set_best_pars;
+    vtype->clear_stats = &clear_stats;
+    vtype->score_var = &score_var;
+    vtype->cost_var = &cost_var;
+    vtype->deriv_var = &deriv_var;
+    vtype->cost_var_nonleaf = &cost_var_nonleaf;
+    vtype->adjust = &adjust;
+    vtype->show = &show;
+    vtype->set_var = &set_var;
 }
 
 /*	----------------------- setvar --------------------------  */
@@ -131,7 +132,6 @@ void set_var(int iv, Class *cls) {
     PopVar *pop_var = &CurCtx.popln->variables[iv];
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
 
-    CurVType = vset_var->vtype;
     paux = (Paux *)pop_var->paux;
     vaux = (Vaux *)vset_var->vaux;
     saux = (Saux *)smpl_var->saux;

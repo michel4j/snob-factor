@@ -161,6 +161,7 @@ void print_one_class(Class *cls, int full) {
     int i;
     double vrms;
     Population *popln = CurCtx.popln;
+    VarType *vtype;
 
     printf("\nS%s", serial_to_str(cls));
     printf(" %s", typstr[((int)cls->type)]);
@@ -187,8 +188,8 @@ void print_one_class(Class *cls, int full) {
     if (!full)
         return;
     for (i = 0; i < CurCtx.vset->length; i++) {
-        CurVType = CurCtx.vset->variables[i].vtype;
-        (*CurVType->show)(cls, i);
+        vtype = CurCtx.vset->variables[i].vtype;
+        (*vtype->show)(cls, i);
     }
     return;
 }
@@ -222,6 +223,7 @@ void print_class(int kk, int full) {
 newvsq, and calls clear_stats for all variables   */
 void clear_costs(Class *cls) {
     int i;
+    VarType *vtype;
 
     cls->mlogab = -log(cls->relab);
     cls->cstcost = cls->cftcost = cls->cntcost = 0.0;
@@ -233,8 +235,8 @@ void clear_costs(Class *cls) {
     if (!SeeAll)
         cls->scancnt = 0;
     for (i = 0; i < CurCtx.vset->length; i++) {
-        CurVType = CurCtx.vset->variables[i].vtype;
-        (*CurVType->clear_stats)(i, cls);
+        vtype = CurCtx.vset->variables[i].vtype;
+        (*vtype->clear_stats)(i, cls);
     }
     return;
 }
@@ -243,6 +245,7 @@ void clear_costs(Class *cls) {
 /*	To set 'b' params, costs to reflect current use   */
 void set_best_costs(Class *cls) {
     int i;
+    VarType *vtype;
 
     if (cls->type == Dad) {
         cls->best_cost = cls->dad_cost;
@@ -258,8 +261,8 @@ void set_best_costs(Class *cls) {
         cls->best_case_cost = cls->cftcost;
     }
     for (i = 0; i < CurCtx.vset->length; i++) {
-        CurVType = CurCtx.vset->variables[i].vtype;
-        (*CurVType->set_best_pars)(i, cls);
+        vtype = CurCtx.vset->variables[i].vtype;
+        (*vtype->set_best_pars)(i, cls);
     }
     return;
 }
@@ -274,6 +277,7 @@ void score_all_vars(Class *cls) {
     int i, igbit, oldicvv;
     double del;
     VSetVar *vset_var;
+    VarType *vtype;
 
     set_class_score(cls);
     if ((cls->age < MinFacAge) || (cls->use == Tiny)) {
@@ -320,8 +324,8 @@ started:
         vset_var = &CurCtx.vset->variables[i];
         if (vset_var->inactive)
             goto vdone;
-        CurVType = vset_var->vtype;
-        (*CurVType->score_var)(i, cls);
+        vtype = vset_var->vtype;
+        (*vtype->score_var)(i, cls);
     /*	score_var should add to vvd1, vvd2, vvd3, mvvd2.  */
     vdone:;
     }
@@ -371,6 +375,7 @@ void cost_all_vars(Class *cls) {
     int fac;
     double tmp;
     VSetVar *vset_var;
+    VarType *vtype;
 
     set_class_score(cls);
     if ((cls->age < MinFacAge) || (cls->use == Tiny))
@@ -384,8 +389,8 @@ void cost_all_vars(Class *cls) {
         vset_var = &CurCtx.vset->variables[iv];
         if (vset_var->inactive)
             goto vdone;
-        CurVType = vset_var->vtype;
-        (*CurVType->cost_var)(iv, fac, cls);
+        vtype = vset_var->vtype;
+        (*vtype->cost_var)(iv, fac, cls);
     /*	will add to CaseNoFacCost, CaseFacCost  */
     vdone:;
     }
@@ -423,6 +428,7 @@ finish:
 void deriv_all_vars(Class *cls) {
     int fac;
     VSetVar *vset_var;
+    VarType *vtype;
     const double case_weight = cls->case_weight;
 
     set_class_score(cls);
@@ -442,8 +448,8 @@ void deriv_all_vars(Class *cls) {
         vset_var = &CurCtx.vset->variables[iv];
         if (vset_var->inactive)
             goto vdone;
-        CurVType = vset_var->vtype;
-        (*CurVType->deriv_var)(iv, fac, cls);
+        vtype = vset_var->vtype;
+        (*vtype->deriv_var)(iv, fac, cls);
     vdone:;
     }
 
@@ -465,6 +471,7 @@ void adjust_class(Class *cls, int dod) {
     double leafcost;
     Population *popln = CurCtx.popln;
     VSetVar *vset_var;
+    VarType *vtype;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
 
     /*	Get root (logarithmic average of vvsprds)  */
@@ -510,8 +517,8 @@ void adjust_class(Class *cls, int dod) {
         vset_var = &CurCtx.vset->variables[iv];
         if (vset_var->inactive)
             goto vdone;
-        CurVType = vset_var->vtype;
-        (*CurVType->adjust)(iv, fac, cls);
+        vtype = vset_var->vtype;
+        (*vtype->adjust)(iv, fac, cls);
     vdone:;
     }
 
@@ -640,12 +647,13 @@ void parent_cost_all_vars(Class *cls, int valid) {
     double abcost, rrelab;
     Population *popln = CurCtx.popln;
     VSetVar *vset_var;
+    VarType *vtype;
 
     abcost = 0.0;
     for (i = 0; i < CurCtx.vset->length; i++) {
         vset_var = &CurCtx.vset->variables[i];
-        CurVType = vset_var->vtype;
-        (*CurVType->cost_var_nonleaf)(i, valid, cls);
+        vtype = vset_var->vtype;
+        (*vtype->cost_var_nonleaf)(i, valid, cls);
         evi = (ExplnVar *)cls->stats[i];
         if (!vset_var->inactive) {
             abcost += evi->npcost;

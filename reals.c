@@ -102,30 +102,30 @@ when installing a new type of variable. It is also necessary to change the
 void reals_define(typindx) int typindx;
 /*	typindx is the index in types[] of this type   */
 {
-    VarType *vtp;
+    VarType *vtype;
 
-    vtp = Types + typindx;
-    vtp->id = typindx;
+    vtype = &Types[typindx];
+    vtype->id = typindx;
     /* 	Set type name as string up to 59 chars  */
-    vtp->name = "Standard Gaussian";
-    vtp->data_size = sizeof(Datum);
-    vtp->attr_aux_size = sizeof(Vaux);
-    vtp->pop_aux_size = sizeof(Paux);
-    vtp->smpl_aux_size = sizeof(Saux);
-    vtp->read_aux_attr = &read_attr_aux;
-    vtp->read_aux_smpl = &read_smpl_aux;
-    vtp->read_datum = &read_datum;
-    vtp->print_datum = &print_datum;
-    vtp->set_sizes = &set_sizes;
-    vtp->set_best_pars = &set_best_pars;
-    vtp->clear_stats = &clear_stats;
-    vtp->score_var = &score_var;
-    vtp->cost_var = &cost_var;
-    vtp->deriv_var = &deriv_var;
-    vtp->cost_var_nonleaf = &cost_var_nonleaf;
-    vtp->adjust = &adjust;
-    vtp->show = &show;
-    vtp->set_var = &set_var;
+    vtype->name = "Standard Gaussian";
+    vtype->data_size = sizeof(Datum);
+    vtype->attr_aux_size = sizeof(Vaux);
+    vtype->pop_aux_size = sizeof(Paux);
+    vtype->smpl_aux_size = sizeof(Saux);
+    vtype->read_aux_attr = &read_attr_aux;
+    vtype->read_aux_smpl = &read_smpl_aux;
+    vtype->read_datum = &read_datum;
+    vtype->print_datum = &print_datum;
+    vtype->set_sizes = &set_sizes;
+    vtype->set_best_pars = &set_best_pars;
+    vtype->clear_stats = &clear_stats;
+    vtype->score_var = &score_var;
+    vtype->cost_var = &cost_var;
+    vtype->deriv_var = &deriv_var;
+    vtype->cost_var_nonleaf = &cost_var_nonleaf;
+    vtype->adjust = &adjust;
+    vtype->show = &show;
+    vtype->set_var = &set_var;
 }
 
 /*	-------------------  setvar -----------------------------  */
@@ -137,7 +137,6 @@ void set_var(int iv, Class *cls) {
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
 
-    CurVType = vset_var->vtype;
     paux = (Paux *)pop_var->paux;
     vaux = (Vaux *)vset_var->vaux;
     saux = (Saux *)smpl_var->saux;

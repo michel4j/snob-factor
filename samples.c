@@ -35,6 +35,7 @@ void print_var_datam(int i, int n) {
 int read_vset() {
     char filename[80];
     int kread;
+
     printf("Enter variable-set file name:\n");
     kread = read_str(filename, 1);
     if (kread < 0) {
@@ -51,6 +52,7 @@ int load_vset(const char *filename) {
     int kread;
     Buffer bufst, *buf;
     char *vaux;
+    VarType *vtype;
     VSetVar *vset_var, *vset_var_list;
 
     buf = &bufst;
@@ -143,11 +145,11 @@ gotit:
             goto error;
         }
         itype = itype - 1; /*  Convert types to start at 0  */
-        CurVType = vset_var->vtype = Types + itype;
+        vtype = vset_var->vtype = &Types[itype];
         vset_var->type = itype;
 
         /*	Make the vaux block  */
-        vaux = (char *)alloc_blocks(3, CurVType->attr_aux_size);
+        vaux = (char *)alloc_blocks(3, vtype->attr_aux_size);
         if (!vaux) {
             printf("Cant make auxilliary var block\n");
             i = -6;
@@ -156,13 +158,13 @@ gotit:
         vset_var->vaux = vaux;
 
         /*	Read auxilliary information   */
-        if ((*CurVType->read_aux_attr)(vaux)) {
+        if ((*vtype->read_aux_attr)(vaux)) {
             printf("Error in reading auxilliary info var %d\n", i + 1);
             i = -7;
             goto error;
         }
         /*	Set sizes of stats and basic blocks for var in classes */
-        (*CurVType->set_sizes)(i);
+        (*vtype->set_sizes)(i);
     } /* End of variables loop */
     i = indx;
 
@@ -184,6 +186,7 @@ int load_sample(const char *fname) {
     Context oldctx;
     char *saux, vstnam[80], sampname[80];
     VSetVar *vset_var;
+    VarType *vtype;
     SampleVar *smpl_var;
 
     memcpy(&oldctx, &CurCtx, sizeof(Context));
@@ -269,10 +272,10 @@ gotit:
         smpl_var = &CurCtx.sample->variables[i];
         vset_var = &CurCtx.vset->variables[i];
         smpl_var->id = i;
-        CurVType = vset_var->vtype;
+        vtype = vset_var->vtype;
 
         /*	Make the saux block  */
-        saux = (char *)alloc_blocks(0, CurVType->smpl_aux_size);
+        saux = (char *)alloc_blocks(0, vtype->smpl_aux_size);
         if (!saux) {
             printf("Cant make auxilliary var block\n");
             i = -6;
@@ -281,7 +284,7 @@ gotit:
         smpl_var->saux = saux;
 
         /*	Read auxilliary information   */
-        if ((*CurVType->read_aux_smpl)(saux)) {
+        if ((*vtype->read_aux_smpl)(saux)) {
             printf("Error in reading auxilliary info var %d\n", i + 1);
             i = -7;
             goto error;
@@ -289,7 +292,7 @@ gotit:
 
         /*	Set the offset of the (missing, value) pair  */
         smpl_var->offset = RecLen;
-        RecLen += (1 + CurVType->data_size); /* missing flag and value */
+        RecLen += (1 + vtype->data_size); /* missing flag and value */
     }                                 /* End of variables loop */
 
     /*	Now attempt to read in the data. The first item is the number of cases*/
@@ -336,8 +339,8 @@ gotit:
         for (i = 0; i < NumVars; i++) {
             smpl_var = &CurCtx.sample->variables[i];
             vset_var = &CurCtx.vset->variables[i];
-            CurVType = vset_var->vtype;
-            kread = (*CurVType->read_datum)(CurField + 1, i);
+            vtype = vset_var->vtype;
+            kread = (*vtype->read_datum)(CurField + 1, i);
             if (kread < 0) {
                 printf("Data error case %d var %d\n", n + 1, i + 1);
                 swallow();
@@ -348,7 +351,7 @@ gotit:
                 *CurField = 0;
                 smpl_var->nval++;
             }
-            CurField += (CurVType->data_size + 1);
+            CurField += (vtype->data_size + 1);
         }
     }
     printf("Number of active cases = %d\n", CurCtx.sample->num_active);

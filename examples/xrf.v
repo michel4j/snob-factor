@@ -1,4 +1,3 @@
 xrf
-2
+1
 energy 1
-counts 1
