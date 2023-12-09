@@ -426,7 +426,7 @@ newclass:
 
 fakeit: /*  initialize scorevectors  */
     for (n = 0; n < num_cases; n++) {
-        record = Records + n * RecLen;
+        //record = Records + n * RecLen;
         cls->factor_scores[n] = 0;
     }
     cls->weights_sum = nomcnt;
@@ -1033,6 +1033,7 @@ void correlpops(int xid) {
     Class *wsons[MAX_CLASSES], *xsons[MAX_CLASSES];
     Population *xpop, *wpop;
     double fnact, wwt;
+    char *record;
     int wic, xic, n, pcw, wnl, xnl, num_son;
     Population *popln = CurCtx.popln;
     int num_cases = (CurCtx.sample) ? CurCtx.sample->num_cases : 0;

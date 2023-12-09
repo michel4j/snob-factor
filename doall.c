@@ -630,8 +630,8 @@ void do_case(int cse, int all, int derivs, int num_son) {
     int clc, i;
     Population *popln = CurCtx.popln;
     Class *root = popln->classes[popln->root];
+    char *record = Records + cse * RecLen; /*  Set ptr to case record  */
 
-    record = Records + cse * RecLen; /*  Set ptr to case record  */
     CurItem = cse;
     if (!*record) { // Inactive item
         return;

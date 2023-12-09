@@ -576,6 +576,7 @@ int item_list(char *tlstname)
     FILE *tlst;
     int nn, dadser, i, bc, tid, bl, num_son;
     double bw, bs;
+    char *record;
     Class *cls;
     Population *popln = CurCtx.popln;
     Class *root = CurCtx.popln->classes[CurCtx.popln->root];
@@ -628,7 +629,7 @@ nextcl1:
                 bw = cls->case_weight;
             }
         }
-
+        record = Records + nn * RecLen;
         memcpy(&tid, record + 1, sizeof(int));
         fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, Sons[bc]->serial >> 2,
                 Sons[bl]->serial >> 2, ScoreRscale * Sons[bl]->factor_scores[nn]);
