@@ -36,9 +36,6 @@ EXT int DFix, Fix;         /*	To determine how weights are distributed  */
 
 EXT Score Scores;
 
-/*	re Sample records  */
-EXT int RecLen;      /*  reclen of current sample  */
-EXT char *Records;   /*  Common ptr to data records block of a sample */
 
 /*	re Doall   */
 EXT int RSeed; /*	Seed for random routines */

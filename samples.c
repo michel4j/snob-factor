@@ -190,7 +190,7 @@ int load_sample(const char *fname) {
     VSetVar *vset_var;
     VarType *vtype;
     SampleVar *smpl_var, *smpl_var_list;
-    int num_cases;
+    int num_cases, record_length;
     char *field;
 
     memcpy(&oldctx, &CurCtx, sizeof(Context));
@@ -269,7 +269,7 @@ gotit:
         smpl_var_list[i].offset = 0;
         smpl_var_list[i].nval = 0;
     }
-    RecLen = 1 + sizeof(int); /* active flag and ident  */
+    record_length = 1 + sizeof(int); /* active flag and ident  */
     for (i = 0; i < CurCtx.vset->length; i++) {
         smpl_var = &CurCtx.sample->variables[i];
         vset_var = &CurCtx.vset->variables[i];
@@ -293,8 +293,8 @@ gotit:
         }
 
         /*	Set the offset of the (missing, value) pair  */
-        smpl_var->offset = RecLen;
-        RecLen += (1 + vtype->data_size); /* missing flag and value */
+        smpl_var->offset = record_length;
+        record_length += (1 + vtype->data_size); /* missing flag and value */
     }                                 /* End of variables loop */
 
     /*	Now attempt to read in the data. The first item is the number of cases*/
@@ -308,13 +308,13 @@ gotit:
     CurCtx.sample->num_cases = num_cases;
     CurCtx.sample->num_active = 0;
     /*	Make a vector of nc records each of size reclen  */
-    Records = CurCtx.sample->records = field = (char *)alloc_blocks(0, num_cases * RecLen);
+    CurCtx.sample->records = field = (char *)alloc_blocks(0, num_cases * record_length);
     if (!field) {
         printf("No space for data\n");
         i = -8;
         goto error;
     }
-    CurCtx.sample->record_length = RecLen;
+    CurCtx.sample->record_length = record_length;
 
     /*	Read in the data cases, each preceded by an active flag and ident   */
     for (n = 0; n < num_cases; n++) {
@@ -631,7 +631,7 @@ nextcl1:
                 bw = cls->case_weight;
             }
         }
-        record = Records + nn * RecLen;
+        record = CurCtx.sample->records + nn * CurCtx.sample->record_length;
         memcpy(&tid, record + 1, sizeof(int));
         fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, Sons[bc]->serial >> 2,
                 Sons[bl]->serial >> 2, ScoreRscale * Sons[bl]->factor_scores[nn]);

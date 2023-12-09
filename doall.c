@@ -630,7 +630,7 @@ void do_case(int item, int all, int derivs, int num_son) {
     int clc, i;
     Population *popln = CurCtx.popln;
     Class *root = popln->classes[popln->root];
-    char *record = Records + item * RecLen; /*  Set ptr to case record  */
+    char *record = CurCtx.sample->records + item * CurCtx.sample->record_length; /*  Set ptr to case record  */
     char *field;
 
     if (!*record) { // Inactive item

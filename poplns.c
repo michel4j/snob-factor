@@ -5,12 +5,6 @@
 
 /*	-----------------------  setpop  --------------------------    */
 void set_population() {
-    if (CurCtx.sample) {
-        RecLen = CurCtx.sample->record_length;
-        Records = CurCtx.sample->records;
-    } else {
-        Records = 0;
-    }
 }
 
 /*	-----------------------  nextclass  ---------------------  */
@@ -1092,7 +1086,7 @@ void correlpops(int xid) {
     for (n = 0; n < num_cases; n++) {
         CurCtx.popln = wpop;
         set_population();
-        record = Records + n * RecLen;
+        record = CurCtx.sample->records + n * CurCtx.sample->record_length;
         if (!*record)
             goto ndone;
         num_son = find_all(Leaf);
