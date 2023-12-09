@@ -42,7 +42,6 @@ int find_all(int class_type) {
     Population *popln = CurCtx.popln;
     Class *root = CurCtx.popln->classes[CurCtx.popln->root];
 
-    set_population();
     tidy(1, NoSubs);
     j = 0;
     cls = root;

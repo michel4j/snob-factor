@@ -543,7 +543,7 @@ loop:
         kk = 13;
         goto pickapop;
     }
-    set_population();
+
     Fix = DFix;
     Control = DControl;
     tidy(1, NoSubs);

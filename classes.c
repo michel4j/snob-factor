@@ -6,7 +6,6 @@
 int serial_to_id(int ss) {
     int k;
     Class *cls;
-    set_population();
     Population *popln = CurCtx.popln;
 
     if (ss >= 1) {
@@ -204,7 +203,7 @@ void print_class(int kk, int full) {
         printf("%d passed to printclass\n", kk);
         return;
     }
-    set_population();
+
     cls = root;
 
     do {

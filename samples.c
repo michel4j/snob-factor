@@ -587,7 +587,6 @@ int item_list(char *tlstname)
         return (-1);
     if (!CurCtx.sample)
         return (-2);
-    set_population();
     if (!CurCtx.sample->num_cases)
         return (-3);
 

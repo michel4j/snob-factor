@@ -11,7 +11,7 @@ void flatten() {
     Class *cls;
     Population *popln = CurCtx.popln;
     Class *root = popln->classes[popln->root];
-    set_population();
+
     tidy(0, NoSubs);
     if (root->num_sons == 0) {
         printf("Nothing to flatten\n");
@@ -185,7 +185,7 @@ int best_insert_dad(int force)
     bestdrop = -1.0e20;
     bser1 = bser2 = -1;
     newser = 0;
-    set_population();
+
     root = CurCtx.popln->classes[CurCtx.popln->root];
     origcost = root->best_cost;
     hiid = CurCtx.popln->hi_class;
@@ -227,7 +227,6 @@ inner:
     if (newp < 0)
         goto popfails;
     CurCtx.popln = Populations[newp];
-    set_population();
     root = CurCtx.popln->classes[CurCtx.popln->root];
     res = insert_dad(ser1, ser2, &newid);
     if (newid < 0) {
@@ -240,7 +239,7 @@ inner:
     }
 i2done:
     memcpy(&CurCtx, &oldctx, sizeof(Context));
-    set_population(); /* Return to original popln */
+
     root = CurCtx.popln->classes[CurCtx.popln->root];
     i2++;
     if (i2 <= hiid)
@@ -264,7 +263,6 @@ alldone:
     if (newp < 0)
         goto popfails;
     CurCtx.popln = Populations[newp];
-    set_population();
     root = CurCtx.popln->classes[CurCtx.popln->root];
     flp();
     printf("TRYING INSERT %6d,%6d\n", bser1 >> 2, bser2 >> 2);
@@ -290,7 +288,7 @@ alldone:
     set_bad_move(1, bser1, bser2);
     newser = 0;
     memcpy(&CurCtx, &oldctx, sizeof(Context));
-    set_population(); /* Return to original popln */
+
     flp();
     printf("Failed ******\n");
     goto finish;
@@ -380,11 +378,10 @@ int best_remove_dad() {
     double res, bestdrop, origcost;
     Population *popln = CurCtx.popln;
 
-
     NoSubs++;
     bestdrop = -1.0e20;
     bser = -1;
-    set_population();
+
     root = popln->classes[popln->root];
     /*	Do one pass of doall to set costs  */
     do_all(1, 1);
@@ -407,7 +404,7 @@ loop:
     if (newp < 0)
         goto popfails;
     popln = CurCtx.popln = Populations[newp];
-    set_population();
+
     root = popln->classes[popln->root];
     res = splice_dad(ser);
     if (res < -1000000.0) {
@@ -419,7 +416,7 @@ loop:
     }
 i1done:
     memcpy(&CurCtx, &oldctx, sizeof(Context));
-    set_population();
+
     i1++;
     if (i1 <= hiid)
         goto loop;
@@ -433,7 +430,7 @@ i1done:
     if (newp < 0)
         goto popfails;
     popln = CurCtx.popln = Populations[newp];
-    set_population();
+
     root = popln->classes[popln->root];
     flp();
     printf("TRYING DELETE %6d\n", bser >> 2);
@@ -450,7 +447,7 @@ i1done:
     set_bad_move(2, 0, bser); /* log failure in badmoves */
     bser = 0;
     memcpy(&CurCtx, &oldctx, sizeof(Context));
-    set_population();
+
     flp();
     printf("Failed ******\n");
     goto finish;
@@ -483,7 +480,6 @@ void binary_hierarchy(int flat)
 {
     int nn;
 
-    set_population();
     if (flat)
         flatten();
     NoSubs++;
@@ -522,7 +518,7 @@ finish:
 kicked:
     nn = find_population("work");
     CurCtx.popln = Populations[nn];
-    set_population();
+
     printf("BinHier ends prematurely\n");
     goto finish;
 }
@@ -536,7 +532,7 @@ void ranclass( int nn)
     Class *sub, *dad, *cls;
     Population *popln = CurCtx.popln;
     Class *root = popln->classes[popln->root];
-    set_population();
+
     if (!popln) {
         printf("Ranclass needs a model\n");
         goto finish;
@@ -703,7 +699,7 @@ int best_move_class(int force)
     NoSubs++;
     bestdrop = -1.0e20;
     bser1 = bser2 = -1;
-    set_population();
+
     root = CurCtx.popln->classes[CurCtx.popln->root];
     do_all(1, 1); /* To set costs */
     origcost = root->best_cost;
@@ -752,7 +748,6 @@ inner:
     if (newp < 0)
         goto popfails;
     CurCtx.popln = Populations[newp];
-    set_population();
     root = CurCtx.popln->classes[CurCtx.popln->root];
     res = move_class(ser1, ser2);
     if (res > bestdrop) {
@@ -762,7 +757,7 @@ inner:
     }
 i2done:
     memcpy(&CurCtx, &oldctx, sizeof(Context));
-    set_population(); /* Return to original popln */
+
     i2++;
     if (i2 <= hiid)
         goto inner;
@@ -785,7 +780,7 @@ alldone:
     if (newp < 0)
         goto popfails;
     CurCtx.popln = Populations[newp];
-    set_population();
+
     root = CurCtx.popln->classes[CurCtx.popln->root];
     flp();
     printf("TRYING MOVE CLASS %6d TO DAD %6d\n", bser1 >> 2, bser2 >> 2);
@@ -805,7 +800,7 @@ alldone:
         goto winner;
     set_bad_move(3, bser1, bser2);
     memcpy(&CurCtx, &oldctx, sizeof(Context));
-    set_population(); /* Return to original popln */
+
     flp();
     printf("Failed ******\n");
     goto finish;

@@ -323,7 +323,6 @@ void next_class(Class **ptr);
 int make_population(int fill);
 int init_population();
 void make_subclasses(int kk);
-void set_population();
 void destroy_population(int px);
 int copy_population(int p1, int fill, char *newname);
 int save_population(int p1, int fill, char *newname);
