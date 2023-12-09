@@ -623,16 +623,15 @@ typedef struct PSauxst {
     double xn;
 } PSaux;
 
-void do_case(int cse, int all, int derivs, int num_son) {
+void do_case(int item, int all, int derivs, int num_son) {
     double mincost, sum, rootcost, low, diff, w1, w2;
     Class *sub1, *sub2, *cls;
     PSaux *psaux;
     int clc, i;
     Population *popln = CurCtx.popln;
     Class *root = popln->classes[popln->root];
-    char *record = Records + cse * RecLen; /*  Set ptr to case record  */
+    char *record = Records + item * RecLen; /*  Set ptr to case record  */
 
-    CurItem = cse;
     if (!*record) { // Inactive item
         return;
     }
@@ -655,15 +654,15 @@ void do_case(int cse, int all, int derivs, int num_son) {
     clc = 0;
     while (clc < num_son) {
         cls = Sons[clc];
-        set_class_score(Sons[clc]);
+        set_class_score(Sons[clc], item);
         if ((!SeeAll) && (Scores.CaseFacInt & 1)) { /* Ignore this and decendants */
             clc = NextIc[clc];
             continue;
         } else if (!SeeAll)
             cls->scancnt++;
         /*	Score and cost the class  */
-        score_all_vars(cls);
-        cost_all_vars(cls);
+        score_all_vars(cls, item);
+        cost_all_vars(cls, item);
         clc++;
     }
     /*	Now have casescost, casefcost and casecost set in all classes for
@@ -785,7 +784,7 @@ void do_case(int cse, int all, int derivs, int num_son) {
                     sub2->case_score |= 1;
                 else
                     sub2->case_score &= -2;
-                sub2->factor_scores[CurItem] = sub2->case_score;
+                sub2->factor_scores[item] = sub2->case_score;
                 if (Fix == Random)
                     cls->dad_case_cost = low;
                 else
@@ -799,7 +798,7 @@ void do_case(int cse, int all, int derivs, int num_son) {
                     sub1->case_score |= 1;
                 else
                     sub1->case_score &= -2;
-                sub1->factor_scores[CurItem] = sub1->case_score;
+                sub1->factor_scores[item] = sub1->case_score;
                 if (Fix == Random)
                     cls->dad_case_cost = low;
                 else
@@ -823,13 +822,13 @@ void do_case(int cse, int all, int derivs, int num_son) {
         if (root->type != Leaf) { /* skip when root is only leaf */
             for (clc = num_son - 1; clc >= 0; clc--) {
                 cls = Sons[clc];
-                if ((cls->type == Sub) || ((!SeeAll) && (cls->factor_scores[CurItem] & 1))) {
+                if ((cls->type == Sub) || ((!SeeAll) && (cls->factor_scores[item] & 1))) {
                     continue;
                 }
                 if (cls->case_weight < MinWt)
-                    cls->factor_scores[CurItem] |= 1;
+                    cls->factor_scores[item] |= 1;
                 else
-                    cls->factor_scores[CurItem] &= -2;
+                    cls->factor_scores[item] &= -2;
                 if (cls->dad_id >= 0)
                     popln->classes[cls->dad_id]->case_weight += cls->case_weight;
                 if (cls->type == Dad) {
@@ -854,7 +853,7 @@ void do_case(int cse, int all, int derivs, int num_son) {
     for (clc = 0; clc < num_son; clc++) {
         cls = Sons[clc];
         if (cls->case_weight > 0.0) {
-            deriv_all_vars(cls);
+            deriv_all_vars(cls, item);
         }
     }
 }

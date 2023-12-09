@@ -25,7 +25,7 @@ int serial_to_id(int ss) {
 }
 
 /*	---------------------  set_class_score --------------------------   */
-void set_class_score(Class *cls) { cls->case_score = Scores.CaseFacInt = cls->factor_scores[CurItem]; }
+void set_class_score(Class *cls, int item) { cls->case_score = Scores.CaseFacInt = cls->factor_scores[item]; }
 
 /*	---------------------   makeclass  -------------------------   */
 /*	Makes the basic structure of a class (Class) with vector of
@@ -271,13 +271,13 @@ void set_best_costs(Class *cls) {
 /*	Leaves data values set in stats, but does no scoring if class too
 young. If class age = MinFacAge, will guess scores but not cost them */
 /*	If control & AdjSc, will adjust score  */
-void score_all_vars(Class *cls) {
+void score_all_vars(Class *cls, int item) {
     int i, igbit, oldicvv;
     double del;
     VSetVar *vset_var;
     VarType *vtype;
 
-    set_class_score(cls);
+    set_class_score(cls, item);
     if ((cls->age < MinFacAge) || (cls->use == Tiny)) {
         Scores.CaseFacScore = cls->avg_factor_scores = cls->sum_score_sq = 0.0;
         Scores.CaseFacInt = 0;
@@ -362,20 +362,20 @@ fake:
     cls->case_fac_score_sq = Scores.CaseFacScoreSq = Scores.CaseFacScore * Scores.CaseFacScore;
     cls->cvvsprd = Scores.cvvsprd;
 done:
-    cls->factor_scores[CurItem] = cls->case_score = Scores.CaseFacInt;
+    cls->factor_scores[item] = cls->case_score = Scores.CaseFacInt;
     return;
 }
 
 /*	----------------------  costvarall  --------------------------  */
 /*	Does cost_var on all vars of class for the current item, setting
 cls->casecost according to use of class  */
-void cost_all_vars(Class *cls) {
+void cost_all_vars(Class *cls, int item) {
     int fac;
     double tmp;
     VSetVar *vset_var;
     VarType *vtype;
 
-    set_class_score(cls);
+    set_class_score(cls, item);
     if ((cls->age < MinFacAge) || (cls->use == Tiny))
         fac = 0;
     else {
@@ -423,13 +423,13 @@ finish:
 
 /*	----------------------  derivvarall  ---------------------    */
 /*	To collect derivative statistics for all vars of a class   */
-void deriv_all_vars(Class *cls) {
+void deriv_all_vars(Class *cls, int item) {
     int fac;
     VSetVar *vset_var;
     VarType *vtype;
     const double case_weight = cls->case_weight;
 
-    set_class_score(cls);
+    set_class_score(cls, item);
     cls->newcnt += case_weight;
     if ((cls->age < MinFacAge) || (cls->use == Tiny))
         fac = 0;
