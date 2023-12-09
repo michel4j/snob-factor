@@ -47,9 +47,6 @@ EXT char *Records;   /*  Common ptr to data records block of a sample */
 EXT int NumCases; /* Number of cases */
 EXT int NumVars;  /* Number of variables */
 
-EXT PopVar *PopVarList;
-EXT SampleVar *SmplVarList;
-
 /*	re Doall   */
 EXT int RSeed; /*	Seed for random routines */
 EXT int NoSubs;

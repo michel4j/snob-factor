@@ -187,7 +187,7 @@ int load_sample(const char *fname) {
     char *saux, vstnam[80], sampname[80];
     VSetVar *vset_var;
     VarType *vtype;
-    SampleVar *smpl_var;
+    SampleVar *smpl_var, *smpl_var_list;
 
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     buf = &bufst;
@@ -252,20 +252,20 @@ gotit:
     NumVars = CurCtx.vset->length;
 
     /*	Make a vec of nv SampleVar blocks  */
-    SmplVarList = (SampleVar *)alloc_blocks(0, NumVars * sizeof(SampleVar));
-    if (!SmplVarList) {
+    smpl_var_list = (SampleVar *)alloc_blocks(0, NumVars * sizeof(SampleVar));
+    if (!smpl_var_list) {
         printf("Cannot allocate memory for variables blocks\n");
         i = -3;
         goto error;
     }
-    CurCtx.sample->variables = SmplVarList;
+    CurCtx.sample->variables = smpl_var_list;
 
     /*	Read in the info for each variable into svars   */
     for (i = 0; i < NumVars; i++) {
-        SmplVarList[i].id = -1;
-        SmplVarList[i].saux = 0;
-        SmplVarList[i].offset = 0;
-        SmplVarList[i].nval = 0;
+        smpl_var_list[i].id = -1;
+        smpl_var_list[i].saux = 0;
+        smpl_var_list[i].offset = 0;
+        smpl_var_list[i].nval = 0;
     }
     RecLen = 1 + sizeof(int); /* active flag and ident  */
     for (i = 0; i < NumVars; i++) {

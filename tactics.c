@@ -12,7 +12,7 @@ void flatten() {
     Population *popln = CurCtx.popln;
     Class *root = popln->classes[popln->root];
     set_population();
-    tidy(0);
+    tidy(0, NoSubs);
     if (root->num_sons == 0) {
         printf("Nothing to flatten\n");
         return;
@@ -38,7 +38,7 @@ void flatten() {
     donecls:;
     }
     NoSubs++;
-    tidy(0);
+    tidy(0, NoSubs);
     root->type = Dad;
     root->hold_type = Forever;
     do_all(1, 1);
@@ -144,7 +144,7 @@ configok:
     ndad->weights_sum = cls1->weights_sum + cls2->weights_sum;
 
     /*	Fix linkages  */
-    tidy(0);
+    tidy(0, NoSubs);
     do_dads(20);
     newcost = root->best_par_cost;
     drop = origcost - newcost;
@@ -360,7 +360,7 @@ double splice_dad(int ser)
     cls->type = Vacant;
     popln->num_classes--;
     /*	Fix linkages  */
-    tidy(0);
+    tidy(0, NoSubs);
     do_dads(20);
     newcost = root->best_par_cost;
     drop = origcost - newcost;
@@ -645,7 +645,7 @@ double move_class(int ser1, int ser2)
     /*	All seems OK, so make change in links   */
     cls1->dad_id = k2;
     /*	Fix linkages  */
-    tidy(0);
+    tidy(0, NoSubs);
     do_dads(30);
     if (popln->sample_size) {
         do_all(4, 0);

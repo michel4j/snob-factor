@@ -5,19 +5,15 @@
 
 /*	-----------------------  setpop  --------------------------    */
 void set_population() {
-    Population *popln = CurCtx.popln;
     NumVars = CurCtx.vset->length;
     if (CurCtx.sample) {
         NumCases = CurCtx.sample->num_cases;
-        SmplVarList = CurCtx.sample->variables;
         RecLen = CurCtx.sample->record_length;
         Records = CurCtx.sample->records;
     } else {
         NumCases = 0;
-        SmplVarList = 0;
         Records = 0;
     }
-    PopVarList = popln->variables;
 }
 
 /*	-----------------------  nextclass  ---------------------  */
@@ -465,7 +461,7 @@ siborback:
     goto siborback;
 
 alldone: /*  All classes copied. Tidy up */
-    tidy(0);
+    tidy(0, NoSubs);
     popln->next_serial = (hiser >> 2) + 1;
 
 finish:

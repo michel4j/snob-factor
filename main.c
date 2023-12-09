@@ -546,7 +546,7 @@ loop:
     set_population();
     Fix = DFix;
     Control = DControl;
-    tidy(1);
+    tidy(1, NoSubs);
     track_best(1);
     if (!CurSource->cfile) {
         flp();

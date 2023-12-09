@@ -359,7 +359,7 @@ int do_all(int ncy, int all);
 int find_all(int typ);
 int do_dads(int ncy);
 int do_good(int ncy, double target);
-void tidy(int hit);
+void tidy(int hit, int no_subs);
 int rand_uint();
 int rand_int();
 double rand_float();

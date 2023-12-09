@@ -43,7 +43,7 @@ int find_all(int class_type) {
     Class *root = CurCtx.popln->classes[CurCtx.popln->root];
 
     set_population();
-    tidy(1);
+    tidy(1, NoSubs);
     j = 0;
     cls = root;
 
@@ -118,7 +118,7 @@ void sortsons(int kk) {
     and AdjTr, kills classes which are too small.
 Also deletes singleton sonclasses.  Re-counts pop->ncl, pop->hicl, pop->num_leaves.
     */
-void tidy(int hit) {
+void tidy(int hit, int no_subs) {
     Class *cls, *dad, *son;
     int i, kkd, ndead, newhicl, cause;
     Population *popln = CurCtx.popln;
@@ -151,7 +151,7 @@ void tidy(int hit) {
                 cause = Deadsmall;
                 hard = 1;
             } else if (hit && (cls->type == Sub) &&
-                       ((cls->age > MaxSubAge) || NoSubs)) {
+                       ((cls->age > MaxSubAge) || no_subs)) {
                 cause = Dead;
                 hard = 2;
             } else if (popln->classes[kkd]->type == Vacant) {
@@ -249,7 +249,7 @@ void tidy(int hit) {
     popln->hi_class = newhicl;
     popln->next_serial = (kkd >> 2) + 1;
     sortsons(popln->root);
-    return;
+
 }
 
 
@@ -288,7 +288,7 @@ void find_and_estimate(int *all, int niter, int ncycles) {
         repeat = 0;
         if (Fix == Random)
             SeeAll = 3;
-        tidy(1);
+        tidy(1, NoSubs);
         if (niter >= (ncycles - 1))
             *all = (Dad + Leaf + Sub);
         num_son = find_all(*all);
@@ -640,8 +640,8 @@ void do_case(int cse, int all, int derivs, int num_son) {
     /*	Unpack data into 'xn' fields of the Saux for each variable. The
     'xn' field is at the beginning of the Saux. Also the "missing" flag. */
     for (i = 0; i < NumVars; i++) {
-        CurField = CurRecord + SmplVarList[i].offset;
-        psaux = (PSaux *)SmplVarList[i].saux;
+        CurField = CurRecord + CurCtx.sample->variables[i].offset;
+        psaux = (PSaux *)CurCtx.sample->variables[i].saux;
         if (*CurField == 1) {
             psaux->missing = 1;
         } else {

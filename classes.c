@@ -763,10 +763,7 @@ void delete_all_classes() {
     cls->age = 0;
     cls->hold_type = cls->hold_use = 0;
     cls->type = Leaf;
-    NoSubs++;
-    tidy(1);
-    if (NoSubs > 0)
-        NoSubs--;
+    tidy(1, NoSubs+1);
     return;
 }
 

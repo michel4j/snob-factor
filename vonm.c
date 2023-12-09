@@ -20,7 +20,6 @@ void kapcode(double hx, double hy, double *vmst);
 
 #define NullSprd ((double)10.0) /* Root prior spread */
 
-
 typedef struct Datumst {
     double xx;
     double sinxx;
@@ -108,7 +107,6 @@ static Paux *paux;
 static Vaux *vaux;
 static Basic *cvi, *dcvi;
 static Stats *evi;
-
 
 static void set_var(int iv, Class *cls);
 static int read_attr_aux(void *vax);
@@ -220,7 +218,6 @@ int read_datum(char *loc, int iv) {
     double epsfac;
     Datum xn;
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-
 
     /*	Read datum into xn.xx, return error.  */
     i = read_double(&(xn.xx), 1);
@@ -6036,10 +6033,7 @@ void kapcode(double hx, double hy, double *vmst) {
 
     vmp = (Vmpack *)vmst;
     vmp->kap = kap = sqrt(hx * hx + hy * hy);
-    if (kap > 1.0e-6)
-        vmp->rkap = 1.0 / kap;
-    else
-        vmp->rkap = 1.0e6;
+    vmp->rkap = (kap > 1.0e-6) ? 1.0 / kap : 1.0e6;
     skap = kap * kscale;
     ik = (int)skap;
     del = skap - ik;
