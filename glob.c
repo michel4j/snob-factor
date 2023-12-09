@@ -94,7 +94,6 @@ void initialize(int interact, int debug, int threads) {
     int k;
     Interactive = interact;
     Debug = debug;
-    UseBin = 0;
 
     RSeed = 1234567;
     SeeAll = 2;

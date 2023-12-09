@@ -20,22 +20,19 @@ EXT Context CurCtx; /* current context */
 EXT VarSet *VarSets[MAX_VSETS];
 EXT Sample *Samples[MAX_SAMPLES];
 EXT Population *Populations[MAX_POPULATIONS];
-EXT int NSamples;
 
 /*	re inputs for main  */
 EXT Buffer *CurSource; /* Ptr to command source buffer */
 
 /*	re hark  */
-EXT int Heard;       /* Flag showing a new command line has been detected */
-EXT int UseStdIn;    /* Flag showing input from sdtdin */
-EXT int Interactive; // Flag showing if snob is being called interactively
-EXT int Debug;       // Flag to turn toggle debug messages
-EXT int UseBin;
+EXT int Heard;             /* Flag showing a new command line has been detected */
+EXT int UseStdIn;          /* Flag showing input from sdtdin */
+EXT int Interactive;       // Flag showing if snob is being called interactively
+EXT int Debug;             // Flag to turn toggle debug messages
 EXT int Control, DControl; /*	To control what is adjusted  */
 EXT int DFix, Fix;         /*	To determine how weights are distributed  */
 
 EXT Score Scores;
-
 
 /*	re Doall   */
 EXT int RSeed; /*	Seed for random routines */
