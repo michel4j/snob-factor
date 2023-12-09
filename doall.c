@@ -631,6 +631,7 @@ void do_case(int item, int all, int derivs, int num_son) {
     Population *popln = CurCtx.popln;
     Class *root = popln->classes[popln->root];
     char *record = Records + item * RecLen; /*  Set ptr to case record  */
+    char *field;
 
     if (!*record) { // Inactive item
         return;
@@ -639,13 +640,13 @@ void do_case(int item, int all, int derivs, int num_son) {
     /*	Unpack data into 'xn' fields of the Saux for each variable. The
     'xn' field is at the beginning of the Saux. Also the "missing" flag. */
     for (i = 0; i < CurCtx.vset->length; i++) {
-        CurField = record + CurCtx.sample->variables[i].offset;
+        field = record + CurCtx.sample->variables[i].offset;
         psaux = (PSaux *)CurCtx.sample->variables[i].saux;
-        if (*CurField == 1) {
+        if (*field == 1) {
             psaux->missing = 1;
         } else {
             psaux->missing = 0;
-            memcpy(&(psaux->xn), CurField + 1, CurCtx.vset->variables[i].vtype->data_size);
+            memcpy(&(psaux->xn), field + 1, CurCtx.vset->variables[i].vtype->data_size);
         }
     }
 
