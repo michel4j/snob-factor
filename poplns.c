@@ -426,7 +426,7 @@ newclass:
 
 fakeit: /*  initialize scorevectors  */
     for (n = 0; n < num_cases; n++) {
-        CurRecord = Records + n * RecLen;
+        record = Records + n * RecLen;
         cls->factor_scores[n] = 0;
     }
     cls->weights_sum = nomcnt;
@@ -1091,8 +1091,8 @@ void correlpops(int xid) {
     for (n = 0; n < num_cases; n++) {
         CurCtx.popln = wpop;
         set_population();
-        CurRecord = Records + n * RecLen;
-        if (!*CurRecord)
+        record = Records + n * RecLen;
+        if (!*record)
             goto ndone;
         num_son = find_all(Leaf);
         do_case(n, Leaf, 0, num_son);

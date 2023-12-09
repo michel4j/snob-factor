@@ -629,7 +629,7 @@ nextcl1:
             }
         }
 
-        memcpy(&tid, CurRecord + 1, sizeof(int));
+        memcpy(&tid, record + 1, sizeof(int));
         fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, Sons[bc]->serial >> 2,
                 Sons[bl]->serial >> 2, ScoreRscale * Sons[bl]->factor_scores[nn]);
     }

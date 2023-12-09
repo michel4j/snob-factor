@@ -37,7 +37,7 @@ EXT int DFix, Fix;         /*	To determine how weights are distributed  */
 EXT Score Scores;
 
 /*	re Sample records  */
-EXT char *CurRecord; /*  Common ptr to a data record  */
+EXT char *record; /*  Common ptr to a data record  */
 EXT int CurItem;     /*  Index of current item  */
 EXT char *CurField;  /*  Common ptr to a data field  */
 EXT int RecLen;      /*  reclen of current sample  */
