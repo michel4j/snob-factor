@@ -44,7 +44,6 @@ EXT int RecLen;      /*  reclen of current sample  */
 EXT char *Records;   /*  Common ptr to data records block of a sample */
 
 /*	re Poplns  */
-EXT int NumCases; /* Number of cases */
 EXT int NumVars;  /* Number of variables */
 
 /*	re Doall   */

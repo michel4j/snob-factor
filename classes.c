@@ -43,10 +43,10 @@ int make_class() {
     int i, kk;
     Population *popln = CurCtx.popln;
     VSetVar *vset_var;
+    int num_cases = (CurCtx.popln) ? CurCtx.popln->sample_size : 0;
 
-    NumCases = CurCtx.popln->sample_size;
     /*	If nc, check that popln has an attached sample  */
-    if (NumCases) {
+    if (num_cases) {
         i = find_sample(popln->sample_name, 1);
         if (i < 0)
             return (-2);
@@ -129,9 +129,9 @@ donebasic:
         goto vacant2;
 
     /*	If nc = 0, this completes the make.  */
-    if (NumCases == 0)
+    if (num_cases == 0)
         goto finish;
-    cls->factor_scores = (short *)alloc_blocks(2, NumCases * sizeof(short));
+    cls->factor_scores = (short *)alloc_blocks(2, num_cases * sizeof(short));
     goto expanded;
 
 vacant2:

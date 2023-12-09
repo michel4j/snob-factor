@@ -188,6 +188,7 @@ int load_sample(const char *fname) {
     VSetVar *vset_var;
     VarType *vtype;
     SampleVar *smpl_var, *smpl_var_list;
+    int num_cases;
 
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     buf = &bufst;
@@ -297,16 +298,16 @@ gotit:
 
     /*	Now attempt to read in the data. The first item is the number of cases*/
     new_line();
-    kread = read_int(&NumCases, 1);
+    kread = read_int(&num_cases, 1);
     if (kread) {
         printf("Cant read number of cases\n");
         i = -11;
         goto error;
     }
-    CurCtx.sample->num_cases = NumCases;
+    CurCtx.sample->num_cases = num_cases;
     CurCtx.sample->num_active = 0;
     /*	Make a vector of nc records each of size reclen  */
-    Records = CurCtx.sample->records = CurField = (char *)alloc_blocks(0, NumCases * RecLen);
+    Records = CurCtx.sample->records = CurField = (char *)alloc_blocks(0, num_cases * RecLen);
     if (!CurField) {
         printf("No space for data\n");
         i = -8;
@@ -315,7 +316,7 @@ gotit:
     CurCtx.sample->record_length = RecLen;
 
     /*	Read in the data cases, each preceded by an active flag and ident   */
-    for (n = 0; n < NumCases; n++) {
+    for (n = 0; n < num_cases; n++) {
         new_line();
         kread = read_int(&caseid, 1);
         if (kread) {

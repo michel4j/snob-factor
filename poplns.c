@@ -7,11 +7,9 @@
 void set_population() {
     NumVars = CurCtx.vset->length;
     if (CurCtx.sample) {
-        NumCases = CurCtx.sample->num_cases;
         RecLen = CurCtx.sample->record_length;
         Records = CurCtx.sample->records;
     } else {
-        NumCases = 0;
         Records = 0;
     }
 }
@@ -57,13 +55,9 @@ int make_population(int fill) {
     Population *popln;
     VSetVar *vset_var;
     VarType *vtype;
-
     int indx, i;
+    int num_cases = (CurCtx.sample) ? CurCtx.sample->num_cases : 0;
 
-    if (CurCtx.sample)
-        NumCases = CurCtx.sample->num_cases;
-    else
-        NumCases = 0;
     if ((!CurCtx.sample) && fill) {
         printf("Makepop cannot fill because no sample defined\n");
         return (-1);
@@ -117,7 +111,7 @@ gotit:
 
     if (fill) {
         strcpy(popln->sample_name, CurCtx.sample->name);
-        popln->sample_size = NumCases;
+        popln->sample_size = num_cases;
     }
     popln->root = make_class();
     if (popln->root < 0)
@@ -302,6 +296,7 @@ int copy_population(int p1, int fill, char *newname) {
     ExplnVar *evi, *fevi;
     double nomcnt;
     int indx, sindx, kk, jdad, nch, n, i, iv, hiser;
+    int num_cases;
 
     nomcnt = 0.0;
     memcpy(&oldctx, &CurCtx, sizeof(Context));
@@ -320,7 +315,7 @@ int copy_population(int p1, int fill, char *newname) {
     }
     CurCtx.vset = VarSets[kk];
     sindx = -1;
-    NumCases = 0;
+    num_cases = 0;
     if (!fill)
         goto sampfound;
     if (fpop->sample_size) {
@@ -340,10 +335,10 @@ int copy_population(int p1, int fill, char *newname) {
 sampfound:
     if (sindx >= 0) {
         CurCtx.sample = Samples[sindx];
-        NumCases = CurCtx.sample->num_cases;
+        num_cases = CurCtx.sample->num_cases;
     } else {
         CurCtx.sample = 0;
-        fill = NumCases = 0;
+        fill = num_cases = 0;
     }
 
     /*	See if destn popln already exists  */
@@ -426,12 +421,12 @@ newclass:
     if (fpop->sample_size == 0)
         goto fakeit;
     /*	Copy scores  */
-    for (n = 0; n < NumCases; n++)
+    for (n = 0; n < num_cases; n++)
         cls->factor_scores[n] = fcls->factor_scores[n];
     goto classdone;
 
 fakeit: /*  initialize scorevectors  */
-    for (n = 0; n < NumCases; n++) {
+    for (n = 0; n < num_cases; n++) {
         CurRecord = Records + n * RecLen;
         cls->factor_scores[n] = 0;
     }
@@ -807,6 +802,8 @@ int load_population(char *nam) {
     FILE *fl;
     Population *popln;
 
+    int num_cases;
+
     indx = -999;
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     fl = fopen(nam, "r");
@@ -839,32 +836,32 @@ int load_population(char *nam) {
         j = find_sample(name, 1);
         if (j < 0) {
             printf("Sample %s unknown.\n", name);
-            NumCases = 0;
+            num_cases = 0;
             CurCtx.sample = 0;
         } else {
             CurCtx.sample = Samples[j];
             if (CurCtx.sample->num_cases != fnc) {
-                printf("Size conflict Model%9d vs. Sample%9d\n", fnc, NumCases);
+                printf("Size conflict Model%9d vs. Sample%9d\n", fnc, num_cases);
                 goto error;
             }
-            NumCases = fnc;
+            num_cases = fnc;
         }
     } else { /* file model unattached.  */
         CurCtx.sample = 0;
-        NumCases = 0;
+        num_cases = 0;
     }
 
     /*	Build input model in TrialPop  */
     j = find_population("TrialPop");
     if (j >= 0)
         destroy_population(j);
-    indx = make_population(NumCases);
+    indx = make_population(num_cases);
     if (indx < 0)
         goto error;
     popln = CurCtx.popln = Populations[indx];
-    popln->sample_size = NumCases;
+    popln->sample_size = num_cases;
     strcpy(popln->name, "TrialPop");
-    if (!NumCases)
+    if (!num_cases)
         strcpy(popln->sample_name, "??");
     set_population();
     popln->num_leaves = 0;
@@ -910,13 +907,13 @@ haveclass:
         goto classdone;
 
     /*	Read scores but throw away if nc = 0  */
-    if (!NumCases) {
+    if (!num_cases) {
         nch = fnc * sizeof(short);
         for (k = 0; k < nch; k++)
             fgetc(fl);
         goto classdone;
     }
-    nch = NumCases * sizeof(short);
+    nch = num_cases * sizeof(short);
     jp = (char *)(cls->factor_scores);
     for (k = 0; k < nch; k++) {
         *jp = fgetc(fl);
@@ -1040,8 +1037,10 @@ void correlpops(int xid) {
     double fnact, wwt;
     int wic, xic, n, pcw, wnl, xnl, num_son;
     Population *popln = CurCtx.popln;
+    int num_cases = (CurCtx.sample) ? CurCtx.sample->num_cases : 0;
 
     set_population();
+
     wpop = popln;
     xpop = Populations[xid];
     if (!xpop) {
@@ -1056,7 +1055,7 @@ void correlpops(int xid) {
         printf("Model not for same sample.\n");
         goto finish;
     }
-    if (xpop->sample_size != NumCases) {
+    if (xpop->sample_size != num_cases) {
         printf("Models have unequal numbers of cases.\n");
         goto finish;
     }
@@ -1091,7 +1090,7 @@ void correlpops(int xid) {
 
     /*	Now accumulate cross products of weights for each active item */
     SeeAll = 2;
-    for (n = 0; n < NumCases; n++) {
+    for (n = 0; n < num_cases; n++) {
         CurCtx.popln = wpop;
         set_population();
         CurRecord = Records + n * RecLen;
