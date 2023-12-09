@@ -65,9 +65,8 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
 } Stats;
 
 /*	Static variables useful for many types of variable    */
-static Saux *saux;
-static Paux *paux;
-static Vaux *vaux;
+//static Saux *saux;
+//static Vaux *vaux;
 static Basic *cvi, *dcvi;
 static Stats *evi;
 
@@ -105,7 +104,7 @@ void expbinary_define(typindx) int typindx;
     vtype = &Types[typindx];
     vtype->id = typindx;
     /* 	Set type name as string up to 59 chars  */
-    vtype->name = "ExpBinary";
+    vtype->name = "Binary";
     vtype->data_size = sizeof(Datum);
     vtype->attr_aux_size = sizeof(Vaux);
     vtype->pop_aux_size = sizeof(Paux);
@@ -128,13 +127,6 @@ void expbinary_define(typindx) int typindx;
 
 /*	----------------------- setvar --------------------------  */
 void set_var(int iv, Class *cls) {
-    VSetVar *vset_var = &CurCtx.vset->variables[iv];
-    PopVar *pop_var = &CurCtx.popln->variables[iv];
-    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-
-    paux = (Paux *)pop_var->paux;
-    vaux = (Vaux *)vset_var->vaux;
-    saux = (Saux *)smpl_var->saux;
     cvi = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
 }
@@ -254,6 +246,8 @@ void clear_stats(int iv, Class *cls) {
 void score_var(int iv, Class *cls) {
     double cc, pr0, pr1, ff, ft, dbyv, hdffbydv, hdftbydv;
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
+    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+    Saux *saux = (Saux *)(smpl_var->saux);
 
     set_var(iv, cls);
     if (vset_var->inactive)
@@ -305,6 +299,9 @@ void score_var(int iv, Class *cls) {
 void cost_var(int iv, int fac, Class *cls) {
     double cost;
     double cc, ff, ft, hdffbydc, hdftbydc, pr0, pr1, small;
+    
+    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+    Saux *saux = (Saux *)(smpl_var->saux);
 
     set_var(iv, cls);
     if (saux->missing)
@@ -369,6 +366,9 @@ params and accumulates in paramd1, paramd2  */
 void deriv_var(int iv, int fac, Class *cls) {
     const double case_weight = cls->case_weight;
 
+    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+    Saux *saux = (Saux *)(smpl_var->saux);
+    
     set_var(iv, cls);
     if (saux->missing)
         return;

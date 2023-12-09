@@ -1,11 +1,11 @@
 #!/bin/bash
 
 
-file1="examples/test.log"
+file1="examples/$1.log"
 file2="testing.log"
 
 # Run program
-./snob-factor < ./examples/test.cmd | tee "$file2"
+./snob-factor < ./examples/$1.cmd | tee "$file2"
 
 
 # Check if both files exist

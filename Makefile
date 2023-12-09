@@ -34,4 +34,4 @@ clean:
 	rm -f *.o snob-factor pro
 
 test: clean snob-factor
-	./test.sh
+	./test.sh vm

@@ -70,9 +70,6 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
     double var;
 } Stats;
 
-static Saux *saux;
-static Paux *paux;
-static Vaux *vaux;
 static Basic *cvi, *dcvi;
 static Stats *evi;
 
@@ -90,7 +87,6 @@ static void deriv_var(int iv, int fac, Class *cls);
 static void cost_var_nonleaf(int iv, int vald, Class *cls);
 static void adjust(int iv, int fac, Class *cls);
 static void show(Class *cls, int iv);
-
 
 /*--------------------------  define ------------------------------- */
 /*	This routine is used to set up a VarType entry in the global "types"
@@ -131,20 +127,12 @@ void reals_define(typindx) int typindx;
 
 /*	-------------------  setvar -----------------------------  */
 void set_var(int iv, Class *cls) {
-    VSetVar *vset_var = &CurCtx.vset->variables[iv];
-    PopVar *pop_var = &CurCtx.popln->variables[iv];
-    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
 
-    paux = (Paux *)pop_var->paux;
-    vaux = (Vaux *)vset_var->vaux;
-    saux = (Saux *)smpl_var->saux;
     cvi = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
     dcvi = (dad) ? (Basic *)dad->basics[iv] : 0;
-
 }
 
 /*	--------------------  readvaux  ----------------------------  */
@@ -188,7 +176,6 @@ int read_datum(char *loc, int iv) {
 void print_datum(char *loc) {
     /*	Print datum from address loc   */
     printf("%9.2f", *((double *)loc));
-
 }
 
 /*	---------------------  setsizes  -----------------------   */
@@ -196,7 +183,6 @@ void set_sizes(int iv) {
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     vset_var->basic_size = sizeof(Basic);
     vset_var->stats_size = sizeof(Stats);
-
 }
 
 /*	----------------------  set_best_pars --------------------------  */
@@ -260,6 +246,9 @@ void score_var(int iv, Class *cls) {
 
     double del, md2;
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
+    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+    Saux *saux = (Saux *)(smpl_var->saux);
+
     set_var(iv, cls);
     if (vset_var->inactive)
         return;
@@ -278,6 +267,9 @@ void score_var(int iv, Class *cls) {
 /*	Accumulates item cost into CaseNoFacCost, CaseFacCost    */
 void cost_var(int iv, int fac, Class *cls) {
     double del, var, cost;
+    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+    Saux *saux = (Saux *)(smpl_var->saux);
+
     set_var(iv, cls);
     if (saux->missing)
         return;
@@ -314,6 +306,10 @@ Factor derivs done only if fac.  */
 void deriv_var(int iv, int fac, Class *cls) {
     const double case_weight = cls->case_weight;
     double del, var, frsds;
+
+    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+    Saux *saux = (Saux *)(smpl_var->saux);
+
     set_var(iv, cls);
     if (saux->missing)
         return;
@@ -328,25 +324,25 @@ void deriv_var(int iv, int fac, Class *cls) {
     evi->ftcost += case_weight * evi->parkftcost;
 
     /*	Now for factor form  */
-    if (!fac)
-        goto facdone;
-    frsds = evi->frsds;
-    del = cvi->fmu + Scores.CaseFacScore * cvi->ld - saux->xn;
-    /*	From cost_var, we have:
-        cost = 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd*2.0 + consts
-            where var is given by:
-          del^2 + musprd + cvvsq*ldsprd + cvvsprd*ldsq + epssq
-        var has been kept in stats.  */
-    /*	Add to derivatives:  */
-    var = evi->var;
-    evi->fsdld1 += case_weight * (1.0 - frsds * var);
-    evi->fsdld2 += 2.0 * case_weight;
-    evi->fmud1 += case_weight * del * frsds;
-    evi->fmud2 += case_weight * frsds;
-    evi->ldd1 += case_weight * frsds * (del * Scores.CaseFacScore + cvi->ld * Scores.cvvsprd);
-    evi->ldd2 += case_weight * frsds * (Scores.CaseFacScoreSq + Scores.cvvsprd);
-facdone:
-    return;
+    if (fac) {
+
+        frsds = evi->frsds;
+        del = cvi->fmu + Scores.CaseFacScore * cvi->ld - saux->xn;
+        /*	From cost_var, we have:
+            cost = 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd*2.0 + consts
+                where var is given by:
+              del^2 + musprd + cvvsq*ldsprd + cvvsprd*ldsq + epssq
+            var has been kept in stats.  */
+        /*	Add to derivatives:  */
+        var = evi->var;
+        evi->fsdld1 += case_weight * (1.0 - frsds * var);
+        evi->fsdld2 += 2.0 * case_weight;
+        evi->fmud1 += case_weight * del * frsds;
+        evi->fmud2 += case_weight * frsds;
+        evi->ldd1 += case_weight * frsds * (del * Scores.CaseFacScore + cvi->ld * Scores.cvvsprd);
+        evi->ldd2 += case_weight * frsds * (Scores.CaseFacScoreSq + Scores.cvvsprd);
+    }
+
 }
 
 /*	-------------------  adjust  ---------------------------    */
@@ -358,6 +354,8 @@ void adjust(int iv, int fac, Class *cls) {
     double av, var, del, sdld1;
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
+    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+    Saux *saux = (Saux *)(smpl_var->saux);
 
     del3 = del4 = 0.0;
     set_var(iv, cls);
@@ -375,7 +373,7 @@ void adjust(int iv, int fac, Class *cls) {
             dadmu = dadsdl = 0.0;
             dmusprd = dsdlsprd = 1.0;
         }
-    } else {
+    } else if (dcvi) {
         dadmu = dcvi->nmu;
         dadsdl = dcvi->nsdl;
         dmusprd = dcvi->nmusprd;
@@ -390,31 +388,28 @@ void adjust(int iv, int fac, Class *cls) {
         cvi->nmusprd = cvi->smusprd = cvi->fmusprd = dmusprd;
         cvi->nsdlsprd = cvi->ssdlsprd = cvi->fsdlsprd = dsdlsprd;
         cvi->ldsprd = 1.0;
-        goto hasage;
-    }
-    /*	If class age is zero, make some preliminary estimates  */
-    if (cls->age)
-        goto hasage;
-    cvi->smu = cvi->fmu = evi->tx / cnt;
-    var = evi->txx / cnt - cvi->smu * cvi->smu;
-    evi->ssig = evi->fsig = sqrt(var);
-    cvi->ssdl = cvi->fsdl = log(evi->ssig);
-    evi->frsds = evi->srsds = 1.0 / var;
-    cvi->smusprd = cvi->fmusprd = var / cnt;
-    cvi->ldsprd = var / cnt;
-    cvi->ld = 0.0;
-    cvi->ssdlsprd = cvi->fsdlsprd = 1.0 / cnt;
-    if (!dad) { /*  First stab at root  */
-        dadmu = cvi->smu;
-        dadsdl = cvi->ssdl;
-        dmusprd = exp(2.0 * dadsdl);
-        dsdlsprd = 1.0;
-    }
-    /*	Make a stab at class tcost  */
-    cls->cstcost += cnt * (HALF_LOG_2PI + cvi->ssdl - saux->leps + 0.5 + cls->mlogab) + 1.0;
-    cls->cftcost = cls->cstcost + 100.0 * cnt;
 
-hasage:
+    } else if (!cls->age) { /*	If class age is zero, make some preliminary estimates  */
+        cvi->smu = cvi->fmu = evi->tx / cnt;
+        var = evi->txx / cnt - cvi->smu * cvi->smu;
+        evi->ssig = evi->fsig = sqrt(var);
+        cvi->ssdl = cvi->fsdl = log(evi->ssig);
+        evi->frsds = evi->srsds = 1.0 / var;
+        cvi->smusprd = cvi->fmusprd = var / cnt;
+        cvi->ldsprd = var / cnt;
+        cvi->ld = 0.0;
+        cvi->ssdlsprd = cvi->fsdlsprd = 1.0 / cnt;
+        if (!dad) { /*  First stab at root  */
+            dadmu = cvi->smu;
+            dadsdl = cvi->ssdl;
+            dmusprd = exp(2.0 * dadsdl);
+            dsdlsprd = 1.0;
+        }
+        /*	Make a stab at class tcost  */
+        cls->cstcost += cnt * (HALF_LOG_2PI + cvi->ssdl - saux->leps + 0.5 + cls->mlogab) + 1.0;
+        cls->cftcost = cls->cstcost + 100.0 * cnt;
+    }
+
     temp1 = 1.0 / dmusprd;
     temp2 = 1.0 / dsdlsprd;
     srsds = evi->srsds;

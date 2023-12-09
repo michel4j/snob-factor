@@ -92,15 +92,8 @@ static double *pr;            /* vec. of factor state probs  */
 static double *fapd1, *fbpd1; /*  vectors of derivs of cost wrt params */
 
 /*	Static variables useful for many types of variable    */
-static Saux *saux;
-static Paux *paux;
-static Vaux *vaux;
 static Basic *cvi, *dcvi;
 static Stats *evi;
-
-/*	The macro below abbreviates a scan over states  */
-#define Fork for (k = 0; k < states; k++)
-#define Forj for (j = 0; j < states; j++)
 
 /*	Static variables specific to this type   */
 static int states;
@@ -154,7 +147,7 @@ void expmults_define(typindx) int typindx;
     vtype = &Types[typindx];
     vtype->id = typindx;
     /* 	Set type name as string up to 59 chars  */
-    vtype->name = "ExpMultiState";
+    vtype->name = "MultiState";
     vtype->data_size = sizeof(Datum);
     vtype->attr_aux_size = sizeof(Vaux);
     vtype->pop_aux_size = sizeof(Paux);
@@ -186,12 +179,8 @@ void expmults_define(typindx) int typindx;
 /*	----------------------- setvar --------------------------  */
 void set_var(int iv, Class *cls) {
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
-    PopVar *pop_var = &CurCtx.popln->variables[iv];
-    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+    Vaux *vaux = (Vaux *)vset_var->vaux;
 
-    paux = (Paux *)pop_var->paux;
-    vaux = (Vaux *)vset_var->vaux;
-    saux = (Saux *)smpl_var->saux;
     cvi = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
 
@@ -253,7 +242,7 @@ int read_datum(char *loc, int iv) {
     Datum xn;
 
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
-    vaux = (Vaux *)vset_var->vaux;
+    Vaux *vaux = (Vaux *)vset_var->vaux;
 
     states = vaux->states;
     /*	Read datum into xn, return error.  */
@@ -283,7 +272,7 @@ blocks for variable, and place in VSetVar basicsize, statssize.
     */
 void set_sizes(int iv) {
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
-    vaux = (Vaux *)vset_var->vaux;
+    Vaux *vaux = (Vaux *)vset_var->vaux;
     states = vaux->states;
 
     /*	Set sizes of ClassVar (basic) and ExplnVar (stats) in VSetVar  */
@@ -367,6 +356,9 @@ void clear_stats(int iv, Class *cls) {
     double sum, tt;
     int k;
 
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
+    Vaux *vaux = (Vaux *)vset_var->vaux;
+
     set_var(iv, cls);
     evi->cnt = 0.0;
     evi->stcost = evi->ftcost = 0.0;
@@ -433,6 +425,8 @@ void clear_stats(int iv, Class *cls) {
 void score_var(int iv, Class *cls) {
     double t1d1, t2d1, t3d1;
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
+    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+    Saux *saux = (Saux *)(smpl_var->saux);
 
     set_var(iv, cls);
     if ((!vset_var->inactive) && (!saux->missing)) {
@@ -454,6 +448,9 @@ void score_var(int iv, Class *cls) {
 /*	Accumulate item cost into CaseNoFacCost, fcasecost  */
 void cost_var(int iv, int fac, Class *cls) {
     double cost;
+
+    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+    Saux *saux = (Saux *)(smpl_var->saux);
 
     set_var(iv, cls);
     if (saux->missing) {
@@ -491,6 +488,8 @@ void deriv_var(int iv, int fac, Class *cls) {
     double cons1, cons2, inc;
     const double case_weight = cls->case_weight;
     int k;
+    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+    Saux *saux = (Saux *)(smpl_var->saux);
 
     set_var(iv, cls);
     if (saux->missing) {
@@ -555,6 +554,9 @@ void adjust(int iv, int fac, Class *cls) {
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
 
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
+    Vaux *vaux = (Vaux *)vset_var->vaux;
+
     set_var(iv, cls);
     cnt = evi->cnt;
 
@@ -577,39 +579,36 @@ void adjust(int iv, int fac, Class *cls) {
         cvi->sapsprd = cvi->fapsprd = dapsprd * statesm;
         cvi->napsprd = dapsprd;
         cvi->bpsprd = statesm;
-        goto hasage;
+
+    } else if (!cls->age) {
+        /*	If class age zero, make some preliminary estimates  */
+        evi->oldftcost = 0.0;
+        evi->adj = 1.0;
+        sum = 0.0;
+        for (k = 0; k < states; k++) {
+            sap[k] = log((scnt[k] + 0.5) / (cnt + 0.5 * states));
+            qr[k] = -sap[k];
+            sum += sap[k]; /* Gives sum of log probs */
+        }
+        /*	Set sapsprd  */
+        apd2 = exp(rstatesm * (sum + vaux->lstatessq)) * cnt;
+        apd2 += 1.0 / dapsprd;
+        cvi->fapsprd = cvi->bpsprd = cvi->sapsprd = statesm / apd2;
+
+        sum = -sum / states;
+        for (k = 0; k < states; k++) {
+            sap[k] += sum;
+            fap[k] = sap[k];
+            fbp[k] = 0.0;
+        }
+        /*	Make a stab at item cost   */
+        sum = 0.0;
+        for (k = 0; k < states; k++)
+            sum += scnt[k] * qr[k];
+        cls->cstcost -= sum + 0.5 * statesm;
+        cls->cftcost = cls->cstcost + 100.0 * cnt;
     }
 
-    /*	If class age zero, make some preliminary estimates  */
-    if (cls->age)
-        goto hasage;
-    evi->oldftcost = 0.0;
-    evi->adj = 1.0;
-    sum = 0.0;
-    for (k = 0; k < states; k++) {
-        sap[k] = log((scnt[k] + 0.5) / (cnt + 0.5 * states));
-        qr[k] = -sap[k];
-        sum += sap[k]; /* Gives sum of log probs */
-    }
-    /*	Set sapsprd  */
-    apd2 = exp(rstatesm * (sum + vaux->lstatessq)) * cnt;
-    apd2 += 1.0 / dapsprd;
-    cvi->fapsprd = cvi->bpsprd = cvi->sapsprd = statesm / apd2;
-
-    sum = -sum / states;
-    for (k = 0; k < states; k++) {
-        sap[k] += sum;
-        fap[k] = sap[k];
-        fbp[k] = 0.0;
-    }
-    /*	Make a stab at item cost   */
-    sum = 0.0;
-    for (k = 0; k < states; k++)
-        sum += scnt[k] * qr[k];
-    cls->cstcost -= sum + 0.5 * statesm;
-    cls->cftcost = cls->cstcost + 100.0 * cnt;
-
-hasage:
     /*	Calculate spcost for non-fac params  */
     vara = 0.0;
     for (k = 0; k < states; k++) {
@@ -626,153 +625,145 @@ hasage:
     /*	The vol of uncertainty is (sapsprd/statesm)^(statesm/2)  */
     spcost -= 0.5 * statesm * log(cvi->sapsprd / statesm);
 
-    if (!fac) {
+    if (fac) {
+        /*	Get factor pcost  */
+        vara = 0.0;
+        for (k = 0; k < states; k++) {
+            del = fap[k] - dadnap[k];
+            vara += del * del;
+        }
+        vara += cvi->fapsprd; /* Additional variance from roundoff */
+        /*	Now vara holds squared difference from fap[] to dad's nap[]. This
+        is a variance in (states-1) space with sum-sq spread dapsprd, Normal form */
+        fpcost = 0.5 * vara / dapsprd;          /* The squared deviations term */
+        fpcost += 0.5 * statesm * log(dapsprd); /* statesm * log sigma */
+        fpcost += statesm * (HALF_LOG_2PI + LATTICE);
+        /*	The vol of uncertainty is (fapsprd/statesm)^(statesm/2)  */
+        fpcost -= 0.5 * statesm * log(cvi->fapsprd / statesm);
+
+        /*	And for fbp[]:  (N(0,1) prior)  */
+        vara = 0.0;
+        for (k = 0; k < states; k++)
+            vara += fbp[k] * fbp[k];
+        vara += cvi->bpsprd;  /* Additional variance from roundoff */
+        fpcost += 0.5 * vara; /* The squared deviations term */
+        fpcost += statesm * (HALF_LOG_2PI + LATTICE);
+        /*	The vol of uncertainty is (bpsprd/statesm)^(statesm/2)  */
+        fpcost -= 0.5 * statesm * log(cvi->bpsprd / statesm);
+    } else {
         fpcost = spcost + 100.0;
         cvi->infac = 1;
-        goto facdone1;
     }
-    /*	Get factor pcost  */
-    vara = 0.0;
-    for (k = 0; k < states; k++) {
-        del = fap[k] - dadnap[k];
-        vara += del * del;
-    }
-    vara += cvi->fapsprd; /* Additional variance from roundoff */
-    /*	Now vara holds squared difference from fap[] to dad's nap[]. This
-    is a variance in (states-1) space with sum-sq spread dapsprd, Normal form */
-    fpcost = 0.5 * vara / dapsprd;          /* The squared deviations term */
-    fpcost += 0.5 * statesm * log(dapsprd); /* statesm * log sigma */
-    fpcost += statesm * (HALF_LOG_2PI + LATTICE);
-    /*	The vol of uncertainty is (fapsprd/statesm)^(statesm/2)  */
-    fpcost -= 0.5 * statesm * log(cvi->fapsprd / statesm);
 
-    /*	And for fbp[]:  (N(0,1) prior)  */
-    vara = 0.0;
-    for (k = 0; k < states; k++)
-        vara += fbp[k] * fbp[k];
-    vara += cvi->bpsprd;  /* Additional variance from roundoff */
-    fpcost += 0.5 * vara; /* The squared deviations term */
-    fpcost += statesm * (HALF_LOG_2PI + LATTICE);
-    /*	The vol of uncertainty is (bpsprd/statesm)^(statesm/2)  */
-    fpcost -= 0.5 * statesm * log(cvi->bpsprd / statesm);
-
-facdone1:
     /*	Store param costs  */
     evi->spcost = spcost;
     evi->fpcost = fpcost;
     /*	Add to class param costs  */
     cls->nofac_par_cost += spcost;
     cls->fac_par_cost += fpcost;
-    if (!(Control & AdjPr))
-        goto adjdone;
-    if (cnt < MinSize)
-        goto adjdone;
+    if ((!(Control & AdjPr)) || (cnt < MinSize)) {
+        return;
+    }
 
     /*	Adjust non-fac params.  */
-    n = 3;
-adjloop:
-    /*	Get pr[], sum log p[r] from sap[]  */
-    tt = sap[0];
-    for (k = 1; k < states; k++) {
-        if (sap[k] > tt)
-            tt = sap[k];
-    }
-    sum = 0.0;
-    for (k = 0; k < states; k++) {
-        pr[k] = exp(sap[k] - tt);
-        sum += pr[k];
-    }
-    tt = 0.0;
-    sum = 1.0 / sum;
-    for (k = 0; k < states; k++) {
-        pr[k] *= sum;
-        tt += log(pr[k]);
-    }
-    /*	Calc ff = (case Fisher)^(K-1)   */
-    tt += vaux->lstatessq;
-    ff = exp(rstatesm * tt);
-    /*	The deriv of cost wrt sap[k] contains the term:
-            0.5*cnt*sapsprd* (ff/(K-1)) * (1 - K*pr[k])  */
-    tt = 0.5 * cnt * cvi->sapsprd * ff * rstatesm;
-    /*	Use dads's nap[], dapsprd for Normal prior.   */
-    /*	Reduce corrections by statesm/states  */
-    adj = InitialAdj * statesm / states;
-    for (k = 0; k < states; k++) {
-        del = (sap[k] - dadnap[k]) / dapsprd; /* 1st deriv from prior */
-        del += pr[k] * cnt - scnt[k];         /* From data */
-        del += 0.5 * pr[k];                   /*  Stabilization  */
-        del += tt * (1.0 - states * pr[k]);   /* from roundoff */
-        /*	2nd deriv approx cnt*pr[k], plus 1/dapsprd from prior  */
-        sap[k] -= del * adj / (1.0 + scnt[k] + 1.0 / dapsprd);
-    }
-    sum = 0.0;
-    for (k = 0; k < states; k++)
-        sum += sap[k];
-    sum = -sum / states;
-    for (k = 0; k < states; k++)
-        sap[k] += sum;
-    /*	Compute sapsprd  */
-    apd2 = (1.0 / dapsprd) + cnt * ff;
-    cvi->sapsprd = statesm / apd2;
-    /*	Repeat the adjustment  */
-    if (--n)
-        goto adjloop;
+    for (n = 0; n < 3; n++) {
+        /*	Get pr[], sum log p[r] from sap[]  */
+        tt = sap[0];
+        for (k = 1; k < states; k++) {
+            if (sap[k] > tt)
+                tt = sap[k];
+        }
+        sum = 0.0;
+        for (k = 0; k < states; k++) {
+            pr[k] = exp(sap[k] - tt);
+            sum += pr[k];
+        }
+        tt = 0.0;
+        sum = 1.0 / sum;
+        for (k = 0; k < states; k++) {
+            pr[k] *= sum;
+            tt += log(pr[k]);
+        }
+        /*	Calc ff = (case Fisher)^(K-1)   */
+        tt += vaux->lstatessq;
+        ff = exp(rstatesm * tt);
+        /*	The deriv of cost wrt sap[k] contains the term:
+                0.5*cnt*sapsprd* (ff/(K-1)) * (1 - K*pr[k])  */
+        tt = 0.5 * cnt * cvi->sapsprd * ff * rstatesm;
+        /*	Use dads's nap[], dapsprd for Normal prior.   */
+        /*	Reduce corrections by statesm/states  */
+        adj = InitialAdj * statesm / states;
+        for (k = 0; k < states; k++) {
+            del = (sap[k] - dadnap[k]) / dapsprd; /* 1st deriv from prior */
+            del += pr[k] * cnt - scnt[k];         /* From data */
+            del += 0.5 * pr[k];                   /*  Stabilization  */
+            del += tt * (1.0 - states * pr[k]);   /* from roundoff */
+            /*	2nd deriv approx cnt*pr[k], plus 1/dapsprd from prior  */
+            sap[k] -= del * adj / (1.0 + scnt[k] + 1.0 / dapsprd);
+        }
+        sum = 0.0;
+        for (k = 0; k < states; k++)
+            sum += sap[k];
+        sum = -sum / states;
+        for (k = 0; k < states; k++)
+            sap[k] += sum;
+        /*	Compute sapsprd  */
+        apd2 = (1.0 / dapsprd) + cnt * ff;
+        cvi->sapsprd = statesm / apd2;
+    /*	Repeat the adjustment  */}
 
-    if (!fac)
-        goto facdone2;
+    if (fac) {
+        /*	Adjust factor parameters.  We have fapd1[], fbpd1[] from the data,
+            but must add derivatives of pcost terms.  */
+        for (k = 0; k < states; k++) {
+            fapd1[k] += (fap[k] - dadnap[k]) / dapsprd;
+            fbpd1[k] += fbp[k];
+        }
+        evi->apd2 += 1.0 / dapsprd;
+        evi->bpd2 += 1.0;
+        /*	Stabilization  */
+        Scores.CaseFacScore = 0.0;
+        set_probs();
+        for (k = 0; k < states; k++)
+            fapd1[k] += 0.5 * pr[k];
+        evi->apd2 += 0.5 * states * ff;
+        /*	This section uses a slow but apparently safe adjustment of fa[[], fbp[]
+         */
+        /*	In an attempt to speed things, fiddle adjustment multiple   */
+        sum = evi->ftcost / cnt;
+        if (sum < evi->oldftcost)
+            adj = evi->adj * 1.1;
+        else
+            adj = InitialAdj;
+        if (adj > MaxAdj)
+            adj = MaxAdj;
+        evi->adj = adj;
+        evi->oldftcost = sum;
+        /*	To do the adjustments, divide 1st derivs by a 'max' value of 2nd
+        derivs, held in vaux.  */
+        adj = adj / (evi->cnt * vaux->mff);
+        adj *= statesm / states;
+        for (k = 0; k < states; k++) {
+            fap[k] -= adj * fapd1[k];
+            fbp[k] -= adj * fbpd1[k];
+        }
 
-    /*	Adjust factor parameters.  We have fapd1[], fbpd1[] from the data,
-        but must add derivatives of pcost terms.  */
-    for (k = 0; k < states; k++) {
-        fapd1[k] += (fap[k] - dadnap[k]) / dapsprd;
-        fbpd1[k] += fbp[k];
+        sum = 0.0;
+        for (k = 0; k < states; k++)
+            sum += fap[k];
+        sum = -sum / states;
+        for (k = 0; k < states; k++)
+            fap[k] += sum;
+        sum = 0.0;
+        for (k = 0; k < states; k++)
+            sum += fbp[k];
+        sum = -sum / states;
+        for (k = 0; k < states; k++)
+            fbp[k] += sum;
+        /*	Set fapsprd, bpsprd.   */
+        cvi->fapsprd = statesm / evi->apd2;
+        cvi->bpsprd = statesm / evi->bpd2;
     }
-    evi->apd2 += 1.0 / dapsprd;
-    evi->bpd2 += 1.0;
-    /*	Stabilization  */
-    Scores.CaseFacScore = 0.0;
-    set_probs();
-    for (k = 0; k < states; k++)
-        fapd1[k] += 0.5 * pr[k];
-    evi->apd2 += 0.5 * states * ff;
-    /*	This section uses a slow but apparently safe adjustment of fa[[], fbp[]
-     */
-    /*	In an attempt to speed things, fiddle adjustment multiple   */
-    sum = evi->ftcost / cnt;
-    if (sum < evi->oldftcost)
-        adj = evi->adj * 1.1;
-    else
-        adj = InitialAdj;
-    if (adj > MaxAdj)
-        adj = MaxAdj;
-    evi->adj = adj;
-    evi->oldftcost = sum;
-    /*	To do the adjustments, divide 1st derivs by a 'max' value of 2nd
-    derivs, held in vaux.  */
-    adj = adj / (evi->cnt * vaux->mff);
-    adj *= statesm / states;
-    for (k = 0; k < states; k++) {
-        fap[k] -= adj * fapd1[k];
-        fbp[k] -= adj * fbpd1[k];
-    }
-
-    sum = 0.0;
-    for (k = 0; k < states; k++)
-        sum += fap[k];
-    sum = -sum / states;
-    for (k = 0; k < states; k++)
-        fap[k] += sum;
-    sum = 0.0;
-    for (k = 0; k < states; k++)
-        sum += fbp[k];
-    sum = -sum / states;
-    for (k = 0; k < states; k++)
-        fbp[k] += sum;
-    /*	Set fapsprd, bpsprd.   */
-    cvi->fapsprd = statesm / evi->apd2;
-    cvi->bpsprd = statesm / evi->bpd2;
-
-facdone2:
     /*	If no sons, set as-dad params from non-fac params  */
     if (cls->num_sons < 2) {
         for (k = 0; k < states; k++)
@@ -780,9 +771,6 @@ facdone2:
         cvi->napsprd = cvi->sapsprd;
     }
     cvi->samplesize = evi->cnt;
-
-adjdone:
-    return;
 }
 
 /*	------------------------  prprint  -------------------  */
