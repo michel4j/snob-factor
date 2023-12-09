@@ -639,7 +639,7 @@ void do_case(int cse, int all, int derivs, int num_son) {
 
     /*	Unpack data into 'xn' fields of the Saux for each variable. The
     'xn' field is at the beginning of the Saux. Also the "missing" flag. */
-    for (i = 0; i < NumVars; i++) {
+    for (i = 0; i < CurCtx.vset->length; i++) {
         CurField = CurRecord + CurCtx.sample->variables[i].offset;
         psaux = (PSaux *)CurCtx.sample->variables[i].saux;
         if (*CurField == 1) {

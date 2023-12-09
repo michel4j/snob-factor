@@ -54,6 +54,7 @@ int load_vset(const char *filename) {
     char *vaux;
     VarType *vtype;
     VSetVar *vset_var, *vset_var_list;
+    int num_vars;
 
     buf = &bufst;
     for (i = 0; i < MAX_VSETS; i++)
@@ -91,17 +92,17 @@ gotit:
     }
     /*	Num of variables   */
     new_line();
-    kread = read_int(&NumVars, 1);
+    kread = read_int(&num_vars, 1);
     if (kread) {
         printf("Cant read number of variables\n");
         i = -4;
         goto error;
     }
-    CurCtx.vset->length = NumVars;
+    CurCtx.vset->length = num_vars;
     CurCtx.vset->num_active = CurCtx.vset->length;
 
     /*	Make a vec of nv VSetVar blocks  */
-    vset_var_list = (VSetVar *)alloc_blocks(3, NumVars * sizeof(VSetVar));
+    vset_var_list = (VSetVar *)alloc_blocks(3, num_vars * sizeof(VSetVar));
     if (!vset_var_list) {
         printf("Cannot allocate memory for variables blocks\n");
         i = -3;
@@ -110,11 +111,11 @@ gotit:
     CurCtx.vset->variables = vset_var_list;
 
     /*	Read in the info for each variable into vlist   */
-    for (i = 0; i < NumVars; i++) {
+    for (i = 0; i < CurCtx.vset->length; i++) {
         CurCtx.vset->variables[i].id = -1;
         CurCtx.vset->variables[i].vaux = 0;
     }
-    for (i = 0; i < NumVars; i++) {
+    for (i = 0; i < CurCtx.vset->length; i++) {
         vset_var = &CurCtx.vset->variables[i];
         vset_var->id = i;
 
@@ -249,11 +250,9 @@ gotit:
     strcpy(CurCtx.sample->name, sampname);
     /*	Set variable-set name in sample  */
     strcpy(CurCtx.sample->vset_name, CurCtx.vset->name);
-    /*	Num of variables   */
-    NumVars = CurCtx.vset->length;
 
     /*	Make a vec of nv SampleVar blocks  */
-    smpl_var_list = (SampleVar *)alloc_blocks(0, NumVars * sizeof(SampleVar));
+    smpl_var_list = (SampleVar *)alloc_blocks(0, CurCtx.vset->length * sizeof(SampleVar));
     if (!smpl_var_list) {
         printf("Cannot allocate memory for variables blocks\n");
         i = -3;
@@ -262,14 +261,14 @@ gotit:
     CurCtx.sample->variables = smpl_var_list;
 
     /*	Read in the info for each variable into svars   */
-    for (i = 0; i < NumVars; i++) {
+    for (i = 0; i < CurCtx.vset->length; i++) {
         smpl_var_list[i].id = -1;
         smpl_var_list[i].saux = 0;
         smpl_var_list[i].offset = 0;
         smpl_var_list[i].nval = 0;
     }
     RecLen = 1 + sizeof(int); /* active flag and ident  */
-    for (i = 0; i < NumVars; i++) {
+    for (i = 0; i < CurCtx.vset->length; i++) {
         smpl_var = &CurCtx.sample->variables[i];
         vset_var = &CurCtx.vset->variables[i];
         smpl_var->id = i;
@@ -337,7 +336,7 @@ gotit:
         CurField += sizeof(int);
         /*	Posn now points to where the (missing, val) pair for the
         attribute should start.  */
-        for (i = 0; i < NumVars; i++) {
+        for (i = 0; i < CurCtx.vset->length; i++) {
             smpl_var = &CurCtx.sample->variables[i];
             vset_var = &CurCtx.vset->variables[i];
             vtype = vset_var->vtype;

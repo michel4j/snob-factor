@@ -43,9 +43,6 @@ EXT char *CurField;  /*  Common ptr to a data field  */
 EXT int RecLen;      /*  reclen of current sample  */
 EXT char *Records;   /*  Common ptr to data records block of a sample */
 
-/*	re Poplns  */
-EXT int NumVars;  /* Number of variables */
-
 /*	re Doall   */
 EXT int RSeed; /*	Seed for random routines */
 EXT int NoSubs;

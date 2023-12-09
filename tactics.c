@@ -122,7 +122,7 @@ configok:
     ndad->age = MinFacAge - 3;
     ndad->hold_type = 0;
     /*      Copy Basics. the structures should have been made.  */
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         fcvi = odad->basics[iv];
         cvi = ndad->basics[iv];
         nch = CurCtx.vset->variables[iv].basic_size;
@@ -130,7 +130,7 @@ configok:
     }
 
     /*      Copy stats  */
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         fevi = odad->stats[iv];
         evi = ndad->stats[iv];
         nch = CurCtx.vset->variables[iv].stats_size;

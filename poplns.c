@@ -5,7 +5,6 @@
 
 /*	-----------------------  setpop  --------------------------    */
 void set_population() {
-    NumVars = CurCtx.vset->length;
     if (CurCtx.sample) {
         RecLen = CurCtx.sample->record_length;
         Records = CurCtx.sample->records;
@@ -86,11 +85,11 @@ gotit:
     popln->num_classes = 0; /*  Initially no class  */
 
     /*	Make vector of PVinsts    */
-    popln->variables = (PopVar *)alloc_blocks(1, NumVars * sizeof(PopVar));
+    popln->variables = (PopVar *)alloc_blocks(1, CurCtx.vset->length * sizeof(PopVar));
     if (!popln->variables)
         goto nospace;
     /*	Copy from variable-set AVinsts to PVinsts  */
-    for (i = 0; i < NumVars; i++) {
+    for (i = 0; i < CurCtx.vset->length; i++) {
         vset_var = &CurCtx.vset->variables[i];
         vtype = vset_var->vtype;
         pop_var = &popln->variables[i];
@@ -214,7 +213,7 @@ void make_subclasses(int kk) {
     clsb->sib_id = -1;
 
     /*	Copy kk's Basics into both subs  */
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         cvi = cls->basics[iv];
         scvi = clsa->basics[iv];
         nch = CurCtx.vset->variables[iv].basic_size;
@@ -400,7 +399,7 @@ newclass:
         hiser = cls->serial;
 
     /*	Copy Basics. the structures should have been made.  */
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         fcvi = fcls->basics[iv];
         cvi = cls->basics[iv];
         nch = CurCtx.vset->variables[iv].basic_size;
@@ -408,7 +407,7 @@ newclass:
     }
 
     /*	Copy stats  */
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         fevi = fcls->stats[iv];
         evi = cls->stats[iv];
         nch = CurCtx.vset->variables[iv].stats_size;
@@ -756,7 +755,7 @@ newclass:
     leng += nch;
 
     /*	Copy Basics..  */
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         cvi = cls->basics[iv];
         nch = CurCtx.vset->variables[iv].basic_size;
         recordit(fl, cvi, nch);
@@ -764,7 +763,7 @@ newclass:
     }
 
     /*	Copy stats  */
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         evi = cls->stats[iv];
         nch = CurCtx.vset->variables[iv].stats_size;
         recordit(fl, evi, nch);
@@ -825,7 +824,6 @@ int load_population(char *nam) {
         goto error;
     }
     CurCtx.vset = VarSets[j];
-    NumVars = CurCtx.vset->length;
     fscanf(fl, "%s", name);          /* Reading sample name */
     fscanf(fl, "%d%d", &fncl, &fnc); /* num of classes, cases */
                                      /*	Advance to real data */
@@ -883,7 +881,7 @@ haveclass:
         *jp = fgetc(fl);
         jp++;
     }
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         cvi = cls->basics[iv];
         nch = CurCtx.vset->variables[iv].basic_size;
         jp = (char *)cvi;
@@ -892,7 +890,7 @@ haveclass:
             jp++;
         }
     }
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         evi = cls->stats[iv];
         nch = CurCtx.vset->variables[iv].stats_size;
         jp = (char *)evi;

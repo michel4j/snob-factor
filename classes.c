@@ -53,7 +53,6 @@ int make_class() {
         CurCtx.sample = Samples[i];
     }
 
-    NumVars = CurCtx.vset->length;
     /*	Find a vacant slot in the popln's classes vec   */
     for (kk = 0; kk < popln->cls_vec_len; kk++) {
         if (!popln->classes[kk])
@@ -74,12 +73,12 @@ gotit:
     cls->id = kk;
 
     /*	Make vector of ptrs to CVinsts   */
-    cvars = cls->basics = (ClassVar **)alloc_blocks(1, NumVars * sizeof(ClassVar *));
+    cvars = cls->basics = (ClassVar **)alloc_blocks(1, CurCtx.vset->length * sizeof(ClassVar *));
     if (!cvars)
         goto nospace;
 
     /*	Now make the ClassVar blocks, which are of varying size   */
-    for (i = 0; i < NumVars; i++) {
+    for (i = 0; i < CurCtx.vset->length; i++) {
         vset_var = &CurCtx.vset->variables[i];
         cvi = cvars[i] = (ClassVar *)alloc_blocks(1, vset_var->basic_size);
         if (!cvi)
@@ -89,11 +88,11 @@ gotit:
     }
 
     /*	Make ExplnVar blocks and vector of pointers  */
-    evars = cls->stats = (ExplnVar **)alloc_blocks(1, NumVars * sizeof(ExplnVar *));
+    evars = cls->stats = (ExplnVar **)alloc_blocks(1, CurCtx.vset->length * sizeof(ExplnVar *));
     if (!evars)
         goto nospace;
 
-    for (i = 0; i < NumVars; i++) {
+    for (i = 0; i < CurCtx.vset->length; i++) {
         pop_var = &popln->variables[i];
         vset_var = &CurCtx.vset->variables[i];
         evi = evars[i] = (ExplnVar *)alloc_blocks(1, vset_var->stats_size);
@@ -120,7 +119,7 @@ donebasic:
     /*	Invalidate hierarchy links  */
     cls->dad_id = cls->sib_id = cls->son_id = -1;
     cls->num_sons = 0;
-    for (i = 0; i < NumVars; i++)
+    for (i = 0; i < CurCtx.vset->length; i++)
         cvars[i]->signif = 1;
     popln->num_classes++;
     if (kk > popln->hi_class)
@@ -138,7 +137,7 @@ vacant2:
     cls->type = 0;
 
 expanded:
-    for (i = 0; i < NumVars; i++)
+    for (i = 0; i < CurCtx.vset->length; i++)
         evars[i]->num_values = 0.0;
 finish:
     cls->age = 0;
@@ -288,7 +287,7 @@ void score_all_vars(Class *cls) {
         goto started;
     /*	Generate a fake score to get started.   */
     cls->boost_count = 0;
-    Scores.cvvsprd = 0.1 / NumVars;
+    Scores.cvvsprd = 0.1 / CurCtx.vset->length;
     oldicvv = igbit = 0;
     Scores.CaseFacScore = (rand_int() < 0) ? 1.0 : -1.0;
     goto fake;
@@ -443,7 +442,7 @@ void deriv_all_vars(Class *cls) {
         cls->vav += case_weight * cls->clvsprd;
         cls->totvv += Scores.CaseFacScore * case_weight;
     }
-    for (int iv = 0; iv < NumVars; iv++) {
+    for (int iv = 0; iv < CurCtx.vset->length; iv++) {
         vset_var = &CurCtx.vset->variables[iv];
         if (vset_var->inactive)
             goto vdone;
@@ -560,7 +559,7 @@ void adjust_class(Class *cls, int dod) {
     /*	Add up the number of data values  */
     small = 0;
     leafcost = 0.0; /* Used to add up evi->cnts */
-    for (iv = 0; iv < NumVars; iv++) {
+    for (iv = 0; iv < CurCtx.vset->length; iv++) {
         if (CurCtx.vset->variables[iv].inactive)
             goto vidle;
         small++;
