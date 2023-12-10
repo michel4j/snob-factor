@@ -83,6 +83,15 @@ void log_msg(int level, const char *format, ...) {
     }
 }
 
+
+void print_buffer(MemBuffer *dest, const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    if (dest->offset >= dest->size)
+    dest->offset += vsnprintf(dest->buffer, dest->size - dest->offset, format, args);
+    va_end(args);
+}
+
 int error_value(const char *message, const int value) {
     printf(message);
     return value;
@@ -244,3 +253,4 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
 
     return result;
 }
+

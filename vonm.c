@@ -119,6 +119,7 @@ static void deriv_var(int iv, int fac, Class *cls);
 static void cost_var_nonleaf(int iv, int vald, Class *cls);
 static void adjust(int iv, int fac, Class *cls);
 static void show(Class *cls, int iv);
+static void details(Class *cls, int iv, MemBuffer* buffer);
 
 /*--------------------------  define ------------------------------- */
 /*	This routine is used to set up a VarType entry in the global "types"
@@ -155,20 +156,15 @@ void vonm_define(int typindx)
     vtype->adjust = &adjust;
     vtype->show = &show;
     vtype->set_var = &set_var;
+    vtype->details = &details;
 }
 
 /*	-------------------  setvar -----------------------------  */
 void set_var(int iv, Class *cls) {
-    //VSetVar *vset_var = &CurCtx.vset->variables[iv];
-    //PopVar *pop_var = &CurCtx.popln->variables[iv];
-    //SampleVar *smpl_var = &CurCtx.sample->variables[iv];
 
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
 
-
-    //vaux = (Vaux *)vset_var->vaux;
-    //saux = (Saux *)smpl_var->saux;
     cvi = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
     dcvi = (dad) ? (Basic *)dad->basics[iv] : 0;
@@ -734,9 +730,31 @@ void show(Class *cls, int iv) {
     else
         printf("%6.3f rad", mu);
     printf("  Kappa %8.2f\n", kappa);
-    return;
 }
 
+
+/*	------------------------  details  -----------------------   */
+void details(Class *cls, int iv, MemBuffer* buffer) {
+    double mu, kappa;
+    SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+    Saux *saux = (Saux *)(smpl_var->saux);
+    set_var(iv, cls);
+
+    print_buffer(buffer,  "V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out", evi->adj);
+    if (cls->num_sons >= 2) {
+        print_buffer(buffer,  " N: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", evi->npcost, cvi->nhx, cvi->nhy, sqrt(cvi->nhsprd));
+    }
+    print_buffer(buffer,  " S: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", evi->spcost + evi->stcost, cvi->shx, cvi->shy, sqrt(cvi->shsprd));
+    print_buffer(buffer,  " F: Cost%8.1f  Hx%8.3f  Hy%8.3f  Ld%8.3f +-%5.2f\n", evi->fpcost + evi->ftcost, cvi->fhx, cvi->fhy, cvi->ld, sqrt(cvi->ldsprd));
+    kappa = sqrt(cvi->bhx * cvi->bhx + cvi->bhy * cvi->bhy);
+    mu = atan2(cvi->bhx, cvi->bhy);
+    print_buffer(buffer,  " B:  Mean ");
+    if (saux->unit)
+        print_buffer(buffer,  "%6.1f deg", (180.0 / PI) * mu);
+    else
+        print_buffer(buffer,  "%6.3f rad", mu);
+    print_buffer(buffer,  "  Kappa %8.2f\n", kappa);
+}
 /*	----------------------  cost_var_nonleaf  ------------------------   */
 /*	To compute parameter cost for non-leaf (intrnl) class use   */
 

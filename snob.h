@@ -139,6 +139,12 @@ typedef struct ClassStruct {
 
 /*	-----------------  Variable types  ---------------------  */
 
+typedef struct MemBufferStruct {
+    char *buffer;
+    int size;
+    int offset;
+} MemBuffer;
+
 typedef struct VarTypeStruct {
     int id;
     int data_size;
@@ -148,7 +154,7 @@ typedef struct VarTypeStruct {
     char *name;
     int (*read_aux_attr)(void *vax);           /* Fun to read aux attribute info */
     int (*read_aux_smpl)(void *sax);           /* Fun to read aux sample info */
-    int (*read_datum)(char *loc, int iv);       /* Fun to read a datum */
+    int (*read_datum)(char *loc, int iv);      /* Fun to read a datum */
     void (*print_datum)(char *loc);            /* Fun to print datum value */
     void (*set_sizes)(int iv);                 /* To set basicsize, statssize */
     void (*set_best_pars)(int iv, Class *cls); /* To set current best use params */
@@ -160,6 +166,7 @@ typedef struct VarTypeStruct {
     void (*adjust)(int iv, int fac, Class *cls);
     void (*show)(Class *cls, int iv);
     void (*set_var)(int iv, Class *cls);
+    void (*details)(Class *cls, int iv, MemBuffer *buffer);
 } VarType;
 
 /*	-------------------  Files ----------------------------------  */
@@ -429,3 +436,5 @@ void show_pop_names();
 void show_smpl_names();
 void log_msg(int level, const char *format, ...) __attribute__((format(printf, 2, 3)));
 int error_value(const char *message, const int value);
+void get_class_details(char *buffer, size_t buffer_size);
+void print_buffer(MemBuffer *buffer, const char *format, ...) __attribute__((format(printf, 2, 3)));

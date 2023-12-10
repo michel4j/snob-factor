@@ -128,6 +128,7 @@ static void deriv_var(int iv, int fac, Class *cls);
 static void cost_var_nonleaf(int iv, int vald, Class *cls);
 static void adjust(int iv, int fac, Class *cls);
 static void show(Class *cls, int iv);
+static void details(Class *cls, int iv, MemBuffer *buffer);
 
 /*--------------------------  define ------------------------------- */
 /*	This routine is used to set up a VarType entry in the global "types"
@@ -166,6 +167,7 @@ void expmults_define(typindx) int typindx;
     vtype->adjust = &adjust;
     vtype->show = &show;
     vtype->set_var = &set_var;
+    vtype->details = &details;
 
     /*	Make table of exp (-0.5 * x * x) in gaustab[]
         Entry for x = 0 is at gaustab[1]  */
@@ -822,6 +824,56 @@ void show(Class *cls, int iv) {
         printf(" +-%7.3f\n", sqrt(cvi->bpsprd * rstatesm));
     }
 }
+
+/*	------------------------  details  -----------------------   */
+/*	prints the exponential params in 'ap' converted to probs   */
+void write_probs(double *ap, MemBuffer *buffer) {
+    int k;
+    double max, sum;
+
+    max = ap[0];
+    for (k = 0; k < states; k++) {
+        if (ap[k] > max)
+            max = ap[k];
+    }
+    sum = 0.0;
+    for (k = 0; k < states; k++) {
+        pr[k] = exp(ap[k] - max);
+        sum += pr[k];
+    }
+    sum = 1.0 / sum;
+    for (k = 0; k < states; k++)
+        print_buffer(buffer,  "%7.3f", pr[k] * sum);
+    return;
+}
+
+void details(Class *cls, int iv, MemBuffer* buffer) {
+    int k;
+
+    set_var(iv, cls);
+    print_buffer(buffer,"V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out", evi->adj);
+
+    if (cls->num_sons > 1) {
+        print_buffer(buffer," NR: ");
+        write_probs(nap, buffer);
+        print_buffer(buffer," +-%7.3f\n", sqrt(cvi->napsprd));
+    }
+    print_buffer(buffer," PR: ");
+    write_probs(sap, buffer);
+    print_buffer(buffer,"\n");
+    if (cls->use != Tiny) {
+        print_buffer(buffer," FR: ");
+        for (k = 0; k < states; k++) {
+            print_buffer(buffer,"%7.3f", frate[k]);
+        }
+        print_buffer(buffer,"\n BP: ");
+        for (k = 0; k < states; k++) {
+            print_buffer(buffer,"%7.3f", fbp[k]);
+        }
+        print_buffer(buffer," +-%7.3f\n", sqrt(cvi->bpsprd * rstatesm));
+    }
+}
+
 
 /*	----------------------  cost_var_nonleaf -----------------------------  */
 void cost_var_nonleaf(int iv, int vald, Class *cls) {

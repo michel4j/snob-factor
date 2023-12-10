@@ -87,6 +87,7 @@ static void deriv_var(int iv, int fac, Class *cls);
 static void cost_var_nonleaf(int iv, int vald, Class *cls);
 static void adjust(int iv, int fac, Class *cls);
 static void show(Class *cls, int iv);
+static void details(Class *cls, int iv, MemBuffer *buffer);
 
 /*--------------------------  define ------------------------------- */
 /*	This routine is used to set up a VarType entry in the global "types"
@@ -123,6 +124,7 @@ void reals_define(typindx) int typindx;
     vtype->adjust = &adjust;
     vtype->show = &show;
     vtype->set_var = &set_var;
+    vtype->details = &details;
 }
 
 /*	-------------------  setvar -----------------------------  */
@@ -342,7 +344,6 @@ void deriv_var(int iv, int fac, Class *cls) {
         evi->ldd1 += case_weight * frsds * (del * Scores.CaseFacScore + cvi->ld * Scores.cvvsprd);
         evi->ldd2 += case_weight * frsds * (Scores.CaseFacScoreSq + Scores.cvvsprd);
     }
-
 }
 
 /*	-------------------  adjust  ---------------------------    */
@@ -561,13 +562,26 @@ void show(Class *cls, int iv) {
     set_var(iv, cls);
 
     printf("V%3d  Cnt%6.1f  %s\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out");
-    if (cls->num_sons < 2)
-        goto skipn;
-    printf(" N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", evi->npcost, cvi->nmu, sqrt(cvi->nmusprd), exp(cvi->nsdl), exp(cvi->nsdl) * sqrt(cvi->nsdlsprd));
-skipn:
+    if (cls->num_sons > 1) {
+        printf(" N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", evi->npcost, cvi->nmu, sqrt(cvi->nmusprd), exp(cvi->nsdl),
+               exp(cvi->nsdl) * sqrt(cvi->nsdlsprd));
+    }
     printf(" S: Cost%8.1f  Mu%8.3f  SD%8.3f\n", evi->spcost + evi->stcost, cvi->smu, exp(cvi->ssdl));
     printf(" F: Cost%8.1f  Mu%8.3f  SD%8.3f  Ld%8.3f\n", evi->fpcost + evi->ftcost, cvi->fmu, exp(cvi->fsdl), cvi->ld);
-    return;
+}
+
+/*	------------------------  details  -----------------------   */
+void details(Class *cls, int iv, MemBuffer *buffer) {
+
+    set_var(iv, cls);
+
+    print_buffer(buffer,  "V%3d  Cnt%6.1f  %s\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out");
+    if (cls->num_sons > 1) {
+        print_buffer(buffer,  " N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", evi->npcost, cvi->nmu, sqrt(cvi->nmusprd), exp(cvi->nsdl),
+                exp(cvi->nsdl) * sqrt(cvi->nsdlsprd));
+    }
+    print_buffer(buffer,  " S: Cost%8.1f  Mu%8.3f  SD%8.3f\n", evi->spcost + evi->stcost, cvi->smu, exp(cvi->ssdl));
+    print_buffer(buffer,  " F: Cost%8.1f  Mu%8.3f  SD%8.3f  Ld%8.3f\n", evi->fpcost + evi->ftcost, cvi->fmu, exp(cvi->fsdl), cvi->ld);
 }
 
 /*	----------------------  cost_var_nonleaf  ------------------------   */

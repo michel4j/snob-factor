@@ -11,8 +11,8 @@ class Classification(ct.Structure):
         ('model_length', ct.c_double),
         ('data_length', ct.c_double),
         ('message_length', ct.c_double)
-    ] 
-    
+    ]
+
 snob = ct.cdll.LoadLibrary('./libsnob.so')
 snob.initialize.argtypes = [ct.c_int, ct.c_int, ct.c_int]
 snob.load_vset.argtypes = [ct.c_char_p]
@@ -25,7 +25,7 @@ snob.classify.argtypes = [ct.c_int, ct.c_int, ct.c_int, ct.c_double]
 snob.classify.restype = Classification
 snob.print_class.argtypes = [ct.c_int, ct.c_int]
 snob.item_list.argtypes = [ct.c_char_p]
-
+snob.get_class_details.argtypes = [ct.c_void_p]
 
 EXAMPLES = [
     'phi',

@@ -8,23 +8,23 @@
 /*	given a ptr to a ptr to a class in pop, changes the Class* to point
 to the next class in a depth-first traversal, or 0 if there is none  */
 void next_class(Class **ptr) {
-    Class *clp;
+    Class *cls;
     Population *popln = CurCtx.popln;
-    clp = *ptr;
-    if (clp->son_id >= 0) {
-        *ptr = popln->classes[clp->son_id];
+    cls = *ptr;
+    if (cls->son_id >= 0) {
+        *ptr = popln->classes[cls->son_id];
         return;
     }
     while (1) {
-        if (clp->sib_id >= 0) {
-            *ptr = popln->classes[clp->sib_id];
+        if (cls->sib_id >= 0) {
+            *ptr = popln->classes[cls->sib_id];
             break;
         }
-        if (clp->dad_id < 0) {
+        if (cls->dad_id < 0) {
             *ptr = 0;
             break;
         }
-        clp = popln->classes[clp->dad_id];
+        cls = popln->classes[cls->dad_id];
     }
 }
 
@@ -36,7 +36,7 @@ void next_class(Class **ptr) {
 or score vectors, and the popln is not connected to the current sample.
 OTHERWIZE, the root class is fully configured for the current sample.
     */
-   
+
 int make_population(int fill) {
     PopVar *pop_var;
     Class *cls;

@@ -65,8 +65,8 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
 } Stats;
 
 /*	Static variables useful for many types of variable    */
-//static Saux *saux;
-//static Vaux *vaux;
+// static Saux *saux;
+// static Vaux *vaux;
 static Basic *cvi, *dcvi;
 static Stats *evi;
 
@@ -88,6 +88,7 @@ static void deriv_var(int iv, int fac, Class *cls);
 static void cost_var_nonleaf(int iv, int vald, Class *cls);
 static void adjust(int iv, int fac, Class *cls);
 static void show(Class *cls, int iv);
+static void details(Class *cls, int iv, MemBuffer *buffer);
 
 /*--------------------------  define ------------------------------- */
 /*	This routine is used to set up a VarType entry in the global "types"
@@ -123,6 +124,7 @@ void expbinary_define(typindx) int typindx;
     vtype->adjust = &adjust;
     vtype->show = &show;
     vtype->set_var = &set_var;
+    vtype->details = &details;
 }
 
 /*	----------------------- setvar --------------------------  */
@@ -299,7 +301,7 @@ void score_var(int iv, Class *cls) {
 void cost_var(int iv, int fac, Class *cls) {
     double cost;
     double cc, ff, ft, hdffbydc, hdftbydc, pr0, pr1, small;
-    
+
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);
 
@@ -368,7 +370,7 @@ void deriv_var(int iv, int fac, Class *cls) {
 
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);
-    
+
     set_var(iv, cls);
     if (saux->missing)
         return;
@@ -553,12 +555,11 @@ void show(Class *cls, int iv) {
     set_var(iv, cls);
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out", evi->adj);
 
-    if (cls->num_sons < 2)
-        goto skipn;
-    printf(" N: AP ");
-    printf("%6.3f", cvi->nap);
-    printf(" +-%7.3f\n", sqrt(cvi->napsprd));
-skipn:
+    if (cls->num_sons > 1) {
+        printf(" N: AP ");
+        printf("%6.3f", cvi->nap);
+        printf(" +-%7.3f\n", sqrt(cvi->napsprd));
+    }
     printf(" S: AP ");
     printf("%6.3f", cvi->sap);
     printf("\n F: AP ");
@@ -566,9 +567,27 @@ skipn:
     printf("\n F: BP ");
     printf("%6.3f", cvi->fbp);
     printf(" +-%7.3f\n", sqrt(cvi->bpsprd));
-    return;
 }
 
+/*	------------------------  details  -----------------------   */
+void details(Class *cls, int iv, MemBuffer* buffer) {
+
+    set_var(iv, cls);
+    print_buffer(buffer,  "V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out", evi->adj);
+
+    if (cls->num_sons > 1) {
+        print_buffer(buffer,  " N: AP ");
+        print_buffer(buffer,  "%6.3f", cvi->nap);
+        print_buffer(buffer,  " +-%7.3f\n", sqrt(cvi->napsprd));
+    }
+    print_buffer(buffer,  " S: AP ");
+    print_buffer(buffer,  "%6.3f", cvi->sap);
+    print_buffer(buffer,  "\n F: AP ");
+    print_buffer(buffer,  "%6.3f", cvi->fap);
+    print_buffer(buffer,  "\n F: BP ");
+    print_buffer(buffer,  "%6.3f", cvi->fbp);
+    print_buffer(buffer,  " +-%7.3f\n", sqrt(cvi->bpsprd));
+}
 /*	----------------------  cost_var_nonleaf -----------------------------  */
 void cost_var_nonleaf(int iv, int vald, Class *cls) {
     Basic *soncvi;
