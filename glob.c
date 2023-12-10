@@ -250,6 +250,8 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
     result.model_length = root->best_par_cost;
     result.data_length = root->best_case_cost;
     result.message_length = root->best_cost;
+    result.num_attrs = CurCtx.vset->length;
+    result.num_cases = CurCtx.sample->num_cases;
 
     return result;
 }

@@ -285,6 +285,8 @@ typedef struct ContextStruct {
 typedef struct ResultStruct {
     int num_classes;       // Number of classes found, includes Dads, Leaves and Subs
     int num_leaves;        // Number of leaves, these are the relevant categories
+    int num_attrs;         // Number of variables in vset;
+    int num_cases;         // Number of cases;
     double model_length;   // Cost of Transmitting Model
     double data_length;    // Cost of Transmitting Data
     double message_length; // Total Cost
