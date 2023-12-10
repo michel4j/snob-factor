@@ -114,21 +114,20 @@ int make_class() {
     /*	Invalidate hierarchy links  */
     cls->dad_id = cls->sib_id = cls->son_id = -1;
     cls->num_sons = 0;
-    for (i = 0; i < CurCtx.vset->length; i++)
+    for (i = 0; i < CurCtx.vset->length; i++) {
         cls_var_list[i]->signif = 1;
+    }
     popln->num_classes++;
-    if (kk > popln->hi_class)
+    if (kk > popln->hi_class) {
         popln->hi_class = kk;
-    if (cls->type == Vacant)
-        goto vacant2;
-
-    /*	If nc = 0, this completes the make.  */
-    if (num_cases == 0)
-        goto finish;
-    cls->factor_scores = (short *)alloc_blocks(2, num_cases * sizeof(short));
-    goto expanded;
-
-vacant2:
+    }
+    if (cls->type != Vacant) {
+        /*	If nc = 0, this completes the make.  */
+        if (num_cases == 0)
+            goto finish;
+        cls->factor_scores = (short *)alloc_blocks(2, num_cases * sizeof(short));
+        goto expanded;
+    }
     cls->type = 0;
 
 expanded:
