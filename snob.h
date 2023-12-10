@@ -44,7 +44,7 @@ controls the mode of weight assignment  */
 #define Maxv ((double)5.0)
 #define ScoreScale ((double)4096.0)
 #define HScoreScale ((double)2048.0)
-#define ScoreRscale ((double)(1.0 / ScoreScale))
+#define ScoreRScale ((double)(1.0 / ScoreScale))
 
 #define Dad 1
 #define Leaf 2

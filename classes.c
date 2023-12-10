@@ -280,89 +280,74 @@ void score_all_vars(Class *cls, int item) {
     if ((cls->age < MinFacAge) || (cls->use == Tiny)) {
         Scores.CaseFacScore = cls->avg_factor_scores = cls->sum_score_sq = 0.0;
         Scores.CaseFacInt = 0;
-        goto done;
-    }
-    if (cls->sum_score_sq > 0.0)
-        goto started;
-    /*	Generate a fake score to get started.   */
-    cls->boost_count = 0;
-    Scores.cvvsprd = 0.1 / CurCtx.vset->length;
-    oldicvv = igbit = 0;
-    Scores.CaseFacScore = (rand_int() < 0) ? 1.0 : -1.0;
-    goto fake;
+    } else {
+        if (cls->sum_score_sq <= 0.0) {
+            /*	Generate a fake score to get started.   */
+            cls->boost_count = 0;
+            Scores.cvvsprd = 0.1 / CurCtx.vset->length;
+            oldicvv = igbit = 0;
+            Scores.CaseFacScore = (rand_int() < 0) ? 1.0 : -1.0;
+        } else {
+            /*	Get current score  */
+            oldicvv = Scores.CaseFacInt;
+            igbit = Scores.CaseFacInt & 1;
+            Scores.CaseFacScore = Scores.CaseFacInt * ScoreRScale;
+            /*	Subtract average from last pass  */
+            /*xx
+                cvv -= cls->avg_factor_scores;
+            */
+            if (cls->boost_count && ((Control & AdjSP) == AdjSP)) {
+                Scores.CaseFacScore *= cls->score_boost;
+                Scores.CaseFacScore = fmax(fmin(Scores.CaseFacScore, Maxv), -Maxv);
+                del = Scores.CaseFacScore * HScoreScale;
+                del -= (del < 0.0) ? 1.0 : 0.0;
+                Scores.CaseFacInt = del + 0.5;
+                Scores.CaseFacInt = Scores.CaseFacInt << 1; /* Round to nearest even times ScoreScale */
+                igbit = 0;
+                Scores.CaseFacScore = Scores.CaseFacInt * ScoreRScale;
+            }
 
-started:
-    /*	Get current score  */
-    oldicvv = Scores.CaseFacInt;
-    igbit = Scores.CaseFacInt & 1;
-    Scores.CaseFacScore = Scores.CaseFacInt * ScoreRscale;
-    /*	Subtract average from last pass  */
-    /*xx
-        cvv -= cls->avg_factor_scores;
-    */
-    if (cls->boost_count && ((Control & AdjSP) == AdjSP)) {
-        Scores.CaseFacScore *= cls->score_boost;
-        if (Scores.CaseFacScore > Maxv)
-            Scores.CaseFacScore = Maxv;
-        else if (Scores.CaseFacScore < -Maxv)
-            Scores.CaseFacScore = -Maxv;
+            Scores.CaseFacScoreSq = Scores.CaseFacScore * Scores.CaseFacScore;
+            Scores.CaseFacScoreD1 = Scores.CaseFacScoreD2 = Scores.EstFacScoreD2 = Scores.CaseFacScoreD3 = 0.0;
+            for (i = 0; i < CurCtx.vset->length; i++) {
+                vset_var = &CurCtx.vset->variables[i];
+                if (!vset_var->inactive) {
+                    vtype = vset_var->vtype;
+                    (*vtype->score_var)(i, cls); /*	score_var should add to vvd1, vvd2, vvd3, mvvd2.  */
+                }
+            }
+            Scores.CaseFacScoreD1 += Scores.CaseFacScore;
+            Scores.CaseFacScoreD2 += 1.0;
+            Scores.EstFacScoreD2 += 1.0; /*  From prior  */
+            // There is a cost term 0.5 * cvvsprd from the prior (whence the additional
+            // 1 in vvd2).
+            Scores.cvvsprd = 1.0 / Scores.CaseFacScoreD2;
+            // Also, overall cost includes 0.5*cvvsprd*vvd2, so there is a derivative
+            // term wrt cvv of 0.5*cvvsprd*vvd3
+            Scores.CaseFacScoreD1 += 0.5 * Scores.cvvsprd * Scores.CaseFacScoreD3;
+            del = Scores.CaseFacScoreD1 / Scores.EstFacScoreD2;
+            if (Control & AdjSc) {
+                Scores.CaseFacScore -= del;
+            }
+        }
+
+        Scores.CaseFacScore = fmax(fmin(Scores.CaseFacScore, Maxv), -Maxv);
         del = Scores.CaseFacScore * HScoreScale;
-        if (del < 0.0)
-            del -= 1.0;
-        Scores.CaseFacInt = del + 0.5;
+        del -= (del < 0.0) ? 1.0 : 0.0;
+        Scores.CaseFacInt = del + rand_float();
         Scores.CaseFacInt = Scores.CaseFacInt << 1; /* Round to nearest even times ScoreScale */
-        igbit = 0;
-        Scores.CaseFacScore = Scores.CaseFacInt * ScoreRscale;
+        Scores.CaseFacInt |= igbit;                 /* Restore original ignore bit */
+        if (!igbit) {
+            oldicvv -= Scores.CaseFacInt;
+            oldicvv = (oldicvv < 0) ? -oldicvv : oldicvv;
+            if (oldicvv > SigScoreChange)
+                cls->score_change_count++;
+        }
+        cls->case_fac_score = Scores.CaseFacScore = Scores.CaseFacInt * ScoreRScale;
+        cls->case_fac_score_sq = Scores.CaseFacScoreSq = Scores.CaseFacScore * Scores.CaseFacScore;
+        cls->cvvsprd = Scores.cvvsprd;
     }
-
-    Scores.CaseFacScoreSq = Scores.CaseFacScore * Scores.CaseFacScore;
-    Scores.CaseFacScoreD1 = Scores.CaseFacScoreD2 = Scores.EstFacScoreD2 = Scores.CaseFacScoreD3 = 0.0;
-    for (i = 0; i < CurCtx.vset->length; i++) {
-        vset_var = &CurCtx.vset->variables[i];
-        if (vset_var->inactive)
-            goto vdone;
-        vtype = vset_var->vtype;
-        (*vtype->score_var)(i, cls);
-    /*	score_var should add to vvd1, vvd2, vvd3, mvvd2.  */
-    vdone:;
-    }
-    Scores.CaseFacScoreD1 += Scores.CaseFacScore;
-    Scores.CaseFacScoreD2 += 1.0;
-    Scores.EstFacScoreD2 += 1.0; /*  From prior  */
-    /*	There is a cost term 0.5 * cvvsprd from the prior (whence the additional
-        1 in vvd2).  */
-    Scores.cvvsprd = 1.0 / Scores.CaseFacScoreD2;
-    /*	Also, overall cost includes 0.5*cvvsprd*vvd2, so there is a derivative
-    term wrt cvv of 0.5*cvvsprd*vvd3  */
-    Scores.CaseFacScoreD1 += 0.5 * Scores.cvvsprd * Scores.CaseFacScoreD3;
-    del = Scores.CaseFacScoreD1 / Scores.EstFacScoreD2;
-    if (Control & AdjSc) {
-        Scores.CaseFacScore -= del;
-    }
-fake:
-    if (Scores.CaseFacScore > Maxv)
-        Scores.CaseFacScore = Maxv;
-    else if (Scores.CaseFacScore < -Maxv)
-        Scores.CaseFacScore = -Maxv;
-    del = Scores.CaseFacScore * HScoreScale;
-    if (del < 0.0)
-        del -= 1.0;
-    Scores.CaseFacInt = del + rand_float();
-    Scores.CaseFacInt = Scores.CaseFacInt << 1; /* Round to nearest even times ScoreScale */
-    Scores.CaseFacInt |= igbit;                 /* Restore original ignore bit */
-    if (!igbit) {
-        oldicvv -= Scores.CaseFacInt;
-        if (oldicvv < 0)
-            oldicvv = -oldicvv;
-        if (oldicvv > SigScoreChange)
-            cls->score_change_count++;
-    }
-    cls->case_fac_score = Scores.CaseFacScore = Scores.CaseFacInt * ScoreRscale;
-    cls->case_fac_score_sq = Scores.CaseFacScoreSq = Scores.CaseFacScore * Scores.CaseFacScore;
-    cls->cvvsprd = Scores.cvvsprd;
-done:
     cls->factor_scores[item] = cls->case_score = Scores.CaseFacInt;
-    return;
 }
 
 /*	----------------------  costvarall  --------------------------  */
@@ -384,12 +369,10 @@ void cost_all_vars(Class *cls, int item) {
     Scores.CaseCost = Scores.CaseNoFacCost = Scores.CaseFacCost = cls->mlogab; /* Abundance cost */
     for (int iv = 0; iv < CurCtx.vset->length; iv++) {
         vset_var = &CurCtx.vset->variables[iv];
-        if (vset_var->inactive)
-            goto vdone;
-        vtype = vset_var->vtype;
-        (*vtype->cost_var)(iv, fac, cls);
-    /*	will add to CaseNoFacCost, CaseFacCost  */
-    vdone:;
+        if (!vset_var->inactive) {
+            vtype = vset_var->vtype;
+            (*vtype->cost_var)(iv, fac, cls); /* will add to CaseNoFacCost, CaseFacCost  */
+        }
     }
 
     cls->total_case_cost = cls->nofac_case_cost = Scores.CaseNoFacCost;
@@ -397,27 +380,24 @@ void cost_all_vars(Class *cls, int item) {
     if (cls->num_sons < 2)
         cls->dad_case_cost = 0.0;
     cls->coding_case_cost = 0.0;
-    if (!fac)
-        goto finish;
-    /*	Now we add the cost of coding the score, and its roundoff */
-    /*	The simple form for costing a score is :
-        tmp = hlg2pi + 0.5 * (cvvsq + cvvsprd - log (cvvsprd)) + lattice;
-    However, we appeal to the large number of score parameters, which gives a
-    more negative 'lattice' ((log 12)/2 for one parameter) approaching -(1/2)
-    log (2 Pi e) which results in the reduced cost :  */
-    cls->clvsprd = log(Scores.cvvsprd);
-    tmp = 0.5 * (Scores.CaseFacScoreSq + Scores.cvvsprd - cls->clvsprd - 1.0);
-    /*	Over all scores for the class, the lattice effect will add approx
-            ( log (2 Pi cnt)) / 2  + 1
-        to the class cost. This is added later, once cnt is known.
-        */
-    Scores.CaseFacCost += tmp;
-    cls->fac_case_cost = Scores.CaseFacCost;
-    cls->coding_case_cost = tmp;
-    if (cls->use == Fac)
-        cls->total_case_cost = Scores.CaseFacCost;
-finish:
-    return;
+    if (fac) {
+        // Now we add the cost of coding the score, and its roundoff
+        // The simple form for costing a score is :
+        //      tmp = hlg2pi + 0.5 * (cvvsq + cvvsprd - log (cvvsprd)) + lattice;
+        // However, we appeal to the large number of score parameters, which gives a
+        // more negative 'lattice' ((log 12)/2 for one parameter) approaching -(1/2)
+        // log (2 Pi e) which results in the reduced cost :
+        cls->clvsprd = log(Scores.cvvsprd);
+        tmp = 0.5 * (Scores.CaseFacScoreSq + Scores.cvvsprd - cls->clvsprd - 1.0);
+        // Over all scores for the class, the lattice effect will add approx
+        //         ( log (2 Pi cnt)) / 2  + 1
+        // to the class cost. This is added later, once cnt is known.
+        Scores.CaseFacCost += tmp;
+        cls->fac_case_cost = Scores.CaseFacCost;
+        cls->coding_case_cost = tmp;
+        if (cls->use == Fac)
+            cls->total_case_cost = Scores.CaseFacCost;
+    }
 }
 
 /*	----------------------  derivvarall  ---------------------    */
@@ -443,11 +423,10 @@ void deriv_all_vars(Class *cls, int item) {
     }
     for (int iv = 0; iv < CurCtx.vset->length; iv++) {
         vset_var = &CurCtx.vset->variables[iv];
-        if (vset_var->inactive)
-            goto vdone;
-        vtype = vset_var->vtype;
-        (*vtype->deriv_var)(iv, fac, cls);
-    vdone:;
+        if (!vset_var->inactive) {
+            vtype = vset_var->vtype;
+            (*vtype->deriv_var)(iv, fac, cls);
+        }
     }
 
     /*	Collect case item costs   */
@@ -455,8 +434,6 @@ void deriv_all_vars(Class *cls, int item) {
     cls->cftcost += case_weight * cls->fac_case_cost;
     cls->cntcost += case_weight * cls->dad_case_cost;
     cls->cfvcost += case_weight * cls->coding_case_cost;
-
-    return;
 }
 
 /*	--------------------  adjustclass  -----------------------   */
@@ -512,11 +489,10 @@ void adjust_class(Class *cls, int dod) {
     cls->nofac_par_cost = cls->fac_par_cost = 0.0;
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
         vset_var = &CurCtx.vset->variables[iv];
-        if (vset_var->inactive)
-            goto vdone;
-        vtype = vset_var->vtype;
-        (*vtype->adjust)(iv, fac, cls);
-    vdone:;
+        if (!vset_var->inactive) {
+            vtype = vset_var->vtype;
+            (*vtype->adjust)(iv, fac, cls);
+        }
     }
 
     /*	If vsq less than 0.3, set vboost to inflate  */
@@ -532,9 +508,9 @@ void adjust_class(Class *cls, int dod) {
     /*	Get average score   */
     cls->avg_factor_scores = cls->totvv / cls->weights_sum;
 
-    if (dod)
+    if (dod) {
         parent_cost_all_vars(cls, npars);
-
+    }
     cls->nofac_cost = cls->nofac_par_cost + cls->cstcost;
     /*	The 'lattice' effect on the cost of coding scores is approx
         (log (2 Pi cnt))/2 + 1,  which adds to cftcost  */
@@ -546,92 +522,83 @@ void adjust_class(Class *cls, int dod) {
         cls->dad_cost = cls->dad_par_cost = cls->cntcost = 0.0;
 
     /*	Contemplate changes to class use and type   */
-    if (cls->hold_use || (!(Control & AdjPr)))
-        goto usechecked;
-    /*	If scores boosted too many times, make Tiny and hold   */
-    if (cls->boost_count > 20) {
-        cls->use = Tiny;
-        cls->hold_use = 10;
-        goto usechecked;
-    }
-    /*	Check if size too small to support a factor  */
-    /*	Add up the number of data values  */
-    small = 0;
-    leafcost = 0.0; /* Used to add up evi->cnts */
-    for (iv = 0; iv < CurCtx.vset->length; iv++) {
-        if (CurCtx.vset->variables[iv].inactive)
-            goto vidle;
-        small++;
-        leafcost += cls->stats[iv]->num_values;
-    vidle:;
-    }
-    /*	I want at least 1.5 data vals per param  */
-    small = (leafcost < (9 * small + 1.5 * cls->weights_sum + 1)) ? 1 : 0;
-    if (small) {
-        if (cls->use != Tiny) {
+    if (!cls->hold_use && (Control & AdjPr)) {
+        /*	If scores boosted too many times, make Tiny and hold   */
+        if (cls->boost_count > 20) {
             cls->use = Tiny;
-        }
-        goto usechecked;
-    } else {
-        if (cls->use == Tiny) {
-            cls->use = Plain;
-            cls->sum_score_sq = 0.0;
-            goto usechecked;
-        }
-    }
-    if (cls->age < MinFacAge)
-        goto usechecked;
-    if (cls->use == Plain) {
-        if (cls->fac_cost < cls->nofac_cost) {
-            cls->use = Fac;
-            cls->boost_count = 0;
-            cls->score_boost = 1.0;
-        }
-    } else {
-        if (cls->nofac_cost < cls->fac_cost) {
-            cls->use = Plain;
+            cls->hold_use = 10;
+        } else {
+            /*	Check if size too small to support a factor  */
+            /*	Add up the number of data values  */
+            small = 0;
+            leafcost = 0.0; /* Used to add up evi->cnts */
+            for (iv = 0; iv < CurCtx.vset->length; iv++) {
+                if (!CurCtx.vset->variables[iv].inactive) {
+                    small++;
+                    leafcost += cls->stats[iv]->num_values;
+                }
+            }
+            /*	I want at least 1.5 data vals per param  */
+            small = (leafcost < (9 * small + 1.5 * cls->weights_sum + 1)) ? 1 : 0;
+            if (small) {
+                if (cls->use != Tiny) {
+                    cls->use = Tiny;
+                }
+                goto usechecked;
+            } else {
+                if (cls->use == Tiny) {
+                    cls->use = Plain;
+                    cls->sum_score_sq = 0.0;
+                    goto usechecked;
+                }
+            }
+            if (cls->age < MinFacAge)
+                goto usechecked;
+            if (cls->use == Plain) {
+                if (cls->fac_cost < cls->nofac_cost) {
+                    cls->use = Fac;
+                    cls->boost_count = 0;
+                    cls->score_boost = 1.0;
+                }
+            } else {
+                if (cls->nofac_cost < cls->fac_cost) {
+                    cls->use = Plain;
+                }
+            }
         }
     }
 usechecked:
-    if (!dod)
-        goto typechecked;
-    if (cls->hold_type)
-        goto typechecked;
-    if (!(Control & AdjTr))
-        goto typechecked;
-    if (cls->num_sons < 2)
-        goto typechecked;
-    leafcost = (cls->use == Fac) ? cls->fac_cost : cls->nofac_cost;
-
-    if ((cls->type == Dad) && (leafcost < cls->dad_cost) && (Fix != Random)) {
-        flp();
-        printf("Changing type of class%s from Dad to Leaf\n", serial_to_str(cls));
-        SeeAll = 4;
-        /*	Kill all sons  */
-        delete_sons(cls->id); /* which changes type to leaf */
-    } else if (npars && (leafcost > cls->dad_cost) && (cls->type == Leaf)) {
-        flp();
-        printf("Changing type of class%s from Leaf to Dad\n", serial_to_str(cls));
-        SeeAll = 4;
-        cls->type = Dad;
-        if (dad)
-            dad->hold_type += 3;
-        /*	Make subs into leafs  */
-        son = popln->classes[cls->son_id];
-        son->type = Leaf;
-        son->serial = 4 * popln->next_serial;
-        popln->next_serial++;
-        son = popln->classes[son->sib_id];
-        son->type = Leaf;
-        son->serial = 4 * popln->next_serial;
-        popln->next_serial++;
+    if (dod && !cls->hold_type && (Control & AdjTr) && (cls->num_sons >= 2)) {
+        leafcost = (cls->use == Fac) ? cls->fac_cost : cls->nofac_cost;
+        if ((cls->type == Dad) && (leafcost < cls->dad_cost) && (Fix != Random)) {
+            flp();
+            printf("Changing type of class%s from Dad to Leaf\n", serial_to_str(cls));
+            SeeAll = 4;
+            /*	Kill all sons  */
+            delete_sons(cls->id); /* which changes type to leaf */
+        } else if (npars && (leafcost > cls->dad_cost) && (cls->type == Leaf)) {
+            flp();
+            printf("Changing type of class%s from Leaf to Dad\n", serial_to_str(cls));
+            SeeAll = 4;
+            cls->type = Dad;
+            if (dad) {
+                dad->hold_type += 3;
+            }
+            /*	Make subs into leafs  */
+            son = popln->classes[cls->son_id];
+            son->type = Leaf;
+            son->serial = 4 * popln->next_serial;
+            popln->next_serial++;
+            son = popln->classes[son->sib_id];
+            son->type = Leaf;
+            son->serial = 4 * popln->next_serial;
+            popln->next_serial++;
+        }
     }
-
-typechecked:
     set_best_costs(cls);
-    if (Control & AdjPr)
+    if (Control & AdjPr) {
         cls->age++;
-    return;
+    }
 }
 
 /*	----------------  ncostvarall  ------------------------------   */
@@ -761,7 +728,7 @@ void delete_all_classes() {
     cls->age = 0;
     cls->hold_type = cls->hold_use = 0;
     cls->type = Leaf;
-    tidy(1, NoSubs+1);
+    tidy(1, NoSubs + 1);
     return;
 }
 
