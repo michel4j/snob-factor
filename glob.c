@@ -83,12 +83,12 @@ void log_msg(int level, const char *format, ...) {
     }
 }
 
-
 void print_buffer(MemBuffer *dest, const char *format, ...) {
     va_list args;
     va_start(args, format);
-    if (dest->offset >= dest->size)
-    dest->offset += vsnprintf(dest->buffer, dest->size - dest->offset, format, args);
+    if (dest->offset < dest->size) {
+        dest->offset += vsnprintf(dest->buffer + dest->offset, dest->size - dest->offset, format, args);
+    }
     va_end(args);
 }
 
@@ -120,7 +120,7 @@ void initialize(int interact, int debug, int threads) {
 
     default_tune();
     do_types();
-    
+
     for (k = 0; k < MAX_POPULATIONS; k++)
         Populations[k] = 0;
     for (k = 0; k < MAX_SAMPLES; k++)
@@ -131,7 +131,7 @@ void initialize(int interact, int debug, int threads) {
     Initialized = 1;
 }
 
-void reset() {  
+void reset() {
     int k;
     RSeed = 1234567;
     SeeAll = 2;
@@ -146,7 +146,6 @@ void reset() {
         for (k = 0; k < MAX_VSETS; k++)
             destroy_vset(k);
     }
-
 }
 
 /// @brief Print the details about the number of classes, leaves, and the associated costs for the current population
@@ -217,7 +216,7 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
         log_msg(1, "DOALL:   Doing %d steps of re-estimation and assignment.", do_steps);
         cleanup_population();
         do_all(do_steps, 1);
-        
+
         cleanup_population();
         log_msg(1, "TRYMOVE: Attempting class moves until %d successive failures", move_steps);
         try_moves(move_steps);
@@ -255,4 +254,3 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
 
     return result;
 }
-

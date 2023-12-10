@@ -6,11 +6,13 @@ class Classification(ct.Structure):
     """ Result """
 
     _fields_ = [
-        ('num_classes', ct.c_int),
-        ('num_leaves', ct.c_int),
-        ('model_length', ct.c_double),
-        ('data_length', ct.c_double),
-        ('message_length', ct.c_double)
+        ('classes', ct.c_int),
+        ('leaves', ct.c_int),
+        ('attrs', ct.c_int),
+        ('cases', ct.c_int),       
+        ('model', ct.c_double),
+        ('data', ct.c_double),
+        ('message', ct.c_double)
     ]
 
 snob = ct.cdll.LoadLibrary('./libsnob.so')
@@ -25,7 +27,7 @@ snob.classify.argtypes = [ct.c_int, ct.c_int, ct.c_int, ct.c_double]
 snob.classify.restype = Classification
 snob.print_class.argtypes = [ct.c_int, ct.c_int]
 snob.item_list.argtypes = [ct.c_char_p]
-snob.get_class_details.argtypes = [ct.c_void_p]
+snob.get_class_details.argtypes = [ct.c_char_p, ct.c_size_t]
 
 EXAMPLES = [
     'phi',
@@ -39,7 +41,7 @@ EXAMPLES = [
     'd2',
     'vm',
 ]
-EXAMPLES = ['xrf']
+EXAMPLES = ['d2']
 
 from pathlib import Path
                 
@@ -58,7 +60,12 @@ if __name__ == '__main__':
         snob.load_sample(sample_file.encode('utf-8'))
         result = snob.classify(20, 50, 2, 0)
         snob.print_tree()
-        snob.print_class(-2, 1)
+        buffer_size = (result.classes + result.leaves) * (result.attrs + 1) * 80 * 4
+        buffer = ct.create_string_buffer(buffer_size)
+        snob.get_class_details(buffer, buffer_size)
+        print(buffer.value.decode('utf-8'))
+        print(f'Buffer Size: {buffer_size}')
+        #snob.print_class(-2, 1)
         snob.show_population()
         snob.reset()
     
