@@ -423,19 +423,16 @@ void destroy_sample(int sx);
 void destroy_vset(int vx);
 /*		end samples.c		*/
 
-/*	In GLOB.c	*/
-char *serial_to_str(Class *cll);
+/*	In glob.c	*/
+char *serial_to_str(Class *cls);
 void cleanup_population();
 void show_population();
-char *serial_to_str(Class *cll);
 void show_smpl_names();
 void show_pop_names();
 void print_progress(size_t count, size_t max);
 Result classify(const int max_cycles, const int do_steps, const int move_steps, const double tol);
 void reset();
 void initialize(int lib, int debug, int threads);
-void show_pop_names();
-void show_smpl_names();
 void log_msg(int level, const char *format, ...) __attribute__((format(printf, 2, 3)));
 int error_value(const char *message, const int value);
 void get_class_details(char *buffer, size_t buffer_size);
