@@ -152,10 +152,11 @@ void print_one_class(Class *cls, int full) {
 
     printf("\nS%s", serial_to_str(cls));
     printf(" %s", typstr[((int)cls->type)]);
-    if (cls->dad_id < 0)
+    if (cls->dad_id < 0) {
         printf("    Root");
-    else
+    } else {
         printf(" Dad%s", serial_to_str(popln->classes[((int)cls->dad_id)]));
+    }
     printf(" Age%4d  Sz%6.1f  Use %s", cls->age, cls->weights_sum, usestr[((int)cls->use)]);
     printf("%c", (cls->use == Fac) ? ' ' : '(');
     vrms = sqrt(cls->sum_score_sq / cls->weights_sum);
@@ -172,37 +173,31 @@ void print_one_class(Class *cls, int full) {
     printf("Tcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", cls->cstcost, cls->cftcost - cls->cfvcost, cls->cntcost, cls->best_case_cost);
     printf("Vcost     ---------  F:%9.2f\n", cls->cfvcost);
     printf("totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", cls->nofac_cost, cls->fac_cost, cls->dad_cost, cls->best_cost);
-    if (!full)
-        return;
-    for (i = 0; i < CurCtx.vset->length; i++) {
-        vtype = CurCtx.vset->variables[i].vtype;
-        (*vtype->show)(cls, i);
+    if (full) {
+        for (i = 0; i < CurCtx.vset->length; i++) {
+            vtype = CurCtx.vset->variables[i].vtype;
+            (*vtype->show)(cls, i);
+        }
     }
-    return;
 }
 
-void print_class(int kk, int full) {
+void print_class(int n, int full) {
     Class *cls;
     Class *root = CurCtx.popln->classes[CurCtx.popln->root];
-    if (kk >= 0) {
-        cls = CurCtx.popln->classes[kk];
+    if (n >= 0) {
+        cls = CurCtx.popln->classes[n];
         print_one_class(cls, full);
-        return;
+    } else if (n < -2) {
+        printf("%d passed to printclass\n", n);
+    } else {
+        cls = root;
+        do {
+            if ((n == -2) || (cls->type != Sub)) {
+                print_one_class(cls, full);
+            }
+            next_class(&cls);
+        } while (cls);
     }
-    if (kk < -2) {
-        printf("%d passed to printclass\n", kk);
-        return;
-    }
-
-    cls = root;
-
-    do {
-        if ((kk == -2) || (cls->type != Sub))
-            print_one_class(cls, full);
-        next_class(&cls);
-    } while (cls);
-
-    return;
 }
 
 /*	-------------------------  cleartcosts  ------  */
