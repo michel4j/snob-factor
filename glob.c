@@ -83,6 +83,11 @@ void log_msg(int level, const char *format, ...) {
     }
 }
 
+int error_value(const char *message, const int value) {
+    printf(message);
+    return value;
+}
+
 /// @brief Initialize SNOB parameters
 /// @param interact integer specifying if running from a library or not 1 = interactive, 0 = non interactive
 /// @param debug turn on verbose printing of progress

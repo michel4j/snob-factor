@@ -31,7 +31,7 @@ pro: prompt.c
 	$(CC) -o pro prompt.c
 
 clean:
-	rm -f *.o snob-factor pro
+	rm -f *.o snob-factor pro snob-factors libsnob.so
 
-test: clean snob-factor
+test: all
 	./test.sh vm

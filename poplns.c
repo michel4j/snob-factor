@@ -36,11 +36,7 @@ void next_class(Class **ptr) {
 or score vectors, and the popln is not connected to the current sample.
 OTHERWIZE, the root class is fully configured for the current sample.
     */
-int error_value(const char *message, const int value) {
-    printf(message);
-    return value;
-}
-
+   
 int make_population(int fill) {
     PopVar *pop_var;
     Class *cls;

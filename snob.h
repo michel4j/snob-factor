@@ -428,3 +428,4 @@ void initialize(int lib, int debug, int threads);
 void show_pop_names();
 void show_smpl_names();
 void log_msg(int level, const char *format, ...) __attribute__((format(printf, 2, 3)));
+int error_value(const char *message, const int value);

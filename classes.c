@@ -36,10 +36,10 @@ ptrs to CVinsts and CVinsts filled in also EVinsts and ptrs.
 
 int make_class() {
     PopVar *pop_var;
-    ClassVar **cvars, *cvi;
-    ExplnVar **evars, *evi;
+    ClassVar **cls_var_list, *cls_var;
+    ExplnVar **exp_var_list, *exp_var;
     Class *cls;
-    int i, kk;
+    int i, kk, found = -1;
     Population *popln = CurCtx.popln;
     VSetVar *vset_var;
     int num_cases = (CurCtx.popln) ? CurCtx.popln->sample_size : 0;
@@ -54,50 +54,52 @@ int make_class() {
 
     /*	Find a vacant slot in the popln's classes vec   */
     for (kk = 0; kk < popln->cls_vec_len; kk++) {
-        if (!popln->classes[kk])
+        if (!popln->classes[kk]) {
             goto gotit;
+        }
         /*	Also test for a vacated class   */
-        if (popln->classes[kk]->type == Vacant)
+        if (popln->classes[kk]->type == Vacant) {
             goto vacant1;
+        }
     }
-    printf("Popln full of classes\n");
-    goto nospace;
+    return error_value("Popln full of classes\n", -1);
+
 
 gotit:
     cls = (Class *)alloc_blocks(1, sizeof(Class));
     if (!cls)
-        goto nospace;
+            return error_value("Popln full of classes\n", -1);
     popln->classes[kk] = cls;
     popln->hi_class = kk; /* Highest used index in population->classes */
     cls->id = kk;
 
     /*	Make vector of ptrs to CVinsts   */
-    cvars = cls->basics = (ClassVar **)alloc_blocks(1, CurCtx.vset->length * sizeof(ClassVar *));
-    if (!cvars)
-        goto nospace;
+    cls_var_list = cls->basics = (ClassVar **)alloc_blocks(1, CurCtx.vset->length * sizeof(ClassVar *));
+    if (!cls_var_list)
+            return error_value("Popln full of classes\n", -1);
 
     /*	Now make the ClassVar blocks, which are of varying size   */
     for (i = 0; i < CurCtx.vset->length; i++) {
         vset_var = &CurCtx.vset->variables[i];
-        cvi = cvars[i] = (ClassVar *)alloc_blocks(1, vset_var->basic_size);
-        if (!cvi)
-            goto nospace;
+        cls_var = cls_var_list[i] = (ClassVar *)alloc_blocks(1, vset_var->basic_size);
+        if (!cls_var)
+                return error_value("Popln full of classes\n", -1);
         /*	Fill in standard stuff  */
-        cvi->id = vset_var->id;
+        cls_var->id = vset_var->id;
     }
 
     /*	Make ExplnVar blocks and vector of pointers  */
-    evars = cls->stats = (ExplnVar **)alloc_blocks(1, CurCtx.vset->length * sizeof(ExplnVar *));
-    if (!evars)
-        goto nospace;
+    exp_var_list = cls->stats = (ExplnVar **)alloc_blocks(1, CurCtx.vset->length * sizeof(ExplnVar *));
+    if (!exp_var_list)
+            return error_value("Popln full of classes\n", -1);
 
     for (i = 0; i < CurCtx.vset->length; i++) {
         pop_var = &popln->variables[i];
         vset_var = &CurCtx.vset->variables[i];
-        evi = evars[i] = (ExplnVar *)alloc_blocks(1, vset_var->stats_size);
-        if (!evi)
-            goto nospace;
-        evi->id = pop_var->id;
+        exp_var = exp_var_list[i] = (ExplnVar *)alloc_blocks(1, vset_var->stats_size);
+        if (!exp_var)
+                return error_value("Popln full of classes\n", -1);
+        exp_var->id = pop_var->id;
     }
 
     /*	Stomp on ptrs as yet undefined  */
@@ -108,8 +110,8 @@ gotit:
 vacant1: /* Vacant type shows structure set up but vacated.
      Use, but set new (Vacant) type,  */
     cls = popln->classes[kk];
-    cvars = cls->basics;
-    evars = cls->stats;
+    cls_var_list = cls->basics;
+    exp_var_list = cls->stats;
     cls->type = Vacant;
 
 donebasic:
@@ -119,7 +121,7 @@ donebasic:
     cls->dad_id = cls->sib_id = cls->son_id = -1;
     cls->num_sons = 0;
     for (i = 0; i < CurCtx.vset->length; i++)
-        cvars[i]->signif = 1;
+        cls_var_list[i]->signif = 1;
     popln->num_classes++;
     if (kk > popln->hi_class)
         popln->hi_class = kk;
@@ -137,16 +139,13 @@ vacant2:
 
 expanded:
     for (i = 0; i < CurCtx.vset->length; i++)
-        evars[i]->num_values = 0.0;
+        exp_var_list[i]->num_values = 0.0;
 finish:
     cls->age = 0;
     cls->hold_type = cls->hold_use = 0;
     cls->weights_sum = 0.0;
     return (kk);
 
-nospace:
-    printf("No space for new class\n");
-    return (-1);
 }
 
 /*	-----------------------  printclass  -----------------------  */
@@ -541,33 +540,23 @@ void adjust_class(Class *cls, int dod) {
             /*	I want at least 1.5 data vals per param  */
             small = (leafcost < (9 * small + 1.5 * cls->weights_sum + 1)) ? 1 : 0;
             if (small) {
-                if (cls->use != Tiny) {
-                    cls->use = Tiny;
-                }
-                goto usechecked;
-            } else {
-                if (cls->use == Tiny) {
-                    cls->use = Plain;
-                    cls->sum_score_sq = 0.0;
-                    goto usechecked;
-                }
-            }
-            if (cls->age < MinFacAge)
-                goto usechecked;
-            if (cls->use == Plain) {
-                if (cls->fac_cost < cls->nofac_cost) {
-                    cls->use = Fac;
-                    cls->boost_count = 0;
-                    cls->score_boost = 1.0;
-                }
-            } else {
-                if (cls->nofac_cost < cls->fac_cost) {
+                cls->use = Tiny;
+            } else if (cls->use == Tiny) {
+                cls->use = Plain;
+                cls->sum_score_sq = 0.0;
+            } else if (cls->age >= MinFacAge) {
+                if (cls->use == Plain) {
+                    if (cls->fac_cost < cls->nofac_cost) {
+                        cls->use = Fac;
+                        cls->boost_count = 0;
+                        cls->score_boost = 1.0;
+                    }
+                } else if (cls->nofac_cost < cls->fac_cost) {
                     cls->use = Plain;
                 }
             }
         }
     }
-usechecked:
     if (dod && !cls->hold_type && (Control & AdjTr) && (cls->num_sons >= 2)) {
         leafcost = (cls->use == Fac) ? cls->fac_cost : cls->nofac_cost;
         if ((cls->type == Dad) && (leafcost < cls->dad_cost) && (Fix != Random)) {
@@ -606,7 +595,7 @@ usechecked:
 /*	If not 'valid', don't cost, and fake params  */
 void parent_cost_all_vars(Class *cls, int valid) {
     Class *son;
-    ExplnVar *evi;
+    ExplnVar *exp_var;
     int i, son_id, nson;
     double abcost, rrelab;
     Population *popln = CurCtx.popln;
@@ -618,9 +607,9 @@ void parent_cost_all_vars(Class *cls, int valid) {
         vset_var = &CurCtx.vset->variables[i];
         vtype = vset_var->vtype;
         (*vtype->cost_var_nonleaf)(i, valid, cls);
-        evi = (ExplnVar *)cls->stats[i];
+        exp_var = (ExplnVar *)cls->stats[i];
         if (!vset_var->inactive) {
-            abcost += evi->npcost;
+            abcost += exp_var->npcost;
         }
     }
 
@@ -677,7 +666,6 @@ void delete_sons(int kk) {
     if (cls->type == Dad)
         cls->type = Leaf;
     cls->hold_type = 0;
-    return;
 }
 
 /*	--------------------  splitleaf ------------------------   */
