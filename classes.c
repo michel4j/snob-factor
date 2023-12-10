@@ -61,9 +61,9 @@ int make_class() {
     }
     if (found < 0) {
         return error_value("Popln full of classes\n", -1);
-    } else if (popln->classes[kk]) {
+    } else if (popln->classes[found]) {
         /* Vacant type shows structure set up but vacated.  Use, but set new (Vacant) type,  */
-        cls = popln->classes[kk];
+        cls = popln->classes[found];
         cls_var_list = cls->basics;
         exp_var_list = cls->stats;
         cls->type = Vacant;
@@ -71,9 +71,9 @@ int make_class() {
         cls = (Class *)alloc_blocks(1, sizeof(Class));
         if (!cls)
             return error_value("Popln full of classes\n", -1);
-        popln->classes[kk] = cls;
-        popln->hi_class = kk; /* Highest used index in population->classes */
-        cls->id = kk;
+        popln->classes[found] = cls;
+        popln->hi_class = found; /* Highest used index in population->classes */
+        cls->id = found;
 
         /*	Make vector of ptrs to CVinsts   */
         cls_var_list = cls->basics = (ClassVar **)alloc_blocks(1, CurCtx.vset->length * sizeof(ClassVar *));
@@ -118,26 +118,25 @@ int make_class() {
         cls_var_list[i]->signif = 1;
     }
     popln->num_classes++;
-    if (kk > popln->hi_class) {
-        popln->hi_class = kk;
+    if (found > popln->hi_class) {
+        popln->hi_class = found;
     }
     if (cls->type != Vacant) {
         /*	If nc = 0, this completes the make.  */
-        if (num_cases == 0)
-            goto finish;
-        cls->factor_scores = (short *)alloc_blocks(2, num_cases * sizeof(short));
-        goto expanded;
+        if (num_cases) {
+            cls->factor_scores = (short *)alloc_blocks(2, num_cases * sizeof(short));
+        }
+    } else {
+        cls->type = 0;
     }
-    cls->type = 0;
-
-expanded:
-    for (i = 0; i < CurCtx.vset->length; i++)
-        exp_var_list[i]->num_values = 0.0;
-finish:
+    if (num_cases) {
+        for (i = 0; i < CurCtx.vset->length; i++)
+            exp_var_list[i]->num_values = 0.0;
+    }
     cls->age = 0;
     cls->hold_type = cls->hold_use = 0;
     cls->weights_sum = 0.0;
-    return (kk);
+    return (found);
 }
 
 /*	-----------------------  printclass  -----------------------  */
