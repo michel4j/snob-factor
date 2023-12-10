@@ -54,67 +54,61 @@ int make_class() {
 
     /*	Find a vacant slot in the popln's classes vec   */
     for (kk = 0; kk < popln->cls_vec_len; kk++) {
-        if (!popln->classes[kk]) {
-            goto gotit;
-        }
-        /*	Also test for a vacated class   */
-        if (popln->classes[kk]->type == Vacant) {
-            goto vacant1;
+        if ((!popln->classes[kk]) || (popln->classes[kk]->type == Vacant)) { /*	Also test for a vacated class   */
+            found = kk;
+            break;
         }
     }
-    return error_value("Popln full of classes\n", -1);
-
-
-gotit:
-    cls = (Class *)alloc_blocks(1, sizeof(Class));
-    if (!cls)
+    if (found < 0) {
+        return error_value("Popln full of classes\n", -1);
+    } else if (popln->classes[kk]) {
+        /* Vacant type shows structure set up but vacated.  Use, but set new (Vacant) type,  */
+        cls = popln->classes[kk];
+        cls_var_list = cls->basics;
+        exp_var_list = cls->stats;
+        cls->type = Vacant;
+    } else {
+        cls = (Class *)alloc_blocks(1, sizeof(Class));
+        if (!cls)
             return error_value("Popln full of classes\n", -1);
-    popln->classes[kk] = cls;
-    popln->hi_class = kk; /* Highest used index in population->classes */
-    cls->id = kk;
+        popln->classes[kk] = cls;
+        popln->hi_class = kk; /* Highest used index in population->classes */
+        cls->id = kk;
 
-    /*	Make vector of ptrs to CVinsts   */
-    cls_var_list = cls->basics = (ClassVar **)alloc_blocks(1, CurCtx.vset->length * sizeof(ClassVar *));
-    if (!cls_var_list)
+        /*	Make vector of ptrs to CVinsts   */
+        cls_var_list = cls->basics = (ClassVar **)alloc_blocks(1, CurCtx.vset->length * sizeof(ClassVar *));
+        if (!cls_var_list)
             return error_value("Popln full of classes\n", -1);
 
-    /*	Now make the ClassVar blocks, which are of varying size   */
-    for (i = 0; i < CurCtx.vset->length; i++) {
-        vset_var = &CurCtx.vset->variables[i];
-        cls_var = cls_var_list[i] = (ClassVar *)alloc_blocks(1, vset_var->basic_size);
-        if (!cls_var)
+        /*	Now make the ClassVar blocks, which are of varying size   */
+        for (i = 0; i < CurCtx.vset->length; i++) {
+            vset_var = &CurCtx.vset->variables[i];
+            cls_var = cls_var_list[i] = (ClassVar *)alloc_blocks(1, vset_var->basic_size);
+            if (!cls_var)
                 return error_value("Popln full of classes\n", -1);
-        /*	Fill in standard stuff  */
-        cls_var->id = vset_var->id;
+            /*	Fill in standard stuff  */
+            cls_var->id = vset_var->id;
+        }
+
+        /*	Make ExplnVar blocks and vector of pointers  */
+        exp_var_list = cls->stats = (ExplnVar **)alloc_blocks(1, CurCtx.vset->length * sizeof(ExplnVar *));
+        if (!exp_var_list)
+            return error_value("Popln full of classes\n", -1);
+
+        for (i = 0; i < CurCtx.vset->length; i++) {
+            pop_var = &popln->variables[i];
+            vset_var = &CurCtx.vset->variables[i];
+            exp_var = exp_var_list[i] = (ExplnVar *)alloc_blocks(1, vset_var->stats_size);
+            if (!exp_var)
+                return error_value("Popln full of classes\n", -1);
+            exp_var->id = pop_var->id;
+        }
+
+        /*	Stomp on ptrs as yet undefined  */
+        cls->factor_scores = 0;
+        cls->type = 0;
     }
 
-    /*	Make ExplnVar blocks and vector of pointers  */
-    exp_var_list = cls->stats = (ExplnVar **)alloc_blocks(1, CurCtx.vset->length * sizeof(ExplnVar *));
-    if (!exp_var_list)
-            return error_value("Popln full of classes\n", -1);
-
-    for (i = 0; i < CurCtx.vset->length; i++) {
-        pop_var = &popln->variables[i];
-        vset_var = &CurCtx.vset->variables[i];
-        exp_var = exp_var_list[i] = (ExplnVar *)alloc_blocks(1, vset_var->stats_size);
-        if (!exp_var)
-                return error_value("Popln full of classes\n", -1);
-        exp_var->id = pop_var->id;
-    }
-
-    /*	Stomp on ptrs as yet undefined  */
-    cls->factor_scores = 0;
-    cls->type = 0;
-    goto donebasic;
-
-vacant1: /* Vacant type shows structure set up but vacated.
-     Use, but set new (Vacant) type,  */
-    cls = popln->classes[kk];
-    cls_var_list = cls->basics;
-    exp_var_list = cls->stats;
-    cls->type = Vacant;
-
-donebasic:
     cls->best_cost = cls->nofac_cost = cls->fac_cost = 0.0;
     cls->weights_sum = 0.0;
     /*	Invalidate hierarchy links  */
@@ -145,7 +139,6 @@ finish:
     cls->hold_type = cls->hold_use = 0;
     cls->weights_sum = 0.0;
     return (kk);
-
 }
 
 /*	-----------------------  printclass  -----------------------  */
