@@ -70,7 +70,6 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
     double var;
 } Stats;
 
-
 static void set_var(int iv, Class *cls);
 static int read_attr_aux(void *vax);
 static int read_smpl_aux(void *sax);
@@ -127,12 +126,12 @@ void reals_define(typindx) int typindx;
 
 /*	-------------------  setvar -----------------------------  */
 void set_var(int iv, Class *cls) {
-/* 
-    Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv];
-    Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;    
-    Basic *dad_var = (dad) ? (Basic *)dad->basics[iv] : 0;
-       */  
+    /*
+        Basic *cls_var = (Basic *)cls->basics[iv];
+        Stats *exp_var = (Stats *)cls->stats[iv];
+        Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;
+        Basic *dad_var = (dad) ? (Basic *)dad->basics[iv] : 0;
+    */
 }
 
 /*	--------------------  readvaux  ----------------------------  */
@@ -142,7 +141,7 @@ int read_attr_aux(void *vax) { return (0); }
 /*	---------------------  readsaux ---------------------------   */
 /*	To read any auxiliary info about a variable of this type in some
 sample.
-    */
+*/
 int read_smpl_aux(void *saux) {
     int i;
     Saux *sax = (Saux *)saux;
@@ -221,7 +220,7 @@ void set_best_pars(int iv, Class *cls) {
 of basic params  */
 void clear_stats(int iv, Class *cls) {
     double tmp;
-    
+
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
 
@@ -367,7 +366,7 @@ void adjust(int iv, int fac, Class *cls) {
     Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
-    Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;    
+    Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;
     Basic *dad_var = (dad) ? (Basic *)dad->basics[iv] : 0;
 
     del3 = del4 = 0.0;
@@ -589,13 +588,13 @@ void details(Class *cls, int iv, MemBuffer *buffer) {
     Stats *exp_var = (Stats *)cls->stats[iv];
     set_var(iv, cls);
 
-    print_buffer(buffer,  "V%3d  Cnt%6.1f  %s\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out");
+    print_buffer(buffer, "V%3d  Cnt%6.1f  %s\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out");
     if (cls->num_sons > 1) {
-        print_buffer(buffer,  " N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", exp_var->npcost, cls_var->nmu, sqrt(cls_var->nmusprd), exp(cls_var->nsdl),
-                exp(cls_var->nsdl) * sqrt(cls_var->nsdlsprd));
+        print_buffer(buffer, " N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", exp_var->npcost, cls_var->nmu, sqrt(cls_var->nmusprd), exp(cls_var->nsdl),
+                     exp(cls_var->nsdl) * sqrt(cls_var->nsdlsprd));
     }
-    print_buffer(buffer,  " S: Cost%8.1f  Mu%8.3f  SD%8.3f\n", exp_var->spcost + exp_var->stcost, cls_var->smu, exp(cls_var->ssdl));
-    print_buffer(buffer,  " F: Cost%8.1f  Mu%8.3f  SD%8.3f  Ld%8.3f\n", exp_var->fpcost + exp_var->ftcost, cls_var->fmu, exp(cls_var->fsdl), cls_var->ld);
+    print_buffer(buffer, " S: Cost%8.1f  Mu%8.3f  SD%8.3f\n", exp_var->spcost + exp_var->stcost, cls_var->smu, exp(cls_var->ssdl));
+    print_buffer(buffer, " F: Cost%8.1f  Mu%8.3f  SD%8.3f  Ld%8.3f\n", exp_var->fpcost + exp_var->ftcost, cls_var->fmu, exp(cls_var->fsdl), cls_var->ld);
 }
 
 /*	----------------------  cost_var_nonleaf  ------------------------   */
@@ -715,7 +714,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv]; 
+    Stats *exp_var = (Stats *)cls->stats[iv];
     Basic *dad_var = (dad) ? (Basic *)dad->basics[iv] : 0;
 
     set_var(iv, cls);

@@ -34,4 +34,4 @@ clean:
 	rm -f *.o snob-factor pro snob-factors libsnob.so
 
 test: all
-	./test.sh vm
+	./test.sh phi

@@ -54,7 +54,8 @@ static double *nap;       /* Log odds as dad */
 static double *sap;       /*  Log odds without factor  */
 static double *fap, *fbp; /* Const and load params for logodds */
 static double *frate;
-/*	The factor model is that prob of state k for a case with score v
+/*	
+    The factor model is that prob of state k for a case with score v
     is proportional to
         exp (fap[k] + fbp[k] * v)
     frate[k] is defined as
@@ -65,7 +66,8 @@ static double *frate;
     where Gauss(x) is the Normal(0,1) density at x.
         We use an (unnormalized) tabulation of Gauss() in gaustab[]
     to evaluate the relative state probs for a case, thereby eliminating
-    many calls on exp().   */
+    many calls on exp().   
+*/
 
 typedef struct Statsst { /* Stuff accumulated to revise Basic  */
                          /* First fields are standard  */
@@ -76,8 +78,7 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
     int id;     /* Variable number  */
     /********************  Following fields vary according to need ***/
     double parkftcost;                  /* Unweighted item costs of xn */
-    double ff, parkb1p, parkb2p, conff; /* Useful quants calced in cost_var,
-               used in deriv_var */
+    double ff, parkb1p, parkb2p, conff; /* Useful quants calced in cost_var, used in deriv_var */
     double oldftcost;
     double adj;
     double apd2, bpd2;
@@ -185,15 +186,15 @@ void set_var(int iv, Class *cls) {
     rstates = 1.0 / states;
     rstatesm = 1.0 / statesm;
     nap = &(cls_var->origin);
-    sap = nap + states;
-    fap = sap + states;
-    fbp = fap + states;
-    frate = fbp + states;
+    sap = &nap[states];
+    fap = &sap[states];
+    fbp = &fap[states];
+    frate = &fbp[states];
     scnt = &(exp_var->origin);
-    scst = scnt + states;
-    pr = scst + states;
-    fapd1 = pr + states;
-    fbpd1 = fapd1 + states;
+    scst = &scnt[states];
+    pr = &scst[states];
+    fapd1 = &pr[states];
+    fbpd1 = &fapd1[states];
 }
 
 /*	---------------------  readvaux ---------------------------   */

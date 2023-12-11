@@ -159,7 +159,6 @@ void vonm_define(int typindx)
 /*	-------------------  setvar -----------------------------  */
 void set_var(int iv, Class *cls) {
 /* 
-
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
     Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;    
