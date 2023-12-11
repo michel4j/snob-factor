@@ -91,10 +91,6 @@ static double *scst;          /*  vector of non-fac state costs  */
 static double *pr;            /* vec. of factor state probs  */
 static double *fapd1, *fbpd1; /*  vectors of derivs of cost wrt params */
 
-/*	Static variables useful for many types of variable    */
-static Basic *cls_var, *dad_var;
-static Stats *exp_var;
-
 /*	Static variables specific to this type   */
 static int states;
 static double statesm; /*  states - 1.0 */
@@ -180,12 +176,10 @@ void expmults_define(typindx) int typindx;
 
 /*	----------------------- setvar --------------------------  */
 void set_var(int iv, Class *cls) {
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     Vaux *vaux = (Vaux *)vset_var->vaux;
-
-    cls_var = (Basic *)cls->basics[iv];
-    exp_var = (Stats *)cls->stats[iv];
-
     states = vaux->states;
     statesm = states - 1;
     rstates = 1.0 / states;
@@ -286,7 +280,8 @@ void set_sizes(int iv) {
 
 /*	----------------------- set_best_pars -----------------------  */
 void set_best_pars(int iv, Class *cls) {
-
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
     set_var(iv, cls);
 
     if (cls->type == Dad) {
@@ -360,6 +355,8 @@ void clear_stats(int iv, Class *cls) {
 
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     Vaux *vaux = (Vaux *)vset_var->vaux;
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
 
     set_var(iv, cls);
     exp_var->cnt = 0.0;
@@ -429,6 +426,8 @@ void score_var(int iv, Class *cls) {
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
 
     set_var(iv, cls);
     if ((!vset_var->inactive) && (!saux->missing)) {
@@ -453,6 +452,8 @@ void cost_var(int iv, int fac, Class *cls) {
 
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
 
     set_var(iv, cls);
     if (saux->missing) {
@@ -492,6 +493,7 @@ void deriv_var(int iv, int fac, Class *cls) {
     int k;
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);
+    Stats *exp_var = (Stats *)cls->stats[iv];
 
     set_var(iv, cls);
     if (saux->missing) {
@@ -553,8 +555,11 @@ void adjust(int iv, int fac, Class *cls) {
 
     double adj, apd2, cnt, vara, del, tt, sum, spcost, fpcost;
     int k, n;
-    Population *popln = CurCtx.popln;
-    Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
+
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
+    Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;    
+    Basic *dad_var = (dad) ? (Basic *)dad->basics[iv] : 0; 
 
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     Vaux *vaux = (Vaux *)vset_var->vaux;
@@ -800,6 +805,8 @@ void prprint(double *ap) {
 /*	------------------------  show  -----------------------   */
 void show(Class *cls, int iv) {
     int k;
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
 
     set_var(iv, cls);
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out", exp_var->adj);
@@ -849,7 +856,8 @@ void write_probs(double *ap, MemBuffer *buffer) {
 
 void details(Class *cls, int iv, MemBuffer* buffer) {
     int k;
-
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
     set_var(iv, cls);
     print_buffer(buffer,"V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out", exp_var->adj);
 
@@ -885,6 +893,8 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     int n, k, ison, nson, nints;
     Population *popln = CurCtx.popln;
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
 
     set_var(iv, cls);
     if (vset_var->inactive) {

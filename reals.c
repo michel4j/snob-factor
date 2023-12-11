@@ -70,8 +70,6 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
     double var;
 } Stats;
 
-static Basic *cls_var, *dad_var;
-static Stats *exp_var;
 
 static void set_var(int iv, Class *cls);
 static int read_attr_aux(void *vax);
@@ -129,12 +127,12 @@ void reals_define(typindx) int typindx;
 
 /*	-------------------  setvar -----------------------------  */
 void set_var(int iv, Class *cls) {
-    Population *popln = CurCtx.popln;
-    Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
-
-    cls_var = (Basic *)cls->basics[iv];
-    exp_var = (Stats *)cls->stats[iv];
-    dad_var = (dad) ? (Basic *)dad->basics[iv] : 0;
+/* 
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
+    Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;    
+    Basic *dad_var = (dad) ? (Basic *)dad->basics[iv] : 0;
+       */  
 }
 
 /*	--------------------  readvaux  ----------------------------  */
@@ -189,6 +187,8 @@ void set_sizes(int iv) {
 
 /*	----------------------  set_best_pars --------------------------  */
 void set_best_pars(int iv, Class *cls) {
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
 
     set_var(iv, cls);
 
@@ -221,6 +221,10 @@ void set_best_pars(int iv, Class *cls) {
 of basic params  */
 void clear_stats(int iv, Class *cls) {
     double tmp;
+    
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
+
     set_var(iv, cls);
     exp_var->cnt = 0.0;
     exp_var->stcost = exp_var->ftcost = 0.0;
@@ -250,6 +254,8 @@ void score_var(int iv, Class *cls) {
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
 
     set_var(iv, cls);
     if (vset_var->inactive)
@@ -271,6 +277,8 @@ void cost_var(int iv, int fac, Class *cls) {
     double del, var, cost;
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
 
     set_var(iv, cls);
     if (saux->missing)
@@ -311,6 +319,8 @@ void deriv_var(int iv, int fac, Class *cls) {
 
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
 
     set_var(iv, cls);
     if (saux->missing)
@@ -353,10 +363,12 @@ void adjust(int iv, int fac, Class *cls) {
     double del1, del2, del3, del4, spcost, fpcost;
     double dadmu, dadsdl, dmusprd, dsdlsprd;
     double av, var, del, sdld1;
-    Population *popln = CurCtx.popln;
-    Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
+    Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;    
+    Basic *dad_var = (dad) ? (Basic *)dad->basics[iv] : 0;
 
     del3 = del4 = 0.0;
     set_var(iv, cls);
@@ -558,7 +570,8 @@ adjdone:
 
 /*	------------------------  show  -----------------------   */
 void show(Class *cls, int iv) {
-
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
     set_var(iv, cls);
 
     printf("V%3d  Cnt%6.1f  %s\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out");
@@ -572,7 +585,8 @@ void show(Class *cls, int iv) {
 
 /*	------------------------  details  -----------------------   */
 void details(Class *cls, int iv, MemBuffer *buffer) {
-
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
     set_var(iv, cls);
 
     print_buffer(buffer,  "V%3d  Cnt%6.1f  %s\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out");
@@ -700,6 +714,9 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv]; 
+    Basic *dad_var = (dad) ? (Basic *)dad->basics[iv] : 0;
 
     set_var(iv, cls);
     if (!vald) { /* Cannot define as-dad params, so fake it */

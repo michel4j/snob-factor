@@ -64,12 +64,6 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
     double bsq;
 } Stats;
 
-/*	Static variables useful for many types of variable    */
-// static Saux *saux;
-// static Vaux *vaux;
-static Basic *cls_var, *dad_var;
-static Stats *exp_var;
-
 /*	Static variables specific to this type   */
 static double dadnap;
 static double dapsprd; /* Dad's napsprd */
@@ -129,8 +123,10 @@ void expbinary_define(typindx) int typindx;
 
 /*	----------------------- setvar --------------------------  */
 void set_var(int iv, Class *cls) {
-    cls_var = (Basic *)cls->basics[iv];
-    exp_var = (Stats *)cls->stats[iv];
+    /*
+        Basic *cls_var = (Basic *)cls->basics[iv];
+        Stats *exp_var = (Stats *)cls->stats[iv];
+    */
 }
 
 /*	---------------------  readvaux ---------------------------   */
@@ -188,6 +184,8 @@ void set_sizes(int iv) {
 void set_best_pars(int iv, Class *cls) {
 
     set_var(iv, cls);
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
 
     if (cls->type == Dad) {
         cls_var->bap = cls_var->nap;
@@ -215,6 +213,9 @@ void clear_stats(int iv, Class *cls) {
     double round, pr0, pr1;
 
     set_var(iv, cls);
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
+
     exp_var->cnt = 0.0;
     exp_var->stcost = exp_var->ftcost = 0.0;
     exp_var->vsq = 0.0;
@@ -250,6 +251,8 @@ void score_var(int iv, Class *cls) {
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv]; 
 
     set_var(iv, cls);
     if (vset_var->inactive)
@@ -304,6 +307,8 @@ void cost_var(int iv, int fac, Class *cls) {
 
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv];
 
     set_var(iv, cls);
     if (saux->missing)
@@ -370,6 +375,7 @@ void deriv_var(int iv, int fac, Class *cls) {
 
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);
+    Stats *exp_var = (Stats *)cls->stats[iv];
 
     set_var(iv, cls);
     if (saux->missing)
@@ -384,16 +390,15 @@ void deriv_var(int iv, int fac, Class *cls) {
     exp_var->ftcost += case_weight * exp_var->parkftcost;
 
     /*	Now for factor form  */
-    if (!fac)
-        goto facdone;
-    exp_var->vsq += case_weight * Scores.CaseFacScoreSq;
-    exp_var->fapd1 += case_weight * exp_var->dbya;
-    exp_var->fbpd1 += case_weight * exp_var->dbyb;
-    /*	Accum actual 2nd derivs  */
-    exp_var->apd2 += case_weight * exp_var->parkft;
-    exp_var->bpd2 += case_weight * exp_var->parkft * Scores.CaseFacScoreSq;
-facdone:
-    return;
+    if (fac) {
+
+        exp_var->vsq += case_weight * Scores.CaseFacScoreSq;
+        exp_var->fapd1 += case_weight * exp_var->dbya;
+        exp_var->fbpd1 += case_weight * exp_var->dbyb;
+        /*	Accum actual 2nd derivs  */
+        exp_var->apd2 += case_weight * exp_var->parkft;
+        exp_var->bpd2 += case_weight * exp_var->parkft * Scores.CaseFacScoreSq;
+    }
 }
 
 /*	-------------------  adjust  ---------------------------    */
@@ -405,6 +410,9 @@ void adjust(int iv, int fac, Class *cls) {
     int n;
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv]; 
+    Basic *dad_var;
 
     set_var(iv, cls);
     cnt = exp_var->cnt;
@@ -552,6 +560,9 @@ adjdone:
 /*	------------------------  show  -----------------------   */
 void show(Class *cls, int iv) {
 
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv]; 
+
     set_var(iv, cls);
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out", exp_var->adj);
 
@@ -570,23 +581,25 @@ void show(Class *cls, int iv) {
 }
 
 /*	------------------------  details  -----------------------   */
-void details(Class *cls, int iv, MemBuffer* buffer) {
+void details(Class *cls, int iv, MemBuffer *buffer) {
 
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv]; 
     set_var(iv, cls);
-    print_buffer(buffer,  "V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out", exp_var->adj);
+    print_buffer(buffer, "V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out", exp_var->adj);
 
     if (cls->num_sons > 1) {
-        print_buffer(buffer,  " N: AP ");
-        print_buffer(buffer,  "%6.3f", cls_var->nap);
-        print_buffer(buffer,  " +-%7.3f\n", sqrt(cls_var->napsprd));
+        print_buffer(buffer, " N: AP ");
+        print_buffer(buffer, "%6.3f", cls_var->nap);
+        print_buffer(buffer, " +-%7.3f\n", sqrt(cls_var->napsprd));
     }
-    print_buffer(buffer,  " S: AP ");
-    print_buffer(buffer,  "%6.3f", cls_var->sap);
-    print_buffer(buffer,  "\n F: AP ");
-    print_buffer(buffer,  "%6.3f", cls_var->fap);
-    print_buffer(buffer,  "\n F: BP ");
-    print_buffer(buffer,  "%6.3f", cls_var->fbp);
-    print_buffer(buffer,  " +-%7.3f\n", sqrt(cls_var->bpsprd));
+    print_buffer(buffer, " S: AP ");
+    print_buffer(buffer, "%6.3f", cls_var->sap);
+    print_buffer(buffer, "\n F: AP ");
+    print_buffer(buffer, "%6.3f", cls_var->fap);
+    print_buffer(buffer, "\n F: BP ");
+    print_buffer(buffer, "%6.3f", cls_var->fbp);
+    print_buffer(buffer, " +-%7.3f\n", sqrt(cls_var->bpsprd));
 }
 /*	----------------------  cost_var_nonleaf -----------------------------  */
 void cost_var_nonleaf(int iv, int vald, Class *cls) {
@@ -598,6 +611,8 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
 
     Population *popln = CurCtx.popln;
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
+    Basic *cls_var = (Basic *)cls->basics[iv];
+    Stats *exp_var = (Stats *)cls->stats[iv]; 
 
     set_var(iv, cls);
     if (vset_var->inactive) {
