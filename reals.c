@@ -70,7 +70,7 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
     double var;
 } Stats;
 
-static Basic *cvi, *dcvi;
+static Basic *cls_var, *dcvi;
 static Stats *evi;
 
 static void set_var(int iv, Class *cls);
@@ -132,7 +132,7 @@ void set_var(int iv, Class *cls) {
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
 
-    cvi = (Basic *)cls->basics[iv];
+    cls_var = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
     dcvi = (dad) ? (Basic *)dad->basics[iv] : 0;
 }
@@ -193,24 +193,24 @@ void set_best_pars(int iv, Class *cls) {
     set_var(iv, cls);
 
     if (cls->type == Dad) {
-        cvi->bmu = cvi->nmu;
-        cvi->bmusprd = cvi->nmusprd;
-        cvi->bsdl = cvi->nsdl;
-        cvi->bsdlsprd = cvi->nsdlsprd;
+        cls_var->bmu = cls_var->nmu;
+        cls_var->bmusprd = cls_var->nmusprd;
+        cls_var->bsdl = cls_var->nsdl;
+        cls_var->bsdlsprd = cls_var->nsdlsprd;
         evi->btcost = evi->ntcost;
         evi->bpcost = evi->npcost;
-    } else if ((cls->use == Fac) && cvi->infac) {
-        cvi->bmu = cvi->fmu;
-        cvi->bmusprd = cvi->fmusprd;
-        cvi->bsdl = cvi->fsdl;
-        cvi->bsdlsprd = cvi->fsdlsprd;
+    } else if ((cls->use == Fac) && cls_var->infac) {
+        cls_var->bmu = cls_var->fmu;
+        cls_var->bmusprd = cls_var->fmusprd;
+        cls_var->bsdl = cls_var->fsdl;
+        cls_var->bsdlsprd = cls_var->fsdlsprd;
         evi->btcost = evi->ftcost;
         evi->bpcost = evi->fpcost;
     } else {
-        cvi->bmu = cvi->smu;
-        cvi->bmusprd = cvi->smusprd;
-        cvi->bsdl = cvi->ssdl;
-        cvi->bsdlsprd = cvi->ssdlsprd;
+        cls_var->bmu = cls_var->smu;
+        cls_var->bmusprd = cls_var->smusprd;
+        cls_var->bsdl = cls_var->ssdl;
+        cls_var->bsdlsprd = cls_var->ssdlsprd;
         evi->btcost = evi->stcost;
         evi->bpcost = evi->spcost;
     }
@@ -231,13 +231,13 @@ void clear_stats(int iv, Class *cls) {
 
     if (cls->age == 0)
         return;
-    evi->ssig = exp(cvi->ssdl);
+    evi->ssig = exp(cls_var->ssdl);
     tmp = 1.0 / evi->ssig;
     evi->srsds = tmp * tmp;
-    evi->fsig = exp(cvi->fsdl);
+    evi->fsig = exp(cls_var->fsdl);
     tmp = 1.0 / evi->fsig;
     evi->frsds = tmp * tmp;
-    evi->ldsq = cvi->ld * cvi->ld;
+    evi->ldsq = cls_var->ld * cls_var->ld;
 }
 
 /*	-------------------------  score_var  ------------------------   */
@@ -257,9 +257,9 @@ void score_var(int iv, Class *cls) {
 
     if (saux->missing)
         return;
-    del = cvi->fmu + Scores.CaseFacScore * cvi->ld - saux->xn;
-    Scores.CaseFacScoreD1 += evi->frsds * (del * cvi->ld + Scores.CaseFacScore * cvi->ldsprd);
-    md2 = evi->frsds * (evi->ldsq + cvi->ldsprd);
+    del = cls_var->fmu + Scores.CaseFacScore * cls_var->ld - saux->xn;
+    Scores.CaseFacScoreD1 += evi->frsds * (del * cls_var->ld + Scores.CaseFacScore * cls_var->ldsprd);
+    md2 = evi->frsds * (evi->ldsq + cls_var->ldsprd);
     Scores.CaseFacScoreD2 += md2;
     Scores.EstFacScoreD2 += 1.1 * md2;
     return;
@@ -280,19 +280,19 @@ void cost_var(int iv, int fac, Class *cls) {
         return;
     }
     /*	Do no-fac cost first  */
-    del = cvi->smu - saux->xn;
-    var = del * del + cvi->smusprd + saux->epssq;
-    cost = 0.5 * var * evi->srsds + cvi->ssdlsprd + HALF_LOG_2PI + cvi->ssdl - saux->leps;
+    del = cls_var->smu - saux->xn;
+    var = del * del + cls_var->smusprd + saux->epssq;
+    cost = 0.5 * var * evi->srsds + cls_var->ssdlsprd + HALF_LOG_2PI + cls_var->ssdl - saux->leps;
     evi->parkstcost = cost;
     Scores.CaseNoFacCost += cost;
 
     /*	Only do faccost if fac  */
     if (!fac)
         goto facdone;
-    del += Scores.CaseFacScore * cvi->ld;
-    var = del * del + cvi->fmusprd + saux->epssq + Scores.CaseFacScoreSq * cvi->ldsprd + Scores.cvvsprd * evi->ldsq;
+    del += Scores.CaseFacScore * cls_var->ld;
+    var = del * del + cls_var->fmusprd + saux->epssq + Scores.CaseFacScoreSq * cls_var->ldsprd + Scores.cvvsprd * evi->ldsq;
     evi->var = var;
-    cost = HALF_LOG_2PI + 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd * 2.0 - saux->leps;
+    cost = HALF_LOG_2PI + 0.5 * evi->frsds * var + cls_var->fsdl + cls_var->fsdlsprd * 2.0 - saux->leps;
 
 facdone:
     Scores.CaseFacCost += cost;
@@ -329,7 +329,7 @@ void deriv_var(int iv, int fac, Class *cls) {
     if (fac) {
 
         frsds = evi->frsds;
-        del = cvi->fmu + Scores.CaseFacScore * cvi->ld - saux->xn;
+        del = cls_var->fmu + Scores.CaseFacScore * cls_var->ld - saux->xn;
         /*	From cost_var, we have:
             cost = 0.5 * evi->frsds * var + cvi->fsdl + cvi->fsdlsprd*2.0 + consts
                 where var is given by:
@@ -341,7 +341,7 @@ void deriv_var(int iv, int fac, Class *cls) {
         evi->fsdld2 += 2.0 * case_weight;
         evi->fmud1 += case_weight * del * frsds;
         evi->fmud2 += case_weight * frsds;
-        evi->ldd1 += case_weight * frsds * (del * Scores.CaseFacScore + cvi->ld * Scores.cvvsprd);
+        evi->ldd1 += case_weight * frsds * (del * Scores.CaseFacScore + cls_var->ld * Scores.cvvsprd);
         evi->ldd2 += case_weight * frsds * (Scores.CaseFacScoreSq + Scores.cvvsprd);
     }
 }
@@ -366,8 +366,8 @@ void adjust(int iv, int fac, Class *cls) {
     /*	Get prior constants from dad, or if root, fake them  */
     if (!dad) { /* Class is root */
         if (cls->age > 0) {
-            dadmu = cvi->smu;
-            dadsdl = cvi->ssdl;
+            dadmu = cls_var->smu;
+            dadsdl = cls_var->ssdl;
             dmusprd = exp(2.0 * dadsdl);
             dsdlsprd = 1.0;
         } else {
@@ -383,31 +383,31 @@ void adjust(int iv, int fac, Class *cls) {
 
     /*	If too few data for this variable, use dad's n-paras  */
     if ((Control & AdjPr) && (cnt < MinSize)) {
-        cvi->nmu = cvi->smu = cvi->fmu = dadmu;
-        cvi->nsdl = cvi->ssdl = cvi->fsdl = dadsdl;
-        cvi->ld = 0.0;
-        cvi->nmusprd = cvi->smusprd = cvi->fmusprd = dmusprd;
-        cvi->nsdlsprd = cvi->ssdlsprd = cvi->fsdlsprd = dsdlsprd;
-        cvi->ldsprd = 1.0;
+        cls_var->nmu = cls_var->smu = cls_var->fmu = dadmu;
+        cls_var->nsdl = cls_var->ssdl = cls_var->fsdl = dadsdl;
+        cls_var->ld = 0.0;
+        cls_var->nmusprd = cls_var->smusprd = cls_var->fmusprd = dmusprd;
+        cls_var->nsdlsprd = cls_var->ssdlsprd = cls_var->fsdlsprd = dsdlsprd;
+        cls_var->ldsprd = 1.0;
 
     } else if (!cls->age) { /*	If class age is zero, make some preliminary estimates  */
-        cvi->smu = cvi->fmu = evi->tx / cnt;
-        var = evi->txx / cnt - cvi->smu * cvi->smu;
+        cls_var->smu = cls_var->fmu = evi->tx / cnt;
+        var = evi->txx / cnt - cls_var->smu * cls_var->smu;
         evi->ssig = evi->fsig = sqrt(var);
-        cvi->ssdl = cvi->fsdl = log(evi->ssig);
+        cls_var->ssdl = cls_var->fsdl = log(evi->ssig);
         evi->frsds = evi->srsds = 1.0 / var;
-        cvi->smusprd = cvi->fmusprd = var / cnt;
-        cvi->ldsprd = var / cnt;
-        cvi->ld = 0.0;
-        cvi->ssdlsprd = cvi->fsdlsprd = 1.0 / cnt;
+        cls_var->smusprd = cls_var->fmusprd = var / cnt;
+        cls_var->ldsprd = var / cnt;
+        cls_var->ld = 0.0;
+        cls_var->ssdlsprd = cls_var->fsdlsprd = 1.0 / cnt;
         if (!dad) { /*  First stab at root  */
-            dadmu = cvi->smu;
-            dadsdl = cvi->ssdl;
+            dadmu = cls_var->smu;
+            dadsdl = cls_var->ssdl;
             dmusprd = exp(2.0 * dadsdl);
             dsdlsprd = 1.0;
         }
         /*	Make a stab at class tcost  */
-        cls->cstcost += cnt * (HALF_LOG_2PI + cvi->ssdl - saux->leps + 0.5 + cls->mlogab) + 1.0;
+        cls->cstcost += cnt * (HALF_LOG_2PI + cls_var->ssdl - saux->leps + 0.5 + cls->mlogab) + 1.0;
         cls->cftcost = cls->cstcost + 100.0 * cnt;
     }
 
@@ -417,25 +417,25 @@ void adjust(int iv, int fac, Class *cls) {
     frsds = evi->frsds;
 
     /*	Compute parameter costs as they are  */
-    del1 = dadmu - cvi->smu;
-    spcost = HALF_LOG_2PI + 0.5 * (log(dmusprd) + temp1 * (del1 * del1 + cvi->smusprd));
-    del2 = dadsdl - cvi->ssdl;
-    spcost += HALF_LOG_2PI + 0.5 * (log(dsdlsprd) + temp2 * (del2 * del2 + cvi->ssdlsprd));
-    spcost -= 0.5 * log(cvi->smusprd * cvi->ssdlsprd);
+    del1 = dadmu - cls_var->smu;
+    spcost = HALF_LOG_2PI + 0.5 * (log(dmusprd) + temp1 * (del1 * del1 + cls_var->smusprd));
+    del2 = dadsdl - cls_var->ssdl;
+    spcost += HALF_LOG_2PI + 0.5 * (log(dsdlsprd) + temp2 * (del2 * del2 + cls_var->ssdlsprd));
+    spcost -= 0.5 * log(cls_var->smusprd * cls_var->ssdlsprd);
     spcost += 2.0 * LATTICE;
 
     if (!fac) {
         fpcost = spcost + 100.0;
-        cvi->infac = 1;
+        cls_var->infac = 1;
         goto facdone1;
     }
-    del3 = cvi->fmu - dadmu;
-    fpcost = HALF_LOG_2PI + 0.5 * (log(dmusprd) + temp1 * (del3 * del3 + cvi->fmusprd));
-    del4 = cvi->fsdl - dadsdl;
-    fpcost += HALF_LOG_2PI + 0.5 * (log(dsdlsprd) + temp2 * (del4 * del4 + cvi->fsdlsprd));
+    del3 = cls_var->fmu - dadmu;
+    fpcost = HALF_LOG_2PI + 0.5 * (log(dmusprd) + temp1 * (del3 * del3 + cls_var->fmusprd));
+    del4 = cls_var->fsdl - dadsdl;
+    fpcost += HALF_LOG_2PI + 0.5 * (log(dsdlsprd) + temp2 * (del4 * del4 + cls_var->fsdlsprd));
     /*    The prior for load ld id N (0, sigsq)  */
-    fpcost += HALF_LOG_2PI + 0.5 * (evi->ldsq + cvi->ldsprd) * frsds + cvi->fsdl;
-    fpcost -= 0.5 * log(cvi->fmusprd * cvi->fsdlsprd * cvi->ldsprd);
+    fpcost += HALF_LOG_2PI + 0.5 * (evi->ldsq + cls_var->ldsprd) * frsds + cls_var->fsdl;
+    fpcost -= 0.5 * log(cls_var->fmusprd * cls_var->fsdlsprd * cls_var->ldsprd);
     fpcost += 3.0 * LATTICE;
 
 facdone1:
@@ -455,28 +455,28 @@ facdone1:
         smud1 = (dadmu - mu) / dmusprd.
         From things, smud2 = cnt * srsds, from prior = 1/dmusprd.
         Explicit optimum:  */
-    cvi->smusprd = 1.0 / (cnt * srsds + temp1);
-    cvi->smu = (evi->tx * srsds + dadmu * temp1) * cvi->smusprd;
+    cls_var->smusprd = 1.0 / (cnt * srsds + temp1);
+    cls_var->smu = (evi->tx * srsds + dadmu * temp1) * cls_var->smusprd;
     /*	Calculate variance about new mean, adding variance from musprd   */
     av = evi->tx / cnt;
-    del = cvi->smu - av;
-    var = evi->txx + cnt * (del * del - av * av + cvi->smusprd);
+    del = cls_var->smu - av;
+    var = evi->txx + cnt * (del * del - av * av + cls_var->smusprd);
     /*	The deriv sdld1 from data is (cnt - rsds * var)  */
     sdld1 = cnt - srsds * var;
     /*	The deriv from prior is (sdl-dadsdl) / dsdlsprd  */
-    sdld1 += (cvi->ssdl - dadsdl) * temp2;
+    sdld1 += (cls_var->ssdl - dadsdl) * temp2;
     /*	The 2nd deriv sdld2 from data is just cnt  */
     /*	From prior, get 1/dsdlsprd  */
-    cvi->ssdlsprd = 1.0 / (cnt + temp2);
+    cls_var->ssdlsprd = 1.0 / (cnt + temp2);
     /*	sdlsprd is just 1 / sdld2  */
     /*	Adjust, but not too much  */
-    del = sdld1 * cvi->ssdlsprd;
+    del = sdld1 * cls_var->ssdlsprd;
     if (del > 0.2)
         del = 0.2;
     else if (del < -0.2)
         del = -0.2;
-    cvi->ssdl -= del;
-    evi->ssig = exp(cvi->ssdl);
+    cls_var->ssdl -= del;
+    evi->ssig = exp(cls_var->ssdl);
     evi->srsds = 1.0 / (evi->ssig * evi->ssig);
     if (!fac)
         goto facdone2;
@@ -489,32 +489,32 @@ facdone1:
     evi->fmud2 += temp1;
     evi->fsdld1 += del4 * temp2;
     evi->fsdld2 += temp2;
-    evi->ldd1 += cvi->ld * frsds;
+    evi->ldd1 += cls_var->ld * frsds;
     evi->fsdld2 += frsds;
     /*	The dependence of the load prior on frsds, and thus on fsdl,
         will give additional terms to sdld1, sdld2.
         */
     /*	The additional terms from the load prior :  */
-    evi->fsdld1 += 1.0 - frsds * (evi->ldsq + cvi->ldsprd);
+    evi->fsdld1 += 1.0 - frsds * (evi->ldsq + cls_var->ldsprd);
     evi->fsdld2 += 1.0;
     /*	Adjust sdl, but not too much.  */
-    cvi->fsdlsprd = 1.0 / evi->fsdld2;
-    del = evi->fsdld1 * cvi->fsdlsprd;
+    cls_var->fsdlsprd = 1.0 / evi->fsdld2;
+    del = evi->fsdld1 * cls_var->fsdlsprd;
     if (del > 0.2)
         del = 0.2;
     else if (del < -0.2)
         del = -0.2;
-    cvi->fsdl -= adj * del;
-    cvi->fmusprd = 1.0 / evi->fmud2;
-    cvi->fmu -= adj * evi->fmud1 * cvi->fmusprd;
-    cvi->ldsprd = 1.0 / evi->ldd2;
-    cvi->ld -= adj * evi->ldd1 * cvi->ldsprd;
-    evi->fsig = exp(cvi->fsdl);
+    cls_var->fsdl -= adj * del;
+    cls_var->fmusprd = 1.0 / evi->fmud2;
+    cls_var->fmu -= adj * evi->fmud1 * cls_var->fmusprd;
+    cls_var->ldsprd = 1.0 / evi->ldd2;
+    cls_var->ld -= adj * evi->ldd1 * cls_var->ldsprd;
+    evi->fsig = exp(cls_var->fsdl);
     evi->frsds = 1.0 / (evi->fsig * evi->fsig);
-    evi->ldsq = cvi->ld * cvi->ld;
+    evi->ldsq = cls_var->ld * cls_var->ld;
 
 facdone2:
-    cvi->samplesize = evi->cnt;
+    cls_var->samplesize = evi->cnt;
     goto adjdone;
 
 tweaks: /* Come here if no adjustments made */
@@ -526,30 +526,30 @@ tweaks: /* Come here if no adjustments made */
         as-dad values. Actually store in nparsprd the val 1/bparsprd,
         and in npar the val bpar / bparsprd   */
     if (Control & Noprior) {
-        cvi->nmusprd = (1.0 / cvi->bmusprd) - (1.0 / dmusprd);
-        cvi->nmu = cvi->bmu / cvi->bmusprd - dadmu / dmusprd;
-        cvi->nsdlsprd = (1.0 / cvi->bsdlsprd) - (1.0 / dsdlsprd);
-        cvi->nsdl = cvi->bsdl / cvi->bsdlsprd - dadsdl / dsdlsprd;
+        cls_var->nmusprd = (1.0 / cls_var->bmusprd) - (1.0 / dmusprd);
+        cls_var->nmu = cls_var->bmu / cls_var->bmusprd - dadmu / dmusprd;
+        cls_var->nsdlsprd = (1.0 / cls_var->bsdlsprd) - (1.0 / dsdlsprd);
+        cls_var->nsdl = cls_var->bsdl / cls_var->bsdlsprd - dadsdl / dsdlsprd;
     } else if (Control & Tweak) {
         /*	Adjust "best" params by applying effect of dad prior to
             the no-prior values  */
-        cvi->bmusprd = 1.0 / (cvi->nmusprd + (1.0 / dmusprd));
-        cvi->bmu = (cvi->nmu + dadmu / dmusprd) * cvi->bmusprd;
-        cvi->bsdlsprd = 1.0 / (cvi->nsdlsprd + (1.0 / dsdlsprd));
-        cvi->bsdl = (cvi->nsdl + dadsdl / dsdlsprd) * cvi->bsdlsprd;
+        cls_var->bmusprd = 1.0 / (cls_var->nmusprd + (1.0 / dmusprd));
+        cls_var->bmu = (cls_var->nmu + dadmu / dmusprd) * cls_var->bmusprd;
+        cls_var->bsdlsprd = 1.0 / (cls_var->nsdlsprd + (1.0 / dsdlsprd));
+        cls_var->bsdl = (cls_var->nsdl + dadsdl / dsdlsprd) * cls_var->bsdlsprd;
         if (cls->use == Fac) {
-            cvi->fmu = cvi->bmu;
-            cvi->fmusprd = cvi->nmusprd;
+            cls_var->fmu = cls_var->bmu;
+            cls_var->fmusprd = cls_var->nmusprd;
         } else {
-            cvi->smu = cvi->bmu;
-            cvi->smusprd = cvi->nmusprd;
+            cls_var->smu = cls_var->bmu;
+            cls_var->smusprd = cls_var->nmusprd;
         }
     } else {
         /*	Copy non-fac params to as-dad   */
-        cvi->nmu = cvi->smu;
-        cvi->nmusprd = cvi->smusprd;
-        cvi->nsdl = cvi->ssdl;
-        cvi->nsdlsprd = cvi->ssdlsprd;
+        cls_var->nmu = cls_var->smu;
+        cls_var->nmusprd = cls_var->smusprd;
+        cls_var->nsdl = cls_var->ssdl;
+        cls_var->nsdlsprd = cls_var->ssdlsprd;
     }
 
 adjdone:
@@ -561,13 +561,13 @@ void show(Class *cls, int iv) {
 
     set_var(iv, cls);
 
-    printf("V%3d  Cnt%6.1f  %s\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out");
+    printf("V%3d  Cnt%6.1f  %s\n", iv + 1, evi->cnt, (cls_var->infac) ? " In" : "Out");
     if (cls->num_sons > 1) {
-        printf(" N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", evi->npcost, cvi->nmu, sqrt(cvi->nmusprd), exp(cvi->nsdl),
-               exp(cvi->nsdl) * sqrt(cvi->nsdlsprd));
+        printf(" N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", evi->npcost, cls_var->nmu, sqrt(cls_var->nmusprd), exp(cls_var->nsdl),
+               exp(cls_var->nsdl) * sqrt(cls_var->nsdlsprd));
     }
-    printf(" S: Cost%8.1f  Mu%8.3f  SD%8.3f\n", evi->spcost + evi->stcost, cvi->smu, exp(cvi->ssdl));
-    printf(" F: Cost%8.1f  Mu%8.3f  SD%8.3f  Ld%8.3f\n", evi->fpcost + evi->ftcost, cvi->fmu, exp(cvi->fsdl), cvi->ld);
+    printf(" S: Cost%8.1f  Mu%8.3f  SD%8.3f\n", evi->spcost + evi->stcost, cls_var->smu, exp(cls_var->ssdl));
+    printf(" F: Cost%8.1f  Mu%8.3f  SD%8.3f  Ld%8.3f\n", evi->fpcost + evi->ftcost, cls_var->fmu, exp(cls_var->fsdl), cls_var->ld);
 }
 
 /*	------------------------  details  -----------------------   */
@@ -575,13 +575,13 @@ void details(Class *cls, int iv, MemBuffer *buffer) {
 
     set_var(iv, cls);
 
-    print_buffer(buffer,  "V%3d  Cnt%6.1f  %s\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out");
+    print_buffer(buffer,  "V%3d  Cnt%6.1f  %s\n", iv + 1, evi->cnt, (cls_var->infac) ? " In" : "Out");
     if (cls->num_sons > 1) {
-        print_buffer(buffer,  " N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", evi->npcost, cvi->nmu, sqrt(cvi->nmusprd), exp(cvi->nsdl),
-                exp(cvi->nsdl) * sqrt(cvi->nsdlsprd));
+        print_buffer(buffer,  " N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", evi->npcost, cls_var->nmu, sqrt(cls_var->nmusprd), exp(cls_var->nsdl),
+                exp(cls_var->nsdl) * sqrt(cls_var->nsdlsprd));
     }
-    print_buffer(buffer,  " S: Cost%8.1f  Mu%8.3f  SD%8.3f\n", evi->spcost + evi->stcost, cvi->smu, exp(cvi->ssdl));
-    print_buffer(buffer,  " F: Cost%8.1f  Mu%8.3f  SD%8.3f  Ld%8.3f\n", evi->fpcost + evi->ftcost, cvi->fmu, exp(cvi->fsdl), cvi->ld);
+    print_buffer(buffer,  " S: Cost%8.1f  Mu%8.3f  SD%8.3f\n", evi->spcost + evi->stcost, cls_var->smu, exp(cls_var->ssdl));
+    print_buffer(buffer,  " F: Cost%8.1f  Mu%8.3f  SD%8.3f  Ld%8.3f\n", evi->fpcost + evi->ftcost, cls_var->fmu, exp(cls_var->fsdl), cls_var->ld);
 }
 
 /*	----------------------  cost_var_nonleaf  ------------------------   */
@@ -704,10 +704,10 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     set_var(iv, cls);
     if (!vald) { /* Cannot define as-dad params, so fake it */
         evi->npcost = 0.0;
-        cvi->nmu = cvi->smu;
-        cvi->nmusprd = cvi->smusprd * evi->cnt;
-        cvi->nsdl = cvi->ssdl;
-        cvi->nsdlsprd = cvi->ssdlsprd * evi->cnt;
+        cls_var->nmu = cls_var->smu;
+        cls_var->nmusprd = cls_var->smusprd * evi->cnt;
+        cls_var->nsdl = cls_var->ssdl;
+        cls_var->nsdlsprd = cls_var->ssdlsprd * evi->cnt;
         return;
     }
     if (vset_var->inactive) {
@@ -726,14 +726,14 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     while (k < 2) {
         /*	Get prior constants from dad, or if root, fake them  */
         if (!dad) { /* Class is root */
-            dadpp = *(&cvi->smu + k);
-            dppsprd = *(&cvi->smusprd + k) * evi->cnt;
+            dadpp = *(&cls_var->smu + k);
+            dppsprd = *(&cls_var->smusprd + k) * evi->cnt;
         } else {
             dadpp = *(&dcvi->nmu + k);
             dppsprd = *(&dcvi->nmusprd + k);
         }
-        pp = *(&cvi->nmu + k);
-        ppsprd = *(&cvi->nmusprd + k);
+        pp = *(&cls_var->nmu + k);
+        ppsprd = *(&cls_var->nmusprd + k);
 
         /*	We need to accumlate things over sons. We need:   */
         nints = 0;   /* Number of internal sons (M) */
@@ -779,8 +779,8 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
         n--;
         if (n)
             goto adjloop;
-        *(&cvi->nmu + k) = pp;
-        *(&cvi->nmusprd + k) = ppsprd;
+        *(&cls_var->nmu + k) = pp;
+        *(&cls_var->nmusprd + k) = ppsprd;
 
     adjdone: /*	Calc cost  */
         del = pp - dadpp;

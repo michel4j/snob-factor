@@ -92,7 +92,7 @@ static double *pr;            /* vec. of factor state probs  */
 static double *fapd1, *fbpd1; /*  vectors of derivs of cost wrt params */
 
 /*	Static variables useful for many types of variable    */
-static Basic *cvi, *dcvi;
+static Basic *cls_var, *dcvi;
 static Stats *evi;
 
 /*	Static variables specific to this type   */
@@ -183,14 +183,14 @@ void set_var(int iv, Class *cls) {
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     Vaux *vaux = (Vaux *)vset_var->vaux;
 
-    cvi = (Basic *)cls->basics[iv];
+    cls_var = (Basic *)cls->basics[iv];
     evi = (Stats *)cls->stats[iv];
 
     states = vaux->states;
     statesm = states - 1;
     rstates = 1.0 / states;
     rstatesm = 1.0 / statesm;
-    nap = &(cvi->origin);
+    nap = &(cls_var->origin);
     sap = nap + states;
     fap = sap + states;
     fbp = fap + states;
@@ -290,18 +290,18 @@ void set_best_pars(int iv, Class *cls) {
     set_var(iv, cls);
 
     if (cls->type == Dad) {
-        cvi->bap = nap;
-        cvi->bapsprd = cvi->napsprd;
+        cls_var->bap = nap;
+        cls_var->bapsprd = cls_var->napsprd;
         evi->btcost = evi->ntcost;
         evi->bpcost = evi->npcost;
-    } else if ((cls->use == Fac) && cvi->infac) {
-        cvi->bap = fap;
-        cvi->bapsprd = cvi->fapsprd;
+    } else if ((cls->use == Fac) && cls_var->infac) {
+        cls_var->bap = fap;
+        cls_var->bapsprd = cls_var->fapsprd;
         evi->btcost = evi->ftcost;
         evi->bpcost = evi->fpcost;
     } else {
-        cvi->bap = sap;
-        cvi->bapsprd = cvi->sapsprd;
+        cls_var->bap = sap;
+        cls_var->bapsprd = cls_var->sapsprd;
         evi->btcost = evi->stcost;
         evi->bpcost = evi->spcost;
     }
@@ -404,7 +404,7 @@ void clear_stats(int iv, Class *cls) {
     /*	Have log of prod of probs in tt. Add log K^2 to get log Fisher  */
     tt += vaux->lstatessq;
     tt = exp(rstatesm * tt); /* 2nd deriv of cost wrt sap[] */
-    tt = 0.5 * cvi->sapsprd * tt;
+    tt = 0.5 * cls_var->sapsprd * tt;
     /*	Set state case costs  */
     for (k = 0; k < states; k++)
         scst[k] = qr[k] + tt;
@@ -434,8 +434,8 @@ void score_var(int iv, Class *cls) {
     if ((!vset_var->inactive) && (!saux->missing)) {
         set_probs(); /* Will calc pr[], qr[], gg, ff  */
         t1d1 = b1p - fbp[saux->xn];
-        t2d1 = -(0.5 * states * rstatesm) * (cvi->fapsprd + Scores.CaseFacScoreSq * cvi->bpsprd) * ff * b1p;
-        t3d1 = Scores.CaseFacScore * cvi->bpsprd * ff;
+        t2d1 = -(0.5 * states * rstatesm) * (cls_var->fapsprd + Scores.CaseFacScoreSq * cls_var->bpsprd) * ff * b1p;
+        t3d1 = Scores.CaseFacScore * cls_var->bpsprd * ff;
 
         Scores.CaseFacScoreD1 += t1d1 + t3d1 + t2d1;
         Scores.CaseFacScoreD2 += gg;
@@ -472,7 +472,7 @@ void cost_var(int iv, int fac, Class *cls) {
     if (fac) {
         set_probs();
         cost = -log(pr[saux->xn]); /* -log prob of xn */
-        evi->conff = 0.5 * ff * (cvi->fapsprd + Scores.CaseFacScoreSq * cvi->bpsprd);
+        evi->conff = 0.5 * ff * (cls_var->fapsprd + Scores.CaseFacScoreSq * cls_var->bpsprd);
         evi->ff = ff;
         evi->parkb1p = b1p;
         evi->parkb2p = b2p;
@@ -578,9 +578,9 @@ void adjust(int iv, int fac, Class *cls) {
             nap[k] = sap[k] = fap[k] = dadnap[k];
             fbp[k] = 0.0;
         }
-        cvi->sapsprd = cvi->fapsprd = dapsprd * statesm;
-        cvi->napsprd = dapsprd;
-        cvi->bpsprd = statesm;
+        cls_var->sapsprd = cls_var->fapsprd = dapsprd * statesm;
+        cls_var->napsprd = dapsprd;
+        cls_var->bpsprd = statesm;
 
     } else if (!cls->age) {
         /*	If class age zero, make some preliminary estimates  */
@@ -595,7 +595,7 @@ void adjust(int iv, int fac, Class *cls) {
         /*	Set sapsprd  */
         apd2 = exp(rstatesm * (sum + vaux->lstatessq)) * cnt;
         apd2 += 1.0 / dapsprd;
-        cvi->fapsprd = cvi->bpsprd = cvi->sapsprd = statesm / apd2;
+        cls_var->fapsprd = cls_var->bpsprd = cls_var->sapsprd = statesm / apd2;
 
         sum = -sum / states;
         for (k = 0; k < states; k++) {
@@ -617,7 +617,7 @@ void adjust(int iv, int fac, Class *cls) {
         del = sap[k] - dadnap[k];
         vara += del * del;
     }
-    vara += cvi->sapsprd; /* Additional variance from roundoff */
+    vara += cls_var->sapsprd; /* Additional variance from roundoff */
     /*	Now vara holds squared difference from sap[] to dad's nap[]. This
     is a variance in (states-1) space with sum-sq spread dapsprd, Normal form */
     spcost = 0.5 * vara / dapsprd;          /* The squared deviations term */
@@ -625,7 +625,7 @@ void adjust(int iv, int fac, Class *cls) {
     spcost += statesm * (HALF_LOG_2PI + LATTICE);
     /*	This completes the prior density terms  */
     /*	The vol of uncertainty is (sapsprd/statesm)^(statesm/2)  */
-    spcost -= 0.5 * statesm * log(cvi->sapsprd / statesm);
+    spcost -= 0.5 * statesm * log(cls_var->sapsprd / statesm);
 
     if (fac) {
         /*	Get factor pcost  */
@@ -634,27 +634,27 @@ void adjust(int iv, int fac, Class *cls) {
             del = fap[k] - dadnap[k];
             vara += del * del;
         }
-        vara += cvi->fapsprd; /* Additional variance from roundoff */
+        vara += cls_var->fapsprd; /* Additional variance from roundoff */
         /*	Now vara holds squared difference from fap[] to dad's nap[]. This
         is a variance in (states-1) space with sum-sq spread dapsprd, Normal form */
         fpcost = 0.5 * vara / dapsprd;          /* The squared deviations term */
         fpcost += 0.5 * statesm * log(dapsprd); /* statesm * log sigma */
         fpcost += statesm * (HALF_LOG_2PI + LATTICE);
         /*	The vol of uncertainty is (fapsprd/statesm)^(statesm/2)  */
-        fpcost -= 0.5 * statesm * log(cvi->fapsprd / statesm);
+        fpcost -= 0.5 * statesm * log(cls_var->fapsprd / statesm);
 
         /*	And for fbp[]:  (N(0,1) prior)  */
         vara = 0.0;
         for (k = 0; k < states; k++)
             vara += fbp[k] * fbp[k];
-        vara += cvi->bpsprd;  /* Additional variance from roundoff */
+        vara += cls_var->bpsprd;  /* Additional variance from roundoff */
         fpcost += 0.5 * vara; /* The squared deviations term */
         fpcost += statesm * (HALF_LOG_2PI + LATTICE);
         /*	The vol of uncertainty is (bpsprd/statesm)^(statesm/2)  */
-        fpcost -= 0.5 * statesm * log(cvi->bpsprd / statesm);
+        fpcost -= 0.5 * statesm * log(cls_var->bpsprd / statesm);
     } else {
         fpcost = spcost + 100.0;
-        cvi->infac = 1;
+        cls_var->infac = 1;
     }
 
     /*	Store param costs  */
@@ -691,7 +691,7 @@ void adjust(int iv, int fac, Class *cls) {
         ff = exp(rstatesm * tt);
         /*	The deriv of cost wrt sap[k] contains the term:
                 0.5*cnt*sapsprd* (ff/(K-1)) * (1 - K*pr[k])  */
-        tt = 0.5 * cnt * cvi->sapsprd * ff * rstatesm;
+        tt = 0.5 * cnt * cls_var->sapsprd * ff * rstatesm;
         /*	Use dads's nap[], dapsprd for Normal prior.   */
         /*	Reduce corrections by statesm/states  */
         adj = InitialAdj * statesm / states;
@@ -711,7 +711,7 @@ void adjust(int iv, int fac, Class *cls) {
             sap[k] += sum;
         /*	Compute sapsprd  */
         apd2 = (1.0 / dapsprd) + cnt * ff;
-        cvi->sapsprd = statesm / apd2;
+        cls_var->sapsprd = statesm / apd2;
     /*	Repeat the adjustment  */}
 
     if (fac) {
@@ -763,16 +763,16 @@ void adjust(int iv, int fac, Class *cls) {
         for (k = 0; k < states; k++)
             fbp[k] += sum;
         /*	Set fapsprd, bpsprd.   */
-        cvi->fapsprd = statesm / evi->apd2;
-        cvi->bpsprd = statesm / evi->bpd2;
+        cls_var->fapsprd = statesm / evi->apd2;
+        cls_var->bpsprd = statesm / evi->bpd2;
     }
     /*	If no sons, set as-dad params from non-fac params  */
     if (cls->num_sons < 2) {
         for (k = 0; k < states; k++)
             nap[k] = sap[k];
-        cvi->napsprd = cvi->sapsprd;
+        cls_var->napsprd = cls_var->sapsprd;
     }
-    cvi->samplesize = evi->cnt;
+    cls_var->samplesize = evi->cnt;
 }
 
 /*	------------------------  prprint  -------------------  */
@@ -802,12 +802,12 @@ void show(Class *cls, int iv) {
     int k;
 
     set_var(iv, cls);
-    printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out", evi->adj);
+    printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt, (cls_var->infac) ? " In" : "Out", evi->adj);
 
     if (cls->num_sons > 1) {
         printf(" NR: ");
         prprint(nap);
-        printf(" +-%7.3f\n", sqrt(cvi->napsprd));
+        printf(" +-%7.3f\n", sqrt(cls_var->napsprd));
     }
     printf(" PR: ");
     prprint(sap);
@@ -821,7 +821,7 @@ void show(Class *cls, int iv) {
         for (k = 0; k < states; k++) {
             printf("%7.3f", fbp[k]);
         }
-        printf(" +-%7.3f\n", sqrt(cvi->bpsprd * rstatesm));
+        printf(" +-%7.3f\n", sqrt(cls_var->bpsprd * rstatesm));
     }
 }
 
@@ -851,12 +851,12 @@ void details(Class *cls, int iv, MemBuffer* buffer) {
     int k;
 
     set_var(iv, cls);
-    print_buffer(buffer,"V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt, (cvi->infac) ? " In" : "Out", evi->adj);
+    print_buffer(buffer,"V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, evi->cnt, (cls_var->infac) ? " In" : "Out", evi->adj);
 
     if (cls->num_sons > 1) {
         print_buffer(buffer," NR: ");
         write_probs(nap, buffer);
-        print_buffer(buffer," +-%7.3f\n", sqrt(cvi->napsprd));
+        print_buffer(buffer," +-%7.3f\n", sqrt(cls_var->napsprd));
     }
     print_buffer(buffer," PR: ");
     write_probs(sap, buffer);
@@ -870,7 +870,7 @@ void details(Class *cls, int iv, MemBuffer* buffer) {
         for (k = 0; k < states; k++) {
             print_buffer(buffer,"%7.3f", fbp[k]);
         }
-        print_buffer(buffer," +-%7.3f\n", sqrt(cvi->bpsprd * rstatesm));
+        print_buffer(buffer," +-%7.3f\n", sqrt(cls_var->bpsprd * rstatesm));
     }
 }
 
@@ -896,7 +896,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
         evi->npcost = evi->ntcost = 0.0;
         for (k = 0; k < states; k++)
             nap[k] = sap[k];
-        cvi->napsprd = 1.0;
+        cls_var->napsprd = 1.0;
         return;
     }
     /*      We need to accumlate things over sons. We need:   */
@@ -906,7 +906,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     tstvn = 0.0;     /* Total variance of sons' vectors */
     tssn = 0.0;      /* Total internal sons' bapsprd  */
 
-    apsprd = cvi->napsprd;
+    apsprd = cls_var->napsprd;
     /*	The calculation is like that in reals.c (q.v.) but now we have
     states-1 parameter components for each son. Thus, 'nson' in the reals case
     sometimes becomes (statesm * nson) in this case. We use the static vector
@@ -954,7 +954,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
         apsprd = 2.0 * co0 / (co1 + sqrt(co1 * co1 + 4.0 * co0 * co2));
     }
     /*	Store new values  */
-    cvi->napsprd = apsprd;
+    cls_var->napsprd = apsprd;
 
     /*      Calc cost  */
     pcost = 0.0;

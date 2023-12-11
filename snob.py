@@ -70,8 +70,6 @@ if __name__ == '__main__':
         buffer = ct.create_string_buffer(buffer_size)
         snob.get_class_details(buffer, buffer_size)
         print(buffer.value.decode('utf-8'))
-        print(f'Buffer Size: {buffer_size}')
-        #snob.print_class(-2, 1)
         snob.show_population()
         snob.reset()
     
