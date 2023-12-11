@@ -11,6 +11,7 @@
 /* Initialize some variables */
 int Interactive = 0;
 int Debug = 0;
+int NumRepChars = 0;
 
 /*    To assist in printing class serials  */
 char *serial_to_str(Class *cls) {
@@ -59,7 +60,7 @@ void show_pop_names() {
     }
     printf("Also, the pseudonym \"BST_\" can be used for the best\n");
     printf("model for the current sample\n");
-    return;
+    NumRepChars = 0;
 }
 
 /*      ----------------------  show_smpl_names  -----------------  */
@@ -71,15 +72,21 @@ void show_smpl_names() {
             printf("%2d:  %s\n", k + 1, Samples[k]->name);
         }
     }
+    NumRepChars = 0;
 }
 
 void log_msg(int level, const char *format, ...) {
+
     if (level || Debug) {
+        if (NumRepChars > 0) {
+            printf("\n");
+        }
         va_list args;
         va_start(args, format);
         vprintf(format, args);
         va_end(args);
         printf("\n");
+        NumRepChars = 0;
     }
 }
 
@@ -93,7 +100,7 @@ void print_buffer(MemBuffer *dest, const char *format, ...) {
 }
 
 int error_value(const char *message, const int value) {
-    printf(message);
+    log_msg(1, message);
     return value;
 }
 

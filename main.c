@@ -424,6 +424,8 @@ int main() {
     Population *popln;
 
     RSeed = 1234567;
+    Interactive = 1;
+    Debug = 1;
     default_tune();
 
     /*	A section to sort the keywords into alphabetic order, and set

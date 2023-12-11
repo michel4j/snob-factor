@@ -15,11 +15,10 @@ int serial_to_id(int ss) {
                 return (k);
         }
     }
-
-    printf("No such class serial as %d", ss >> 2);
+    char suffix = ' ';
     if (ss & 3)
-        printf("%c", (ss & 1) ? 'a' : 'b');
-    printf("\n");
+        suffix = (ss & 1) ? 'a' : 'b';
+    log_msg(1, "No such class serial as %d %c", ss >> 2, suffix);
     return (-3);
 }
 

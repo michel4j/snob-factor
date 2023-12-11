@@ -31,6 +31,7 @@ EXT int Interactive;       // Flag showing if snob is being called interactively
 EXT int Debug;             // Flag to turn toggle debug messages
 EXT int Control, DControl; /*	To control what is adjusted  */
 EXT int DFix, Fix;         /*	To determine how weights are distributed  */
+EXT int NumRepChars;
 
 EXT Score Scores;
 

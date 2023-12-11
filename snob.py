@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import ctypes as ct
+import sys
 
 class Classification(ct.Structure):
     """ Result """
@@ -41,24 +42,29 @@ EXAMPLES = [
     'd2',
     'vm',
 ]
-EXAMPLES = ['d2']
+EXAMPLES = ['6r1b']
 
 from pathlib import Path
                 
 if __name__ == '__main__':
     snob.initialize(0, 0, 16)
+    if len(sys.argv) > 1:
+        EXAMPLES = sys.argv[1:]
 
     for name in EXAMPLES:
-        vset_file = str(Path('./examples') / f'{name}.v')
-        sample_file = str(Path('./examples') / f'{name}.s')
+        vset_file = Path('./examples') / f'{name}.v'
+        sample_file = Path('./examples') / f'{name}.s'
     
+        if not vset_file.exists() and sample_file.exists():
+            continue
+
         print('#'*80)
         snob.report_space(1);
         print(f"Classifying: {name}")
         
-        snob.load_vset(vset_file.encode('utf-8'))
-        snob.load_sample(sample_file.encode('utf-8'))
-        result = snob.classify(20, 50, 2, 0)
+        snob.load_vset(str(vset_file).encode('utf-8'))
+        snob.load_sample(str(sample_file).encode('utf-8'))
+        result = snob.classify(20, 50, 2, 0.01)
         snob.print_tree()
         buffer_size = (result.classes + result.leaves) * (result.attrs + 1) * 80 * 4
         buffer = ct.create_string_buffer(buffer_size)

@@ -427,23 +427,23 @@ void revert(int flag) {
 /*	rep(ch) prints char ch and flushes stdout. If end of line, does
 a new line.  flp() does a new line.  */
 
-static int numrepchars = 0;
 
 void rep(int ch) {
-    putchar(ch);
-    numrepchars++;
-    if (numrepchars == 80) {
-        putchar('\n');
-        numrepchars = 0;
+    if (Debug) {
+        putchar(ch);
+        NumRepChars++;
+        if (NumRepChars == 80) {
+            putchar('\n');
+            NumRepChars = 0;
+        }
+        fflush(stdout);
     }
-    fflush(stdout);
-    return;
 }
 
 void flp() {
-    if (numrepchars) {
+    if (NumRepChars) {
         putchar('\n');
-        numrepchars = 0;
+        NumRepChars = 0;
     }
     return;
 }

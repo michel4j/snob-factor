@@ -141,16 +141,14 @@ void tidy(int hit, int no_subs) {
 
             kkd = cls->dad_id;
             if (kkd < 0) {
-                printf("Dad error in tidy\n");
-                for (;;)
-                    ;
+                log_msg(2, "\nDad error in tidy\n");
+                return; // Previously infinite loop for(;;) ;
             }
             int hard = 0;
             if (hit && (cls->weights_sum < MinSize)) {
                 cause = Deadsmall;
                 hard = 1;
-            } else if (hit && (cls->type == Sub) &&
-                       ((cls->age > MaxSubAge) || no_subs)) {
+            } else if (hit && (cls->type == Sub) && ((cls->age > MaxSubAge) || no_subs)) {
                 cause = Dead;
                 hard = 2;
             } else if (popln->classes[kkd]->type == Vacant) {
@@ -224,8 +222,7 @@ void tidy(int hit, int no_subs) {
         for (i = 0; i <= popln->hi_class; i++) {
             dad = popln->classes[i];
             // Check if conditions are met to make subclasses
-            if (dad->type == Leaf && !dad->num_sons &&
-                dad->weights_sum >= (2.1 * MinSize) && dad->age >= MinAge) {
+            if (dad->type == Leaf && !dad->num_sons && dad->weights_sum >= (2.1 * MinSize) && dad->age >= MinAge) {
                 make_subclasses(i);
                 kkd++;
             }
@@ -248,9 +245,7 @@ void tidy(int hit, int no_subs) {
     popln->hi_class = newhicl;
     popln->next_serial = (kkd >> 2) + 1;
     sortsons(popln->root);
-
 }
-
 
 /*	------------------------  doall  --------------------------   */
 /*	To do a complete cost-assign-adjust cycle on all things.
@@ -343,7 +338,6 @@ double update_leaf_classes(double *oldleafsum, int *nfail, int num_son) {
     return leafsum;
 }
 
-
 void update_all_classes(double *oldcost, int *nfail) {
     Population *popln = CurCtx.popln;
     Class *root = popln->classes[popln->root];
@@ -411,7 +405,7 @@ int count_score_changes() {
 int do_all(int ncycles, int all) {
     int niter, nfail, ic, ncydone, ncyask, kicked = 0, num_son;
     double oldcost, oldleafsum;
-    
+
     Population *popln = CurCtx.popln;
     Class *root = popln->classes[popln->root];
 
@@ -432,7 +426,7 @@ int do_all(int ncycles, int all) {
 
         if (all != (Dad + Leaf + Sub)) {
             update_leaf_classes(&oldleafsum, &nfail, num_son);
-            
+
         } else {
             // all = 7, so we have dads, leaves and subs to do.
             // We do from bottom up, collecting as-dad pcosts.
@@ -461,15 +455,13 @@ int do_all(int ncycles, int all) {
         ncydone = -1;
 
     if (kicked) {
-        flp();
-        printf("Doall interrupted after %4d steps\n", ncydone);
+        log_msg(1, "\nDoall interrupted after %4d steps", ncydone);
     }
     /*	Scan leaf classes whose use is 'Fac' to accumulate significant
         score changes.  */
     ScoreChanges = count_score_changes();
     return (ncydone);
 }
-
 
 /*	----------------------  dodads  -----------------------------  */
 /*	Runs adjustclass on all leaves without adjustment.
@@ -596,13 +588,11 @@ int do_good(int ncy, double target) {
     goto done;
 
 bullseye:
-    flp();
-    printf("Dogood reached target after %4d cycles\n", nn);
+    log_msg(1, "Dogood reached target after %4d cycles", nn);
     goto done;
 
 kicked:
-    flp();
-    printf("Dogood interrupted after %4d cycles\n", nn);
+    log_msg(1, "Dogood interrupted after %4d cycles", nn);
 done:
     return (nn);
 }

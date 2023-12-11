@@ -47,7 +47,7 @@ int make_population(int fill) {
     int num_cases = (CurCtx.sample) ? CurCtx.sample->num_cases : 0;
 
     if ((!CurCtx.sample) && fill) {
-        return error_value("Makepop cannot fill because no sample defined\n", -1);
+        return error_value("Makepop cannot fill because no sample defined", -1);
     }
     /*	Find vacant popln slot    */
     for (indx = 0; indx < MAX_POPULATIONS; indx++) {
@@ -58,12 +58,12 @@ int make_population(int fill) {
     }
 
     if (found < 0) {
-        return error_value("No space for another population\n", -1);
+        return error_value("No space for another population", -1);
     }
 
     popln = Populations[found] = (Population *)malloc(sizeof(Population));
     if (!popln) {
-        return error_value("No space for another population\n", -1);
+        return error_value("No space for another population", -1);
     }
     popln->id = found;
     popln->sample_size = 0;
@@ -82,7 +82,7 @@ int make_population(int fill) {
     popln->variables = (PopVar *)alloc_blocks(1, CurCtx.vset->length * sizeof(PopVar));
 
     if (!popln->variables) {
-        return error_value("No space for another population\n", -1);
+        return error_value("No space for another population", -1);
     }
 
     /*	Copy from variable-set AVinsts to PVinsts  */
@@ -93,7 +93,7 @@ int make_population(int fill) {
         pop_var->id = vset_var->id;
         pop_var->paux = (char *)alloc_blocks(1, vtype->pop_aux_size);
         if (!pop_var->paux) {
-            return error_value("No space for another population\n", -1);
+            return error_value("No space for another population", -1);
         }
     }
 
@@ -101,7 +101,7 @@ int make_population(int fill) {
         allowing for MAX_CLASSES classes  */
     popln->classes = (Class **)alloc_blocks(1, MAX_CLASSES * sizeof(Class *));
     if (!popln->classes) {
-        return error_value("No space for another population\n", -1);
+        return error_value("No space for another population", -1);
     }
     popln->cls_vec_len = MAX_CLASSES;
     for (i = 0; i < popln->cls_vec_len; i++)
@@ -113,7 +113,7 @@ int make_population(int fill) {
     }
     popln->root = make_class();
     if (popln->root < 0) {
-        return error_value("No space for another population\n", -1);
+        return error_value("No space for another population", -1);
     }
     cls = popln->classes[popln->root];
     cls->serial = 4;
@@ -139,7 +139,7 @@ int init_population() {
 
     ipop = -1;
     if (!CurCtx.sample) {
-        return error_value("No sample defined for firstpop\n", ipop);
+        return error_value("No sample defined for firstpop", ipop);
     }
     ipop = make_population(1); /* Makes a configured popln */
     if (ipop < 0) {
@@ -279,13 +279,13 @@ int copy_population(int p1, int fill, char *newname) {
     indx = -1;
     fpop = Populations[p1];
     if (!fpop) {
-        printf("No popln index %d\n", p1);
+        log_msg(1, "No popln index %d", p1);
         indx = -106;
         goto finish;
     }
     kk = find_vset(fpop->vst_name);
     if (kk < 0) {
-        printf("No Variable-set %s\n", fpop->vst_name);
+        log_msg(1,"No Variable-set %s", fpop->vst_name);
         indx = -101;
         goto finish;
     }
@@ -304,7 +304,7 @@ int copy_population(int p1, int fill, char *newname) {
         goto sampfound;
     }
     /*	Fill is indicated but no sample is defined.  */
-    printf("There is no defined sample to fill for.\n");
+    log_msg(1, "There is no defined sample to fill for.");
     indx = -103;
     goto finish;
 
@@ -321,7 +321,7 @@ sampfound:
     i = find_population(newname);
     /*	Check for copying into self  */
     if (i == p1) {
-        printf("From copypop: attempt to copy model%3d into itself\n", p1 + 1);
+        log_msg(1,"From copypop: attempt to copy model%3d into itself", p1 + 1);
         indx = -102;
         goto finish;
     }
@@ -330,7 +330,7 @@ sampfound:
     /*	Make a new popln  */
     indx = make_population(fill);
     if (indx < 0) {
-        printf("Cant make new popln from%4d\n", p1 + 1);
+        log_msg(1,"Cant make new popln from%4d", p1 + 1);
         indx = -104;
         goto finish;
     }
@@ -559,7 +559,7 @@ void track_best(int verify) {
     /*	Compare current and best costs  */
     bstid = get_best_pop();
     if (bstid < 0) {
-        printf("Cannot make BST_ model\n");
+        log_msg(1,  "Cannot make BST_ model");
         return;
     }
     bstpop = Populations[bstid];
@@ -644,14 +644,14 @@ int save_population(int p1, int fill, char *newname) {
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     fl = 0;
     if (!Populations[p1]) {
-        printf("No popln index %d\n", p1);
+        log_msg(1,  "No popln index %d", p1);
         leng = -106;
         goto finish;
     }
     /*	Begin by copying the popln to a clean TrialPop   */
     popln = Populations[p1];
     if (!strcmp(popln->name, "TrialPop")) {
-        printf("Cannot save TrialPop\n");
+        log_msg(1,  "Cannot save TrialPop");
         leng = -105;
         goto finish;
     }
@@ -663,7 +663,7 @@ int save_population(int p1, int fill, char *newname) {
         if (oldname[i] != "BST_"[i])
             goto namefixed;
     oldname[3] = 'P';
-    printf("This model will be saved with name BSTP... not BST_...\n");
+    log_msg(1,  "This model will be saved with name BSTP... not BST_...");
 namefixed:
     i = find_population("TrialPop");
     if (i >= 0)
@@ -689,7 +689,7 @@ namefixed:
 
     fl = fopen(newname, "w");
     if (!fl) {
-        printf("Cannot open %s\n", newname);
+        log_msg(1,  "Cannot open %s", newname);
         leng = -102;
         goto finish;
     }
@@ -754,7 +754,7 @@ classdone:
 
 finish:
     fclose(fl);
-    printf("\nModel %s  Cost %10.2f  saved in file %s\n", oldname, popln->classes[0]->best_cost, newname);
+    log_msg(1,  "\nModel %s  Cost %10.2f  saved in file %s", oldname, popln->classes[0]->best_cost, newname);
     memcpy(&CurCtx, &oldctx, sizeof(Context));
     return (leng);
 }
@@ -777,20 +777,20 @@ int load_population(char *nam) {
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     fl = fopen(nam, "r");
     if (!fl) {
-        printf("Cannot open %s\n", nam);
+        log_msg(1,  "Cannot open %s", nam);
         goto error;
     }
     fscanf(fl, "%s", name);
     if (strcmp(name, saveheading)) {
-        printf("File is not a Scnob save-file\n");
+        log_msg(1,  "File is not a Scnob save-file");
         goto error;
     }
     fscanf(fl, "%s", pname);
-    printf("Model %s\n", pname);
+    log_msg(1,  "Model %s", pname);
     fscanf(fl, "%s", name); /* Reading v-set name */
     j = find_vset(name);
     if (j < 0) {
-        printf("Model needs variableset %s\n", name);
+        log_msg(1,  "Model needs variableset %s", name);
         goto error;
     }
     CurCtx.vset = VarSets[j];
@@ -803,13 +803,13 @@ int load_population(char *nam) {
     if (fnc) {
         j = find_sample(name, 1);
         if (j < 0) {
-            printf("Sample %s unknown.\n", name);
+            log_msg(1,  "Sample %s unknown.", name);
             num_cases = 0;
             CurCtx.sample = 0;
         } else {
             CurCtx.sample = Samples[j];
             if (CurCtx.sample->num_cases != fnc) {
-                printf("Size conflict Model%9d vs. Sample%9d\n", fnc, num_cases);
+                log_msg(1,  "Size conflict Model%9d vs. Sample%9d", fnc, num_cases);
                 goto error;
             }
             num_cases = fnc;
@@ -839,7 +839,7 @@ int load_population(char *nam) {
 newclass:
     j = make_class();
     if (j < 0) {
-        printf("RestoreClass fails in Makeclass\n");
+        log_msg(1,  "RestoreClass fails in Makeclass");
         goto error;
     }
 haveclass:
@@ -893,7 +893,7 @@ classdone:
 
     i = find_population(pname);
     if (i >= 0) {
-        printf("Overwriting old model %s\n", pname);
+        log_msg(1,"Overwriting old model %s", pname);
         destroy_population(i);
     }
     if (!strcmp(pname, "work"))
@@ -933,18 +933,18 @@ int set_work_population(int pp) {
     /*	Check popln vset  */
     j = find_vset(popln->vst_name);
     if (j < 0) {
-        printf("Load cannot find variable set\n");
+        log_msg(1, "Load cannot find variable set");
         goto error;
     }
     CurCtx.vset = VarSets[j];
     /*	Check VarSet  */
     if (strcmp(CurCtx.vset->name, oldctx.sample->vset_name)) {
-        printf("Picked popln has incompatible VariableSet\n");
+        log_msg(1, "Picked popln has incompatible VariableSet");
         goto error;
     }
     /*	Check sample   */
     if (fpopnc && strcmp(popln->sample_name, oldctx.sample->name)) {
-        printf("Picked popln attached to non-current sample.\n");
+        log_msg(1, "Picked popln attached to non-current sample.");
         /*	Make pop appear unattached  */
         popln->sample_size = 0;
     }
@@ -958,18 +958,16 @@ int set_work_population(int pp) {
 
     /*	The popln was copied as if unattached, so scores, weights must be
         fixed  */
-    printf("Model will have weights, scores adjusted to sample.\n");
+    log_msg(1, "Model will have weights, scores adjusted to sample.");
     Fix = Partial;
     Control = AdjSc;
 fixscores:
     SeeAll = 16;
     do_all(15, 0);
     /*	doall should leave a count of score changes in global  */
-    flp();
-    printf("%8d  score changes\n", ScoreChanges);
+    log_msg(1, "%8d  score changes", ScoreChanges);
     if (Heard) {
-        flp();
-        printf("Score fixing stopped prematurely\n");
+        log_msg(1, "Score fixing stopped prematurely");
     } else if (ScoreChanges > 1)
         goto fixscores;
     Fix = DFix;
@@ -1008,19 +1006,19 @@ void correlpops(int xid) {
     wpop = popln;
     xpop = Populations[xid];
     if (!xpop) {
-        printf("No such model\n");
+        log_msg(1, "No such model");
         goto finish;
     }
     if (!xpop->sample_size) {
-        printf("Model is unattached\n");
+        log_msg(1, "Model is unattached");
         goto finish;
     }
     if (strcmp(popln->sample_name, xpop->sample_name)) {
-        printf("Model not for same sample.\n");
+        log_msg(1, "Model not for same sample.");
         goto finish;
     }
     if (xpop->sample_size != num_cases) {
-        printf("Models have unequal numbers of cases.\n");
+        log_msg(1, "Models have unequal numbers of cases.");
         goto finish;
     }
     /*	Should be able to proceed  */
@@ -1041,7 +1039,7 @@ void correlpops(int xid) {
     /*	Find all leaves of xpop  */
     xnl = find_all(Leaf);
     if ((wnl < 2) || (xnl < 2)) {
-        printf("Need at least 2 classes in each model.\n");
+        log_msg(1, "Need at least 2 classes in each model.");
         goto finish;
     }
     for (xic = 0; xic < xnl; xic++)
@@ -1076,10 +1074,9 @@ void correlpops(int xid) {
     }
 
     /*	Print results	*/
-    flp();
-    printf("Cross tabulation of popln classes as permillages.\n");
-    printf("Rows show 'work' classes, Columns show 'other' classes.\n");
-    printf("\nSer:");
+    log_msg(1, "Cross tabulation of popln classes as permillages.");
+    log_msg(1, "Rows show 'work' classes, Columns show 'other' classes.");
+    log_msg(1, "Ser:");
     for (xic = 0; xic < xnl; xic++)
         printf("%3d:", xsons[xic]->serial / 4);
     printf("\n");

@@ -41,7 +41,6 @@ int main(int argc, char *argv[]) {
    
     // display tree and classes
     print_class(-2, 1);
-    print_tree();
     show_population();
 
     if (argc == 4) {
