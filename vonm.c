@@ -102,8 +102,8 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
     double fwd2; /* Total coeff of Fmu in item costs */
 } Stats;
 
-static Basic *cls_var, *dcvi;
-static Stats *evi;
+static Basic *cls_var, *dad_var;
+static Stats *exp_var;
 
 static void set_var(int iv, Class *cls);
 static int read_attr_aux(void *vax);
@@ -166,8 +166,8 @@ void set_var(int iv, Class *cls) {
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
 
     cls_var = (Basic *)cls->basics[iv];
-    evi = (Stats *)cls->stats[iv];
-    dcvi = (dad) ? (Basic *)dad->basics[iv] : 0;
+    exp_var = (Stats *)cls->stats[iv];
+    dad_var = (dad) ? (Basic *)dad->basics[iv] : 0;
 }
 
 /*	--------------------  readvaux  ----------------------------  */
@@ -253,20 +253,20 @@ void set_best_pars(int iv, Class *cls) {
         cls_var->bhx = cls_var->nhx;
         cls_var->bhy = cls_var->nhy;
         cls_var->bhsprd = cls_var->nhsprd;
-        evi->btcost = evi->ntcost;
-        evi->bpcost = evi->npcost;
+        exp_var->btcost = exp_var->ntcost;
+        exp_var->bpcost = exp_var->npcost;
     } else if ((cls->use == Fac) && cls_var->infac) {
         cls_var->bhx = cls_var->fhx;
         cls_var->bhy = cls_var->fhy;
         cls_var->bhsprd = cls_var->fhsprd;
-        evi->btcost = evi->ftcost;
-        evi->bpcost = evi->fpcost;
+        exp_var->btcost = exp_var->ftcost;
+        exp_var->bpcost = exp_var->fpcost;
     } else {
         cls_var->bhx = cls_var->shx;
         cls_var->bhy = cls_var->shy;
         cls_var->bhsprd = cls_var->shsprd;
-        evi->btcost = evi->stcost;
-        evi->bpcost = evi->spcost;
+        exp_var->btcost = exp_var->stcost;
+        exp_var->bpcost = exp_var->spcost;
     }
 }
 
@@ -277,12 +277,12 @@ void clear_stats(int iv, Class *cls) {
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
     set_var(iv, cls);
-    evi->cnt = 0.0;
-    evi->stcost = evi->ftcost = 0.0;
-    evi->vsq = 0.0;
-    evi->tssin = evi->tscos = 0.0;
-    evi->tfsin = evi->tfcos = 0.0;
-    evi->ldd2 = evi->ldd1 = evi->fwd2 = 0.0;
+    exp_var->cnt = 0.0;
+    exp_var->stcost = exp_var->ftcost = 0.0;
+    exp_var->vsq = 0.0;
+    exp_var->tssin = exp_var->tscos = 0.0;
+    exp_var->tfsin = exp_var->tfcos = 0.0;
+    exp_var->ldd2 = exp_var->ldd1 = exp_var->fwd2 = 0.0;
 
     if (cls->age > 0)
         return;
@@ -392,7 +392,7 @@ void cost_var(int iv, int fac, Class *cls) {
     if (saux->missing) 
         return;
     if (cls->age == 0) {
-        evi->parkftcost = evi->parkstcost = 0.0;
+        exp_var->parkftcost = exp_var->parkstcost = 0.0;
         return;
     }
     /*	Do no-fac cost first  */
@@ -401,7 +401,7 @@ void cost_var(int iv, int fac, Class *cls) {
     /*	This is already multiplied by field strength kappa  */
     cost = cls_var->slgi0 - del - saux->leps;
     /*	slgi0 contains the roundoff costs from shsprd   */
-    evi->parkstcost = cost;
+    exp_var->parkstcost = cost;
     Scores.CaseNoFacCost += cost;
 
     /*	Only do faccost if fac  */
@@ -426,7 +426,7 @@ void cost_var(int iv, int fac, Class *cls) {
     }
 
     Scores.CaseFacCost += cost;
-    evi->parkftcost = cost;
+    exp_var->parkftcost = cost;
 }
 
 /*	--------------------  deriv_var  --------------------------  */
@@ -445,14 +445,14 @@ void deriv_var(int iv, int fac, Class *cls) {
     if (saux->missing)
         return;
     /*	Do non-fac first  */
-    evi->cnt += case_weight;
+    exp_var->cnt += case_weight;
     /*	For non-fac, rather than getting derivatives I just collect
         the sufficient statistics, sum of xn.sinxx, xn.cosxx  */
-    evi->tssin += case_weight * saux->xn.sinxx;
-    evi->tscos += case_weight * saux->xn.cosxx;
+    exp_var->tssin += case_weight * saux->xn.sinxx;
+    exp_var->tscos += case_weight * saux->xn.cosxx;
     /*	Accumulate weighted item cost  */
-    evi->stcost += case_weight * evi->parkstcost;
-    evi->ftcost += case_weight * evi->parkftcost;
+    exp_var->stcost += case_weight * exp_var->parkstcost;
+    exp_var->ftcost += case_weight * exp_var->parkftcost;
 
     /*	Now for factor form  */
     if (fac) {
@@ -469,9 +469,9 @@ void deriv_var(int iv, int fac, Class *cls) {
             accumulation as tfcos, tssin  */
 
         coser = saux->xn.cosxx * cosw + saux->xn.sinxx * sinw;
-        evi->tfcos += case_weight * coser;
+        exp_var->tfcos += case_weight * coser;
         siner = saux->xn.sinxx * cosw - saux->xn.cosxx * sinw;
-        evi->tfsin += case_weight * siner;
+        exp_var->tfsin += case_weight * siner;
 
         /*	These should be sufficient to get derivs of mc1 wrt hx, hy,
             also derivs of mc2, but there remains mc3, and load. */
@@ -480,7 +480,7 @@ void deriv_var(int iv, int fac, Class *cls) {
         tsprd = Scores.CaseFacScoreSq * cls_var->ldsprd + cls_var->ldsq * Scores.cvvsprd;
         wtr2 = case_weight * r2;
         /*	Accumulate wsprd = tsprd * r2  */
-        evi->fwd2 += tsprd * wtr2;
+        exp_var->fwd2 += tsprd * wtr2;
 
         /*	To get deriv wrt ld, deriv of mc1 wrt w is:  */
         wd1 = ((cls_var->fhy * saux->xn.cosxx + cls_var->fhx * saux->xn.sinxx) * sinw + (cls_var->fhx * saux->xn.cosxx - cls_var->fhy * saux->xn.sinxx) * cosw);
@@ -491,13 +491,13 @@ void deriv_var(int iv, int fac, Class *cls) {
 
         /*	The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
         /*	and so to a deriv wrt ld of: (vv * wd1 * dwdt)  */
-        evi->ldd1 += case_weight * Scores.CaseFacScore * wd1 * dwdt;
+        exp_var->ldd1 += case_weight * Scores.CaseFacScore * wd1 * dwdt;
 
         /*	There is also a deriv wrt ld via tsprd.  */
-        evi->ldd1 += cls_var->fmufish * wtr2 * cls_var->ld * Scores.cvvsprd;
+        exp_var->ldd1 += cls_var->fmufish * wtr2 * cls_var->ld * Scores.cvvsprd;
 
         /*	Accum as ldd2 twice the multiplier of ldsprd in mc3  */
-        evi->ldd2 += 0.5 * cls_var->fmufish * r2 * Scores.CaseFacScoreSq;
+        exp_var->ldd2 += 0.5 * cls_var->fmufish * r2 * Scores.CaseFacScoreSq;
     }
 }
 
@@ -516,16 +516,16 @@ void adjust(int iv, int fac, Class *cls) {
 
     set_var(iv, cls);
     adj = InitialAdj;
-    cnt = evi->cnt;
+    cnt = exp_var->cnt;
 
     /*	Get prior constants from dad, or if root, fake them  */
     if (!dad) { /* Class is root */
         dadhx = dadhy = 0.0;
         dhsprd = NullSprd;
     } else {
-        dadhx = dcvi->nhx;
-        dadhy = dcvi->nhy;
-        dhsprd = dcvi->nhsprd;
+        dadhx = dad_var->nhx;
+        dadhy = dad_var->nhy;
+        dhsprd = dad_var->nhsprd;
     }
 
     /*	If too few data for this variable, use dad's n-paras  */
@@ -538,10 +538,10 @@ void adjust(int iv, int fac, Class *cls) {
         cls_var->sfh = cls_var->ffh = -1.0;
     } else if (!cls->age) {
         /*	If class age is zero, make some preliminary estimates  */
-        evi->oldftcost = 0.0;
-        evi->adj = 1.0;
-        cls_var->shx = cls_var->fhx = evi->tssin / cnt;
-        cls_var->shy = cls_var->fhy = evi->tscos / cnt;
+        exp_var->oldftcost = 0.0;
+        exp_var->adj = 1.0;
+        cls_var->shx = cls_var->fhx = exp_var->tssin / cnt;
+        cls_var->shy = cls_var->fhy = exp_var->tscos / cnt;
         cls_var->shsprd = cls_var->fhsprd = 1.0 / cnt;
         cls_var->ldsprd = 1.0 / cnt;
         cls_var->ld = 0.0;
@@ -568,8 +568,8 @@ void adjust(int iv, int fac, Class *cls) {
     }
 
     /*	Store param costs for this variable  */
-    evi->spcost = spcost;
-    evi->fpcost = fpcost;
+    exp_var->spcost = spcost;
+    exp_var->fpcost = fpcost;
     /*	Add to class param costs  */
     cls->nofac_par_cost += spcost;
     cls->fac_par_cost += fpcost;
@@ -587,8 +587,8 @@ void adjust(int iv, int fac, Class *cls) {
         kapcode(cls_var->shx, cls_var->shy, &(cls_var->skappa));
 
     /*	From item cost term - kap*Sum{cos(mu-x)} :  */
-    hxd1 = -evi->tssin;
-    hyd1 = -evi->tscos;
+    hxd1 = -exp_var->tssin;
+    hyd1 = -exp_var->tscos;
 
     /*	From item cost term N * LI0 : */
     /*	Deriv wrt kappa is : */
@@ -615,7 +615,7 @@ void adjust(int iv, int fac, Class *cls) {
     cls_var->shy -= adj * hyd1 * cls_var->shsprd;
     /*	Recalc kappa and dependents   */
     kapcode(cls_var->shx, cls_var->shy, &(cls_var->skappa));
-    /*	Store the constant part of cost (sli0 + shsprd*Fh) in cvi->slgi0 */
+    /*	Store the constant part of cost (sli0 + shsprd*Fh) in cls_Var->slgi0 */
     cls_var->slgi0 += cls_var->shsprd * cls_var->sfh;
     if (fac) {
         /*	Adjust factor parameters
@@ -634,8 +634,8 @@ void adjust(int iv, int fac, Class *cls) {
             kapcode(cls_var->fhx, cls_var->fhy, &(cls_var->fkappa));
 
         /*	From item cost term - kap*Sum{cos(mu-x)} :  */
-        hxd1 = -evi->tfsin;
-        hyd1 = -evi->tfcos;
+        hxd1 = -exp_var->tfsin;
+        hyd1 = -exp_var->tfcos;
 
         /*	From item cost term N * LI0 : */
         /*	Deriv wrt kappa is : */
@@ -647,39 +647,39 @@ void adjust(int iv, int fac, Class *cls) {
 
         /*	We have Sum {wsprd} in evi->fwd2, so cost term 0.5 * Fmu * wsprd gives:
          */
-        hkd1 += 0.5 * (cls_var->faa + cls_var->fkappa * cls_var->fdaa) * evi->fwd2;
+        hkd1 += 0.5 * (cls_var->faa + cls_var->fkappa * cls_var->fdaa) * exp_var->fwd2;
 
         /*	Deriv of kappa wrt fhx is fhx / kappa, so  */
         hxd1 += cls_var->fhx * hkd1 * cls_var->rfkappa;
         hyd1 += cls_var->fhy * hkd1 * cls_var->rfkappa;
 
         /*	Have evi->ldd1, evi->ldd2  */
-        ldd2 = evi->ldd2;
+        ldd2 = exp_var->ldd2;
 
         /*	From prior cost:  */
         hxd1 += (cls_var->fhx - dadhx) * temp1;
         hyd1 += (cls_var->fhy - dadhy) * temp1;
         hkd2 += 2.0 * temp1;
-        evi->ldd1 += cls_var->ld;
+        exp_var->ldd1 += cls_var->ld;
         ldd2 += 1.0;
 
         /*     Adjust fhx, fhy, ld  */
-        del1 = evi->ftcost / cnt;
-        adj = evi->adj * 1.1;
+        del1 = exp_var->ftcost / cnt;
+        adj = exp_var->adj * 1.1;
         if (adj > 1.25)
             adj = 1.25;
-        if (del1 > evi->oldftcost)
+        if (del1 > exp_var->oldftcost)
             adj = 0.5 * adj;
         if (adj < InitialAdj)
             adj = InitialAdj;
-        evi->adj = adj;
-        evi->oldftcost = del1;
+        exp_var->adj = adj;
+        exp_var->oldftcost = del1;
         cls_var->fhsprd = 1.0 / hkd2;
         if ((cls_var->fhsprd * cnt) < 1.0)
             cls_var->fhsprd = 1.0 / cnt;
         cls_var->fhx -= adj * hxd1 * cls_var->fhsprd;
         cls_var->fhy -= adj * hyd1 * cls_var->fhsprd;
-        cls_var->ld -= adj * evi->ldd1 / ldd2;
+        cls_var->ld -= adj * exp_var->ldd1 / ldd2;
         cls_var->ldsprd = 1.0 / ldd2;
     } else {
         /* Set factor params from plain  */
@@ -705,7 +705,7 @@ void adjust(int iv, int fac, Class *cls) {
         cls_var->nhy = cls_var->shy;
         cls_var->nhsprd = cls_var->shsprd;
     }
-    cls_var->samplesize = evi->cnt;
+    cls_var->samplesize = exp_var->cnt;
 }
 
 /*	------------------------  show  -----------------------   */
@@ -715,12 +715,12 @@ void show(Class *cls, int iv) {
     Saux *saux = (Saux *)(smpl_var->saux);
     set_var(iv, cls);
 
-    printf("V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv + 1, evi->cnt, (cls_var->infac) ? " In" : "Out", evi->adj);
+    printf("V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out", exp_var->adj);
     if (cls->num_sons >= 2) {
-        printf(" N: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", evi->npcost, cls_var->nhx, cls_var->nhy, sqrt(cls_var->nhsprd));
+        printf(" N: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", exp_var->npcost, cls_var->nhx, cls_var->nhy, sqrt(cls_var->nhsprd));
     }
-    printf(" S: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", evi->spcost + evi->stcost, cls_var->shx, cls_var->shy, sqrt(cls_var->shsprd));
-    printf(" F: Cost%8.1f  Hx%8.3f  Hy%8.3f  Ld%8.3f +-%5.2f\n", evi->fpcost + evi->ftcost, cls_var->fhx, cls_var->fhy, cls_var->ld, sqrt(cls_var->ldsprd));
+    printf(" S: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", exp_var->spcost + exp_var->stcost, cls_var->shx, cls_var->shy, sqrt(cls_var->shsprd));
+    printf(" F: Cost%8.1f  Hx%8.3f  Hy%8.3f  Ld%8.3f +-%5.2f\n", exp_var->fpcost + exp_var->ftcost, cls_var->fhx, cls_var->fhy, cls_var->ld, sqrt(cls_var->ldsprd));
     kappa = sqrt(cls_var->bhx * cls_var->bhx + cls_var->bhy * cls_var->bhy);
     mu = atan2(cls_var->bhx, cls_var->bhy);
     printf(" B:  Mean ");
@@ -739,12 +739,12 @@ void details(Class *cls, int iv, MemBuffer* buffer) {
     Saux *saux = (Saux *)(smpl_var->saux);
     set_var(iv, cls);
 
-    print_buffer(buffer,  "V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv + 1, evi->cnt, (cls_var->infac) ? " In" : "Out", evi->adj);
+    print_buffer(buffer,  "V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out", exp_var->adj);
     if (cls->num_sons >= 2) {
-        print_buffer(buffer,  " N: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", evi->npcost, cls_var->nhx, cls_var->nhy, sqrt(cls_var->nhsprd));
+        print_buffer(buffer,  " N: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", exp_var->npcost, cls_var->nhx, cls_var->nhy, sqrt(cls_var->nhsprd));
     }
-    print_buffer(buffer,  " S: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", evi->spcost + evi->stcost, cls_var->shx, cls_var->shy, sqrt(cls_var->shsprd));
-    print_buffer(buffer,  " F: Cost%8.1f  Hx%8.3f  Hy%8.3f  Ld%8.3f +-%5.2f\n", evi->fpcost + evi->ftcost, cls_var->fhx, cls_var->fhy, cls_var->ld, sqrt(cls_var->ldsprd));
+    print_buffer(buffer,  " S: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", exp_var->spcost + exp_var->stcost, cls_var->shx, cls_var->shy, sqrt(cls_var->shsprd));
+    print_buffer(buffer,  " F: Cost%8.1f  Hx%8.3f  Hy%8.3f  Ld%8.3f +-%5.2f\n", exp_var->fpcost + exp_var->ftcost, cls_var->fhx, cls_var->fhy, cls_var->ld, sqrt(cls_var->ldsprd));
     kappa = sqrt(cls_var->bhx * cls_var->bhx + cls_var->bhy * cls_var->bhy);
     mu = atan2(cls_var->bhx, cls_var->bhy);
     print_buffer(buffer,  " B:  Mean ");
@@ -859,7 +859,7 @@ Writing the quadratic as    a*s^2 + b*s -c = 0,   we want the root
     */
 
 void cost_var_nonleaf(int iv, int vald, Class *cls) {
-    Basic *soncvi;
+    Basic *son_var;
     Class *son;
     double pcost;
     double nhx, nhy, nhsprd, dadhx, dadhy, dadhsprd;
@@ -873,14 +873,14 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
 
     set_var(iv, cls);
     if (!vald) { /* Cannot define as-dad params, so fake it */
-        evi->npcost = 0.0;
+        exp_var->npcost = 0.0;
         cls_var->nhx = cls_var->shx;
         cls_var->nhy = cls_var->shy;
-        cls_var->nhsprd = cls_var->shsprd * evi->cnt;
+        cls_var->nhsprd = cls_var->shsprd * exp_var->cnt;
         return;
     }
     if (vset_var->inactive) {
-        evi->npcost = evi->ntcost = 0.0;
+        exp_var->npcost = exp_var->ntcost = 0.0;
         return;
     }
     nson = cls->num_sons;
@@ -894,9 +894,9 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
         dadhx = dadhy = 0.0;
         dadhsprd = NullSprd;
     } else {
-        dadhx = dcvi->nhx;
-        dadhy = dcvi->nhy;
-        dadhsprd = dcvi->nhsprd;
+        dadhx = dad_var->nhx;
+        dadhy = dad_var->nhy;
+        dadhsprd = dad_var->nhsprd;
     }
     nhx = cls_var->nhx;
     nhy = cls_var->nhy;
@@ -911,10 +911,10 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
 
     for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
         son = popln->classes[ison];
-        soncvi = (Basic *)son->basics[iv];
-        sbhx = soncvi->bhx;
-        sbhy = soncvi->bhy;
-        sbhsprd = soncvi->bhsprd;
+        son_var = (Basic *)son->basics[iv];
+        sbhx = son_var->bhx;
+        sbhy = son_var->bhy;
+        sbhsprd = son_var->bhsprd;
         tsxn += sbhx;
         tsyn += sbhy;
         tsvn += sbhx * sbhx + sbhy * sbhy;
@@ -962,7 +962,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
 
     /*	Add roundoff for 3 params (nhx, nhy, nhsprd)  */
     pcost += 1.5;
-    evi->npcost = pcost;
+    exp_var->npcost = pcost;
 }
 
 /*	-------------- tables and kapcode ------------------ */

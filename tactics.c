@@ -63,8 +63,8 @@ of the other, provided neither is the root  */
 double insert_dad(int ser1, int ser2, int *dadid)
 {
     Class *cls1, *cls2, *ndad, *odad;
-    ExplnVar *evi, *fevi;
-    ClassVar *cvi, *fcvi;
+    ExplnVar *exp_var, *fexp_var;
+    ClassVar *cls_var, *fcls_var;
     int nch, iv, k1, k2;
     double origcost, newcost, drop;
     int oldid, newid, od1, od2;
@@ -123,18 +123,18 @@ configok:
     ndad->hold_type = 0;
     /*      Copy Basics. the structures should have been made.  */
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
-        fcvi = odad->basics[iv];
-        cvi = ndad->basics[iv];
+        fcls_var = odad->basics[iv];
+        cls_var = ndad->basics[iv];
         nch = CurCtx.vset->variables[iv].basic_size;
-        memcpy(cvi, fcvi, nch);
+        memcpy(cls_var, fcls_var, nch);
     }
 
     /*      Copy stats  */
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
-        fevi = odad->stats[iv];
-        evi = ndad->stats[iv];
+        fexp_var = odad->stats[iv];
+        exp_var = ndad->stats[iv];
         nch = CurCtx.vset->variables[iv].stats_size;
-        memcpy(evi, fevi, nch);
+        memcpy(exp_var, fexp_var, nch);
     }
 
     ndad->dad_id = oldid; /* So new dad is son of old dad */

@@ -567,7 +567,7 @@ void adjust_class(Class *cls, int dod) {
             /*	Check if size too small to support a factor  */
             /*	Add up the number of data values  */
             small = 0;
-            leafcost = 0.0; /* Used to add up evi->cnts */
+            leafcost = 0.0; /* Used to add up exp_var->cnts */
             for (iv = 0; iv < CurCtx.vset->length; iv++) {
                 if (!CurCtx.vset->variables[iv].inactive) {
                     small++;

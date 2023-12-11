@@ -165,7 +165,7 @@ void cleanup_subclasses(Class *clsa, Class *clsb) {
 
 void make_subclasses(int kk) {
     Class *cls, *clsa, *clsb;
-    ClassVar *cvi, *scvi;
+    ClassVar *cls_var, *clsa_var;
     double cntk;
     int kka, kkb, iv, nch;
     Population *popln = CurCtx.popln;
@@ -215,12 +215,12 @@ void make_subclasses(int kk) {
 
     /*	Copy kk's Basics into both subs  */
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
-        cvi = cls->basics[iv];
-        scvi = clsa->basics[iv];
+        cls_var = cls->basics[iv];
+        clsa_var = clsa->basics[iv];
         nch = CurCtx.vset->variables[iv].basic_size;
-        memcpy(scvi, cvi, nch);
-        scvi = clsb->basics[iv];
-        memcpy(scvi, cvi, nch);
+        memcpy(clsa_var, cls_var, nch);
+        clsa_var = clsb->basics[iv];
+        memcpy(clsa_var, cls_var, nch);
     }
 
     clsa->age = 0;
@@ -268,8 +268,8 @@ int copy_population(int p1, int fill, char *newname) {
     Population *fpop, *popln;
     Context oldctx;
     Class *cls, *fcls;
-    ClassVar *cvi, *fcvi;
-    ExplnVar *evi, *fevi;
+    ClassVar *cls_var, *fcls_var;
+    ExplnVar *exp_var, *fexp_var;
     double nomcnt;
     int indx, sindx, kk, jdad, nch, n, i, iv, hiser;
     int num_cases;
@@ -376,18 +376,18 @@ newclass:
 
     /*	Copy Basics. the structures should have been made.  */
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
-        fcvi = fcls->basics[iv];
-        cvi = cls->basics[iv];
+        fcls_var = fcls->basics[iv];
+        cls_var = cls->basics[iv];
         nch = CurCtx.vset->variables[iv].basic_size;
-        memcpy(cvi, fcvi, nch);
+        memcpy(cls_var, fcls_var, nch);
     }
 
     /*	Copy stats  */
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
-        fevi = fcls->stats[iv];
-        evi = cls->stats[iv];
+        fexp_var = fcls->stats[iv];
+        exp_var = cls->stats[iv];
         nch = CurCtx.vset->variables[iv].stats_size;
-        memcpy(evi, fevi, nch);
+        memcpy(exp_var, fexp_var, nch);
     }
     if (fill == 0)
         goto classdone;
@@ -632,17 +632,17 @@ Basics and Stats. If fill but pop->nc = 0, behaves as for fill = 0.
 char *saveheading = "Scnob-Model-Save-File";
 
 int save_population(int p1, int fill, char *newname) {
-    FILE *fl;
+    FILE *file_ptr;
     char oldname[80], *jp;
     Context oldctx;
     Class *cls;
-    ClassVar *cvi;
-    ExplnVar *evi;
+    ClassVar *cls_var;
+    ExplnVar *exp_var;
     int leng, nch, i, iv, nc, jcl;
     Population *popln;
 
     memcpy(&oldctx, &CurCtx, sizeof(Context));
-    fl = 0;
+    file_ptr = 0;
     if (!Populations[p1]) {
         log_msg(1,  "No popln index %d", p1);
         leng = -106;
@@ -687,32 +687,32 @@ namefixed:
     if (!fill)
         nc = 0;
 
-    fl = fopen(newname, "w");
-    if (!fl) {
+    file_ptr = fopen(newname, "w");
+    if (!file_ptr) {
         log_msg(1,  "Cannot open %s", newname);
         leng = -102;
         goto finish;
     }
     /*	Output some heading material  */
     for (jp = saveheading; *jp; jp++) {
-        fputc(*jp, fl);
+        fputc(*jp, file_ptr);
     }
-    fputc('\n', fl);
+    fputc('\n', file_ptr);
     for (jp = oldname; *jp; jp++) {
-        fputc(*jp, fl);
+        fputc(*jp, file_ptr);
     }
-    fputc('\n', fl);
+    fputc('\n', file_ptr);
     for (jp = popln->vst_name; *jp; jp++) {
-        fputc(*jp, fl);
+        fputc(*jp, file_ptr);
     }
-    fputc('\n', fl);
+    fputc('\n', file_ptr);
     for (jp = popln->sample_name; *jp; jp++) {
-        fputc(*jp, fl);
+        fputc(*jp, file_ptr);
     }
-    fputc('\n', fl);
-    fprintf(fl, "%4d%10d\n", popln->num_classes, nc);
-    fputc('+', fl);
-    fputc('\n', fl);
+    fputc('\n', file_ptr);
+    fprintf(file_ptr, "%4d%10d\n", popln->num_classes, nc);
+    fputc('+', file_ptr);
+    fputc('\n', file_ptr);
 
     /*	We must begin copying classes, begining with pop's root  */
     jcl = 0;
@@ -722,22 +722,22 @@ newclass:
     cls = popln->classes[jcl];
     leng = 0;
     nch = ((char *)&cls->id) - ((char *)cls);
-    recordit(fl, cls, nch);
+    recordit(file_ptr, cls, nch);
     leng += nch;
 
     /*	Copy Basics..  */
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
-        cvi = cls->basics[iv];
+        cls_var = cls->basics[iv];
         nch = CurCtx.vset->variables[iv].basic_size;
-        recordit(fl, cvi, nch);
+        recordit(file_ptr, cls_var, nch);
         leng += nch;
     }
 
     /*	Copy stats  */
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
-        evi = cls->stats[iv];
+        exp_var = cls->stats[iv];
         nch = CurCtx.vset->variables[iv].stats_size;
-        recordit(fl, evi, nch);
+        recordit(file_ptr, exp_var, nch);
         leng += nch;
     }
     if (nc == 0)
@@ -745,7 +745,7 @@ newclass:
 
     /*	Copy scores  */
     nch = nc * sizeof(short);
-    recordit(fl, cls->factor_scores, nch);
+    recordit(file_ptr, cls->factor_scores, nch);
     leng += nch;
 classdone:
     jcl++;
@@ -753,7 +753,7 @@ classdone:
         goto newclass;
 
 finish:
-    fclose(fl);
+    fclose(file_ptr);
     log_msg(1,  "\nModel %s  Cost %10.2f  saved in file %s", oldname, popln->classes[0]->best_cost, newname);
     memcpy(&CurCtx, &oldctx, sizeof(Context));
     return (leng);
@@ -766,40 +766,40 @@ int load_population(char *nam) {
     Context oldctx;
     int i, j, k, indx, fncl, fnc, nch, iv;
     Class *cls;
-    ClassVar *cvi;
-    ExplnVar *evi;
-    FILE *fl;
+    ClassVar *cls_var;
+    ExplnVar *exp_var;
+    FILE *file_ptr;
     Population *popln;
 
     int num_cases;
 
     indx = -999;
     memcpy(&oldctx, &CurCtx, sizeof(Context));
-    fl = fopen(nam, "r");
-    if (!fl) {
+    file_ptr = fopen(nam, "r");
+    if (!file_ptr) {
         log_msg(1,  "Cannot open %s", nam);
         goto error;
     }
-    fscanf(fl, "%s", name);
+    fscanf(file_ptr, "%s", name);
     if (strcmp(name, saveheading)) {
         log_msg(1,  "File is not a Scnob save-file");
         goto error;
     }
-    fscanf(fl, "%s", pname);
+    fscanf(file_ptr, "%s", pname);
     log_msg(1,  "Model %s", pname);
-    fscanf(fl, "%s", name); /* Reading v-set name */
+    fscanf(file_ptr, "%s", name); /* Reading v-set name */
     j = find_vset(name);
     if (j < 0) {
         log_msg(1,  "Model needs variableset %s", name);
         goto error;
     }
     CurCtx.vset = VarSets[j];
-    fscanf(fl, "%s", name);          /* Reading sample name */
-    fscanf(fl, "%d%d", &fncl, &fnc); /* num of classes, cases */
+    fscanf(file_ptr, "%s", name);          /* Reading sample name */
+    fscanf(file_ptr, "%d%d", &fncl, &fnc); /* num of classes, cases */
                                      /*	Advance to real data */
-    while (fgetc(fl) != '+')
+    while (fgetc(file_ptr) != '+')
         ;
-    fgetc(fl);
+    fgetc(file_ptr);
     if (fnc) {
         j = find_sample(name, 1);
         if (j < 0) {
@@ -847,24 +847,24 @@ haveclass:
     jp = (char *)cls;
     nch = ((char *)&cls->id) - jp;
     for (k = 0; k < nch; k++) {
-        *jp = fgetc(fl);
+        *jp = fgetc(file_ptr);
         jp++;
     }
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
-        cvi = cls->basics[iv];
+        cls_var = cls->basics[iv];
         nch = CurCtx.vset->variables[iv].basic_size;
-        jp = (char *)cvi;
+        jp = (char *)cls_var;
         for (k = 0; k < nch; k++) {
-            *jp = fgetc(fl);
+            *jp = fgetc(file_ptr);
             jp++;
         }
     }
     for (iv = 0; iv < CurCtx.vset->length; iv++) {
-        evi = cls->stats[iv];
+        exp_var = cls->stats[iv];
         nch = CurCtx.vset->variables[iv].stats_size;
-        jp = (char *)evi;
+        jp = (char *)exp_var;
         for (k = 0; k < nch; k++) {
-            *jp = fgetc(fl);
+            *jp = fgetc(file_ptr);
             jp++;
         }
     }
@@ -877,13 +877,13 @@ haveclass:
     if (!num_cases) {
         nch = fnc * sizeof(short);
         for (k = 0; k < nch; k++)
-            fgetc(fl);
+            fgetc(file_ptr);
         goto classdone;
     }
     nch = num_cases * sizeof(short);
     jp = (char *)(cls->factor_scores);
     for (k = 0; k < nch; k++) {
-        *jp = fgetc(fl);
+        *jp = fgetc(file_ptr);
         jp++;
     }
 
