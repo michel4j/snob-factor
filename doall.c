@@ -325,16 +325,15 @@ double update_leaf_classes(double *oldleafsum, int *nfail, int num_son) {
     }
     if (SeeAll == 0) {
         rep('.');
+    } else if (leafsum < (*oldleafsum - MinGain)) {
+        (*nfail) = 0;
+        *oldleafsum = leafsum;
+        rep('L');
     } else {
-        if (leafsum < (*oldleafsum - MinGain)) {
-            (*nfail) = 0;
-            *oldleafsum = leafsum;
-            rep('L');
-        } else {
-            (*nfail)++;
-            rep('l');
-        }
+        (*nfail)++;
+        rep('l');
     }
+
     return leafsum;
 }
 

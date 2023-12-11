@@ -360,7 +360,7 @@ void deriv_var(int iv, int fac, Class *cls) {
 void adjust(int iv, int fac, Class *cls) {
     double adj, srsds, frsds, temp1, temp2, cnt;
     double del1, del2, del3, del4, spcost, fpcost;
-    double dadmu, dadsdl, dmusprd, dsdlsprd;
+    double dadmu=0.0, dadsdl=0.0, dmusprd=0.0, dsdlsprd=0.0;
     double av, var, del, sdld1;
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);

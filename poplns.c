@@ -639,7 +639,7 @@ int save_population(int p1, int fill, char *newname) {
     ClassVar *cls_var;
     ExplnVar *exp_var;
     int leng, nch, i, iv, nc, jcl;
-    Population *popln;
+    Population *popln = 0;
 
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     file_ptr = 0;
@@ -769,9 +769,9 @@ int load_population(char *nam) {
     ClassVar *cls_var;
     ExplnVar *exp_var;
     FILE *file_ptr;
-    Population *popln;
+    Population *popln = 0;
 
-    int num_cases;
+    int num_cases = 0;
 
     indx = -999;
     memcpy(&oldctx, &CurCtx, sizeof(Context));

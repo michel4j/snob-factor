@@ -416,12 +416,12 @@ int readsampid(int kk) {
 extern char *malloc_options;
 int main() {
     int k, kk, k1, k2;
-    int i, j, n, nn, cspace;
+    int i, j, n, nn, cspace = 0;
     double drop;
     char *chp;
     Context oldctx;
     Class *cls, *root;
-    Population *popln;
+    Population *popln = 0;
 
     RSeed = 1234567;
     Interactive = 1;
