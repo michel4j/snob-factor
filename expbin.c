@@ -36,11 +36,11 @@ typedef struct Basicst { /* Basic parameter info about var in class.
     double bapsprd; /*  Spread measure for ap parameters.
         This gives the expected squared round-off error in bap */
     double nap, sap, fap, fbp;
-    double napsprd; /* basically, the squared sprd among the ap params
-                of children  */
+    double napsprd; /* basically, the squared sprd among the ap params of children  */
     double sapsprd;
     double fapsprd;
     double bpsprd;
+    double dadnap, dapsprd;
     double samplesize; /* Size of sample on which estimates based */
 } Basic;
 
@@ -63,10 +63,6 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
     double parkft;
     double bsq;
 } Stats;
-
-/*	Static variables specific to this type   */
-static double dadnap;
-static double dapsprd; /* Dad's napsprd */
 
 static void set_var(int iv, Class *cls);
 static int read_attr_aux(void *vax);
@@ -252,7 +248,7 @@ void score_var(int iv, Class *cls) {
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv]; 
+    Stats *exp_var = (Stats *)cls->stats[iv];
 
     set_var(iv, cls);
     if (vset_var->inactive)
@@ -411,7 +407,7 @@ void adjust(int iv, int fac, Class *cls) {
     Population *popln = CurCtx.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
     Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv]; 
+    Stats *exp_var = (Stats *)cls->stats[iv];
     Basic *dad_var;
 
     set_var(iv, cls);
@@ -419,19 +415,19 @@ void adjust(int iv, int fac, Class *cls) {
 
     if (dad) { /* Not root */
         dad_var = (Basic *)dad->basics[iv];
-        dadnap = dad_var->nap;
-        dapsprd = dad_var->napsprd;
+        cls_var->dadnap = dad_var->nap;
+        cls_var->dapsprd = dad_var->napsprd;
     } else { /* Root */
         dad_var = 0;
-        dadnap = 0.0;
-        dapsprd = 1.0;
+        cls_var->dadnap = 0.0;
+        cls_var->dapsprd = 1.0;
     }
 
     /*	If too few data, use dad's n-paras   */
     if ((Control & AdjPr) && (cnt < MinSize)) {
-        cls_var->nap = cls_var->sap = cls_var->fap = dadnap;
+        cls_var->nap = cls_var->sap = cls_var->fap = cls_var->dadnap;
         cls_var->fbp = 0.0;
-        cls_var->napsprd = cls_var->fapsprd = cls_var->sapsprd = dapsprd;
+        cls_var->napsprd = cls_var->fapsprd = cls_var->sapsprd = cls_var->dapsprd;
         cls_var->bpsprd = 1.0;
 
     } else if (!cls->age) {
@@ -443,7 +439,7 @@ void adjust(int iv, int fac, Class *cls) {
         cls_var->fap = cls_var->sap = 0.5 * log(pr1 / pr0);
         cls_var->fbp = 0.0;
         /*	Set sapsprd  */
-        apd2 = cnt + 1.0 / dapsprd;
+        apd2 = cnt + 1.0 / cls_var->dapsprd;
         cls_var->fapsprd = cls_var->sapsprd = cls_var->bpsprd = 1.0 / apd2;
         /*	Make a stab at item cost   */
         cls->cstcost -= exp_var->cnt1 * log(pr1) + (cnt - exp_var->cnt1) * log(pr0);
@@ -452,13 +448,13 @@ void adjust(int iv, int fac, Class *cls) {
 
     /*	Calculate spcost for non-fac params  */
     vara = 0.0;
-    del = cls_var->sap - dadnap;
+    del = cls_var->sap - cls_var->dadnap;
     vara = del * del;
     vara += cls_var->sapsprd; /* Additional variance from roundoff */
     /*	Now vara holds squared difference from sap to dad's nap. This
-    is a variance with squared spread dapsprd, Normal form */
-    spcost = 0.5 * vara / dapsprd; /* The squared deviations term */
-    spcost += 0.5 * log(dapsprd);  /* log sigma */
+    is a variance with squared spread cls_var->dapsprd, Normal form */
+    spcost = 0.5 * vara / cls_var->dapsprd; /* The squared deviations term */
+    spcost += 0.5 * log(cls_var->dapsprd);  /* log sigma */
     spcost += HALF_LOG_2PI + LATTICE;
     /*	This completes the prior density terms  */
     /*	The vol of uncertainty is sqrt (sapsprd)  */
@@ -469,10 +465,10 @@ void adjust(int iv, int fac, Class *cls) {
         cls_var->infac = 1;
     } else {
         /*	Get factor pcost  */
-        del = cls_var->fap - dadnap;
+        del = cls_var->fap - cls_var->dadnap;
         vara = del * del + cls_var->fapsprd;
-        fpcost = 0.5 * vara / dapsprd; /* The squared deviations term */
-        fpcost += 0.5 * log(dapsprd);  /* log sigma */
+        fpcost = 0.5 * vara / cls_var->dapsprd; /* The squared deviations term */
+        fpcost += 0.5 * log(cls_var->dapsprd);  /* log sigma */
         fpcost += (HALF_LOG_2PI + LATTICE);
         fpcost -= 0.5 * log(cls_var->fapsprd);
 
@@ -508,11 +504,11 @@ adjloop:
     apd2 = 1.0 / (1.0 + cc * cc);
     /*	For a item in state 1, apd1 = -pr0.  If state 0, apd1 = pr1. */
     tt = (cnt - exp_var->cnt1) * pr1 - exp_var->cnt1 * pr0;
-    /*	Use dads's nap, dapsprd for Normal prior.   */
-    tt += (cls_var->sap - dadnap) / dapsprd;
+    /*	Use dads's nap, cls_var->dapsprd for Normal prior.   */
+    tt += (cls_var->sap - cls_var->dadnap) / cls_var->dapsprd;
     /*	Fisher deriv wrt cc is -2cc * apd2 * apd2  */
     tt -= cnt * cc * apd2 * apd2 * cls_var->sapsprd;
-    apd2 = cnt * apd2 + 1.0 / dapsprd;
+    apd2 = cnt * apd2 + 1.0 / cls_var->dapsprd;
     cls_var->sap -= tt / apd2;
     cls_var->sapsprd = 1.0 / apd2;
     /*	Repeat the adjustment  */
@@ -524,9 +520,9 @@ adjloop:
 
     /*	Adjust factor parameters.  We have fapd1, fbpd1 from the data,
         but must add derivatives of pcost terms.  */
-    exp_var->fapd1 += (cls_var->fap - dadnap) / dapsprd;
+    exp_var->fapd1 += (cls_var->fap - cls_var->dadnap) / cls_var->dapsprd;
     exp_var->fbpd1 += cls_var->fbp;
-    exp_var->apd2 += 1.0 / dapsprd;
+    exp_var->apd2 += 1.0 / cls_var->dapsprd;
     exp_var->bpd2 += 1.0;
     /*	In an attempt to speed things, fiddle adjustment multiple   */
     tt = exp_var->ftcost / cnt;
@@ -561,7 +557,7 @@ adjdone:
 void show(Class *cls, int iv) {
 
     Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv]; 
+    Stats *exp_var = (Stats *)cls->stats[iv];
 
     set_var(iv, cls);
     printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out", exp_var->adj);
@@ -584,7 +580,7 @@ void show(Class *cls, int iv) {
 void details(Class *cls, int iv, MemBuffer *buffer) {
 
     Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv]; 
+    Stats *exp_var = (Stats *)cls->stats[iv];
     set_var(iv, cls);
     print_buffer(buffer, "V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out", exp_var->adj);
 
@@ -612,7 +608,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     Population *popln = CurCtx.popln;
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv]; 
+    Stats *exp_var = (Stats *)cls->stats[iv];
 
     set_var(iv, cls);
     if (vset_var->inactive) {
@@ -662,7 +658,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
 adjloop:
     /*      Update param  */
     /*      The V of comments is tstvn + nson * del * del */
-    cls_var->nap = (dapsprd * map) / (nson * dapsprd + apsprd);
+    cls_var->nap = (cls_var->dapsprd * map) / (nson * cls_var->dapsprd + apsprd);
     del = cls_var->nap - map;
     tstvn += del * del * nson; /* adding variance round new nap */
     co0 = 0.5 * (tstvn + nson * del * del) + tssn;
@@ -675,9 +671,9 @@ adjloop:
     cls_var->napsprd = apsprd;
 
     /*      Calc cost  */
-    del = cls_var->nap - dadnap;
+    del = cls_var->nap - cls_var->dadnap;
     pcost = del * del;
-    pcost = 0.5 * (pcost + apsprd / nson) / dapsprd + (HALF_LOG_2PI + 0.5 * log(dapsprd));
+    pcost = 0.5 * (pcost + apsprd / nson) / cls_var->dapsprd + (HALF_LOG_2PI + 0.5 * log(cls_var->dapsprd));
     /*      Add hlog Fisher, lattice  */
     pcost += 0.5 * log(0.5 * nson + nints) + 0.5 * log((double)nson) - 1.5 * log(apsprd) + 2.0 * LATTICE;
     /*	Add roundoff for params  */
