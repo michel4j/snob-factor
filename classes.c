@@ -692,6 +692,7 @@ void delete_sons(int kk) {
     if (cls->num_sons <= 0)
         return;
     SeeAll = 4;
+    
     for (kks = cls->son_id; kks > 0; kks = son->sib_id) {
         son = popln->classes[kks];
         son->type = Vacant;
