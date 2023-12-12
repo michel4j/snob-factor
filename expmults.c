@@ -35,18 +35,19 @@ typedef struct Basicst { /* Basic parameter info about var in class.
         This gives the expected squared round-off error in
         1 dimension of the ap[] vector. If F is the Fisher for
         ap[], then apsprd = 1 / F^(1/(states-1))   */
-    double napsprd; /* basically, the squared sprd among the ap[] params
-                of children  */
+    double napsprd; /* basically, the squared sprd among the ap[] params of children  */
     double sapsprd;
     double fapsprd;
     double bpsprd;
-    double samplesize; /* Size of sample on which estimates based */
-    double origin;     /* This becomes the first element in a number of
-               vectors, each of length 'states', which will be
-               appended to the Basic sructure. Pointers to these
-               vectors will be set in the static pointers declared
-               below. A similar item happens to the Stats structure.
-               */             
+    double dadnap[MaxState], dapsprd; // Used to eliminate global *dadnap and dapsprd parameters. There appears to be a bug in the previous code using globals
+    double samplesize;                /* Size of sample on which estimates based */
+    double origin;
+    /* This becomes the first element in a number of
+    vectors, each of length 'states', which will be
+    appended to the Basic sructure. Pointers to these
+    vectors will be set in the static pointers declared
+    below. A similar item happens to the Stats structure.
+    */
 } Basic;
 
 /*	Pointers to vectors in Basic  */
@@ -54,7 +55,7 @@ typedef struct Basicst { /* Basic parameter info about var in class.
 // static double *sap;       /*  Log odds without factor  */
 // static double *fap, *fbp; /* Const and load params for logodds */
 // static double *frate;
-/*	
+/*
     The factor model is that prob of state k for a case with score v
     is proportional to
         exp (fap[k] + fbp[k] * v)
@@ -66,7 +67,7 @@ typedef struct Basicst { /* Basic parameter info about var in class.
     where Gauss(x) is the Normal(0,1) density at x.
         We use an (unnormalized) tabulation of Gauss() in gaustab[]
     to evaluate the relative state probs for a case, thereby eliminating
-    many calls on exp().   
+    many calls on exp().
 */
 
 typedef struct Statsst { /* Stuff accumulated to revise Basic  */
@@ -97,10 +98,10 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
 // static double statesm; /*  states - 1.0 */
 // static double rstates; /*  1.0 / states  */
 // static double rstatesm;
-//static double qr[MaxState]; /*  - logs of state probs  */
+// static double qr[MaxState]; /*  - logs of state probs  */
 
-static double *dadnap; /* To dad's nap[] */
-static double dapsprd; /* Dad's napsprd */
+// static double *dadnap; /* To dad's nap[] */
+// static double dapsprd; /* Dad's napsprd */
 
 /*Variables specific to this type   */
 typedef struct ProbStruct {
@@ -181,8 +182,7 @@ void expmults_define(typindx) int typindx;
 }
 
 /*	----------------------- setvar --------------------------  */
-void set_var(int iv, Class *cls) {
-}
+void set_var(int iv, Class *cls) {}
 
 /*	---------------------  readvaux ---------------------------   */
 /*	To read any auxiliary info about a variable of this type in some
@@ -192,7 +192,6 @@ int read_attr_aux(void *vaux) {
     int i;
     double lstates, rstatesm;
     Vaux *vax = (Vaux *)vaux;
-
 
     /*	Read in auxiliary info into vaux, return 0 if OK else 1  */
     i = read_int(&(vax->states), 1);
@@ -302,7 +301,7 @@ void set_best_pars(int iv, Class *cls) {
 /*	Routine to set state probs for a item using fap, fbp, cvv */
 /*	Sets probs in pr[], -log probs in qr[].  */
 /*	Also calcs b1p, b2p, b3p, b1p2, gg  */
-void set_probs(int iv, Prob *probs, Class* cls) {
+void set_probs(int iv, Prob *probs, Class *cls) {
     double sum, tt, lsum;
     int k, ig;
 
@@ -321,7 +320,6 @@ void set_probs(int iv, Prob *probs, Class* cls) {
     double *scnt = &(exp_var->origin);
     double *scst = &scnt[states];
     double *pr = &scst[states];
-
 
     probs->b3p = probs->b2p = probs->b1p = 0.0; /* For calculating dispersion of bp[] */
     sum = 0.0;
@@ -382,7 +380,7 @@ void clear_stats(int iv, Class *cls) {
     double *scst = &scnt[states];
     double *pr = &scst[states];
     double *fapd1 = &pr[states];
-    double *fbpd1 = &fapd1[states]; 
+    double *fbpd1 = &fapd1[states];
     double qr[MaxState];
 
     set_var(iv, cls);
@@ -552,7 +550,7 @@ void deriv_var(int iv, int fac, Class *cls) {
     double *scst = &scnt[states];
     double *pr = &scst[states];
     double *fapd1 = &pr[states];
-    double *fbpd1 = &fapd1[states]; 
+    double *fbpd1 = &fapd1[states];
 
     set_var(iv, cls);
     if (saux->missing) {
@@ -561,13 +559,13 @@ void deriv_var(int iv, int fac, Class *cls) {
     /*	Do no-fac first  */
     exp_var->cnt += case_weight;
 
-    scnt[saux->xn] += case_weight;                /* For non-fac, I just accumulate counts in scnt[]  */
-    exp_var->stcost += case_weight * scst[saux->xn];  /* Accum. weighted item cost  */
+    scnt[saux->xn] += case_weight;                        /* For non-fac, I just accumulate counts in scnt[]  */
+    exp_var->stcost += case_weight * scst[saux->xn];      /* Accum. weighted item cost  */
     exp_var->ftcost += case_weight * exp_var->parkftcost; /* Accum. weighted item cost  */
 
     /*	Now for factor form  */
     Prob probs;
-    
+
     exp_var->vsq += case_weight * Scores.CaseFacScoreSq;
     if (fac) {
         probs.b1p = exp_var->parkb1p;
@@ -619,8 +617,6 @@ void adjust(int iv, int fac, Class *cls) {
 
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
-    Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;    
-    Basic *dad_var = (dad) ? (Basic *)dad->basics[iv] : 0; 
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     Vaux *vaux = (Vaux *)vset_var->vaux;
 
@@ -635,14 +631,17 @@ void adjust(int iv, int fac, Class *cls) {
     double *scst = &scnt[states];
     double *pr = &scst[states];
     double *fapd1 = &pr[states];
-    double *fbpd1 = &fapd1[states]; 
+    double *fbpd1 = &fapd1[states];
     double qr[MaxState];
-
 
     Prob probs;
 
     set_var(iv, cls);
     cnt = exp_var->cnt;
+
+    Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;
+    Basic *dad_var = (dad) ? (Basic *)dad->basics[iv] : 0;
+    double *dadnap, dapsprd;
 
     if (dad) { /* Not root */
         dad_var = (Basic *)dad->basics[iv];
@@ -654,7 +653,6 @@ void adjust(int iv, int fac, Class *cls) {
         dapsprd = 1.0;
     }
 
-    printf("AJUST: Var=%d, Class=%d, Dadnap=%0.4f\n", iv, cls->id, *dadnap);
     /*	If too few data, use dad's n-paras   */
     if ((Control & AdjPr) && (cnt < MinSize)) {
         for (k = 0; k < states; k++) {
@@ -730,8 +728,8 @@ void adjust(int iv, int fac, Class *cls) {
         vara = 0.0;
         for (k = 0; k < states; k++)
             vara += fbp[k] * fbp[k];
-        vara += cls_var->bpsprd;  /* Additional variance from roundoff */
-        fpcost += 0.5 * vara; /* The squared deviations term */
+        vara += cls_var->bpsprd; /* Additional variance from roundoff */
+        fpcost += 0.5 * vara;    /* The squared deviations term */
         fpcost += statesm * (HALF_LOG_2PI + LATTICE);
         /*	The vol of uncertainty is (bpsprd/statesm)^(statesm/2)  */
         fpcost -= 0.5 * statesm * log(cls_var->bpsprd / statesm);
@@ -856,11 +854,16 @@ void adjust(int iv, int fac, Class *cls) {
         cls_var->napsprd = cls_var->sapsprd;
     }
     cls_var->samplesize = exp_var->cnt;
+    cls_var->dapsprd = dapsprd;
+    memcpy(&cls_var->dadnap, dadnap, MaxState * sizeof(double));
+    for (k = 0; k < states; k++) {
+        log_msg(0, "ADJUST:  Class=%02d, VarState=%02d%02d, Dadnap=%+8.4f, Dapsprd=%+8.4f", cls->id, iv, k, dadnap[k], dapsprd);
+    }
 }
 
 /*	------------------------  prprint  -------------------  */
 /*	prints the exponential params in 'ap' converted to probs   */
-void prprint(double *ap, int states, double* pr) {
+void prprint(double *ap, int states, double *pr) {
     int k;
     double max, sum;
 
@@ -941,11 +944,11 @@ void write_probs(double *ap, int states, double *pr, MemBuffer *buffer) {
     }
     sum = 1.0 / sum;
     for (k = 0; k < states; k++)
-        print_buffer(buffer,  "%7.3f", pr[k] * sum);
+        print_buffer(buffer, "%7.3f", pr[k] * sum);
     return;
 }
 
-void details(Class *cls, int iv, MemBuffer* buffer) {
+void details(Class *cls, int iv, MemBuffer *buffer) {
     int k;
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
@@ -964,29 +967,28 @@ void details(Class *cls, int iv, MemBuffer* buffer) {
     double *pr = &scst[states];
 
     set_var(iv, cls);
-    print_buffer(buffer,"V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out", exp_var->adj);
+    print_buffer(buffer, "V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out", exp_var->adj);
 
     if (cls->num_sons > 1) {
-        print_buffer(buffer," NR: ");
+        print_buffer(buffer, " NR: ");
         write_probs(nap, states, pr, buffer);
-        print_buffer(buffer," +-%7.3f\n", sqrt(cls_var->napsprd));
+        print_buffer(buffer, " +-%7.3f\n", sqrt(cls_var->napsprd));
     }
-    print_buffer(buffer," PR: ");
+    print_buffer(buffer, " PR: ");
     write_probs(sap, states, pr, buffer);
-    print_buffer(buffer,"\n");
+    print_buffer(buffer, "\n");
     if (cls->use != Tiny) {
-        print_buffer(buffer," FR: ");
+        print_buffer(buffer, " FR: ");
         for (k = 0; k < states; k++) {
-            print_buffer(buffer,"%7.3f", frate[k]);
+            print_buffer(buffer, "%7.3f", frate[k]);
         }
-        print_buffer(buffer,"\n BP: ");
+        print_buffer(buffer, "\n BP: ");
         for (k = 0; k < states; k++) {
-            print_buffer(buffer,"%7.3f", fbp[k]);
+            print_buffer(buffer, "%7.3f", fbp[k]);
         }
-        print_buffer(buffer," +-%7.3f\n", sqrt(cls_var->bpsprd * rstatesm));
+        print_buffer(buffer, " +-%7.3f\n", sqrt(cls_var->bpsprd * rstatesm));
     }
 }
-
 
 /*	----------------------  cost_var_nonleaf -----------------------------  */
 void cost_var_nonleaf(int iv, int vald, Class *cls) {
@@ -1011,13 +1013,19 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     double *pr = &scst[states];
     double qr[MaxState];
 
-
     set_var(iv, cls);
     if (vset_var->inactive) {
         exp_var->npcost = exp_var->ntcost = 0.0;
         return;
     }
-    printf("NONLEAF: Var=%d, Class=%d, Dadnap=%0.4f\n", iv, cls->id, *dadnap);
+
+    double *dadnap, dapsprd;
+    dadnap = cls_var->dadnap;
+    dapsprd = cls_var->dapsprd;
+
+    for (k = 0; k < states; k++) {
+        log_msg(0, "NONLEAF: Class=%02d, VarState=%02d%02d, Dadnap=%+8.4f, Dapsprd=%+8.4f", cls->id, iv, k, dadnap[k], dapsprd);
+    }
 
     nson = cls->num_sons;
     if (nson < 2) { /* cannot define parameters */

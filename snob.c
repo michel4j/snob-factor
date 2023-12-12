@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     cpu_start = clock();
     timespec_get(&wall_start, TIME_UTC);
 
-    initialize(0, 0, 8);
+    initialize(0, 1, 8);
 
     index = load_vset(argv[1]);
     if (index < 0) {
