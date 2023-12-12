@@ -39,7 +39,6 @@ typedef struct Basicst { /* Basic parameter info about var in class.
     double sapsprd;
     double fapsprd;
     double bpsprd;
-    double dadnap[MaxState], dapsprd; // Used to eliminate global *dadnap and dapsprd parameters. There appears to be a bug in the previous code using globals
     double samplesize;                /* Size of sample on which estimates based */
     double origin;
     /* This becomes the first element in a number of
@@ -83,8 +82,8 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
     double oldftcost;
     double adj;
     double apd2, bpd2;
-    double mgg;    /* A maximum? for gg */
-    double origin; /* First element of states vectors */
+    double mgg;                       /* A maximum? for gg */
+    double origin;                    /* First element of states vectors */
 } Stats;
 
 /*	Pointers to vectors in stats  */
@@ -100,8 +99,8 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
 // static double rstatesm;
 // static double qr[MaxState]; /*  - logs of state probs  */
 
-// static double *dadnap; /* To dad's nap[] */
-// static double dapsprd; /* Dad's napsprd */
+static double *dadnap; /* To dad's nap[] */
+static double dapsprd; /* Dad's napsprd */
 
 /*Variables specific to this type   */
 typedef struct ProbStruct {
@@ -641,7 +640,6 @@ void adjust(int iv, int fac, Class *cls) {
 
     Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;
     Basic *dad_var = (dad) ? (Basic *)dad->basics[iv] : 0;
-    double *dadnap, dapsprd;
 
     if (dad) { /* Not root */
         dad_var = (Basic *)dad->basics[iv];
@@ -847,6 +845,7 @@ void adjust(int iv, int fac, Class *cls) {
         cls_var->fapsprd = statesm / exp_var->apd2;
         cls_var->bpsprd = statesm / exp_var->bpd2;
     }
+
     /*	If no sons, set as-dad params from non-fac params  */
     if (cls->num_sons < 2) {
         for (k = 0; k < states; k++)
@@ -854,11 +853,7 @@ void adjust(int iv, int fac, Class *cls) {
         cls_var->napsprd = cls_var->sapsprd;
     }
     cls_var->samplesize = exp_var->cnt;
-    cls_var->dapsprd = dapsprd;
-    memcpy(&cls_var->dadnap, dadnap, MaxState * sizeof(double));
-    for (k = 0; k < states; k++) {
-        log_msg(0, "ADJUST:  Class=%02d, VarState=%02d%02d, Dadnap=%+8.4f, Dapsprd=%+8.4f", cls->id, iv, k, dadnap[k], dapsprd);
-    }
+
 }
 
 /*	------------------------  prprint  -------------------  */
@@ -1017,14 +1012,6 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     if (vset_var->inactive) {
         exp_var->npcost = exp_var->ntcost = 0.0;
         return;
-    }
-
-    double *dadnap, dapsprd;
-    dadnap = cls_var->dadnap;
-    dapsprd = cls_var->dapsprd;
-
-    for (k = 0; k < states; k++) {
-        log_msg(0, "NONLEAF: Class=%02d, VarState=%02d%02d, Dadnap=%+8.4f, Dapsprd=%+8.4f", cls->id, iv, k, dadnap[k], dapsprd);
     }
 
     nson = cls->num_sons;

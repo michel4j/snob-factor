@@ -11,6 +11,7 @@ files. The declarations herein then become converted to "EXT" declarations.
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <omp.h>
 
 #define MAX_SAMPLES 10 /* Max number of samples */
 #define MAX_VSETS 3

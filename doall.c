@@ -127,6 +127,7 @@ void tidy(int hit, int no_subs) {
 
     do {
         ndead = 0;
+
         for (i = 0; i <= popln->hi_class; i++) {
             cls = popln->classes[i];
             if ((!cls) || (cls->type == Vacant) || (i == popln->root)) {
@@ -170,6 +171,7 @@ void tidy(int hit, int no_subs) {
         /*	No more classes to kill for the moment.  Relink everyone  */
         popln->num_classes = 0;
         kkd = 0;
+        
         for (i = 0; i <= popln->hi_class; i++) {
             cls = popln->classes[i];
             if ((cls->type == Vacant) || (i == popln->root)) {
@@ -286,14 +288,17 @@ void find_and_estimate(int *all, int niter, int ncycles) {
         if (niter >= (ncycles - 1))
             *all = (Dad + Leaf + Sub);
         num_son = find_all(*all);
+        
         for (int k = 0; k < num_son; k++) {
             clear_costs(Sons[k]);
         }
 
+        //#pragma omp parallel for
         for (int j = 0; j < CurCtx.sample->num_cases; j++) {
             do_case(j, *all, 1, num_son);
             /*	docase ignores classes with ignore bit in cls->vv[] for the case unless SeeAll is on.  */
         }
+        
 
         // All classes in Sons[] now have stats assigned to them.
         // If all=Leaf, the classes are all leaves, so we just re-estimate
