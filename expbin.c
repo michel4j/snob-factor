@@ -581,21 +581,20 @@ void details(Class *cls, int iv, MemBuffer *buffer) {
 
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
     set_var(iv, cls);
-    print_buffer(buffer, "V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out", exp_var->adj);
+    print_buffer(buffer, "{\"index\": %d, \"name\": \"%s\", \"weight\": %0.1f, \"factor\": %s, \"adjust\": %0.2f, ", iv + 1, vset_var->name, exp_var->cnt,
+                 (cls_var->infac) ? "true" : "false", exp_var->adj);
+    print_buffer(buffer, "\"type\": %d, ", vset_var->type);
 
+    print_buffer(buffer, "\"rel_freq\": {\"simple\": %0.3f, \"factor\": %0.3f", cls_var->sap, cls_var->fap);
     if (cls->num_sons > 1) {
-        print_buffer(buffer, " N: AP ");
-        print_buffer(buffer, "%6.3f", cls_var->nap);
-        print_buffer(buffer, " +-%7.3f\n", sqrt(cls_var->napsprd));
+        print_buffer(buffer, ", \"dad\": %0.3f, ", cls_var->nap);
+        print_buffer(buffer, "\"dad_err\": %0.3f, ", sqrt(cls_var->napsprd));
     }
-    print_buffer(buffer, " S: AP ");
-    print_buffer(buffer, "%6.3f", cls_var->sap);
-    print_buffer(buffer, "\n F: AP ");
-    print_buffer(buffer, "%6.3f", cls_var->fap);
-    print_buffer(buffer, "\n F: BP ");
-    print_buffer(buffer, "%6.3f", cls_var->fbp);
-    print_buffer(buffer, " +-%7.3f\n", sqrt(cls_var->bpsprd));
+    print_buffer(buffer, "}, ");
+    print_buffer(buffer, "\"influence\": %0.3f, ", cls_var->fbp);
+    print_buffer(buffer, "\"influence_err\": %7.3f}", sqrt(cls_var->bpsprd));
 }
 /*	----------------------  cost_var_nonleaf -----------------------------  */
 void cost_var_nonleaf(int iv, int vald, Class *cls) {

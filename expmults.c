@@ -39,7 +39,7 @@ typedef struct Basicst { /* Basic parameter info about var in class.
     double sapsprd;
     double fapsprd;
     double bpsprd;
-    double samplesize;                /* Size of sample on which estimates based */
+    double samplesize; /* Size of sample on which estimates based */
     double origin;
     /* This becomes the first element in a number of
     vectors, each of length 'states', which will be
@@ -82,8 +82,8 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
     double oldftcost;
     double adj;
     double apd2, bpd2;
-    double mgg;                       /* A maximum? for gg */
-    double origin;                    /* First element of states vectors */
+    double mgg;    /* A maximum? for gg */
+    double origin; /* First element of states vectors */
 } Stats;
 
 /*	Pointers to vectors in stats  */
@@ -853,7 +853,6 @@ void adjust(int iv, int fac, Class *cls) {
         cls_var->napsprd = cls_var->sapsprd;
     }
     cls_var->samplesize = exp_var->cnt;
-
 }
 
 /*	------------------------  prprint  -------------------  */
@@ -938,8 +937,12 @@ void write_probs(double *ap, int states, double *pr, MemBuffer *buffer) {
         sum += pr[k];
     }
     sum = 1.0 / sum;
-    for (k = 0; k < states; k++)
-        print_buffer(buffer, "%7.3f", pr[k] * sum);
+    for (k = 0; k < states; k++) {
+        if (k > 0) {
+            print_buffer(buffer, ", ");
+        }
+        print_buffer(buffer, "%0.3f", pr[k] * sum);
+    }
     return;
 }
 
@@ -950,8 +953,6 @@ void details(Class *cls, int iv, MemBuffer *buffer) {
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     Vaux *vaux = (Vaux *)vset_var->vaux;
     int states = vaux->states;
-    double statesm = states - 1;
-    double rstatesm = 1.0 / statesm;
     double *nap = &(cls_var->origin);
     double *sap = &nap[states];
     double *fap = &sap[states];
@@ -962,27 +963,38 @@ void details(Class *cls, int iv, MemBuffer *buffer) {
     double *pr = &scst[states];
 
     set_var(iv, cls);
-    print_buffer(buffer, "V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out", exp_var->adj);
-
+    print_buffer(buffer, "{\"index\": %d, \"name\": \"%s\", \"weight\": %0.1f, \"factor\": %s, \"adjust\": %0.2f, ", iv + 1, vset_var->name, exp_var->cnt,
+                 (cls_var->infac) ? "true" : "false", exp_var->adj);
+    print_buffer(buffer, "\"type\": %d, ", vset_var->type);
     if (cls->num_sons > 1) {
-        print_buffer(buffer, " NR: ");
+        print_buffer(buffer, "\"dad_rel_freq\": [");
         write_probs(nap, states, pr, buffer);
-        print_buffer(buffer, " +-%7.3f\n", sqrt(cls_var->napsprd));
+        print_buffer(buffer, "], ");
     }
-    print_buffer(buffer, " PR: ");
-    write_probs(sap, states, pr, buffer);
-    print_buffer(buffer, "\n");
+
     if (cls->use != Tiny) {
-        print_buffer(buffer, " FR: ");
+        print_buffer(buffer, "\"rel_freq\": [");
         for (k = 0; k < states; k++) {
-            print_buffer(buffer, "%7.3f", frate[k]);
+            if (k > 0) {
+                print_buffer(buffer, ", ");
+            }
+            print_buffer(buffer, "%0.3f", frate[k]);
         }
-        print_buffer(buffer, "\n BP: ");
+        print_buffer(buffer, "], ");
+        print_buffer(buffer, "\"influence\": [");
         for (k = 0; k < states; k++) {
-            print_buffer(buffer, "%7.3f", fbp[k]);
+            if (k > 0) {
+                print_buffer(buffer, ", ");
+            }
+            print_buffer(buffer, "%0.3f", frate[k]);
         }
-        print_buffer(buffer, " +-%7.3f\n", sqrt(cls_var->bpsprd * rstatesm));
+        print_buffer(buffer, "]");
+    } else {
+        print_buffer(buffer, "\"rel_freq\": [");
+        write_probs(sap, states, pr, buffer);
+        print_buffer(buffer, "]");
     }
+    print_buffer(buffer, "}");
 }
 
 /*	----------------------  cost_var_nonleaf -----------------------------  */

@@ -2,7 +2,7 @@
 
 import ctypes as ct
 import sys
-
+import json
 class Classification(ct.Structure):
     """ Result """
 
@@ -59,7 +59,7 @@ if __name__ == '__main__':
             continue
 
         print('#'*80)
-        snob.report_space(1);
+        snob.report_space(1)
         print(f"Classifying: {name}")
         
         snob.load_vset(str(vset_file).encode('utf-8'))
@@ -70,6 +70,8 @@ if __name__ == '__main__':
         buffer = ct.create_string_buffer(buffer_size)
         snob.get_class_details(buffer, buffer_size)
         print(buffer.value.decode('utf-8'))
+        info = json.loads(buffer.value.decode('utf-8'))
+        print(json.dumps(info, indent=4))
         snob.show_population()
         snob.reset()
     

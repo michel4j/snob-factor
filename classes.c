@@ -201,38 +201,29 @@ void print_class(int n, int full) {
 
 void get_details_for(Class *cls, MemBuffer *buffer) {
     int i;
-    double vrms;
-    Population *popln = CurCtx.popln;
     VarType *vtype;
 
-    print_buffer(buffer,  "\nS%s", serial_to_str(cls));
-    print_buffer(buffer,  " %s", typstr[((int)cls->type)]);
-    if (cls->dad_id < 0) {
-        print_buffer(buffer,  "    Root");
-    } else {
-        print_buffer(buffer,  " Dad%s", serial_to_str(popln->classes[((int)cls->dad_id)]));
+    print_buffer(buffer,  "{\"id\": %d, ", cls->id);
+    print_buffer(buffer,  "\"type\": \"%s\",", typstr[((int)cls->type)]);
+    if (cls->dad_id >= 0) {
+        print_buffer(buffer,  " \"dad\": %d,", cls->dad_id);
     }
-    print_buffer(buffer,  " Age%4d  Sz%6.1f  Use %s", cls->age, cls->weights_sum, usestr[((int)cls->use)]);
-    print_buffer(buffer,  "%c", (cls->use == Fac) ? ' ' : '(');
-    vrms = sqrt(cls->sum_score_sq / cls->weights_sum);
-    print_buffer(buffer,  "Vv%6.2f", vrms);
-    print_buffer(buffer,  "%c", (cls->boost_count) ? 'B' : ' ');
-    print_buffer(buffer,  " +-%5.3f", (cls->vav));
-    print_buffer(buffer,  " Avv%6.3f", cls->avg_factor_scores);
-    print_buffer(buffer,  "%c", (cls->use == Fac) ? ' ' : ')');
-    if (cls->type == Dad) {
-        print_buffer(buffer,  "%4d sons", cls->num_sons);
-    }
-    print_buffer(buffer,  "\n");
-    print_buffer(buffer,  "Pcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", cls->nofac_par_cost, cls->fac_par_cost, cls->dad_par_cost, cls->best_par_cost);
-    print_buffer(buffer,  "Tcosts  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", cls->cstcost, cls->cftcost - cls->cfvcost, cls->cntcost, cls->best_case_cost);
-    print_buffer(buffer,  "Vcost     ---------  F:%9.2f\n", cls->cfvcost);
-    print_buffer(buffer,  "totals  S:%9.2f  F:%9.2f  D:%9.2f  B:%9.2f\n", cls->nofac_cost, cls->fac_cost, cls->dad_cost, cls->best_cost);
+    print_buffer(buffer,  "\"age\": %4d, \"size\": %0.1f, \"use\": \"%s\", ", cls->age, cls->weights_sum, usestr[((int)cls->use)]);
+    print_buffer(buffer,  "\"par_costs\": {\"simple\": %0.2f, \"factor\": %0.2f, \"dad\": %0.2f, \"best\": %0.2f}, ", cls->nofac_par_cost, cls->fac_par_cost, cls->dad_par_cost, cls->best_par_cost);
+    print_buffer(buffer,  "\"data_costs\": {\"simple\": %0.2f, \"factor\": %0.2f, \"dad\": %0.2f, \"best\": %0.2f}, ", cls->cstcost, cls->cftcost - cls->cfvcost, cls->cntcost, cls->best_case_cost);
+    print_buffer(buffer,  "\"var_costs\": {\"factor\": %0.2f}, ", cls->cfvcost);
+    print_buffer(buffer,  "\"tot_costs\": {\"simple\": %0.2f, \"factor\": %0.2f, \"dad\": %0.2f, \"best\": %0.2f}, ", cls->nofac_cost, cls->fac_cost, cls->dad_cost, cls->best_cost);
 
+    print_buffer(buffer, "\"attrs\": [");
     for (i = 0; i < CurCtx.vset->length; i++) {
+        if (i > 0) {
+            print_buffer(buffer, ", ");
+        }
         vtype = CurCtx.vset->variables[i].vtype;
         (*vtype->details)(cls, i, buffer);
+        
     }
+    print_buffer(buffer, "]}");
 }
 
 void get_class_details(char *buffer, size_t buffer_size) {
@@ -241,14 +232,20 @@ void get_class_details(char *buffer, size_t buffer_size) {
     dest.buffer = buffer;
     dest.size = buffer_size;
     dest.offset = 0;
-
+    int start = 0;
     Class *cls = CurCtx.popln->classes[CurCtx.popln->root];
+    print_buffer(&dest, "[");
     do {
         if (cls->type != Sub) {
+            if (start > 0) {
+                print_buffer(&dest, ", ");
+            }
             get_details_for(cls, &dest);
+            start += 1;
         }
         next_class(&cls);
     } while (cls);
+    print_buffer(&dest, "]");
 }
 
 /*	-------------------------  cleartcosts  ------  */

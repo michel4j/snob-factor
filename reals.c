@@ -360,7 +360,7 @@ void deriv_var(int iv, int fac, Class *cls) {
 void adjust(int iv, int fac, Class *cls) {
     double adj, srsds, frsds, temp1, temp2, cnt;
     double del1, del2, del3, del4, spcost, fpcost;
-    double dadmu=0.0, dadsdl=0.0, dmusprd=0.0, dsdlsprd=0.0;
+    double dadmu = 0.0, dadsdl = 0.0, dmusprd = 0.0, dsdlsprd = 0.0;
     double av, var, del, sdld1;
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);
@@ -586,15 +586,18 @@ void show(Class *cls, int iv) {
 void details(Class *cls, int iv, MemBuffer *buffer) {
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
     set_var(iv, cls);
 
-    print_buffer(buffer, "V%3d  Cnt%6.1f  %s\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out");
+    print_buffer(buffer, "{\"index\": %d, \"name\": \"%s\", \"weight\": %0.1f, \"factor\": %s, ", iv + 1, vset_var->name, exp_var->cnt,
+                 (cls_var->infac) ? "true" : "false");
+    print_buffer(buffer, "\"type\": %d, ", vset_var->type);
     if (cls->num_sons > 1) {
-        print_buffer(buffer, " N: Cost%8.1f  Mu%8.3f+-%8.3f  SD%8.3f+-%8.3f\n", exp_var->npcost, cls_var->nmu, sqrt(cls_var->nmusprd), exp(cls_var->nsdl),
-                     exp(cls_var->nsdl) * sqrt(cls_var->nsdlsprd));
+        print_buffer(buffer, "\"dad\": {\"cost\": %0.1f, \"mean\": %0.5f, \"err\": %0.5f, \"stdev\": %0.5f}, ", exp_var->npcost, cls_var->nmu,
+                     sqrt(cls_var->nmusprd), exp(cls_var->nsdl));
     }
-    print_buffer(buffer, " S: Cost%8.1f  Mu%8.3f  SD%8.3f\n", exp_var->spcost + exp_var->stcost, cls_var->smu, exp(cls_var->ssdl));
-    print_buffer(buffer, " F: Cost%8.1f  Mu%8.3f  SD%8.3f  Ld%8.3f\n", exp_var->fpcost + exp_var->ftcost, cls_var->fmu, exp(cls_var->fsdl), cls_var->ld);
+    print_buffer(buffer, "\"simple\": {\"cost\": %0.1f, \"mean\": %0.5f, \"stdev\": %0.5f}, ", exp_var->spcost + exp_var->stcost, cls_var->smu, exp(cls_var->ssdl));
+    print_buffer(buffer, "\"factor\": {\"cost\": %0.1f, \"mean\": %0.5f, \"stdev\": %0.5f, \"loading\": %0.3f}}", exp_var->fpcost + exp_var->ftcost, cls_var->fmu, exp(cls_var->fsdl), cls_var->ld);
 }
 
 /*	----------------------  cost_var_nonleaf  ------------------------   */
