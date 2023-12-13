@@ -176,6 +176,90 @@ error:
     return (i);
 }
 
+/// @brief Create an empty VSet and set it as the active one ready for adding attributes
+/// @param name name of VSet
+/// @param num_vars Number of attributes
+/// @return index of new vset or negative error code
+int create_vset(const char *name, int num_vars) {
+    int found = -1;
+    VSetVar *vset_var_list;
+
+    for (int i = 0; i < MAX_VSETS; i++) {
+        if (!VarSets[i]) {
+            found = i;
+            break;
+        }
+    }
+    if (found >= 0) {
+        CurCtx.vset = VarSets[found] = (VarSet *)malloc(sizeof(VarSet));
+        if (!CurCtx.vset) {
+            return error_value("Cannot allocate memory for VariableSet", -1);
+        }
+        CurCtx.vset->id = found;
+        CurCtx.vset->variables = 0;
+        CurCtx.vset->blocks = 0;
+        strcpy(CurCtx.vset->name, name);
+
+        CurCtx.vset->length = num_vars;
+        CurCtx.vset->num_active = CurCtx.vset->length;
+
+        /*	Make a vec of nv VSetVar blocks  */
+        vset_var_list = (VSetVar *)alloc_blocks(3, num_vars * sizeof(VSetVar));
+        if (!vset_var_list) {
+            return error_value("Cannot allocate memory for variables blocks", -3);
+        }
+        CurCtx.vset->variables = vset_var_list;
+
+        /*	initialize the variables   */
+        for (int i = 0; i < CurCtx.vset->length; i++) {
+            CurCtx.vset->variables[i].id = -1;
+            CurCtx.vset->variables[i].vaux = 0;
+        }
+        return found;
+    } else {
+        return error_value("No space for VariableSet", -1);
+    }
+}
+
+/// @brief Add a new attribute to current newly created VSet
+/// @param index attribute index
+/// @param name Name of attribute
+/// @param itype Type of attribute 1 = real, 2 = Multi-State, 3 = Binary, 4 = Von Mises
+/// @param aux Auxillary information, ignored by types 1, 3, and 4. Number of states for type 2.
+/// @return value of index if successful otherwise a negative error code.
+int set_attribute(int index, const char *name, int itype, int aux) {
+    char *vaux;
+    VarType *vtype;
+    VSetVar *vset_var;
+
+    if ((index < CurCtx.vset->length) && (itype > 0) && (itype <= NTypes)) {
+        vset_var = &CurCtx.vset->variables[index];
+        vset_var->id = index;
+        strcpy(vset_var->name, name);
+        vset_var->vtype = &Types[itype];
+        vset_var->inactive = 0;
+
+        itype = itype - 1; /*  Convert types to start at 0  */
+        vtype = vset_var->vtype = &Types[itype];
+        vset_var->type = itype;
+
+        /*	Make the vaux block  */
+        vaux = (char *)alloc_blocks(3, vtype->attr_aux_size);
+        if (!vaux) {
+            return error_value("Cant make auxilliary var block", -6);
+        }
+        vset_var->vaux = vaux;
+
+        /*	Set auxilliary information   */
+        if ((*vtype->set_aux_attr)(vaux, aux)) {
+            return error_value("Error in setting auxilliary info", -7);
+        }
+        /*	Set sizes of stats and basic blocks for var in classes */
+        (*vtype->set_sizes)(index);
+    }
+    return index;
+}
+
 /*	---------------------  readsample -------------------------  */
 /*	To open a sample file and read in all about the sample.
     Returns index of new sample in samples array   */
@@ -355,6 +439,7 @@ gotit:
             }
             field += (vtype->data_size + 1);
         }
+        CurCtx.sample->num_added++;
     }
     printf("Number of active cases = %d\n", CurCtx.sample->num_active);
     close_buffer();
@@ -394,6 +479,145 @@ searched:
     if ((i >= 0) && (!expect))
         printf("Sample %s already loaded\n", nam);
     return (i);
+}
+
+/// @brief Create an empty sample ready for loading data
+/// @param name Name of sample
+/// @param size Number of items in sample
+/// @return index of sample or negative error code
+int create_sample(char *name, int size) {
+    int found = -1, out = 0;
+    Context oldctx;
+    char *saux;
+    VSetVar *vset_var;
+    VarType *vtype;
+    SampleVar *smpl_var, *smpl_var_list;
+    int record_length;
+    char *field;
+
+    // backup context
+    memcpy(&oldctx, &CurCtx, sizeof(Context));
+
+    if (find_sample(name, 0) >= 0) {
+        log_msg(2, "Sample with name '%s' already present", name);
+        out = -8;
+    } else {
+        //	Find a vacant sample slot
+        for (int i = 0; i < MAX_SAMPLES; i++) {
+            if (Samples[i] == 0) {
+                found = i;
+                break;
+            }
+        }
+        do {
+            if (found < 0) {
+                log_msg(2, "No space for data");
+                out = -1;
+                break;
+            }
+            CurCtx.sample = Samples[found] = (Sample *)malloc(sizeof(Sample));
+            if (!CurCtx.sample) {
+                log_msg(2, "No space for data");
+                out = -1;
+                break;
+            }
+            CurCtx.sample->blocks = 0;
+            CurCtx.sample->id = found;
+            strcpy(CurCtx.sample->filename, "");
+            strcpy(CurCtx.sample->name, name);
+            strcpy(CurCtx.sample->vset_name, CurCtx.vset->name); /*	Set variable-set name in sample  */
+            smpl_var_list = (SampleVar *)alloc_blocks(0, CurCtx.vset->length * sizeof(SampleVar));
+            if (!smpl_var_list) {
+                log_msg(2, "Cannot allocate memory for variables blocks");
+                out = -3;
+                break;
+            }
+            CurCtx.sample->variables = smpl_var_list;
+
+            // initialize sample_var_list
+            record_length = 1 + sizeof(int); /* active flag and ident  */
+            for (int i = 0; i < CurCtx.vset->length; i++) {
+                smpl_var_list[i].id = -1;
+                smpl_var_list[i].saux = 0;
+                smpl_var_list[i].offset = 0;
+                smpl_var_list[i].nval = 0;
+
+                smpl_var = &CurCtx.sample->variables[i];
+                vset_var = &CurCtx.vset->variables[i];
+                smpl_var->id = i;
+                vtype = vset_var->vtype;
+                saux = (char *)alloc_blocks(0, vtype->smpl_aux_size); /*	Make the saux block  */
+                if (!saux) {
+                    log_msg(2, "Cant make auxilliary var block");
+                    out = -6;
+                    break;
+                }
+                smpl_var->saux = saux;
+                if ((*vtype->read_aux_smpl)(saux)) {
+                    log_msg(2, "Error in reading auxilliary info var %d\n", i + 1);
+                    out = -7;
+                    break;
+                }
+                smpl_var->offset = record_length;
+                record_length += (1 + vtype->data_size); /* missing flag and value */
+            }
+
+            if (out < 0) {
+                break;
+            }
+            CurCtx.sample->num_cases = size;
+            CurCtx.sample->num_added = 0;
+            CurCtx.sample->num_active = 0;
+            CurCtx.sample->records = field = (char *)alloc_blocks(0, size * record_length);
+            if (!field) {
+                log_msg(2, "No space for data");
+                out = -8;
+                break;
+            }
+            CurCtx.sample->record_length = record_length;
+        } while (0);
+    }
+    if (out < 0) {
+        memcpy(&CurCtx, &oldctx, sizeof(Context));
+        return (out);
+    }
+    return found;
+}
+
+/// @brief Add a record to the current newly created sample
+/// @param bytes
+/// @return
+int add_record(char *bytes) {
+    int caseid;
+    VSetVar *vset_var;
+    VarType *vtype;
+    SampleVar *smpl_var;
+    int offset = 0;
+
+    char *field = CurCtx.sample->records + CurCtx.sample->num_added * CurCtx.sample->record_length;
+    memcpy(&caseid, bytes, sizeof(int));
+    offset += sizeof(int);
+    if (caseid < 0) {
+        caseid = -caseid;
+        *field = 0;
+    } else {
+        *field = 1;
+        CurCtx.sample->num_active++;
+    }
+    field++;
+    memcpy(field, &caseid, sizeof(int));
+    /*	Posn now points to where the (missing, val) pair for the attribute should start.  */
+    for (int i = 0; i < CurCtx.vset->length; i++) {
+        smpl_var = &CurCtx.sample->variables[i];
+        vset_var = &CurCtx.vset->variables[i];
+        vtype = vset_var->vtype;
+        offset += (*vtype->set_datum)(field + 1, i, &bytes[offset]);
+        // FIXME: Does not support missing values yet
+        smpl_var->nval++;
+        field += (vtype->data_size + 1);
+    }
+    CurCtx.sample->num_added++;
+    return CurCtx.sample->num_added;
 }
 
 /*	-----------------------  vname2id  ------------------------  */
@@ -632,9 +856,9 @@ int item_list(char *tlstname) {
     return (0);
 }
 
-int get_assignments(int* ids, int* prim_cls, double* prim_probs, int* sec_cls, double* sec_probs) {
-    int nn, i, best_cls, tid, best_leaf, next_leaf, num_son;
-    double best_weight, next_weight, bs;
+int get_assignments(int *ids, int *prim_cls, double *prim_probs, int *sec_cls, double *sec_probs) {
+    int nn, i, best_cls, best_leaf, next_leaf, num_son;
+    double best_weight, next_weight;
     char *record;
     Class *cls;
 
@@ -646,13 +870,11 @@ int get_assignments(int* ids, int* prim_cls, double* prim_probs, int* sec_cls, d
     if (!CurCtx.sample->num_cases)
         return (-3);
 
-
     num_son = find_all(Dad + Leaf);
     for (nn = 0; nn < CurCtx.sample->num_cases; nn++) {
         do_case(nn, Leaf + Dad, 0, num_son);
         best_leaf = next_leaf = best_cls = -1;
         best_weight = next_weight = 0.0;
-        bs = CurCtx.sample->num_cases + 1;
 
         record = CurCtx.sample->records + nn * CurCtx.sample->record_length;
         memcpy(&ids[nn], record + 1, sizeof(int));
@@ -665,7 +887,7 @@ int get_assignments(int* ids, int* prim_cls, double* prim_probs, int* sec_cls, d
                 best_weight = cls->case_weight;
             }
         }
-        if ((next_leaf >= 0) && (Sons[next_leaf]->case_weight > 1e-3))  {
+        if ((next_leaf >= 0) && (Sons[next_leaf]->case_weight > 1e-3)) {
             prim_cls[nn] = Sons[best_leaf]->id;
             prim_probs[nn] = Sons[best_leaf]->case_weight;
             sec_cls[nn] = Sons[next_leaf]->id;
@@ -675,7 +897,7 @@ int get_assignments(int* ids, int* prim_cls, double* prim_probs, int* sec_cls, d
             prim_probs[nn] = Sons[best_leaf]->case_weight;
             sec_cls[nn] = -1;
             sec_probs[nn] = 0.0;
-        }        
+        }
     }
     return (0);
 }

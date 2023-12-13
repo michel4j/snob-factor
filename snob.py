@@ -54,7 +54,7 @@ EXAMPLES = [
     'd2',
     'vm',
 ]
-
+import uuid;
 from pathlib import Path
 from asciitree import LeftAligned
 import pandas as pd;
@@ -66,6 +66,35 @@ def subtree(node: int, info: dict, level=0):
         for v in [ x['id'] for x in info if x['parent'] == node]
     }
 
+class DataSet():
+    def __init__(self, name: str, attributes: dict): 
+        self.name = name
+        self.attrs = attributes
+        self.model = None
+
+    def fit(self, data: pd.DataFrame, name: str = 'sample') -> list:
+        pass
+
+    def predict(self, data: pd.DataFrame, name: str = 'sample') -> pd.DataFrame:
+        pass
+
+    def get_vset(self):
+        return (
+            f"{self.name}\n"
+            f"{len(self.attrs)}\n\n"
+        ) + f"\n".join([
+            f"{name} {attr['type']:8d} {self._get_aux(attr)}"
+            for name, attr in self.attrs.items()
+        ])
+
+    def get_sample(self):
+        pass
+
+    def _get_aux(self, attr):
+        if attr['type'] in [2, 3]:
+            return f'{attr["aux"]:8d}'
+        else:
+            return ''
 
 if __name__ == '__main__':
     snob.initialize(0, 0, 0)

@@ -105,7 +105,10 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
 static void set_var(int iv, Class *cls);
 static int read_attr_aux(void *vax);
 static int read_smpl_aux(void *sax);
+static int set_attr_aux(void *vax, int aux);
+static int set_smpl_aux(void *sax, int unit, double prec);
 static int read_datum(char *loc, int iv);
+static int set_datum(char *loc, int iv, void *value);
 static void print_datum(char *loc);
 static void set_sizes(int iv);
 static void set_best_pars(int iv, Class *cls);
@@ -141,7 +144,10 @@ void vonm_define(int typindx)
     vtype->smpl_aux_size = sizeof(Saux);
     vtype->read_aux_attr = &read_attr_aux;
     vtype->read_aux_smpl = &read_smpl_aux;
+    vtype->set_aux_attr = &set_attr_aux;
+    vtype->set_aux_smpl = &set_smpl_aux;
     vtype->read_datum = &read_datum;
+    vtype->set_datum = &set_datum;    
     vtype->print_datum = &print_datum;
     vtype->set_sizes = &set_sizes;
     vtype->set_best_pars = &set_best_pars;
@@ -169,7 +175,7 @@ void set_var(int iv, Class *cls) {
 /*	--------------------  readvaux  ----------------------------  */
 /*      Read in auxiliary info into vaux, return 0 if OK else 1  */
 int read_attr_aux(void *vax) { return (0); }
-
+int set_attr_aux(void *vax, int aux) { return (0); }
 /*	---------------------  readsaux ---------------------------   */
 /*	To read any auxiliary info about a variable of this type in some
 sample.
@@ -198,30 +204,36 @@ int read_smpl_aux(void *saux) {
     sax->leps = log(sax->eps);
     return (0);
 }
+int set_smpl_aux(void *sax, int unit, double prec) { return (0); }
 
 /*	-------------------  readdat -------------------------------  */
 /*	To read a value for this variable type	 */
 int read_datum(char *loc, int iv) {
     int i;
+    double value;
+    /*	Read datum into xn.xx, return error.  */
+    i = read_double(&value, 1);
+    if (!i) {
+        set_datum(loc, iv, &value);
+    }
+    return (i);
+}
+int set_datum(char *loc, int iv, void *value) {
     int unit;
     double epsfac;
     Datum xn;
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
+    unit = ((Saux *)(smpl_var->saux))->unit;
+    epsfac = ((Saux *)(smpl_var->saux))->epsfac; /*	Get quantization effect from Saux  */
 
-    /*	Read datum into xn.xx, return error.  */
-    i = read_double(&(xn.xx), 1);
-    if (!i) {
-        /*	Get the unit code from Saux   */
-        unit = ((Saux *)(smpl_var->saux))->unit;
-        /*	Get quantization effect from Saux  */
-        epsfac = ((Saux *)(smpl_var->saux))->epsfac;
-        if (unit)
-            xn.xx *= (PI / 180.0);
-        xn.sinxx = epsfac * sin(xn.xx);
-        xn.cosxx = epsfac * cos(xn.xx);
-        memcpy(loc, &xn, sizeof(Datum));
+    xn.xx = *(double *)(value);
+    if (unit) {
+        xn.xx *= (PI / 180.0);
     }
-    return (i);
+    xn.sinxx = epsfac * sin(xn.xx);
+    xn.cosxx = epsfac * cos(xn.xx);
+    memcpy(loc, &xn, sizeof(Datum));
+    return sizeof(Datum);
 }
 
 /*	---------------------  print_datum --------------------------  */
@@ -764,8 +776,8 @@ void details(Class *cls, int iv, MemBuffer *buffer) {
     }
     print_buffer(buffer, "\"simple\": {\"cost\": %0.1f, \"hx\": %0.4f, \"hy\": %0.4f, \"err\": %0.4f}, ", exp_var->spcost + exp_var->stcost, cls_var->shx,
                  cls_var->shy, sqrt(cls_var->shsprd));
-    print_buffer(buffer, "\"factor\": {\"cost\": %0.1f, \"hx\": %0.4f, \"hy\": %0.4f, \"loading\": %0.4f, \"err\": %0.4f}, ",
-                 exp_var->fpcost + exp_var->ftcost, cls_var->fhx, cls_var->fhy, cls_var->ld, sqrt(cls_var->ldsprd));
+    print_buffer(buffer, "\"factor\": {\"cost\": %0.1f, \"hx\": %0.4f, \"hy\": %0.4f, \"loading\": %0.4f, \"err\": %0.4f}, ", exp_var->fpcost + exp_var->ftcost,
+                 cls_var->fhx, cls_var->fhy, cls_var->ld, sqrt(cls_var->ldsprd));
     kappa = sqrt(cls_var->bhx * cls_var->bhx + cls_var->bhy * cls_var->bhy);
     mu = atan2(cls_var->bhx, cls_var->bhy);
     if (saux->unit)

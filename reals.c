@@ -73,7 +73,10 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
 static void set_var(int iv, Class *cls);
 static int read_attr_aux(void *vax);
 static int read_smpl_aux(void *sax);
+static int set_attr_aux(void *vax, int aux);
+static int set_smpl_aux(void *sax, int unit, double prec);
 static int read_datum(char *loc, int iv);
+static int set_datum(char *loc, int iv, void *value);
 static void print_datum(char *loc);
 static void set_sizes(int iv);
 static void set_best_pars(int iv, Class *cls);
@@ -109,7 +112,10 @@ void reals_define(typindx) int typindx;
     vtype->smpl_aux_size = sizeof(Saux);
     vtype->read_aux_attr = &read_attr_aux;
     vtype->read_aux_smpl = &read_smpl_aux;
+    vtype->set_aux_attr = &set_attr_aux;
+    vtype->set_aux_smpl = &set_smpl_aux;
     vtype->read_datum = &read_datum;
+    vtype->set_datum = &set_datum;
     vtype->print_datum = &print_datum;
     vtype->set_sizes = &set_sizes;
     vtype->set_best_pars = &set_best_pars;
@@ -137,6 +143,7 @@ void set_var(int iv, Class *cls) {
 /*	--------------------  readvaux  ----------------------------  */
 /*      Read in auxiliary info into vaux, return 0 if OK else 1  */
 int read_attr_aux(void *vax) { return (0); }
+int set_attr_aux(void *vax, int aux) { return (0); }
 
 /*	---------------------  readsaux ---------------------------   */
 /*	To read any auxiliary info about a variable of this type in some
@@ -156,6 +163,7 @@ int read_smpl_aux(void *saux) {
     sax->leps = log(sax->eps);
     return (0);
 }
+int set_smpl_aux(void *sax, int unit, double prec) { return (0); }
 
 /*	-------------------  readdat -------------------------------  */
 /*	To read a value for this variable type	 */
@@ -166,8 +174,12 @@ int read_datum(char *loc, int iv) {
     /*	Read datum into xn, return error.  */
     i = read_double(&xn, 1);
     if (!i)
-        memcpy(loc, &xn, sizeof(Datum));
+        set_datum(loc, iv, &xn);
     return (i);
+}
+int set_datum(char *loc, int iv, void *value) {
+    memcpy(loc, value, sizeof(Datum));
+    return sizeof(Datum);
 }
 
 /*	---------------------  print_datum --------------------------  */

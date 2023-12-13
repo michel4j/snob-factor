@@ -7,12 +7,12 @@ files. The declarations herein then become converted to "EXT" declarations.
     */
 
 #include <math.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <signal.h>
 #include <time.h>
+#include <unistd.h>
 
 #define MAX_SAMPLES 10 /* Max number of samples */
 #define MAX_VSETS 3
@@ -169,6 +169,9 @@ typedef struct VarTypeStruct {
     void (*show)(Class *cls, int iv);
     void (*set_var)(int iv, Class *cls);
     void (*details)(Class *cls, int iv, MemBuffer *buffer);
+    int (*set_aux_attr)(void *vax, int aux);               /* To add attribute aux information directly */
+    int (*set_aux_smpl)(void *sax, int unit, double prec); /* To add sample aux information directly */
+    int (*set_datum)(char *loc, int iv, void *value);              /* Add a datum  */
 } VarType;
 
 /*	-------------------  Files ----------------------------------  */
@@ -238,6 +241,7 @@ typedef struct SampleStruct {
     char vset_name[80];   /* Name of variable-set */
     int num_cases;        /* Num of cases */
     int num_active;       /* Num of active cases */
+    int num_added;        /* Num of cases added, should match num_cases after loading is complete */
     SampleVar *variables; /* Ptr to vector of SVinsts, one per variable */
     char *records;        /*  vector of records  */
     int record_length;    /*  Length in chars of a data record  */
@@ -423,7 +427,11 @@ int find_sample_index(int id);
 int item_list(char *tlstname);
 void destroy_sample(int sx);
 void destroy_vset(int vx);
-int get_assignments(int* ids, int* prim_cls, double* prim_probs, int* sec_cls, double* sec_probs);
+int get_assignments(int *ids, int *prim_cls, double *prim_probs, int *sec_cls, double *sec_probs);
+int create_vset(const char *name, int num_vars);
+int set_attribute(int index, const char *name, int itype, int aux);
+int create_sample(char *name, int size);
+int add_record(char* bytes);
 
 /*		end samples.c		*/
 
@@ -444,4 +452,3 @@ void print_buffer(MemBuffer *buffer, const char *format, ...) __attribute__((for
 Result classify(const int max_cycles, const int do_steps, const int move_steps, const double tol);
 int save_model(char *filename);
 int load_model(char *filename);
-

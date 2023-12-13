@@ -67,7 +67,10 @@ typedef struct Statsst { /* Stuff accumulated to revise Basic  */
 static void set_var(int iv, Class *cls);
 static int read_attr_aux(void *vax);
 static int read_smpl_aux(void *sax);
+static int set_attr_aux(void *vax, int aux);
+static int set_smpl_aux(void *sax, int unit, double prec);
 static int read_datum(char *loc, int iv);
+static int set_datum(char *loc, int iv, void *value);
 static void print_datum(char *loc);
 static void set_sizes(int iv);
 static void set_best_pars(int iv, Class *cls);
@@ -102,7 +105,10 @@ void expbinary_define(typindx) int typindx;
     vtype->smpl_aux_size = sizeof(Saux);
     vtype->read_aux_attr = &read_attr_aux;
     vtype->read_aux_smpl = &read_smpl_aux;
+    vtype->set_aux_attr = &set_attr_aux;
+    vtype->set_aux_smpl = &set_smpl_aux;    
     vtype->read_datum = &read_datum;
+    vtype->set_datum = &set_datum;    
     vtype->print_datum = &print_datum;
     vtype->set_sizes = &set_sizes;
     vtype->set_best_pars = &set_best_pars;
@@ -130,10 +136,12 @@ void set_var(int iv, Class *cls) {
 sample.
     */
 int read_attr_aux(void *vax) { return (0); }
+int set_attr_aux(void *vax, int aux) { return (0); }
 
 /*	-------------------  readsaux ------------------------------  */
 /*	To read auxilliary info re sample for this attribute   */
 int read_smpl_aux(void *sax) { return (0); } /*	Multistate has no auxilliary info re sample  */
+int set_smpl_aux(void *sax, int unit, double prec) { return (0); }
 
 /*	-------------------  readdat -------------------------------  */
 /*	To read a value for this variable type         */
@@ -145,13 +153,19 @@ int read_datum(char *loc, int iv) {
     i = read_int(&xn, 1);
     if (i)
         return (i);
+    return set_datum(loc, iv, &xn);
+    return i;
+}
+
+int set_datum(char *loc, int iv, void *value) {
+    Datum xn = *(Datum *)(value);
     if (!xn)
         return (-1); /* Missing */
     xn--;
     if ((xn < 0) || (xn >= 2))
         return (2);
     memcpy(loc, &xn, sizeof(Datum));
-    return (0);
+    return sizeof(Datum);
 }
 
 /*	---------------------  print_datum --------------------------  */
