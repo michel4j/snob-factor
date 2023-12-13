@@ -104,6 +104,11 @@ int error_value(const char *message, const int value) {
     return value;
 }
 
+
+void handle_sigint(int sig) {
+    Stop = 1;
+}
+
 /// @brief Initialize SNOB parameters
 /// @param interact integer specifying if running from a library or not 1 = interactive, 0 = non interactive
 /// @param debug turn on verbose printing of progress
@@ -115,6 +120,8 @@ void initialize(int interact, int debug, int seed) {
     int k;
     Interactive = interact;
     Debug = debug;
+    Stop = 0;
+    signal(SIGINT, handle_sigint);
 
     SeeAll = 2;
     Fix = DFix = Partial;
@@ -239,13 +246,16 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
         prev_leaves = CurCtx.popln->num_leaves;
         cost = root->best_cost;
         cycle++;
-        if (no_change_count > 2) {
+        if ((no_change_count > 2) || (Stop)) {
             break;
         }
+            
     } while (cycle < max_cycles);
 
     if (cycle > max_cycles) {
         log_msg(1, "WARNING: Classification did not converge after %d cycles", max_cycles);
+    } else if (Stop) {
+        log_msg(1, "WARNING: Classification interrupted after %d cycles", cycle);
     } else {
         log_msg(1, "Classification converged after %d cycles", cycle);
         log_msg(1, "%4d classes,  %4d leaves,  Cost %8.1f", prev_classes, prev_leaves, cost);
@@ -261,4 +271,24 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
     result.num_cases = CurCtx.sample->num_cases;
 
     return result;
+}
+
+
+/// @brief Save a Classificationi Model to file
+/// @param filename model file 
+/// @return >= 0 if successful 
+int save_model(char *filename) {
+    int result;
+    //result = copy_population(CurCtx.popln->id, 0, "predict");
+    //if (result >= 0) {
+        result = save_population(CurCtx.popln->id, 0, filename);
+    //}
+    return result;
+}
+
+
+int load_model(char *filename) {
+    int result;
+    result = load_population(filename);
+    return set_work_population(result);
 }
