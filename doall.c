@@ -445,7 +445,7 @@ int do_all(int ncycles, int all) {
             niter = nfail = 0;
             continue;
         }
-        if ((Interactive) && (!UseStdIn) && hark(CommsBuffer.inl)) {
+        if (((Interactive) && (!UseStdIn) && hark(CommsBuffer.inl)) || (Stop)) {
             kicked = 1;
             break;
         }
