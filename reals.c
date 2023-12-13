@@ -596,8 +596,10 @@ void details(Class *cls, int iv, MemBuffer *buffer) {
         print_buffer(buffer, "\"dad\": {\"cost\": %0.1f, \"mean\": %0.5f, \"err\": %0.5f, \"stdev\": %0.5f}, ", exp_var->npcost, cls_var->nmu,
                      sqrt(cls_var->nmusprd), exp(cls_var->nsdl));
     }
-    print_buffer(buffer, "\"simple\": {\"cost\": %0.1f, \"mean\": %0.5f, \"stdev\": %0.5f}, ", exp_var->spcost + exp_var->stcost, cls_var->smu, exp(cls_var->ssdl));
-    print_buffer(buffer, "\"factor\": {\"cost\": %0.1f, \"mean\": %0.5f, \"stdev\": %0.5f, \"loading\": %0.3f}}", exp_var->fpcost + exp_var->ftcost, cls_var->fmu, exp(cls_var->fsdl), cls_var->ld);
+    print_buffer(buffer, "\"simple\": {\"cost\": %0.1f, \"mean\": %0.5f, \"stdev\": %0.5f}, ", exp_var->spcost + exp_var->stcost, cls_var->smu,
+                 exp(cls_var->ssdl));
+    print_buffer(buffer, "\"factor\": {\"cost\": %0.1f, \"mean\": %0.5f, \"stdev\": %0.5f, \"loading\": %0.3f}}", exp_var->fpcost + exp_var->ftcost,
+                 cls_var->fmu, exp(cls_var->fsdl), cls_var->ld);
 }
 
 /*	----------------------  cost_var_nonleaf  ------------------------   */

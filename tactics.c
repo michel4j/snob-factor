@@ -825,17 +825,16 @@ void try_moves(int ntry)
     while (nfail < ntry) {
         succ = best_move_class(0);
         if (succ < 0)
-            goto finish;
+            break;
         nfail++;
         if (succ)
             nfail = 0;
-        if (Heard) {
+        if ((Heard) || (Stop)) {
             log_msg(1,  "Trymoves ends prematurely");
-            goto finish;
+            break;
         }
     }
 
-finish:
     if (NoSubs > 0)
         NoSubs--;
     return;

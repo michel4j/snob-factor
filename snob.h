@@ -11,6 +11,7 @@ files. The declarations herein then become converted to "EXT" declarations.
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 #include <time.h>
 
 #define MAX_SAMPLES 10 /* Max number of samples */
@@ -422,6 +423,8 @@ int find_sample_index(int id);
 int item_list(char *tlstname);
 void destroy_sample(int sx);
 void destroy_vset(int vx);
+int get_assignments(int* ids, int* prim_cls, double* prim_probs, int* sec_cls, double* sec_probs);
+
 /*		end samples.c		*/
 
 /*	In glob.c	*/
@@ -430,11 +433,15 @@ void cleanup_population();
 void show_population();
 void show_smpl_names();
 void show_pop_names();
-void print_progress(size_t count, size_t max);
-Result classify(const int max_cycles, const int do_steps, const int move_steps, const double tol);
-void reset();
-void initialize(int lib, int debug, int threads);
+
 void log_msg(int level, const char *format, ...) __attribute__((format(printf, 2, 3)));
 int error_value(const char *message, const int value);
+void print_progress(size_t count, size_t max);
+void reset();
+void initialize(int lib, int debug, int threads);
 void get_class_details(char *buffer, size_t buffer_size);
 void print_buffer(MemBuffer *buffer, const char *format, ...) __attribute__((format(printf, 2, 3)));
+Result classify(const int max_cycles, const int do_steps, const int move_steps, const double tol);
+int save_model(char *filename);
+int load_model(char *filename);
+

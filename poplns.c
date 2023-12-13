@@ -622,16 +622,15 @@ void recordit(FILE *fll, void *from, int nn) {
     }
 }
 
+char * const saveheading = "Scnob-Model-Save-File";
 /*	------------------- savepop ---------------------  */
 /*	Copies poplns[p1] into a file called <newname>.
     If fill, item weights and scores are recorded. If not, just
 Basics and Stats. If fill but pop->nc = 0, behaves as for fill = 0.
     Returns length of recorded file.
-    */
-
-char *saveheading = "Scnob-Model-Save-File";
-
+*/
 int save_population(int p1, int fill, char *newname) {
+
     FILE *file_ptr;
     char oldname[80], *jp;
     Context oldctx;
@@ -815,6 +814,7 @@ int load_population(char *nam) {
             num_cases = fnc;
         }
     } else { /* file model unattached.  */
+        log_msg(0,  "Model unattached!");
         CurCtx.sample = 0;
         num_cases = 0;
     }
@@ -938,7 +938,7 @@ int set_work_population(int pp) {
     }
     CurCtx.vset = VarSets[j];
     /*	Check VarSet  */
-    if (strcmp(CurCtx.vset->name, oldctx.sample->vset_name)) {
+    if (CurCtx.sample && strcmp(CurCtx.vset->name, oldctx.sample->vset_name)) {
         log_msg(1, "Picked popln has incompatible VariableSet");
         goto error;
     }

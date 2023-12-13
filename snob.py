@@ -28,7 +28,19 @@ snob.classify.argtypes = [ct.c_int, ct.c_int, ct.c_int, ct.c_double]
 snob.classify.restype = Classification
 snob.print_class.argtypes = [ct.c_int, ct.c_int]
 snob.item_list.argtypes = [ct.c_char_p]
+snob.get_assignments.restype = ct.c_int
+snob.get_assignments.argtypes = [
+    ct.POINTER(ct.c_int),    # for int* ids
+    ct.POINTER(ct.c_int),    # for int* prim_cls
+    ct.POINTER(ct.c_double), # for double* prim_probs
+    ct.POINTER(ct.c_int),    # for int* sec_cls
+    ct.POINTER(ct.c_double) # for double* sec_probs
+] 
 snob.get_class_details.argtypes = [ct.c_char_p, ct.c_size_t]
+snob.save_model.argtypes = [ct.c_char_p]
+snob.save_model.restype = ct.c_int
+snob.load_model.argtypes = [ct.c_char_p]
+snob.load_model.restype = ct.c_int
 
 EXAMPLES = [
     'phi',
@@ -42,10 +54,11 @@ EXAMPLES = [
     'd2',
     'vm',
 ]
-EXAMPLES = ['6r1b']
 
 from pathlib import Path
 from asciitree import LeftAligned
+import pandas as pd;
+import numpy as np;
 
 def subtree(node: int, info: dict, level=0):
     return {
@@ -62,6 +75,8 @@ if __name__ == '__main__':
     for name in EXAMPLES:
         vset_file = Path('./examples') / f'{name}.v'
         sample_file = Path('./examples') / f'{name}.s'
+        model_file = Path(f'/tmp/{name}.mod')
+        report_file = Path(f'/tmp/{name}.rep')
     
         if not (vset_file.exists() and sample_file.exists()):
             continue
@@ -72,12 +87,15 @@ if __name__ == '__main__':
         
         snob.load_vset(str(vset_file).encode('utf-8'))
         snob.load_sample(str(sample_file).encode('utf-8'))
-        result = snob.classify(200, 50, 3, 0.00)
+        result = snob.classify(20, 50, 3, 0.05)
         buffer_size = (result.classes + result.leaves) * (result.attrs + 1) * 80 * 4
         buffer = ct.create_string_buffer(buffer_size)
+
+        
+        # parse JSON classification result
         snob.get_class_details(buffer, buffer_size)
         info = json.loads(buffer.value.decode('utf-8'))
-        #print(json.dumps(info, indent=4))
+
         tree = subtree(-1, info)
         tr = LeftAligned()
         print("-"*79)
@@ -85,5 +103,27 @@ if __name__ == '__main__':
         print("-"*79)
         print(tr(tree))
         snob.show_population()
+        snob.save_model(str(model_file).encode('utf-8'))
+        #snob.item_list(str(report_file).encode('utf-8'))
+
+        # Get Class Assignments
+        ids = (ct.c_int * result.cases)()
+        prim_cls = (ct.c_int * result.cases)()
+        prim_probs = (ct.c_double *result.cases)()
+        sec_cls = (ct.c_int * result.cases)()
+        sec_probs = (ct.c_double *result.cases)()
+        snob.get_assignments(ids, prim_cls, prim_probs, sec_cls, sec_probs)
+
+        # Create a Pandas DataFrame
+        df = pd.DataFrame({
+            'item': np.ctypeslib.as_array(ids),
+            'class': np.ctypeslib.as_array(prim_cls),
+            'prob': np.ctypeslib.as_array(prim_probs),
+            'next_class': np.ctypeslib.as_array(sec_cls),
+            'next_prob': np.ctypeslib.as_array(sec_probs)
+        })
+
+        print(df)
+
         snob.reset()
     

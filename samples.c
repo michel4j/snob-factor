@@ -11,7 +11,7 @@ void print_var_datam(int i, int n) {
     VSetVar *avi;
     SampleVar *svi;
     VarType *vtp;
-    char* field;
+    char *field;
 
     samp = CurCtx.sample;
     svi = &CurCtx.sample->variables[i];
@@ -295,7 +295,7 @@ gotit:
         /*	Set the offset of the (missing, value) pair  */
         smpl_var->offset = record_length;
         record_length += (1 + vtype->data_size); /* missing flag and value */
-    }                                 /* End of variables loop */
+    }                                            /* End of variables loop */
 
     /*	Now attempt to read in the data. The first item is the number of cases*/
     new_line();
@@ -377,8 +377,7 @@ error:
 /*	-----------------------  sname2id  ------------------------  */
 /*	To find sample id given its name. Returns -1 if unknown  */
 /*	'expect' shows if sample expected to be present  */
-int find_sample(char *nam, int expect)
-{
+int find_sample(char *nam, int expect) {
     int i;
 
     for (i = 0; i < MAX_SAMPLES; i++) {
@@ -399,8 +398,7 @@ searched:
 
 /*	-----------------------  vname2id  ------------------------  */
 /*	To find vset id given its name. Returns -1 if unknown  */
-int find_vset(char *nam)
-{
+int find_vset(char *nam) {
     int i, ii;
 
     ii = -1;
@@ -419,8 +417,7 @@ int find_vset(char *nam)
 /*	To quicksort a sample into increasing ident order   */
 
 /*	Record swapper  */
-void swaprec(char *p1, char *p2, int ll)
-{
+void swaprec(char *p1, char *p2, int ll) {
     int tt;
     if (p1 == p2)
         return;
@@ -436,8 +433,7 @@ void swaprec(char *p1, char *p2, int ll)
 }
 
 /*	Recursive quicksort  */
-void qssamp1(char *bot, int nn, int len)
-{
+void qssamp1(char *bot, int nn, int len) {
     char *top, *rp1, *rp2, *cen;
     int av, bv, cv, nb, nt;
 
@@ -521,8 +517,7 @@ doboth:
     return;
 }
 
-int sort_sample(Sample *samp)
-{
+int sort_sample(Sample *samp) {
     int nc, len;
 
     nc = samp->num_cases;
@@ -540,8 +535,7 @@ int sort_sample(Sample *samp)
 
 /*	--------------------  id2ind  ------------------------------  */
 /*	Given a item ident, returns index in sample, or -1 if not found  */
-int find_sample_index(int id)
-{
+int find_sample_index(int id) {
     int iu, il, ic, cid, len;
     char *recs;
 
@@ -573,8 +567,7 @@ chopped:
 /*	------------------------  thinglist  -------------------   */
 /*	Records best class and score for all things in a sample.
  */
-int item_list(char *tlstname)
-{
+int item_list(char *tlstname) {
     FILE *tlst;
     int nn, dadser, i, bc, tid, bl, num_son;
     double bw, bs;
@@ -582,6 +575,7 @@ int item_list(char *tlstname)
     Class *cls;
     Population *popln = CurCtx.popln;
     Class *root = CurCtx.popln->classes[CurCtx.popln->root];
+
     /*	Check we have an attched sample and model  */
     if (!CurCtx.popln)
         return (-1);
@@ -594,22 +588,21 @@ int item_list(char *tlstname)
     tlst = fopen(tlstname, "w");
     if (!tlst)
         return (-4);
+
     /*	Output a tree list in a primitive form  */
     cls = root;
+    while (cls) {
+        if (cls->type != Sub) {
+            fprintf(tlst, "%8d", cls->serial >> 2);
+            if (cls->dad_id >= 0)
+                dadser = popln->classes[cls->dad_id]->serial;
+            else
+                dadser = -4;
+            fprintf(tlst, "%8d\n", dadser >> 2);
+        }
+        next_class(&cls);
+    }
 
-treeloop:
-    if (cls->type == Sub)
-        goto nextcl1;
-    fprintf(tlst, "%8d", cls->serial >> 2);
-    if (cls->dad_id >= 0)
-        dadser = popln->classes[cls->dad_id]->serial;
-    else
-        dadser = -4;
-    fprintf(tlst, "%8d\n", dadser >> 2);
-nextcl1:
-    next_class(&cls);
-    if (cls)
-        goto treeloop;
     fprintf(tlst, "0 0\n");
 
     num_son = find_all(Dad + Leaf);
@@ -632,14 +625,60 @@ nextcl1:
         }
         record = CurCtx.sample->records + nn * CurCtx.sample->record_length;
         memcpy(&tid, record + 1, sizeof(int));
-        fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, Sons[bc]->serial >> 2,
-                Sons[bl]->serial >> 2, ScoreRScale * Sons[bl]->factor_scores[nn]);
+        fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, Sons[bc]->serial >> 2, Sons[bl]->serial >> 2, ScoreRScale * Sons[bl]->factor_scores[nn]);
     }
 
     fclose(tlst);
     return (0);
 }
 
+int get_assignments(int* ids, int* prim_cls, double* prim_probs, int* sec_cls, double* sec_probs) {
+    int nn, i, best_cls, tid, best_leaf, next_leaf, num_son;
+    double best_weight, next_weight, bs;
+    char *record;
+    Class *cls;
+
+    /*	Check we have an attched sample and model  */
+    if (!CurCtx.popln)
+        return (-1);
+    if (!CurCtx.sample)
+        return (-2);
+    if (!CurCtx.sample->num_cases)
+        return (-3);
+
+
+    num_son = find_all(Dad + Leaf);
+    for (nn = 0; nn < CurCtx.sample->num_cases; nn++) {
+        do_case(nn, Leaf + Dad, 0, num_son);
+        best_leaf = next_leaf = best_cls = -1;
+        best_weight = next_weight = 0.0;
+        bs = CurCtx.sample->num_cases + 1;
+
+        record = CurCtx.sample->records + nn * CurCtx.sample->record_length;
+        memcpy(&ids[nn], record + 1, sizeof(int));
+
+        for (i = 0; i < num_son; i++) {
+            cls = Sons[i];
+            if ((cls->type == Leaf) && (cls->case_weight > best_weight)) {
+                next_leaf = best_leaf;
+                best_leaf = i;
+                best_weight = cls->case_weight;
+            }
+        }
+        if ((next_leaf >= 0) && (Sons[next_leaf]->case_weight > 1e-3))  {
+            prim_cls[nn] = Sons[best_leaf]->id;
+            prim_probs[nn] = Sons[best_leaf]->case_weight;
+            sec_cls[nn] = Sons[next_leaf]->id;
+            sec_probs[nn] = Sons[next_leaf]->case_weight;
+        } else {
+            prim_cls[nn] = Sons[best_leaf]->id;
+            prim_probs[nn] = Sons[best_leaf]->case_weight;
+            sec_cls[nn] = -1;
+            sec_probs[nn] = 0.0;
+        }        
+    }
+    return (0);
+}
 
 /*    -------------------- destroy_sample --------------------  */
 /*    To destroy sample index sx    */
@@ -664,7 +703,6 @@ void destroy_sample(int sx) {
     CurCtx.sample = Samples[prev];
 }
 
-
 /*    -------------------- destroy_vset --------------------  */
 /*    To destroy vset index vx    */
 void destroy_vset(int vx) {
@@ -686,5 +724,4 @@ void destroy_vset(int vx) {
     if (prev < 0)
         return;
     CurCtx.vset = VarSets[prev];
-
 }

@@ -12,6 +12,7 @@
 EXT double HALF_LOG_2PI, HALF_LOG_2, LATTICE, PI, BIT, TWOBIT, TWO_ON_PI, HALF_PI;
 EXT double ZeroVec[MAX_ZERO];
 EXT double FacLog[MAX_CLASSES + 1];
+EXT volatile sig_atomic_t Stop;
 
 /*	general:	*/
 EXT int NTypes;     /* The number of different attribute types */
