@@ -45,7 +45,15 @@ EXAMPLES = [
 EXAMPLES = ['6r1b']
 
 from pathlib import Path
-                
+from asciitree import LeftAligned
+
+def subtree(node: int, info: dict, level=0):
+    return {
+        v: subtree(v, info)
+        for v in [ x['id'] for x in info if x['parent'] == node]
+    }
+
+
 if __name__ == '__main__':
     snob.initialize(0, 0, 16)
     if len(sys.argv) > 1:
@@ -55,7 +63,7 @@ if __name__ == '__main__':
         vset_file = Path('./examples') / f'{name}.v'
         sample_file = Path('./examples') / f'{name}.s'
     
-        if not vset_file.exists() and sample_file.exists():
+        if not (vset_file.exists() and sample_file.exists()):
             continue
 
         print('#'*80)
@@ -65,13 +73,17 @@ if __name__ == '__main__':
         snob.load_vset(str(vset_file).encode('utf-8'))
         snob.load_sample(str(sample_file).encode('utf-8'))
         result = snob.classify(20, 50, 2, 0.01)
-        snob.print_tree()
         buffer_size = (result.classes + result.leaves) * (result.attrs + 1) * 80 * 4
         buffer = ct.create_string_buffer(buffer_size)
         snob.get_class_details(buffer, buffer_size)
-        print(buffer.value.decode('utf-8'))
         info = json.loads(buffer.value.decode('utf-8'))
-        print(json.dumps(info, indent=4))
+        #print(json.dumps(info, indent=4))
+        tree = subtree(-1, info)
+        tr = LeftAligned()
+        print("-"*79)
+        print("Classification Tree")
+        print("-"*79)
+        print(tr(tree))
         snob.show_population()
         snob.reset()
     

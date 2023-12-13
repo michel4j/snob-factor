@@ -203,11 +203,9 @@ void get_details_for(Class *cls, MemBuffer *buffer) {
     int i;
     VarType *vtype;
 
-    print_buffer(buffer,  "{\"id\": %d, ", cls->id);
-    print_buffer(buffer,  "\"type\": \"%s\",", typstr[((int)cls->type)]);
-    if (cls->dad_id >= 0) {
-        print_buffer(buffer,  " \"dad\": %d,", cls->dad_id);
-    }
+    print_buffer(buffer,  "{\"id\": %d, ", cls->id + 1);
+    print_buffer(buffer,  "\"leaf\": %s,", (cls->type == 3) ? "true": "false");
+    print_buffer(buffer,  " \"parent\": %d,", (cls->dad_id >= 0) ? cls->dad_id + 1 : -1);
     print_buffer(buffer,  "\"age\": %4d, \"size\": %0.1f, \"use\": \"%s\", ", cls->age, cls->weights_sum, usestr[((int)cls->use)]);
     print_buffer(buffer,  "\"par_costs\": {\"simple\": %0.2f, \"factor\": %0.2f, \"dad\": %0.2f, \"best\": %0.2f}, ", cls->nofac_par_cost, cls->fac_par_cost, cls->dad_par_cost, cls->best_par_cost);
     print_buffer(buffer,  "\"data_costs\": {\"simple\": %0.2f, \"factor\": %0.2f, \"dad\": %0.2f, \"best\": %0.2f}, ", cls->cstcost, cls->cftcost - cls->cfvcost, cls->cntcost, cls->best_case_cost);

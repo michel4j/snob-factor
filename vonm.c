@@ -116,7 +116,7 @@ static void deriv_var(int iv, int fac, Class *cls);
 static void cost_var_nonleaf(int iv, int vald, Class *cls);
 static void adjust(int iv, int fac, Class *cls);
 static void show(Class *cls, int iv);
-static void details(Class *cls, int iv, MemBuffer* buffer);
+static void details(Class *cls, int iv, MemBuffer *buffer);
 
 /*--------------------------  define ------------------------------- */
 /*	This routine is used to set up a VarType entry in the global "types"
@@ -158,12 +158,12 @@ void vonm_define(int typindx)
 
 /*	-------------------  setvar -----------------------------  */
 void set_var(int iv, Class *cls) {
-/* 
-    Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv];
-    Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;    
-    Basic *dad_var = (dad) ? (Basic *)dad->basics[iv] : 0;
- */
+    /*
+        Basic *cls_var = (Basic *)cls->basics[iv];
+        Stats *exp_var = (Stats *)cls->stats[iv];
+        Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;
+        Basic *dad_var = (dad) ? (Basic *)dad->basics[iv] : 0;
+     */
 }
 
 /*	--------------------  readvaux  ----------------------------  */
@@ -275,8 +275,8 @@ of basic params  */
 void clear_stats(int iv, Class *cls) {
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
-    Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;    
-    
+    Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;
+
     set_var(iv, cls);
     exp_var->cnt = 0.0;
     exp_var->stcost = exp_var->ftcost = 0.0;
@@ -340,7 +340,7 @@ void score_var(int iv, Class *cls) {
     r2 = 1.0 / (1.0 + tt * tt);
     cosw = (1.0 - tt * tt) * r2; /* (1-t^2) / (1+t^2) */
     dwdt = 2.0 * r2;
-    dwdv = dwdt * cls_var->ld;      /* d_w / d_v */
+    dwdv = dwdt * cls_var->ld;  /* d_w / d_v */
     sinw = tt * dwdt;           /*   2t / (1+t^2)  */
     r2 = dwdt * dwdt;           /* Square of (d_w / d_t) */
     dr2dw = -2.0 * dwdt * sinw; /* deriv wrt w of r2 */
@@ -387,14 +387,14 @@ void score_var(int iv, Class *cls) {
 /*	Accumulates item cost into CaseNoFacCost, CaseFacCost    */
 void cost_var(int iv, int fac, Class *cls) {
     double del, cost, tt, tsprd, cosw, sinw, r2;
-    
+
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv];   
+    Stats *exp_var = (Stats *)cls->stats[iv];
 
     set_var(iv, cls);
-    if (saux->missing) 
+    if (saux->missing)
         return;
     if (cls->age == 0) {
         exp_var->parkftcost = exp_var->parkstcost = 0.0;
@@ -442,7 +442,7 @@ void deriv_var(int iv, int fac, Class *cls) {
     double tt, tsprd, r2, cosw, sinw, wtr2, wd1, dwdt, dr2dw;
     double coser, siner;
     const double case_weight = cls->case_weight;
-    
+
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
@@ -520,7 +520,7 @@ void adjust(int iv, int fac, Class *cls) {
     Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
-    Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;    
+    Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;
     Basic *dad_var = (dad) ? (Basic *)dad->basics[iv] : 0;
 
     set_var(iv, cls);
@@ -732,7 +732,8 @@ void show(Class *cls, int iv) {
         printf(" N: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", exp_var->npcost, cls_var->nhx, cls_var->nhy, sqrt(cls_var->nhsprd));
     }
     printf(" S: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", exp_var->spcost + exp_var->stcost, cls_var->shx, cls_var->shy, sqrt(cls_var->shsprd));
-    printf(" F: Cost%8.1f  Hx%8.3f  Hy%8.3f  Ld%8.3f +-%5.2f\n", exp_var->fpcost + exp_var->ftcost, cls_var->fhx, cls_var->fhy, cls_var->ld, sqrt(cls_var->ldsprd));
+    printf(" F: Cost%8.1f  Hx%8.3f  Hy%8.3f  Ld%8.3f +-%5.2f\n", exp_var->fpcost + exp_var->ftcost, cls_var->fhx, cls_var->fhy, cls_var->ld,
+           sqrt(cls_var->ldsprd));
     kappa = sqrt(cls_var->bhx * cls_var->bhx + cls_var->bhy * cls_var->bhy);
     mu = atan2(cls_var->bhx, cls_var->bhy);
     printf(" B:  Mean ");
@@ -743,31 +744,35 @@ void show(Class *cls, int iv) {
     printf("  Kappa %8.2f\n", kappa);
 }
 
-
 /*	------------------------  details  -----------------------   */
-void details(Class *cls, int iv, MemBuffer* buffer) {
+void details(Class *cls, int iv, MemBuffer *buffer) {
     double mu, kappa;
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
     Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
+    VSetVar *vset_var = &CurCtx.vset->variables[iv];
 
     set_var(iv, cls);
 
-    print_buffer(buffer,  "V%3d  Cnt%6.1f  %s  Adj%6.3f\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out", exp_var->adj);
-    if (cls->num_sons >= 2) {
-        print_buffer(buffer,  " N: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", exp_var->npcost, cls_var->nhx, cls_var->nhy, sqrt(cls_var->nhsprd));
+    print_buffer(buffer, "{\"index\": %d, \"name\": \"%s\", \"weight\": %0.1f, \"factor\": %s, \"adjust\": %0.2f, ", iv + 1, vset_var->name, exp_var->cnt,
+                 (cls_var->infac) ? "true" : "false", exp_var->adj);
+    print_buffer(buffer, "\"type\": %d, ", vset_var->type);
+    if (cls->num_sons > 1) {
+        print_buffer(buffer, "\"dad\": {\"cost\": %0.1f, \"hx\": %0.4f, \"hy\": %0.4f, \"err\": %0.4f}, ", exp_var->npcost, cls_var->nhx, cls_var->nhy,
+                     sqrt(cls_var->nhsprd));
     }
-    print_buffer(buffer,  " S: Cost%8.1f  Hx%8.3f  Hy%8.3f+-%8.3f\n", exp_var->spcost + exp_var->stcost, cls_var->shx, cls_var->shy, sqrt(cls_var->shsprd));
-    print_buffer(buffer,  " F: Cost%8.1f  Hx%8.3f  Hy%8.3f  Ld%8.3f +-%5.2f\n", exp_var->fpcost + exp_var->ftcost, cls_var->fhx, cls_var->fhy, cls_var->ld, sqrt(cls_var->ldsprd));
+    print_buffer(buffer, "\"simple\": {\"cost\": %0.1f, \"hx\": %0.4f, \"hy\": %0.4f, \"err\": %0.4f}, ", exp_var->spcost + exp_var->stcost, cls_var->shx,
+                 cls_var->shy, sqrt(cls_var->shsprd));
+    print_buffer(buffer, "\"factor\": {\"cost\": %0.1f, \"hx\": %0.4f, \"hy\": %0.4f, \"loading\": %0.4f, \"err\": %0.4f}, ",
+                 exp_var->fpcost + exp_var->ftcost, cls_var->fhx, cls_var->fhy, cls_var->ld, sqrt(cls_var->ldsprd));
     kappa = sqrt(cls_var->bhx * cls_var->bhx + cls_var->bhy * cls_var->bhy);
     mu = atan2(cls_var->bhx, cls_var->bhy);
-    print_buffer(buffer,  " B:  Mean ");
     if (saux->unit)
-        print_buffer(buffer,  "%6.1f deg", (180.0 / PI) * mu);
+        print_buffer(buffer, "\"mean\": %0.4f, \"units\": \"deg\", ", (180.0 / PI) * mu);
     else
-        print_buffer(buffer,  "%6.3f rad", mu);
-    print_buffer(buffer,  "  Kappa %8.2f\n", kappa);
+        print_buffer(buffer, "\"mean\": %0.4f, \"units\": \"rad\", ", mu);
+    print_buffer(buffer, "\"kappa\": %0.3f}", kappa);
 }
 /*	----------------------  cost_var_nonleaf  ------------------------   */
 /*	To compute parameter cost for non-leaf (intrnl) class use   */
@@ -886,7 +891,7 @@ void cost_var_nonleaf(int iv, int vald, Class *cls) {
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv]; 
+    Stats *exp_var = (Stats *)cls->stats[iv];
     Basic *dad_var = (dad) ? (Basic *)dad->basics[iv] : 0;
 
     set_var(iv, cls);
