@@ -55,7 +55,7 @@ def subtree(node: int, info: dict, level=0):
 
 
 if __name__ == '__main__':
-    snob.initialize(0, 0, 16)
+    snob.initialize(0, 0, 0)
     if len(sys.argv) > 1:
         EXAMPLES = sys.argv[1:]
 
@@ -72,7 +72,7 @@ if __name__ == '__main__':
         
         snob.load_vset(str(vset_file).encode('utf-8'))
         snob.load_sample(str(sample_file).encode('utf-8'))
-        result = snob.classify(20, 50, 2, 0.01)
+        result = snob.classify(200, 50, 3, 0.00)
         buffer_size = (result.classes + result.leaves) * (result.attrs + 1) * 80 * 4
         buffer = ct.create_string_buffer(buffer_size)
         snob.get_class_details(buffer, buffer_size)

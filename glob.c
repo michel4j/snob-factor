@@ -111,18 +111,19 @@ int error_value(const char *message, const int value) {
 
 static int Initialized = 0;
 
-void initialize(int interact, int debug, int threads) {
+void initialize(int interact, int debug, int seed) {
     int k;
     Interactive = interact;
     Debug = debug;
 
-    RSeed = 1234567;
     SeeAll = 2;
     Fix = DFix = Partial;
     DControl = Control = AdjAll;
 
-    if (threads > 0) {
-        // omp_set_num_threads(4);
+    if (seed != 0) {
+        RSeed = seed;
+    } else {
+        RSeed = time(NULL);
     }
 
     default_tune();
