@@ -61,7 +61,7 @@ dtype_to_struct_fmt = {
 
 # Function to create format string from DataFrame
 def create_format_string(df):
-    format_string = ''
+    format_string = 'q'
     for col in df.columns:
         dtype = str(df[col].dtype)
         if dtype in dtype_to_struct_fmt:
@@ -139,7 +139,7 @@ class DataSet():
         ])
     
     def encode_row(self, row):
-        values = tuple(row[col] for col in self.columns)
+        values = (row.name,) + tuple(row[col] for col in self.columns)
         return struct.pack(self.format, *values)
     
     def get_sample(self):
