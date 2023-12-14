@@ -604,14 +604,12 @@ void details(Class *cls, int iv, MemBuffer *buffer) {
     print_buffer(buffer, "{\"index\": %d, \"name\": \"%s\", \"weight\": %0.1f, \"factor\": %s, ", iv + 1, vset_var->name, exp_var->cnt,
                  (cls_var->infac) ? "true" : "false");
     print_buffer(buffer, "\"type\": %d, ", vset_var->type);
-    if (cls->num_sons > 1) {
-        print_buffer(buffer, "\"dad\": {\"cost\": %0.1f, \"mean\": %0.5f, \"err\": %0.5f, \"stdev\": %0.5f}, ", exp_var->npcost, cls_var->nmu,
-                     sqrt(cls_var->nmusprd), exp(cls_var->nsdl));
+    if (cls->use == Fac) {
+        print_buffer(buffer, "\"mean\": %0.5f, \"stdev\": %0.5f, \"loading\": %0.3f", cls_var->fmu, exp(cls_var->fsdl), cls_var->ld);
+    } else {
+        print_buffer(buffer, "\"mean\": %0.5f, \"stdev\": %0.5f", cls_var->smu,  exp(cls_var->ssdl));
     }
-    print_buffer(buffer, "\"simple\": {\"cost\": %0.1f, \"mean\": %0.5f, \"stdev\": %0.5f}, ", exp_var->spcost + exp_var->stcost, cls_var->smu,
-                 exp(cls_var->ssdl));
-    print_buffer(buffer, "\"factor\": {\"cost\": %0.1f, \"mean\": %0.5f, \"stdev\": %0.5f, \"loading\": %0.3f}}", exp_var->fpcost + exp_var->ftcost,
-                 cls_var->fmu, exp(cls_var->fsdl), cls_var->ld);
+    print_buffer(buffer, "}");
 }
 
 /*	----------------------  cost_var_nonleaf  ------------------------   */

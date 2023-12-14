@@ -767,17 +767,10 @@ void details(Class *cls, int iv, MemBuffer *buffer) {
 
     set_var(iv, cls);
 
-    print_buffer(buffer, "{\"index\": %d, \"name\": \"%s\", \"weight\": %0.1f, \"factor\": %s, \"adjust\": %0.2f, ", iv + 1, vset_var->name, exp_var->cnt,
-                 (cls_var->infac) ? "true" : "false", exp_var->adj);
+    print_buffer(buffer, "{\"index\": %d, \"name\": \"%s\", \"weight\": %0.1f, \"factor\": %s, ", iv + 1, vset_var->name, exp_var->cnt,
+                 (cls_var->infac) ? "true" : "false");
     print_buffer(buffer, "\"type\": %d, ", vset_var->type);
-    if (cls->num_sons > 1) {
-        print_buffer(buffer, "\"dad\": {\"cost\": %0.1f, \"hx\": %0.4f, \"hy\": %0.4f, \"err\": %0.4f}, ", exp_var->npcost, cls_var->nhx, cls_var->nhy,
-                     sqrt(cls_var->nhsprd));
-    }
-    print_buffer(buffer, "\"simple\": {\"cost\": %0.1f, \"hx\": %0.4f, \"hy\": %0.4f, \"err\": %0.4f}, ", exp_var->spcost + exp_var->stcost, cls_var->shx,
-                 cls_var->shy, sqrt(cls_var->shsprd));
-    print_buffer(buffer, "\"factor\": {\"cost\": %0.1f, \"hx\": %0.4f, \"hy\": %0.4f, \"loading\": %0.4f, \"err\": %0.4f}, ", exp_var->fpcost + exp_var->ftcost,
-                 cls_var->fhx, cls_var->fhy, cls_var->ld, sqrt(cls_var->ldsprd));
+
     kappa = sqrt(cls_var->bhx * cls_var->bhx + cls_var->bhy * cls_var->bhy);
     mu = atan2(cls_var->bhx, cls_var->bhy);
     if (saux->unit)

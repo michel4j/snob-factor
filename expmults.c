@@ -978,17 +978,15 @@ void details(Class *cls, int iv, MemBuffer *buffer) {
     double *pr = &scst[states];
 
     set_var(iv, cls);
-    print_buffer(buffer, "{\"index\": %d, \"name\": \"%s\", \"weight\": %0.1f, \"factor\": %s, \"adjust\": %0.2f, ", iv + 1, vset_var->name, exp_var->cnt,
-                 (cls_var->infac) ? "true" : "false", exp_var->adj);
+    print_buffer(buffer, "{\"index\": %d, \"name\": \"%s\", \"weight\": %0.1f, \"factor\": %s, ", iv + 1, vset_var->name, exp_var->cnt,
+                 (cls_var->infac) ? "true" : "false");
     print_buffer(buffer, "\"type\": %d, ", vset_var->type);
     if (cls->num_sons > 1) {
-        print_buffer(buffer, "\"dad_rel_freq\": [");
+        print_buffer(buffer, "\"frequency\": [");
         write_probs(nap, states, pr, buffer);
         print_buffer(buffer, "], ");
-    }
-
-    if (cls->use != Tiny) {
-        print_buffer(buffer, "\"rel_freq\": [");
+    } else if (cls->use == Fac) {
+        print_buffer(buffer, "\"frequency\": [");
         for (k = 0; k < states; k++) {
             if (k > 0) {
                 print_buffer(buffer, ", ");
@@ -1005,7 +1003,7 @@ void details(Class *cls, int iv, MemBuffer *buffer) {
         }
         print_buffer(buffer, "]");
     } else {
-        print_buffer(buffer, "\"rel_freq\": [");
+        print_buffer(buffer, "\"frequency\": [");
         write_probs(sap, states, pr, buffer);
         print_buffer(buffer, "]");
     }

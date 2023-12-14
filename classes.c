@@ -202,16 +202,16 @@ void print_class(int n, int full) {
 void get_details_for(Class *cls, MemBuffer *buffer) {
     int i;
     VarType *vtype;
-
+    double vrms;
+    vrms = sqrt(cls->sum_score_sq / cls->weights_sum);
     print_buffer(buffer,  "{\"id\": %d, ", cls->id);
     print_buffer(buffer,  "\"leaf\": %s,", (cls->type == 3) ? "true": "false");
-    print_buffer(buffer,  " \"parent\": %d,", (cls->dad_id >= 0) ? cls->dad_id: -1);
-    print_buffer(buffer,  "\"age\": %4d, \"size\": %0.1f, \"use\": \"%s\", ", cls->age, cls->weights_sum, usestr[((int)cls->use)]);
-    print_buffer(buffer,  "\"par_costs\": {\"simple\": %0.2f, \"factor\": %0.2f, \"dad\": %0.2f, \"best\": %0.2f}, ", cls->nofac_par_cost, cls->fac_par_cost, cls->dad_par_cost, cls->best_par_cost);
-    print_buffer(buffer,  "\"data_costs\": {\"simple\": %0.2f, \"factor\": %0.2f, \"dad\": %0.2f, \"best\": %0.2f}, ", cls->cstcost, cls->cftcost - cls->cfvcost, cls->cntcost, cls->best_case_cost);
-    print_buffer(buffer,  "\"var_costs\": {\"factor\": %0.2f}, ", cls->cfvcost);
-    print_buffer(buffer,  "\"total_costs\": {\"simple\": %0.2f, \"factor\": %0.2f, \"dad\": %0.2f, \"best\": %0.2f}, ", cls->nofac_cost, cls->fac_cost, cls->dad_cost, cls->best_cost);
-
+    print_buffer(buffer,  "\"parent\": %d, ", (cls->dad_id >= 0) ? cls->dad_id: -1);
+    print_buffer(buffer,  "\"factor\": %s, ", (cls->use == 2) ? "true": "false");
+    print_buffer(buffer,  "\"strength\": %0.3f, ", vrms);
+    print_buffer(buffer,  "\"tiny\": %s, ", (cls->use == 0) ? "true": "false");
+    print_buffer(buffer,  "\"age\": %4d, \"size\": %0.1f, ", cls->age, cls->weights_sum);
+    print_buffer(buffer,  "\"costs\": {\"model\": %0.2f, \"data\": %0.2f, \"total\": %0.2f}, ", cls->best_par_cost, cls->best_case_cost, cls->best_cost);
     print_buffer(buffer, "\"attrs\": [");
     for (i = 0; i < CurCtx.vset->length; i++) {
         if (i > 0) {
