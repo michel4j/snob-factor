@@ -106,9 +106,9 @@ void expbinary_define(typindx) int typindx;
     vtype->read_aux_attr = &read_attr_aux;
     vtype->read_aux_smpl = &read_smpl_aux;
     vtype->set_aux_attr = &set_attr_aux;
-    vtype->set_aux_smpl = &set_smpl_aux;    
+    vtype->set_aux_smpl = &set_smpl_aux;
     vtype->read_datum = &read_datum;
-    vtype->set_datum = &set_datum;    
+    vtype->set_datum = &set_datum;
     vtype->print_datum = &print_datum;
     vtype->set_sizes = &set_sizes;
     vtype->set_best_pars = &set_best_pars;
@@ -151,28 +151,35 @@ int read_datum(char *loc, int iv) {
 
     /*	Read datum into xn, return error.  */
     i = read_int(&xn, 1);
-    if (i)
+    if (i) {
+        *loc = 1;
         return (i);
-    return set_datum(loc, iv, &xn);
+    }
+    set_datum(loc, iv, &xn);
     return i;
 }
 
 int set_datum(char *loc, int iv, void *value) {
     Datum xn = *(Datum *)(value);
-    if (!xn)
-        return (-1); /* Missing */
+    if (!xn) {
+        *loc = 1;
+        return -1 * (int)sizeof(Datum); /* Missing */
+    }
     xn--;
-    if ((xn < 0) || (xn >= 2))
-        return (2);
-    memcpy(loc, &xn, sizeof(Datum));
-    return sizeof(Datum);
+    if ((xn < 0) || (xn >= 2)) {
+        *loc = 1; // missing
+        return -1 * (int)sizeof(Datum);
+    }
+    *loc = 0;
+    memcpy(loc + 1, &xn, sizeof(Datum));
+    return (int)sizeof(Datum);
 }
 
 /*	---------------------  print_datum --------------------------  */
 /*	To print a Datum value   */
 void print_datum(char *loc) {
     /*	Print datum from address loc   */
-    printf("%3d", (*((Datum *)loc) + 1));
+    printf("%3d", (*((Datum *)(loc + 1)) + 1));
     return;
 }
 

@@ -3,7 +3,6 @@
 #include "glob.h"
 #include <string.h>
 
-
 /*	-----------------------  nextclass  ---------------------  */
 /*	given a ptr to a ptr to a class in pop, changes the Class* to point
 to the next class in a depth-first traversal, or 0 if there is none  */
@@ -65,6 +64,7 @@ int make_population(int fill) {
     if (!popln) {
         return error_value("No space for another population", -1);
     }
+
     popln->id = found;
     popln->sample_size = 0;
     strcpy(popln->sample_name, "??");
@@ -103,6 +103,7 @@ int make_population(int fill) {
     if (!popln->classes) {
         return error_value("No space for another population", -1);
     }
+
     popln->cls_vec_len = MAX_CLASSES;
     for (i = 0; i < popln->cls_vec_len; i++)
         popln->classes[i] = 0;
@@ -111,6 +112,7 @@ int make_population(int fill) {
         strcpy(popln->sample_name, CurCtx.sample->name);
         popln->sample_size = num_cases;
     }
+
     popln->root = make_class();
     if (popln->root < 0) {
         return error_value("No space for another population", -1);
@@ -124,8 +126,7 @@ int make_population(int fill) {
     cls->type = Leaf;
     cls->use = Plain;
     cls->weights_sum = 0.0;
-
-    return (indx);
+    return (found);
 }
 
 /*	----------------------  firstpop  ---------------------  */
@@ -134,17 +135,18 @@ int make_population(int fill) {
 and non-fac estimates done  */
 int init_population() {
     int ipop;
-
     clr_bad_move();
 
     ipop = -1;
     if (!CurCtx.sample) {
         return error_value("No sample defined for firstpop", ipop);
     }
+
     ipop = make_population(1); /* Makes a configured popln */
     if (ipop < 0) {
         return ipop;
     }
+
     strcpy(CurCtx.popln->name, "work");
     do_all(5, 0); /*	Run doall on the root alone  */
 
@@ -285,7 +287,7 @@ int copy_population(int p1, int fill, char *newname) {
     }
     kk = find_vset(fpop->vst_name);
     if (kk < 0) {
-        log_msg(1,"No Variable-set %s", fpop->vst_name);
+        log_msg(1, "No Variable-set %s", fpop->vst_name);
         indx = -101;
         goto finish;
     }
@@ -321,7 +323,7 @@ sampfound:
     i = find_population(newname);
     /*	Check for copying into self  */
     if (i == p1) {
-        log_msg(1,"From copypop: attempt to copy model%3d into itself", p1 + 1);
+        log_msg(1, "From copypop: attempt to copy model%3d into itself", p1 + 1);
         indx = -102;
         goto finish;
     }
@@ -330,7 +332,7 @@ sampfound:
     /*	Make a new popln  */
     indx = make_population(fill);
     if (indx < 0) {
-        log_msg(1,"Cant make new popln from%4d", p1 + 1);
+        log_msg(1, "Cant make new popln from%4d", p1 + 1);
         indx = -104;
         goto finish;
     }
@@ -559,7 +561,7 @@ void track_best(int verify) {
     /*	Compare current and best costs  */
     bstid = get_best_pop();
     if (bstid < 0) {
-        log_msg(1,  "Cannot make BST_ model");
+        log_msg(1, "Cannot make BST_ model");
         return;
     }
     bstpop = Populations[bstid];
@@ -622,7 +624,7 @@ void recordit(FILE *fll, void *from, int nn) {
     }
 }
 
-char * const saveheading = "Scnob-Model-Save-File";
+char *const saveheading = "Scnob-Model-Save-File";
 /*	------------------- savepop ---------------------  */
 /*	Copies poplns[p1] into a file called <newname>.
     If fill, item weights and scores are recorded. If not, just
@@ -643,14 +645,14 @@ int save_population(int p1, int fill, char *newname) {
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     file_ptr = 0;
     if (!Populations[p1]) {
-        log_msg(1,  "No popln index %d", p1);
+        log_msg(1, "No popln index %d", p1);
         leng = -106;
         goto finish;
     }
     /*	Begin by copying the popln to a clean TrialPop   */
     popln = Populations[p1];
     if (!strcmp(popln->name, "TrialPop")) {
-        log_msg(1,  "Cannot save TrialPop");
+        log_msg(1, "Cannot save TrialPop");
         leng = -105;
         goto finish;
     }
@@ -662,7 +664,7 @@ int save_population(int p1, int fill, char *newname) {
         if (oldname[i] != "BST_"[i])
             goto namefixed;
     oldname[3] = 'P';
-    log_msg(1,  "This model will be saved with name BSTP... not BST_...");
+    log_msg(1, "This model will be saved with name BSTP... not BST_...");
 namefixed:
     i = find_population("TrialPop");
     if (i >= 0)
@@ -688,7 +690,7 @@ namefixed:
 
     file_ptr = fopen(newname, "w");
     if (!file_ptr) {
-        log_msg(1,  "Cannot open %s", newname);
+        log_msg(1, "Cannot open %s", newname);
         leng = -102;
         goto finish;
     }
@@ -753,7 +755,7 @@ classdone:
 
 finish:
     fclose(file_ptr);
-    log_msg(1,  "\nModel %s  Cost %10.2f  saved in file %s", oldname, popln->classes[0]->best_cost, newname);
+    log_msg(1, "\nModel %s  Cost %10.2f  saved in file %s", oldname, popln->classes[0]->best_cost, newname);
     memcpy(&CurCtx, &oldctx, sizeof(Context));
     return (leng);
 }
@@ -776,45 +778,45 @@ int load_population(char *nam) {
     memcpy(&oldctx, &CurCtx, sizeof(Context));
     file_ptr = fopen(nam, "r");
     if (!file_ptr) {
-        log_msg(1,  "Cannot open %s", nam);
+        log_msg(1, "Cannot open %s", nam);
         goto error;
     }
     fscanf(file_ptr, "%s", name);
     if (strcmp(name, saveheading)) {
-        log_msg(1,  "File is not a Scnob save-file");
+        log_msg(1, "File is not a Scnob save-file");
         goto error;
     }
     fscanf(file_ptr, "%s", pname);
-    log_msg(1,  "Model %s", pname);
+    log_msg(1, "Model %s", pname);
     fscanf(file_ptr, "%s", name); /* Reading v-set name */
     j = find_vset(name);
     if (j < 0) {
-        log_msg(1,  "Model needs variableset %s", name);
+        log_msg(1, "Model needs variableset %s", name);
         goto error;
     }
     CurCtx.vset = VarSets[j];
     fscanf(file_ptr, "%s", name);          /* Reading sample name */
     fscanf(file_ptr, "%d%d", &fncl, &fnc); /* num of classes, cases */
-                                     /*	Advance to real data */
+                                           /*	Advance to real data */
     while (fgetc(file_ptr) != '+')
         ;
     fgetc(file_ptr);
     if (fnc) {
         j = find_sample(name, 1);
         if (j < 0) {
-            log_msg(1,  "Sample %s unknown.", name);
+            log_msg(1, "Sample %s unknown.", name);
             num_cases = 0;
             CurCtx.sample = 0;
         } else {
             CurCtx.sample = Samples[j];
             if (CurCtx.sample->num_cases != fnc) {
-                log_msg(1,  "Size conflict Model%9d vs. Sample%9d", fnc, num_cases);
+                log_msg(1, "Size conflict Model%9d vs. Sample%9d", fnc, num_cases);
                 goto error;
             }
             num_cases = fnc;
         }
     } else { /* file model unattached.  */
-        log_msg(0,  "Model unattached!");
+        log_msg(0, "Model unattached!");
         CurCtx.sample = 0;
         num_cases = 0;
     }
@@ -839,7 +841,7 @@ int load_population(char *nam) {
 newclass:
     j = make_class();
     if (j < 0) {
-        log_msg(1,  "RestoreClass fails in Makeclass");
+        log_msg(1, "RestoreClass fails in Makeclass");
         goto error;
     }
 haveclass:
@@ -893,7 +895,7 @@ classdone:
 
     i = find_population(pname);
     if (i >= 0) {
-        log_msg(1,"Overwriting old model %s", pname);
+        log_msg(1, "Overwriting old model %s", pname);
         destroy_population(i);
     }
     if (!strcmp(pname, "work"))

@@ -2,11 +2,9 @@
 #define SAMPLES 1
 #include "glob.h"
 
-int sort_sample();
-
 /*	----------------------  printdatum  -------------------------  */
 /*	To print datum for variable i, case n, in sample     */
-void print_var_datam(int i, int n) {
+void print_var_datum(int i, int n) {
     Sample *samp;
     VSetVar *avi;
     SampleVar *svi;
@@ -227,7 +225,7 @@ int create_vset(const char *name, int num_vars) {
 /// @param itype Type of attribute 1 = real, 2 = Multi-State, 3 = Binary, 4 = Von Mises
 /// @param aux Auxillary information, ignored by types 1, 3, and 4. Number of states for type 2.
 /// @return value of index if successful otherwise a negative error code.
-int set_attribute(int index, const char *name, int itype, int aux) {
+int add_attribute(int index, const char *name, int itype, int aux) {
     char *vaux;
     VarType *vtype;
     VSetVar *vset_var;
@@ -426,7 +424,7 @@ gotit:
             smpl_var = &CurCtx.sample->variables[i];
             vset_var = &CurCtx.vset->variables[i];
             vtype = vset_var->vtype;
-            kread = (*vtype->read_datum)(field + 1, i);
+            kread = (*vtype->read_datum)(field, i);
             if (kread < 0) {
                 printf("Data error case %d var %d\n", n + 1, i + 1);
                 swallow();
@@ -434,7 +432,6 @@ gotit:
             if (kread)
                 *field = 1; /* Data missing */
             else {
-                *field = 0;
                 smpl_var->nval++;
             }
             field += (vtype->data_size + 1);
@@ -484,8 +481,10 @@ searched:
 /// @brief Create an empty sample ready for loading data
 /// @param name Name of sample
 /// @param size Number of items in sample
+/// @param units Array of integers one for each attribute 0 = radians, 1 = degrees, ignored by other types
+/// @param precision Array of doubles, one for each attribute, used by reals and von-mises only
 /// @return index of sample or negative error code
-int create_sample(char *name, int size) {
+int create_sample(char *name, int size, int *units, double *precision) {
     int found = -1, out = 0;
     Context oldctx;
     char *saux;
@@ -523,7 +522,7 @@ int create_sample(char *name, int size) {
             }
             CurCtx.sample->blocks = 0;
             CurCtx.sample->id = found;
-            strcpy(CurCtx.sample->filename, "");
+            strcpy(CurCtx.sample->filename, "???");
             strcpy(CurCtx.sample->name, name);
             strcpy(CurCtx.sample->vset_name, CurCtx.vset->name); /*	Set variable-set name in sample  */
             smpl_var_list = (SampleVar *)alloc_blocks(0, CurCtx.vset->length * sizeof(SampleVar));
@@ -535,17 +534,20 @@ int create_sample(char *name, int size) {
             CurCtx.sample->variables = smpl_var_list;
 
             // initialize sample_var_list
-            record_length = 1 + sizeof(int); /* active flag and ident  */
+
             for (int i = 0; i < CurCtx.vset->length; i++) {
                 smpl_var_list[i].id = -1;
                 smpl_var_list[i].saux = 0;
                 smpl_var_list[i].offset = 0;
                 smpl_var_list[i].nval = 0;
-
+            }
+            record_length = 1 + sizeof(int); /* active flag and ident  */
+            for (int i = 0; i < CurCtx.vset->length; i++) {
                 smpl_var = &CurCtx.sample->variables[i];
                 vset_var = &CurCtx.vset->variables[i];
                 smpl_var->id = i;
                 vtype = vset_var->vtype;
+
                 saux = (char *)alloc_blocks(0, vtype->smpl_aux_size); /*	Make the saux block  */
                 if (!saux) {
                     log_msg(2, "Cant make auxilliary var block");
@@ -553,8 +555,9 @@ int create_sample(char *name, int size) {
                     break;
                 }
                 smpl_var->saux = saux;
-                if ((*vtype->read_aux_smpl)(saux)) {
-                    log_msg(2, "Error in reading auxilliary info var %d\n", i + 1);
+
+                if ((*vtype->set_aux_smpl)(saux, units[i], precision[i])) {
+                    log_msg(2, "Error setting auxilliary info var %d\n", i + 1);
                     out = -7;
                     break;
                 }
@@ -578,6 +581,7 @@ int create_sample(char *name, int size) {
         } while (0);
     }
     if (out < 0) {
+        log_msg(2, "Creating Sample Failed!");
         memcpy(&CurCtx, &oldctx, sizeof(Context));
         return (out);
     }
@@ -587,16 +591,14 @@ int create_sample(char *name, int size) {
 /// @brief Add a record to the current newly created sample
 /// @param bytes
 /// @return
-int add_record(char *bytes) {
-    int caseid;
+int add_record(int index, char *bytes) {
+    int caseid = index, kread;
     VSetVar *vset_var;
     VarType *vtype;
     SampleVar *smpl_var;
     int offset = 0;
 
-    char *field = CurCtx.sample->records + CurCtx.sample->num_added * CurCtx.sample->record_length;
-    memcpy(&caseid, bytes, sizeof(int));
-    offset += sizeof(int);
+    char *field = (char *)CurCtx.sample->records + index * CurCtx.sample->record_length;
     if (caseid < 0) {
         caseid = -caseid;
         *field = 0;
@@ -606,18 +608,30 @@ int add_record(char *bytes) {
     }
     field++;
     memcpy(field, &caseid, sizeof(int));
+    field += sizeof(int);
     /*	Posn now points to where the (missing, val) pair for the attribute should start.  */
     for (int i = 0; i < CurCtx.vset->length; i++) {
         smpl_var = &CurCtx.sample->variables[i];
         vset_var = &CurCtx.vset->variables[i];
         vtype = vset_var->vtype;
-        offset += (*vtype->set_datum)(field + 1, i, &bytes[offset]);
-        // FIXME: Does not support missing values yet
-        smpl_var->nval++;
+        field += smpl_var->offset;
+        kread = (*vtype->set_datum)(field, i, bytes + offset);
+        if (kread > 0) {
+            smpl_var->nval++;
+        }
         field += (vtype->data_size + 1);
+        offset += abs(kread);
     }
     CurCtx.sample->num_added++;
     return CurCtx.sample->num_added;
+}
+
+int sort_current_sample() {
+    if (sort_sample(CurCtx.sample)) {
+        printf("Sort failure on sample\n");
+        return (-1);
+    }
+    return 0;
 }
 
 /*	-----------------------  vname2id  ------------------------  */

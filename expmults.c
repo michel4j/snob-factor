@@ -161,9 +161,9 @@ void expmults_define(typindx) int typindx;
     vtype->read_aux_attr = &read_attr_aux;
     vtype->read_aux_smpl = &read_smpl_aux;
     vtype->set_aux_attr = &set_attr_aux;
-    vtype->set_aux_smpl = &set_smpl_aux;    
+    vtype->set_aux_smpl = &set_smpl_aux;
     vtype->read_datum = &read_datum;
-    vtype->set_datum = &set_datum;    
+    vtype->set_datum = &set_datum;
     vtype->print_datum = &print_datum;
     vtype->set_sizes = &set_sizes;
     vtype->set_best_pars = &set_best_pars;
@@ -195,7 +195,7 @@ sample.
     */
 int read_attr_aux(void *vaux) {
     int i, states;
-    
+
     /*	Read in auxiliary info into vaux, return 0 if OK else 1  */
     i = read_int(&states, 1);
     if (i < 0) {
@@ -236,22 +236,30 @@ int read_datum(char *loc, int iv) {
     int xn;
     /*	Read datum into xn, return error.  */
     i = read_int(&xn, 1);
-    if (i)
+    if (i) {
+        *loc = 1;
         return (i);
+    }
     set_datum(loc, iv, &xn);
     return i;
 }
 
 int set_datum(char *loc, int iv, void *value) {
-    Datum xn = *(Datum *)(value);
+
+    int xn = *(Datum *)(value);
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     Vaux *vaux = (Vaux *)vset_var->vaux;
-    if (!xn)
-        return (-1); /* Missing */
+    if (!xn) {
+        *loc = 1;
+        return -1 * (int)sizeof(Datum); /* Missing */
+    }
     xn--;
-    if ((xn < 0) || (xn >= vaux->states))
-        return (2);
-    memcpy(loc, &xn, sizeof(Datum));
+    if ((xn < 0) || (xn >= vaux->states)) {
+        *loc = 1;
+        return -1 * (int)sizeof(Datum);
+    }
+    *loc = 0;
+    memcpy(loc + 1, &xn, sizeof(Datum));
     return sizeof(Datum);
 }
 
@@ -259,7 +267,7 @@ int set_datum(char *loc, int iv, void *value) {
 /*	To print a Datum value   */
 void print_datum(char *loc) {
     /*	Print datum from address loc   */
-    printf("%3d", (*((Datum *)loc) + 1));
+    printf("%3d", (*((Datum *)(loc + 1)) + 1));
     return;
 }
 

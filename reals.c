@@ -151,19 +151,24 @@ sample.
 */
 int read_smpl_aux(void *saux) {
     int i;
-    Saux *sax = (Saux *)saux;
-
+    double prec;
     /*	Read in auxiliary info into saux, return 0 if OK else 1  */
-    i = read_double(&(sax->eps), 1);
+    i = read_double(&prec, 1);
     if (i < 0) {
-        sax->eps = sax->leps = 0.0;
+        set_smpl_aux(saux, 0, 0.0);
         return (1);
     }
-    sax->epssq = sax->eps * sax->eps * (1.0 / 12.0);
-    sax->leps = log(sax->eps);
+    set_smpl_aux(saux, 0, prec);
     return (0);
 }
-int set_smpl_aux(void *sax, int unit, double prec) { return (0); }
+int set_smpl_aux(void *saux, int unit, double prec) {
+    Saux *sax = (Saux *)saux;
+    sax->eps = prec;
+    sax->epssq = sax->eps * sax->eps * (1.0 / 12.0);
+    if (sax->eps > 0)
+        sax->leps = log(sax->eps);
+    return (0);
+}
 
 /*	-------------------  readdat -------------------------------  */
 /*	To read a value for this variable type	 */
@@ -175,18 +180,24 @@ int read_datum(char *loc, int iv) {
     i = read_double(&xn, 1);
     if (!i)
         set_datum(loc, iv, &xn);
+    else
+        *loc = 1;
     return (i);
 }
 int set_datum(char *loc, int iv, void *value) {
-    memcpy(loc, value, sizeof(Datum));
-    return sizeof(Datum);
+
+    double val = *(double *)(value);
+    *loc = (isnan(val)) ? 1 : 0;
+    int active = (isnan(val)) ? -1 : 1;
+    memcpy(loc + 1, value, sizeof(double));
+    return active * sizeof(double);
 }
 
 /*	---------------------  print_datum --------------------------  */
 /*	To print a Datum value   */
 void print_datum(char *loc) {
     /*	Print datum from address loc   */
-    printf("%9.2f", *((double *)loc));
+    printf("%9.4f", *((double *)(loc + 1)));
 }
 
 /*	---------------------  setsizes  -----------------------   */
@@ -607,7 +618,7 @@ void details(Class *cls, int iv, MemBuffer *buffer) {
     if (cls->use == Fac) {
         print_buffer(buffer, "\"mean\": %0.5f, \"stdev\": %0.5f, \"loading\": %0.3f", cls_var->fmu, exp(cls_var->fsdl), cls_var->ld);
     } else {
-        print_buffer(buffer, "\"mean\": %0.5f, \"stdev\": %0.5f", cls_var->smu,  exp(cls_var->ssdl));
+        print_buffer(buffer, "\"mean\": %0.5f, \"stdev\": %0.5f", cls_var->smu, exp(cls_var->ssdl));
     }
     print_buffer(buffer, "}");
 }

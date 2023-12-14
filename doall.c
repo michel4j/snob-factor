@@ -124,13 +124,12 @@ void tidy(int hit, int no_subs) {
 
     if (!popln->sample_size)
         hit = 0;
-
     do {
         ndead = 0;
-
         for (i = 0; i <= popln->hi_class; i++) {
             cls = popln->classes[i];
             if ((!cls) || (cls->type == Vacant) || (i == popln->root)) {
+                
                 if (i == popln->root) {
                     cls->num_sons = 0;
                     cls->son_id = cls->sib_id = -1;
@@ -321,22 +320,25 @@ void find_and_estimate(int *all, int niter, int ncycles) {
 
 double update_leaf_classes(double *oldleafsum, int *nfail, int num_son) {
     double leafsum = 0.0;
+    char token = ' ';
     leafsum = 0.0;
+
     for (int ic = 0; ic < num_son; ic++) {
         adjust_class(Sons[ic], 0);
         /*	The second para tells adjust not to do as-dad params  */
         leafsum += Sons[ic]->best_cost;
     }
     if (SeeAll == 0) {
-        rep('.');
+        token = '.';
     } else if (leafsum < (*oldleafsum - MinGain)) {
         (*nfail) = 0;
         *oldleafsum = leafsum;
-        rep('L');
+        token = 'L';
     } else {
         (*nfail)++;
-        rep('l');
+        token = 'l';
     }
+    rep(token);
 
     return leafsum;
 }
@@ -429,12 +431,12 @@ int do_all(int ncycles, int all) {
 
         if (all != (Dad + Leaf + Sub)) {
             update_leaf_classes(&oldleafsum, &nfail, num_son);
-
         } else {
             // all = 7, so we have dads, leaves and subs to do.
             // We do from bottom up, collecting as-dad pcosts.
             update_all_classes(&oldcost, &nfail);
         }
+        
         if (nfail > GiveUp) {
             if (all != Leaf)
                 break;

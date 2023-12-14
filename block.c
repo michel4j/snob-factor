@@ -83,8 +83,7 @@ void free_blocks(int gr) {
 
 /*	------------------ report_space ---------------------------  */
 /*	To report allocated space  */
-int report_space(pp)
-int pp;
+int report_space(int pp)
 {
     if (pp)
         printf("Allocated space %8d chars\n", allocated);

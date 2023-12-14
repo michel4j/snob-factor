@@ -416,7 +416,7 @@ void do_types();
 /*		end dotypes.c		*/
 
 /*	In SAMPLES.c	*/
-void print_var_datam(int i, int n);
+void print_var_datum(int i, int n);
 int read_vset();
 int load_vset(const char *fname);
 int load_sample(const char *fname);
@@ -429,9 +429,10 @@ void destroy_sample(int sx);
 void destroy_vset(int vx);
 int get_assignments(int *ids, int *prim_cls, double *prim_probs, int *sec_cls, double *sec_probs);
 int create_vset(const char *name, int num_vars);
-int set_attribute(int index, const char *name, int itype, int aux);
-int create_sample(char *name, int size);
-int add_record(char* bytes);
+int add_attribute(int index, const char *name, int itype, int aux);
+int create_sample(char *name, int size, int *units, double* precision);
+int add_record(int index, char *bytes);
+int sort_current_sample();
 
 /*		end samples.c		*/
 

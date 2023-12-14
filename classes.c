@@ -592,14 +592,12 @@ void adjust_class(Class *cls, int dod) {
     if (dod && !cls->hold_type && (Control & AdjTr) && (cls->num_sons >= 2)) {
         leafcost = (cls->use == Fac) ? cls->fac_cost : cls->nofac_cost;
         if ((cls->type == Dad) && (leafcost < cls->dad_cost) && (Fix != Random)) {
-            flp();
-            printf("Changing type of class%s from Dad to Leaf\n", serial_to_str(cls));
+            log_msg(1, "Changing type of class%s from Dad to Leaf", serial_to_str(cls));
             SeeAll = 4;
             /*	Kill all sons  */
             delete_sons(cls->id); /* which changes type to leaf */
         } else if (npars && (leafcost > cls->dad_cost) && (cls->type == Leaf)) {
-            flp();
-            printf("Changing type of class%s from Leaf to Dad\n", serial_to_str(cls));
+            log_msg(1, "Changing type of class%s from Leaf to Dad", serial_to_str(cls));
             SeeAll = 4;
             cls->type = Dad;
             if (dad) {

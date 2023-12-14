@@ -147,7 +147,7 @@ void vonm_define(int typindx)
     vtype->set_aux_attr = &set_attr_aux;
     vtype->set_aux_smpl = &set_smpl_aux;
     vtype->read_datum = &read_datum;
-    vtype->set_datum = &set_datum;    
+    vtype->set_datum = &set_datum;
     vtype->print_datum = &print_datum;
     vtype->set_sizes = &set_sizes;
     vtype->set_best_pars = &set_best_pars;
@@ -181,30 +181,38 @@ int set_attr_aux(void *vax, int aux) { return (0); }
 sample.
     */
 int read_smpl_aux(void *saux) {
-    int i;
-    Saux *sax = (Saux *)saux;
+    int i, unit;
+    double prec;
 
     /*	Read in auxiliary info into saux, return 0 if OK else 1  */
-    i = read_int(&(sax->unit), 1);
+    i = read_int(&unit, 1);
     if (i < 0) {
-        sax->eps = sax->leps = 0.0;
+        set_smpl_aux(saux, 0, 0.0);
         return (1);
     }
-    i = read_double(&(sax->eps), 1);
+    i = read_double(&prec, 1);
     if (i < 0) {
-        sax->eps = sax->leps = 0.0;
+        set_smpl_aux(saux, unit, 0.0);
         return (1);
     }
+    set_smpl_aux(saux, unit, prec);
+    return (0);
+}
+int set_smpl_aux(void *saux, int unit, double prec) {
+    Saux *sax = (Saux *)saux;
+
+    sax->unit = unit;
+    sax->eps = prec;
     if (sax->unit)
         sax->eps *= (PI / 180.0);
     if (sax->eps > 0.01)
         sax->epsfac = 2.0 * sin(0.5 * sax->eps) / sax->eps;
     else
         sax->epsfac = 1.0 - sax->eps * sax->eps / 24.0;
-    sax->leps = log(sax->eps);
+    if (sax->eps > 0.0)
+        sax->leps = log(sax->eps);
     return (0);
 }
-int set_smpl_aux(void *sax, int unit, double prec) { return (0); }
 
 /*	-------------------  readdat -------------------------------  */
 /*	To read a value for this variable type	 */
@@ -227,20 +235,22 @@ int set_datum(char *loc, int iv, void *value) {
     epsfac = ((Saux *)(smpl_var->saux))->epsfac; /*	Get quantization effect from Saux  */
 
     xn.xx = *(double *)(value);
+    *loc = (isnan(xn.xx)) ? 1 : 0;
+    int active = (isnan(xn.xx)) ? -1 : 1;
     if (unit) {
         xn.xx *= (PI / 180.0);
     }
     xn.sinxx = epsfac * sin(xn.xx);
     xn.cosxx = epsfac * cos(xn.xx);
-    memcpy(loc, &xn, sizeof(Datum));
-    return sizeof(Datum);
+    memcpy(loc + 1, &xn, sizeof(Datum));
+    return active * sizeof(double); // size actually read from value, not size of Datum
 }
 
 /*	---------------------  print_datum --------------------------  */
 /*	To print a Datum value   */
 void print_datum(char *loc) {
     /*	Print datum from address loc   */
-    printf("%9.2f", *((double *)loc));
+    printf("%9.4f", (*(Datum *)(loc + 1)).xx);
     return;
 }
 
@@ -571,6 +581,7 @@ void adjust(int iv, int fac, Class *cls) {
         cls->cstcost += cnt * (2.0 * HALF_LOG_2PI - saux->leps + cls->mlogab) + 1.0;
         cls->cftcost = cls->cstcost + 100.0 * cnt;
     }
+
     temp1 = 1.0 / dhsprd;
 
     /*	Compute parameter costs as they are  */
@@ -594,6 +605,7 @@ void adjust(int iv, int fac, Class *cls) {
     /*	Add to class param costs  */
     cls->nofac_par_cost += spcost;
     cls->fac_par_cost += fpcost;
+
     if ((!(Control & AdjPr)) || (cnt < MinSize)) {
         return;
     }
@@ -604,9 +616,10 @@ void adjust(int iv, int fac, Class *cls) {
         cost = N * (-leps + LI0 + shsprd * Fh) - kap*Sum{cos(mu-x)}
 
         Must get kap, Sum, LI0, Fh etc  */
-    if (cls_var->sfh < 0.0)
-        kapcode(cls_var->shx, cls_var->shy, &(cls_var->skappa));
 
+    if (cls_var->sfh < 0.0) {
+        kapcode(cls_var->shx, cls_var->shy, &(cls_var->skappa));
+    }
     /*	From item cost term - kap*Sum{cos(mu-x)} :  */
     hxd1 = -exp_var->tssin;
     hyd1 = -exp_var->tscos;
@@ -6065,6 +6078,7 @@ void kapcode(double hx, double hy, double *vmst) {
     skap = kap * kscale;
     ik = (int)skap;
     del = skap - ik;
+
     if (ik < maxik) {
         /*	Interpolate   */
         va = lgi0[ik];

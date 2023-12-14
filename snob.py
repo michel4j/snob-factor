@@ -25,6 +25,7 @@ class Classification(ct.Structure):
 
 snob = ct.cdll.LoadLibrary('./libsnob.so')
 snob.initialize.argtypes = [ct.c_int, ct.c_int, ct.c_int]
+snob.init_population.restype = ct.c_int
 snob.load_vset.argtypes = [ct.c_char_p]
 snob.load_vset.restype = ct.c_int
 snob.load_sample.argtypes = [ct.c_char_p]
@@ -43,36 +44,46 @@ snob.get_assignments.argtypes = [
     ct.POINTER(ct.c_int),    # for int* sec_cls
     ct.POINTER(ct.c_double) # for double* sec_probs
 ] 
+snob.create_vset.argtypes =[]
 snob.get_class_details.argtypes = [ct.c_char_p, ct.c_size_t]
 snob.save_model.argtypes = [ct.c_char_p]
 snob.save_model.restype = ct.c_int
 snob.load_model.argtypes = [ct.c_char_p]
 snob.load_model.restype = ct.c_int
 
+# create_vset
+snob.create_vset.argtypes = [ct.c_char_p, ct.c_int]
+snob.create_vset.restype = ct.c_int
+
+# set_attribute
+snob.add_attribute.argtypes = [ct.c_int, ct.c_char_p, ct.c_int, ct.c_int]
+snob.add_attribute.restype = ct.c_int
+
+# create_sample
+snob.create_sample.argtypes = [ct.c_char_p, ct.c_int, ct.POINTER(ct.c_int), ct.POINTER(ct.c_double)]
+snob.create_sample.restype = ct.c_int
+
+# add_record
+snob.add_record.argtypes = [ct.c_int, ct.c_char_p]
+snob.add_record.restype = ct.c_int
+
+# print_data
+snob.print_var_datum.argtypes = [ct.c_int, ct.c_int]
 
 
 # Mapping from Pandas dtypes to struct format characters
 dtype_to_struct_fmt = {
     'int64': 'q',  # 64-bit integer
     'float64': 'd',  # double precision float
-    'object': 's',  # string/bytes; needs length
     # Add other mappings as needed
 }
 
 # Function to create format string from DataFrame
 def create_format_string(df):
-    format_string = 'q'
-    for col in df.columns:
-        dtype = str(df[col].dtype)
-        if dtype in dtype_to_struct_fmt:
-            format_char = dtype_to_struct_fmt[dtype]
-            # Special handling for strings to include length
-            if dtype == 'object':
-                max_length = df[col].str.len().max()
-                format_char = f'{max_length}s'
-            format_string += format_char
-        else:
-            raise ValueError(f"Unhandled data type: {dtype}")
+    format_string = ''.join(
+        dtype_to_struct_fmt.get(df[col].dtype.name, '')
+        for col in df.columns
+    )
     return format_string
 
 # Function to make a tree structure from flat data
@@ -100,7 +111,7 @@ class DataSet():
         'real': 1,
         'multistate': 2,
         'binary': 3,
-        'degree': 4, 
+        'degrees': 4, 
         'radians': 4,
     }
 
@@ -113,46 +124,78 @@ class DataSet():
         self.data = data
         self.columns = df.columns[1:]
         self.format = create_format_string(self.data[self.columns])
-        self.attrs = {field: {'prec': get_prec(df[field]), 'type': get_type(df[field])} for field in self.columns}
+        print(self.format)
+        self.attrs = {
+            field: {'prec': get_prec(df[field]), 'type': get_type(df[field])}
+            for field in self.columns
+        }
+        
         for field, prec in precision.items():
             self.attrs[field]['prec'] = prec
         
         for field, type_ in types.items():
-            self.attrs[field]['prec'] = self.TYPES[type_]     
+            self.attrs[field]['type'] = type_     
 
         for field, aux in auxs.items():   
             self.attrs[field]['aux'] = aux     
 
+    def setup(self):
+        # Create a Variable Set 
+        vset_index = snob.create_vset(self.name.encode("utf-8"), len(self.attrs))
+
+        # Add attributes
+        for i, (name, attr) in enumerate(self.attrs.items()):
+            out = snob.add_attribute(
+                i, name.encode('utf-8'), 
+                self.TYPES[attr['type']],
+                attr.get('aux', 0)
+            )
+            print(f'Attribute {out}:{name} added!')
+        print(f"VSET:{vset_index} Added with {len(self.attrs)} attributes")
+
+        # Create Sample with Auxillary information
+        units = np.array([
+            1 if attr['type'] == 'degrees' else 0 
+            for name, attr in self.attrs.items()
+        ], dtype='int64')
+        precs = np.array([
+            10**-attr['prec'] 
+            for name, attr in self.attrs.items()
+        ], dtype='float64')
+
+        size = len(self.data.index)
+        smpl_index = snob.create_sample(
+            self.name.encode('utf-8'), 
+            size, 
+            units.ctypes.data_as(ct.POINTER(ct.c_int)), 
+            precs.ctypes.data_as(ct.POINTER(ct.c_double))
+        )
+
+        # Now add records
+        for row in self.data[self.columns].itertuples():
+            snob.add_record(row[0], struct.pack(self.format, *row[1:]))
+        
+        # sort the samples
+        snob.sort_current_sample()
+
+        print(f'SAMPLE:{smpl_index} Added with {size} records')
+        snob.show_smpl_names()
+        snob.report_space(1)
+        print(self.data)
+        #snob.init_population()
+
     def fit(self) -> list:
-        pass
+        result = snob.classify(20, 50, 3, 0.05)
+        buffer_size = (result.classes + result.leaves) * (result.attrs + 1) * 80 * 4
+        buffer = ct.create_string_buffer(buffer_size)
+
+        # parse JSON classification result
+        snob.get_class_details(buffer, buffer_size)
+        self.results = json.loads(buffer.value.decode('utf-8'))
 
     def predict(self, data: pd.DataFrame, name: str = 'sample') -> pd.DataFrame:
         pass
 
-    def get_vset(self):
-        return (
-            f"{self.name}\n"
-            f"{len(self.attrs)}\n\n"
-        ) + f"\n".join([
-            f"{name:<10s} {self._get_type_int(attr):2d} {self._get_aux(attr):2s}"
-            for name, attr in self.attrs.items()
-        ])
-    
-    def encode_row(self, row):
-        values = (row.name,) + tuple(row[col] for col in self.columns)
-        return struct.pack(self.format, *values)
-    
-    def get_sample(self):
-        return self.data[self.columns].apply(lambda row: self.encode_row(row), axis=1)
-
-    def _get_aux(self, attr):
-        if attr['type'] in [2, 3]:
-            return f'{attr["aux"]:8d}'
-        else:
-            return ''
-    
-    def _get_type_int(self, attr):
-        return self.TYPES.get(attr['type'], 1)
 
 
 EXAMPLES = [
@@ -160,17 +203,24 @@ EXAMPLES = [
     '6r1c', '6r1b', 'd2', 'vm',
 ]
 if __name__ == '__main__':
-    snob.initialize(0, 0, 0)
+    snob.initialize(0, -1, 0)
     if len(sys.argv) > 1:
         EXAMPLES = sys.argv[1:]
 
     df = pd.read_csv("./examples/sst.csv")
-    dataset = DataSet(
+    dset = DataSet(
         data = df, 
-        types={'theta': 'radians', 'phi': "radians", "ctheta": "radians", "cphi": 'radians'}
+        name = 'sst',
+        types={
+            'theta': 'radians', 
+            'phi': "radians", 
+            "ctheta": "radians", 
+            "cphi": 'radians'
+        }
     )
-    print(dataset.get_vset())
-    print(dataset.get_sample())
+    print(dset.attrs)
+    dset.setup()
+    #dset.fit()
     sys.exit(1)
         
 
