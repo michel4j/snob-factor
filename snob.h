@@ -433,7 +433,7 @@ int add_attribute(int index, const char *name, int itype, int aux);
 int create_sample(char *name, int size, int *units, double* precision);
 int add_record(int index, char *bytes);
 int sort_current_sample();
-
+void peek_data();
 /*		end samples.c		*/
 
 /*	In glob.c	*/

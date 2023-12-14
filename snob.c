@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     timespec_get(&wall_end, TIME_UTC);
     cpu_time = ((double) (cpu_end - cpu_start)) / CLOCKS_PER_SEC;
     wall_time = (wall_end.tv_sec - wall_start.tv_sec) +  (wall_end.tv_nsec - wall_start.tv_nsec) / 1E9;
-
+    peek_data();
     log_msg(1, "CPU Time:     %10.3f s", cpu_time);
     log_msg(1, "Elapsed Time: %10.3f s", wall_time);
 }

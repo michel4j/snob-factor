@@ -124,7 +124,6 @@ class DataSet():
         self.data = data
         self.columns = df.columns[1:]
         self.format = create_format_string(self.data[self.columns])
-        print(self.format)
         self.attrs = {
             field: {'prec': get_prec(df[field]), 'type': get_type(df[field])}
             for field in self.columns
@@ -182,6 +181,11 @@ class DataSet():
         snob.show_smpl_names()
         snob.report_space(1)
         print(self.data)
+        for n in range(5):
+            print(f"{n:7d}", end='')
+            for j in range(len(self.attrs)):
+                snob.print_var_datum(j, n)
+            print()
         #snob.init_population()
 
     def fit(self) -> list:
@@ -207,21 +211,21 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         EXAMPLES = sys.argv[1:]
 
-    df = pd.read_csv("./examples/sst.csv")
-    dset = DataSet(
-        data = df, 
-        name = 'sst',
-        types={
-            'theta': 'radians', 
-            'phi': "radians", 
-            "ctheta": "radians", 
-            "cphi": 'radians'
-        }
-    )
-    print(dset.attrs)
-    dset.setup()
-    #dset.fit()
-    sys.exit(1)
+    # df = pd.read_csv("./examples/sst.csv")
+    # dset = DataSet(
+    #     data = df, 
+    #     name = 'sst',
+    #     types={
+    #         'theta': 'radians', 
+    #         'phi': "radians", 
+    #         "ctheta": "radians", 
+    #         "cphi": 'radians'
+    #     }
+    # )
+    # print(dset.attrs)
+    # dset.setup()
+    # dset.fit()
+    # sys.exit(1)
         
 
     for name in EXAMPLES:
@@ -239,6 +243,7 @@ if __name__ == '__main__':
         
         snob.load_vset(str(vset_file).encode('utf-8'))
         snob.load_sample(str(sample_file).encode('utf-8'))
+
         result = snob.classify(20, 50, 3, 0.05)
         buffer_size = (result.classes + result.leaves) * (result.attrs + 1) * 80 * 4
         buffer = ct.create_string_buffer(buffer_size)
@@ -277,6 +282,9 @@ if __name__ == '__main__':
         })
         print(json.dumps(info, indent=4))
         print(df)
+
+        snob.peek_data()
+            
 
         snob.reset()
     

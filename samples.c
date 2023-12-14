@@ -23,8 +23,38 @@ void print_var_datum(int i, int n) {
         printf("    =====");
         return;
     }
-    field += 1;
+    // field += 1;
     (*vtp->print_datum)(field);
+    return;
+}
+
+void peek_data() {
+    Sample *samp;
+    VSetVar *avi;
+    SampleVar *svi;
+    VarType *vtp;
+    char *field;
+
+    samp = CurCtx.sample;
+    for (int n = 0; n < CurCtx.sample->num_cases; n++) {
+        if ((n > 5) && (n < CurCtx.sample->num_cases - 5)) continue;
+        field = (char *)samp->records + n * samp->record_length;
+        //printf("%7c", *(short *)(field));
+        for (int i = 0; i < CurCtx.vset->length; i++) {
+            svi = &CurCtx.sample->variables[i];
+            avi = &CurCtx.vset->variables[i];
+            vtp = avi->vtype;
+
+            field += svi->offset;
+            /*	Test for missing  */
+            if (*field == 1) {
+                printf("    =====");
+            } else {
+                (*vtp->print_datum)(field);
+            }
+        }
+        printf("\n");
+    }
     return;
 }
 /*	------------------------ readvset ------------------------------ */
@@ -598,7 +628,7 @@ int add_record(int index, char *bytes) {
     SampleVar *smpl_var;
     int offset = 0;
 
-    char *field = (char *)CurCtx.sample->records + index * CurCtx.sample->record_length;
+    char *field = (char *)CurCtx.sample->records + index * (CurCtx.sample->record_length + 1);
     if (caseid < 0) {
         caseid = -caseid;
         *field = 0;
@@ -609,6 +639,7 @@ int add_record(int index, char *bytes) {
     field++;
     memcpy(field, &caseid, sizeof(int));
     field += sizeof(int);
+    printf("%7d", caseid);
     /*	Posn now points to where the (missing, val) pair for the attribute should start.  */
     for (int i = 0; i < CurCtx.vset->length; i++) {
         smpl_var = &CurCtx.sample->variables[i];
@@ -619,9 +650,11 @@ int add_record(int index, char *bytes) {
         if (kread > 0) {
             smpl_var->nval++;
         }
+        (*vtype->print_datum)(field);
         field += (vtype->data_size + 1);
         offset += abs(kread);
     }
+    printf("\n");
     CurCtx.sample->num_added++;
     return CurCtx.sample->num_added;
 }
