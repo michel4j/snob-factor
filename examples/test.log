@@ -9,7 +9,7 @@ Readsample returns 0
 Allocated space    14140 chars
 ll.la
 Firstpop returns 0
-Allocated space    20208 chars
+Allocated space    21216 chars
 
 S    1  LEAF    Root Age   5  Sz 200.0  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
 Pcosts  S:    33.36  F:   933.36  D:     0.00  B:    33.36
@@ -25,7 +25,7 @@ AAAAAA...
 Changing type of class    2  from Leaf to Dad
 Changing type of class    3  from Leaf to Dad
 aAAA.AA........AA........aa......aa
-Allocated space   117236 chars
+Allocated space   139412 chars
 P1    15 classes,    4 leaves,  Pcost   151.5  Tcost    4645.3,  Cost    4796.8
 Sample  1 From_d2r3m6
 aaDDDddddDDDdddddDdddddDdddddDdddddDdddddDDdddddDdddddDDdddddDdddd
@@ -55,7 +55,7 @@ Popln  1 on sample  1,   5 classes,   200 things  Cost    4786.63
        7 Leaf       Scan      58 RelAb 0.225  Size    44.9
 aa
 No possible class move
-Allocated space    66468 chars
+Allocated space    77556 chars
 P1     5 classes,    4 leaves,  Pcost   140.1  Tcost    4646.5,  Cost    4786.7
 Sample  1 From_d2r3m6
 Popln  1 on sample  1,   5 classes,   200 things  Cost    4786.65

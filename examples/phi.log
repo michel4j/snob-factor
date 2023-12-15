@@ -303,7 +303,7 @@ V  2  Cnt41731.0   In  Adj 0.300
 
 S    2   DAD Dad    1  Age 159  Sz23060.8  Use Pln(Vv  0.91  +-0.902 Avv 0.087)   2 sons
 Pcosts  S:    22.62  F:  1130.12  D:   299.47  B:   299.47
-Tcosts  S:380743.05  F:367912.42  D:349410.85  B:349410.85
+Tcosts  S:380743.05  F:379925.80  D:349410.85  B:349410.85
 Vcost     ---------  F:  9824.56
 totals  S:380765.67  F:390880.49  D:349710.32  B:349710.32
 V  1  Cnt23065.5   In  Adj 0.300
@@ -319,7 +319,7 @@ V  2  Cnt23065.5   In  Adj 0.300
 
 S    4  LEAF Dad    2  Age 149  Sz13488.1  Use Pln(Vv  0.70  +-1.000 Avv-0.178)
 Pcosts  S:    26.23  F:  6467.39  D:     0.00  B:    26.23
-Tcosts  S:188870.55  F:198439.58  D:     0.00  B:188870.55
+Tcosts  S:188870.55  F:197800.22  D:     0.00  B:188870.55
 Vcost     ---------  F: 10463.93
 totals  S:188896.78  F:214731.53  D:     0.00  B:188896.78
 V  1  Cnt13470.6   In  Adj 0.625
@@ -335,7 +335,7 @@ V  2  Cnt13470.6   In  Adj 0.458
 
 S    4a  Sub Dad    4  Age   0  Sz6744.1  Use Pln(Vv  0.44  +-0.457 Avv 0.017)
 Pcosts  S:     9.33  F:   263.22  D:     0.00  B:     9.33
-Tcosts  S:101401.04  F:103490.28  D:     0.00  B:101401.04
+Tcosts  S:101401.04  F:110650.99  D:     0.00  B:101401.04
 Vcost     ---------  F:  3303.22
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.300
@@ -349,7 +349,7 @@ V  2  Cnt   0.0   In  Adj 0.300
 
 S    4b  Sub Dad    4  Age   0  Sz6744.1  Use Pln(Vv  0.70  +-0.723 Avv-0.047)
 Pcosts  S:     9.27  F:  1766.60  D:     0.00  B:     9.27
-Tcosts  S: 98541.88  F:100554.45  D:     0.00  B: 98541.88
+Tcosts  S: 98541.88  F:101336.03  D:     0.00  B: 98541.88
 Vcost     ---------  F:  2521.64
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 1.250
@@ -363,7 +363,7 @@ V  2  Cnt   0.0   In  Adj 0.915
 
 S    5   DAD Dad    2  Age 149  Sz9572.7  Use Pln(Vv  0.69  +-0.955 Avv 0.278)   2 sons
 Pcosts  S:    24.85  F:   410.39  D:   254.44  B:   254.44
-Tcosts  S:174938.19  F:174980.39  D:164088.97  B:164088.97
+Tcosts  S:174938.19  F:175209.75  D:164088.97  B:164088.97
 Vcost     ---------  F:  2292.29
 totals  S:174963.03  F:177912.43  D:164343.41  B:164343.41
 V  1  Cnt9594.9   In  Adj 1.250
@@ -379,7 +379,7 @@ V  2  Cnt9594.9   In  Adj 0.300
 
 S    8   DAD Dad    5  Age 139  Sz5794.3  Use Fac Vv  0.71  +-0.711 Avv-0.005    2 sons
 Pcosts  S:    17.73  F:    36.78  D:    44.14  B:    44.14
-Tcosts  S: 95074.51  F: 92308.52  D: 94374.86  B: 94374.86
+Tcosts  S: 95074.51  F: 92587.07  D: 94374.86  B: 94374.86
 Vcost     ---------  F:  2013.73
 totals  S: 95092.24  F: 94637.59  D: 94419.00  B: 94419.00
 V  1  Cnt5801.2   In  Adj 0.915
@@ -395,7 +395,7 @@ V  2  Cnt5801.2   In  Adj 0.915
 
 S   26  LEAF Dad    8  Age 106  Sz4023.4  Use Pln(Vv  0.33  +-1.000 Avv-0.001)
 Pcosts  S:    15.23  F:    33.42  D:     0.00  B:    15.23
-Tcosts  S: 65080.31  F: 63123.13  D:     0.00  B: 65080.31
+Tcosts  S: 65080.31  F: 64902.75  D:     0.00  B: 65080.31
 Vcost     ---------  F:   234.11
 totals  S: 65095.54  F: 65170.28  D:     0.00  B: 65095.54
 V  1  Cnt4017.8   In  Adj 0.439
@@ -411,7 +411,7 @@ V  2  Cnt4017.8   In  Adj 0.439
 
 S   26a  Sub Dad   26  Age   0  Sz2011.7  Use Pln(Vv  0.48  +-0.629 Avv-0.039)
 Pcosts  S:     6.01  F:    83.71  D:     0.00  B:     6.01
-Tcosts  S: 34771.42  F: 35468.08  D:     0.00  B: 34771.42
+Tcosts  S: 34771.42  F: 35138.17  D:     0.00  B: 34771.42
 Vcost     ---------  F:   564.03
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 1.036
@@ -425,7 +425,7 @@ V  2  Cnt   0.0   In  Adj 0.856
 
 S   26b  Sub Dad   26  Age   0  Sz2011.7  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
 Pcosts  S:     5.94  F:   205.94  D:     0.00  B:     5.94
-Tcosts  S: 33488.71  F: 52718.63  D:     0.00  B: 33488.71
+Tcosts  S: 33488.71  F: 53282.66  D:     0.00  B: 33488.71
 Vcost     ---------  F:     0.00
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.363
@@ -439,7 +439,7 @@ V  2  Cnt   0.0   In  Adj 0.660
 
 S   27  LEAF Dad    8  Age 106  Sz1771.0  Use Pln(Vv  0.98  +-1.000 Avv-0.057)
 Pcosts  S:    13.93  F:   650.67  D:     0.00  B:    13.93
-Tcosts  S: 30827.16  F: 33047.17  D:     0.00  B: 30827.16
+Tcosts  S: 30827.16  F: 31640.79  D:     0.00  B: 30827.16
 Vcost     ---------  F:  1406.39
 totals  S: 30841.09  F: 33697.84  D:     0.00  B: 30841.09
 V  1  Cnt1783.5   In  Adj 1.250
@@ -455,7 +455,7 @@ V  2  Cnt1783.5   In  Adj 1.250
 
 S   27a  Sub Dad   27  Age   0  Sz 885.5  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
 Pcosts  S:     5.34  F:   205.34  D:     0.00  B:     5.34
-Tcosts  S: 15551.46  F: 22781.11  D:     0.00  B: 15551.46
+Tcosts  S: 15551.46  F: 24187.50  D:     0.00  B: 15551.46
 Vcost     ---------  F:     0.00
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.300
@@ -469,7 +469,7 @@ V  2  Cnt   0.0   In  Adj 0.459
 
 S   27b  Sub Dad   27  Age   0  Sz 885.5  Use Pln(Vv  0.51  +-0.554 Avv-0.026)
 Pcosts  S:     5.37  F:    91.92  D:     0.00  B:     5.37
-Tcosts  S: 15854.69  F: 16785.70  D:     0.00  B: 15854.69
+Tcosts  S: 15854.69  F: 16452.93  D:     0.00  B: 15854.69
 Vcost     ---------  F:   332.77
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.439
@@ -483,7 +483,7 @@ V  2  Cnt   0.0   In  Adj 0.439
 
 S    9   DAD Dad    5  Age 139  Sz3778.4  Use Pln(Vv  0.84  +-0.962 Avv 0.049)   2 sons
 Pcosts  S:    23.26  F:   121.95  D:   194.11  B:   194.11
-Tcosts  S: 74144.75  F: 75143.89  D: 70383.35  B: 70383.35
+Tcosts  S: 74144.75  F: 74114.43  D: 70383.35  B: 70383.35
 Vcost     ---------  F:  1362.23
 totals  S: 74168.00  F: 75598.61  D: 70577.46  B: 70577.46
 V  1  Cnt3793.7   In  Adj 0.300
@@ -499,7 +499,7 @@ V  2  Cnt3793.7   In  Adj 0.707
 
 S   12   DAD Dad    9  Age 129  Sz1767.1  Use Fac Vv  0.90  +-0.425 Avv-0.003    2 sons
 Pcosts  S:    16.41  F:    39.50  D:    64.62  B:    64.62
-Tcosts  S: 31654.38  F: 29610.92  D: 30832.59  B: 30832.59
+Tcosts  S: 31654.38  F: 29463.77  D: 30832.59  B: 30832.59
 Vcost     ---------  F:  1509.37
 totals  S: 31670.79  F: 31012.65  D: 30897.21  B: 30897.21
 V  1  Cnt1766.9   In  Adj 1.250
@@ -515,7 +515,7 @@ V  2  Cnt1766.9   In  Adj 1.250
 
 S   16  LEAF Dad   12  Age 119  Sz 622.4  Use Pln(Vv  0.90  +-1.000 Avv-0.010)
 Pcosts  S:    13.01  F:   392.46  D:     0.00  B:    13.01
-Tcosts  S: 11362.62  F: 11112.43  D:     0.00  B: 11362.62
+Tcosts  S: 11362.62  F: 12034.15  D:     0.00  B: 11362.62
 Vcost     ---------  F:   587.65
 totals  S: 11375.63  F: 13014.27  D:     0.00  B: 11375.63
 V  1  Cnt 623.3   In  Adj 1.250
@@ -531,7 +531,7 @@ V  2  Cnt 623.3   In  Adj 0.942
 
 S   16a  Sub Dad   16  Age   0  Sz 311.2  Use Pln(Vv  0.79  +-0.583 Avv 0.123)
 Pcosts  S:     5.31  F:   351.34  D:     0.00  B:     5.31
-Tcosts  S:  6161.18  F:  6030.50  D:     0.00  B:  6161.18
+Tcosts  S:  6161.18  F:  6436.47  D:     0.00  B:  6161.18
 Vcost     ---------  F:   181.69
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.688
@@ -545,7 +545,7 @@ V  2  Cnt   0.0   In  Adj 1.250
 
 S   16b  Sub Dad   16  Age   0  Sz 311.2  Use Pln(Vv  0.90  +-0.550 Avv 0.084)
 Pcosts  S:     5.17  F:   334.04  D:     0.00  B:     5.17
-Tcosts  S:  5589.98  F:  5956.18  D:     0.00  B:  5589.98
+Tcosts  S:  5589.98  F:  5915.57  D:     0.00  B:  5589.98
 Vcost     ---------  F:   222.29
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 1.250
@@ -559,7 +559,7 @@ V  2  Cnt   0.0   In  Adj 0.756
 
 S   17   DAD Dad   12  Age 119  Sz1144.7  Use Fac Vv  0.82  +-0.565 Avv-0.004    2 sons
 Pcosts  S:    14.42  F:    38.29  D:    38.06  B:    38.06
-Tcosts  S: 20094.61  F: 19599.19  D: 19787.32  B: 19787.32
+Tcosts  S: 20094.61  F: 19169.45  D: 19787.32  B: 19787.32
 Vcost     ---------  F:   652.03
 totals  S: 20109.03  F: 19859.78  D: 19825.38  B: 19825.38
 V  1  Cnt1143.7   In  Adj 1.250
@@ -575,7 +575,7 @@ V  2  Cnt1143.7   In  Adj 1.250
 
 S   28  LEAF Dad   17  Age 106  Sz 546.9  Use Pln(Vv  1.17  +-1.001 Avv-1.040)
 Pcosts  S:    11.66  F:   285.06  D:     0.00  B:    11.66
-Tcosts  S:  9613.15  F:  9892.90  D:     0.00  B:  9613.15
+Tcosts  S:  9613.15  F: 10050.52  D:     0.00  B:  9613.15
 Vcost     ---------  F:   494.41
 totals  S:  9624.81  F: 10829.99  D:     0.00  B:  9624.81
 V  1  Cnt 546.6   In  Adj 0.915
@@ -591,7 +591,7 @@ V  2  Cnt 546.6   In  Adj 1.250
 
 S   28a  Sub Dad   28  Age   0  Sz 273.5  Use Pln(Vv  0.97  +-0.536 Avv 0.011)
 Pcosts  S:     4.35  F:   498.25  D:     0.00  B:     4.35
-Tcosts  S:  4983.43  F:  5197.63  D:     0.00  B:  4983.43
+Tcosts  S:  4983.43  F:  5464.26  D:     0.00  B:  4983.43
 Vcost     ---------  F:   227.78
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.688
@@ -605,7 +605,7 @@ V  2  Cnt   0.0   In  Adj 0.756
 
 S   28b  Sub Dad   28  Age   0  Sz 273.5  Use Pln(Vv  0.88  +-0.566 Avv-0.199)
 Pcosts  S:     4.37  F:   498.52  D:     0.00  B:     4.37
-Tcosts  S:  5051.57  F:  5479.32  D:     0.00  B:  5051.57
+Tcosts  S:  5051.57  F:  5518.44  D:     0.00  B:  5051.57
 Vcost     ---------  F:   188.65
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.688
@@ -619,7 +619,7 @@ V  2  Cnt   0.0   In  Adj 0.915
 
 S   29  LEAF Dad   17  Age 106  Sz 597.7  Use Pln(Vv  0.72  +-1.000 Avv 0.192)
 Pcosts  S:    12.71  F:   460.43  D:     0.00  B:    12.71
-Tcosts  S: 10406.20  F: 11346.77  D:     0.00  B: 10406.20
+Tcosts  S: 10406.20  F: 11084.07  D:     0.00  B: 10406.20
 Vcost     ---------  F:   451.36
 totals  S: 10418.91  F: 11995.85  D:     0.00  B: 10418.91
 V  1  Cnt 597.1   In  Adj 0.981
@@ -635,7 +635,7 @@ V  2  Cnt 597.1   In  Adj 0.585
 
 S   29a  Sub Dad   29  Age   0  Sz 298.9  Use Pln(Vv  0.78  +-0.522 Avv-0.115)
 Pcosts  S:     4.54  F:   535.48  D:     0.00  B:     4.54
-Tcosts  S:  5465.33  F:  5708.48  D:     0.00  B:  5465.33
+Tcosts  S:  5465.33  F:  5959.30  D:     0.00  B:  5465.33
 Vcost     ---------  F:   200.54
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 1.250
@@ -649,7 +649,7 @@ V  2  Cnt   0.0   In  Adj 1.250
 
 S   29b  Sub Dad   29  Age   0  Sz 298.9  Use Pln(Vv  0.73  +-0.548 Avv-0.110)
 Pcosts  S:     4.52  F:   532.29  D:     0.00  B:     4.52
-Tcosts  S:  5409.12  F:  5836.32  D:     0.00  B:  5409.12
+Tcosts  S:  5409.12  F:  5861.64  D:     0.00  B:  5409.12
 Vcost     ---------  F:   175.22
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.856
@@ -663,7 +663,7 @@ V  2  Cnt   0.0   In  Adj 0.981
 
 S   13   DAD Dad    9  Age 129  Sz2011.3  Use Pln(Vv  0.60  +-0.940 Avv 0.038)   2 sons
 Pcosts  S:    21.61  F:    96.93  D:   115.30  B:   115.30
-Tcosts  S: 41293.85  F: 41474.72  D: 39720.82  B: 39720.82
+Tcosts  S: 41293.85  F: 41277.10  D: 39720.82  B: 39720.82
 Vcost     ---------  F:   372.84
 totals  S: 41315.47  F: 41746.86  D: 39836.12  B: 39836.12
 V  1  Cnt2026.8   In  Adj 0.300
@@ -679,7 +679,7 @@ V  2  Cnt2026.8   In  Adj 0.300
 
 S   18   DAD Dad   13  Age 119  Sz1140.8  Use Pln(Vv  0.69  +-0.740 Avv 0.015)   2 sons
 Pcosts  S:    18.27  F:    34.30  D:    85.92  B:    85.92
-Tcosts  S: 23061.82  F: 22686.54  D: 22551.26  B: 22551.26
+Tcosts  S: 23061.82  F: 22701.49  D: 22551.26  B: 22551.26
 Vcost     ---------  F:   357.89
 totals  S: 23080.10  F: 23093.69  D: 22637.18  B: 22637.18
 V  1  Cnt1145.9   In  Adj 0.300
@@ -695,7 +695,7 @@ V  2  Cnt1145.9   In  Adj 0.300
 
 S   20  LEAF Dad   18  Age 106  Sz 196.6  Use Pln(Vv  0.73  +-1.001 Avv 0.286)
 Pcosts  S:    11.72  F:   163.65  D:     0.00  B:    11.72
-Tcosts  S:  3779.88  F:  3751.18  D:     0.00  B:  3779.88
+Tcosts  S:  3779.88  F:  3979.36  D:     0.00  B:  3779.88
 Vcost     ---------  F:   129.71
 totals  S:  3791.59  F:  4272.72  D:     0.00  B:  3791.59
 V  1  Cnt 196.2   In  Adj 0.917
@@ -711,7 +711,7 @@ V  2  Cnt 196.2   In  Adj 0.609
 
 S   20a  Sub Dad   20  Age   0  Sz  98.3  Use Pln(Vv  0.46  +-0.452 Avv 0.044)
 Pcosts  S:     3.92  F:    42.00  D:     0.00  B:     3.92
-Tcosts  S:  1885.69  F:  1878.71  D:     0.00  B:  1885.69
+Tcosts  S:  1885.69  F:  1960.02  D:     0.00  B:  1885.69
 Vcost     ---------  F:    48.40
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.439
@@ -725,7 +725,7 @@ V  2  Cnt   0.0   In  Adj 0.300
 
 S   20b  Sub Dad   20  Age   0  Sz  98.3  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
 Pcosts  S:     4.06  F:   204.06  D:     0.00  B:     4.06
-Tcosts  S:  2051.97  F:  3038.10  D:     0.00  B:  2051.97
+Tcosts  S:  2051.97  F:  3086.50  D:     0.00  B:  2051.97
 Vcost     ---------  F:     0.00
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 1.250
@@ -739,7 +739,7 @@ V  2  Cnt   0.0   In  Adj 1.139
 
 S   21   DAD Dad   18  Age 106  Sz 944.2  Use Pln(Vv  1.19  +-0.868 Avv 0.134)   2 sons
 Pcosts  S:    18.07  F:   108.05  D:    61.06  B:    61.06
-Tcosts  S: 19225.76  F: 19908.26  D: 18855.00  B: 18855.00
+Tcosts  S: 19225.76  F: 19204.81  D: 18855.00  B: 18855.00
 Vcost     ---------  F:   703.46
 totals  S: 19243.83  F: 20016.31  D: 18916.06  B: 18916.06
 V  1  Cnt 949.7   In  Adj 0.300
@@ -755,7 +755,7 @@ V  2  Cnt 949.7   In  Adj 0.300
 
 S   22  LEAF Dad   21  Age  96  Sz 223.0  Use Pln(Vv  0.56  +-1.002 Avv-0.000)
 Pcosts  S:    12.92  F:    29.52  D:     0.00  B:    12.92
-Tcosts  S:  4834.62  F:  4141.88  D:     0.00  B:  4834.62
+Tcosts  S:  4834.62  F:  4804.76  D:     0.00  B:  4834.62
 Vcost     ---------  F:    40.57
 totals  S:  4847.54  F:  4874.85  D:     0.00  B:  4847.54
 V  1  Cnt 225.5   In  Adj 0.300
@@ -771,7 +771,7 @@ V  2  Cnt 225.5   In  Adj 0.300
 
 S   22a  Sub Dad   22  Age   0  Sz 111.5  Use Pln(Vv  0.63  +-0.541 Avv 0.027)
 Pcosts  S:     7.43  F:    24.95  D:     0.00  B:     7.43
-Tcosts  S:  2549.77  F:  2551.97  D:     0.00  B:  2549.77
+Tcosts  S:  2549.77  F:  2537.87  D:     0.00  B:  2549.77
 Vcost     ---------  F:    54.67
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.330
@@ -785,7 +785,7 @@ V  2  Cnt   0.0   In  Adj 0.300
 
 S   22b  Sub Dad   22  Age   0  Sz 111.5  Use Pln(Vv  0.62  +-0.551 Avv-0.030)
 Pcosts  S:     7.34  F:    24.56  D:     0.00  B:     7.34
-Tcosts  S:  2183.21  F:  2172.05  D:     0.00  B:  2183.21
+Tcosts  S:  2183.21  F:  2177.24  D:     0.00  B:  2183.21
 Vcost     ---------  F:    49.48
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.300
@@ -799,7 +799,7 @@ V  2  Cnt   0.0   In  Adj 0.300
 
 S   23   DAD Dad   21  Age  96  Sz 721.2  Use Pln(Vv  0.77  +-0.750 Avv-0.036)   2 sons
 Pcosts  S:    14.15  F:   161.95  D:    34.20  B:    34.20
-Tcosts  S: 14250.32  F: 14551.69  D: 14104.10  B: 14104.10
+Tcosts  S: 14250.32  F: 14319.25  D: 14104.10  B: 14104.10
 Vcost     ---------  F:   281.91
 totals  S: 14264.47  F: 14763.11  D: 14138.30  B: 14138.30
 V  1  Cnt 724.1   In  Adj 0.300
@@ -815,7 +815,7 @@ V  2  Cnt 724.1   In  Adj 0.300
 
 S   24  LEAF Dad   23  Age  76  Sz 352.9  Use Pln(Vv  0.75  +-1.001 Avv-0.069)
 Pcosts  S:    10.59  F:   216.08  D:     0.00  B:    10.59
-Tcosts  S:  6914.82  F:  7077.03  D:     0.00  B:  6914.82
+Tcosts  S:  6914.82  F:  7122.58  D:     0.00  B:  6914.82
 Vcost     ---------  F:   236.37
 totals  S:  6925.41  F:  7575.02  D:     0.00  B:  6925.41
 V  1  Cnt 353.1   In  Adj 0.653
@@ -831,7 +831,7 @@ V  2  Cnt 353.1   In  Adj 0.330
 
 S   24a  Sub Dad   24  Age   0  Sz 176.4  Use Pln(Vv  0.75  +-0.726 Avv 0.138)
 Pcosts  S:     6.54  F:    82.96  D:     0.00  B:     6.54
-Tcosts  S:  3280.14  F:  3143.09  D:     0.00  B:  3280.14
+Tcosts  S:  3280.14  F:  3315.62  D:     0.00  B:  3280.14
 Vcost     ---------  F:    63.84
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.688
@@ -845,7 +845,7 @@ V  2  Cnt   0.0   In  Adj 0.300
 
 S   24b  Sub Dad   24  Age   0  Sz 176.4  Use Pln(Vv  0.55  +-0.573 Avv-0.065)
 Pcosts  S:     6.70  F:    26.47  D:     0.00  B:     6.70
-Tcosts  S:  3818.25  F:  3820.77  D:     0.00  B:  3818.25
+Tcosts  S:  3818.25  F:  3815.21  D:     0.00  B:  3818.25
 Vcost     ---------  F:    69.40
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.483
@@ -859,7 +859,7 @@ V  2  Cnt   0.0   In  Adj 0.778
 
 S   25  LEAF Dad   23  Age  76  Sz 368.4  Use Pln(Vv  1.02  +-1.001 Avv 0.307)
 Pcosts  S:    11.16  F:   191.17  D:     0.00  B:    11.16
-Tcosts  S:  7255.42  F:  7710.98  D:     0.00  B:  7255.42
+Tcosts  S:  7255.42  F:  7475.57  D:     0.00  B:  7255.42
 Vcost     ---------  F:   304.82
 totals  S:  7266.58  F:  7971.55  D:     0.00  B:  7266.58
 V  1  Cnt 371.0   In  Adj 0.300
@@ -875,7 +875,7 @@ V  2  Cnt 371.0   In  Adj 0.300
 
 S   25a  Sub Dad   25  Age   0  Sz 184.2  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
 Pcosts  S:     5.23  F:   205.23  D:     0.00  B:     5.23
-Tcosts  S:  3825.95  F:  5423.69  D:     0.00  B:  3825.95
+Tcosts  S:  3825.95  F:  5728.51  D:     0.00  B:  3825.95
 Vcost     ---------  F:     0.00
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 1.110
@@ -889,7 +889,7 @@ V  2  Cnt   0.0   In  Adj 1.110
 
 S   25b  Sub Dad   25  Age   0  Sz 184.2  Use Pln(Vv  0.79  +-0.829 Avv-0.054)
 Pcosts  S:     4.92  F:   160.93  D:     0.00  B:     4.92
-Tcosts  S:  3501.29  F:  3751.51  D:     0.00  B:  3501.29
+Tcosts  S:  3501.29  F:  3687.88  D:     0.00  B:  3501.29
 Vcost     ---------  F:    63.63
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.300
@@ -903,7 +903,7 @@ V  2  Cnt   0.0   In  Adj 0.625
 
 S   19  LEAF Dad   13  Age 119  Sz 870.5  Use Pln(Vv  0.90  +-1.000 Avv-0.093)
 Pcosts  S:    15.79  F:   215.35  D:     0.00  B:    15.79
-Tcosts  S: 17202.11  F: 17774.37  D:     0.00  B: 17202.11
+Tcosts  S: 17202.11  F: 17388.60  D:     0.00  B: 17202.11
 Vcost     ---------  F:   449.40
 totals  S: 17217.90  F: 18053.35  D:     0.00  B: 17217.90
 V  1  Cnt 880.9   In  Adj 1.250
@@ -919,7 +919,7 @@ V  2  Cnt 880.9   In  Adj 1.250
 
 S   19a  Sub Dad   19  Age   0  Sz 435.3  Use Pln(Vv  0.78  +-0.818 Avv-0.129)
 Pcosts  S:    10.35  F:   149.11  D:     0.00  B:    10.35
-Tcosts  S:  9144.66  F:  9061.14  D:     0.00  B:  9144.66
+Tcosts  S:  9144.66  F:  9354.50  D:     0.00  B:  9144.66
 Vcost     ---------  F:   156.04
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.439
@@ -933,7 +933,7 @@ V  2  Cnt   0.0   In  Adj 1.250
 
 S   19b  Sub Dad   19  Age   0  Sz 435.3  Use Pln(Vv  0.59  +-0.684 Avv-0.259)
 Pcosts  S:     9.39  F:   138.78  D:     0.00  B:     9.39
-Tcosts  S:  7829.22  F:  7931.87  D:     0.00  B:  7829.22
+Tcosts  S:  7829.22  F:  7958.29  D:     0.00  B:  7829.22
 Vcost     ---------  F:   129.62
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 1.218
@@ -947,7 +947,7 @@ V  2  Cnt   0.0   In  Adj 0.300
 
 S    3   DAD Dad    1  Age 159  Sz18670.2  Use Fac Vv  0.77  +-0.633 Avv 0.001    2 sons
 Pcosts  S:    21.66  F:    38.74  D:   112.71  B:   112.71
-Tcosts  S:303137.00  F:302588.56  D:300109.46  B:300109.46
+Tcosts  S:303137.00  F:294187.96  D:300109.46  B:300109.46
 Vcost     ---------  F:  8530.22
 totals  S:303158.65  F:302756.92  D:300222.17  B:300222.17
 V  1  Cnt18665.5   In  Adj 1.250
@@ -963,7 +963,7 @@ V  2  Cnt18665.5   In  Adj 0.363
 
 S    6   DAD Dad    3  Age 149  Sz11458.4  Use Fac Vv  0.73  +-0.684 Avv 0.002    2 sons
 Pcosts  S:    18.57  F:    35.93  D:    46.31  B:    46.31
-Tcosts  S:183518.58  F:174676.05  D:182572.99  B:182572.99
+Tcosts  S:183518.58  F:178861.82  D:182572.99  B:182572.99
 Vcost     ---------  F:  4344.45
 totals  S:183537.15  F:183242.20  D:182619.30  B:182619.30
 V  1  Cnt11446.9   In  Adj 1.250
@@ -979,7 +979,7 @@ V  2  Cnt11446.9   In  Adj 1.250
 
 S   14  LEAF Dad    6  Age 139  Sz5234.4  Use Pln(Vv  0.24  +-1.000 Avv 0.000)
 Pcosts  S:    14.88  F:    31.29  D:     0.00  B:    14.88
-Tcosts  S: 84320.38  F: 79991.79  D:     0.00  B: 84320.38
+Tcosts  S: 84320.38  F: 84184.81  D:     0.00  B: 84320.38
 Vcost     ---------  F:   151.43
 totals  S: 84335.27  F: 84367.53  D:     0.00  B: 84335.27
 V  1  Cnt5228.2   In  Adj 0.471
@@ -995,7 +995,7 @@ V  2  Cnt5228.2   In  Adj 0.439
 
 S   14a  Sub Dad   14  Age   0  Sz2617.2  Use Pln(Vv  0.18  +-0.987 Avv-0.000)
 Pcosts  S:     5.93  F:    47.75  D:     0.00  B:     5.93
-Tcosts  S: 44627.88  F: 44621.32  D:     0.00  B: 44627.88
+Tcosts  S: 44627.88  F: 44729.61  D:     0.00  B: 44627.88
 Vcost     ---------  F:    43.14
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 1.139
@@ -1009,7 +1009,7 @@ V  2  Cnt   0.0   In  Adj 0.570
 
 S   14b  Sub Dad   14  Age   0  Sz2617.2  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
 Pcosts  S:     5.88  F:   205.88  D:     0.00  B:     5.88
-Tcosts  S: 43652.81  F: 69546.07  D:     0.00  B: 43652.81
+Tcosts  S: 43652.81  F: 69589.21  D:     0.00  B: 43652.81
 Vcost     ---------  F:     0.00
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.458
@@ -1023,7 +1023,7 @@ V  2  Cnt   0.0   In  Adj 0.363
 
 S   15  LEAF Dad    6  Age 139  Sz6224.1  Use Pln(Vv  0.19  +-1.000 Avv 0.000)
 Pcosts  S:    15.00  F:    31.04  D:     0.00  B:    15.00
-Tcosts  S:100574.00  F:100599.68  D:     0.00  B:100574.00
+Tcosts  S:100574.00  F:100490.79  D:     0.00  B:100574.00
 Vcost     ---------  F:   108.89
 totals  S:100589.01  F:100630.72  D:     0.00  B:100589.01
 V  1  Cnt6218.6   In  Adj 0.300
@@ -1039,7 +1039,7 @@ V  2  Cnt6218.6   In  Adj 0.300
 
 S   15a  Sub Dad   15  Age   0  Sz3112.0  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
 Pcosts  S:     5.92  F:   205.92  D:     0.00  B:     5.92
-Tcosts  S: 52856.49  F: 84100.86  D:     0.00  B: 52856.49
+Tcosts  S: 52856.49  F: 84209.75  D:     0.00  B: 52856.49
 Vcost     ---------  F:     0.00
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.756
@@ -1053,7 +1053,7 @@ V  2  Cnt   0.0   In  Adj 0.399
 
 S   15b  Sub Dad   15  Age   0  Sz3112.0  Use Pln(Vv  0.00  +-0.693 Avv 0.000)
 Pcosts  S:     5.91  F:    12.03  D:     0.00  B:     5.91
-Tcosts  S: 52329.44  F: 53476.51  D:     0.00  B: 52329.44
+Tcosts  S: 52329.44  F: 53144.07  D:     0.00  B: 52329.44
 Vcost     ---------  F:   332.44
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.813
@@ -1067,7 +1067,7 @@ V  2  Cnt   0.0   In  Adj 0.856
 
 S    7   DAD Dad    3  Age 149  Sz7211.8  Use Fac Vv  0.63  +-0.764 Avv 0.005    2 sons
 Pcosts  S:    19.99  F:    36.32  D:    49.30  B:    49.30
-Tcosts  S:126680.32  F:126199.60  D:125027.81  B:125027.81
+Tcosts  S:126680.32  F:124650.12  D:125027.81  B:125027.81
 Vcost     ---------  F:  1881.92
 totals  S:126700.31  F:126568.35  D:125077.11  B:125077.11
 V  1  Cnt7218.6   In  Adj 0.399
@@ -1083,7 +1083,7 @@ V  2  Cnt7218.6   In  Adj 0.300
 
 S   10  LEAF Dad    7  Age 139  Sz4161.4  Use Pln(Vv  1.46  +-1.000 Avv 0.422)
 Pcosts  S:    19.40  F:   404.01  D:     0.00  B:    19.40
-Tcosts  S: 75953.99  F: 79033.07  D:     0.00  B: 75953.99
+Tcosts  S: 75953.99  F: 76219.95  D:     0.00  B: 75953.99
 Vcost     ---------  F:  4695.03
 totals  S: 75973.38  F: 81318.99  D:     0.00  B: 75973.38
 V  1  Cnt4166.6   In  Adj 0.439
@@ -1099,7 +1099,7 @@ V  2  Cnt4166.6   In  Adj 0.363
 
 S   10a  Sub Dad   10  Age   0  Sz2080.7  Use Pln(Vv  0.74  +-0.801 Avv-0.113)
 Pcosts  S:    12.52  F:   278.35  D:     0.00  B:    12.52
-Tcosts  S: 43027.83  F: 38897.72  D:     0.00  B: 43027.83
+Tcosts  S: 43027.83  F: 42895.48  D:     0.00  B: 43027.83
 Vcost     ---------  F:   697.27
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.300
@@ -1113,7 +1113,7 @@ V  2  Cnt   0.0   In  Adj 0.300
 
 S   10b  Sub Dad   10  Age   0  Sz2080.7  Use Pln(Vv  0.96  +-0.766 Avv-0.119)
 Pcosts  S:    12.24  F:   335.10  D:     0.00  B:    12.24
-Tcosts  S: 35276.55  F: 35953.45  D:     0.00  B: 35276.55
+Tcosts  S: 35276.55  F: 35463.90  D:     0.00  B: 35276.55
 Vcost     ---------  F:  1186.82
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.330
@@ -1127,7 +1127,7 @@ V  2  Cnt   0.0   In  Adj 0.300
 
 S   11  LEAF Dad    7  Age 139  Sz3050.4  Use Pln(Vv  0.68  +-1.000 Avv-0.296)
 Pcosts  S:    16.32  F:   715.71  D:     0.00  B:    16.32
-Tcosts  S: 50799.19  F: 50913.70  D:     0.00  B: 50799.19
+Tcosts  S: 50799.19  F: 51021.98  D:     0.00  B: 50799.19
 Vcost     ---------  F:  1078.53
 totals  S: 50815.50  F: 52816.22  D:     0.00  B: 50815.50
 V  1  Cnt3052.1   In  Adj 0.439
@@ -1143,7 +1143,7 @@ V  2  Cnt3052.1   In  Adj 0.915
 
 S   11a  Sub Dad   11  Age   0  Sz1525.2  Use Pln(Vv  0.41  +-0.568 Avv 0.061)
 Pcosts  S:     6.17  F:   308.62  D:     0.00  B:     6.17
-Tcosts  S: 26134.92  F: 31608.08  D:     0.00  B: 26134.92
+Tcosts  S: 26134.92  F: 32188.41  D:     0.00  B: 26134.92
 Vcost     ---------  F:   498.20
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.399
@@ -1157,7 +1157,7 @@ V  2  Cnt   0.0   In  Adj 0.399
 
 S   11b  Sub Dad   11  Age   0  Sz1525.2  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
 Pcosts  S:     6.22  F:   206.22  D:     0.00  B:     6.22
-Tcosts  S: 26731.54  F: 41660.80  D:     0.00  B: 26731.54
+Tcosts  S: 26731.54  F: 42159.00  D:     0.00  B: 26731.54
 Vcost     ---------  F:     0.00
 totals  S:     0.00  F:     0.00  D:     0.00  B:     0.00
 V  1  Cnt   0.0   In  Adj 0.531
