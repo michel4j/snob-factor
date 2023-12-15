@@ -138,7 +138,7 @@ V  5  Cnt 800.0   In  Adj 0.300
 
 S    2   DAD Dad    1  Age 159  Sz 401.4  Use Fac Vv  0.91  +-0.361 Avv-0.017    2 sons
 Pcosts  S:    39.60  F:    64.89  D:   221.78  B:   221.78
-Tcosts  S: 14780.82  F: 13446.04  D: 13663.11  B: 13663.11
+Tcosts  S: 14780.82  F: 14010.01  D: 13663.11  B: 13663.11
 Vcost     ---------  F:   408.70
 totals  S: 14820.42  F: 14483.59  D: 13884.89  B: 13884.89
 V  1  Cnt 401.4   In  Adj 0.330
@@ -169,7 +169,7 @@ V  5  Cnt 401.4   In  Adj 0.439
 
 S    4   DAD Dad    2  Age 149  Sz 283.3  Use Pln(Vv  0.81  +-0.566 Avv 0.069)   2 sons
 Pcosts  S:    42.25  F:    67.56  D:   130.78  B:   130.78
-Tcosts  S: 10454.05  F: 10026.19  D: 10063.64  B: 10063.64
+Tcosts  S: 10454.05  F: 10274.85  D: 10063.64  B: 10063.64
 Vcost     ---------  F:   160.04
 totals  S: 10496.30  F: 10502.45  D: 10194.42  B: 10194.42
 V  1  Cnt 283.3   In  Adj 0.439
@@ -200,7 +200,7 @@ V  5  Cnt 283.3   In  Adj 0.483
 
 S    8  LEAF Dad    4  Age 139  Sz  81.9  Use Fac Vv  0.96  +-0.225 Avv-0.001 
 Pcosts  S:    29.01  F:    69.53  D:     0.00  B:    69.53
-Tcosts  S:  2693.06  F:  2330.35  D:     0.00  B:  2490.39
+Tcosts  S:  2693.06  F:  2369.07  D:     0.00  B:  2490.39
 Vcost     ---------  F:   121.32
 totals  S:  2722.07  F:  2559.92  D:     0.00  B:  2559.92
 V  1  Cnt  81.9   In  Adj 0.300
@@ -224,9 +224,9 @@ V  5  Cnt  81.9   In  Adj 1.250
  F: Cost   377.2  Hx -19.101  Hy  12.194  Ld  -0.218 +- 0.00
  B:  Mean -1.003 rad  Kappa    22.66
 
-S    9  LEAF Dad    4  Age 139  Sz 201.4  Use Pln(Vv  0.00  +-1.000 Avv-0.000)
+S    9  LEAF Dad    4  Age 139  Sz 201.4  Use Pln(Vv  0.00B +-1.000 Avv-0.000)
 Pcosts  S:    42.31  F:    55.61  D:     0.00  B:    42.31
-Tcosts  S:  7579.77  F:  7463.02  D:     0.00  B:  7579.77
+Tcosts  S:  7579.77  F:  7584.34  D:     0.00  B:  7579.77
 Vcost     ---------  F:     0.00
 totals  S:  7622.07  F:  7639.95  D:     0.00  B:  7622.07
 V  1  Cnt 201.4   In  Adj 0.300
@@ -250,9 +250,9 @@ V  5  Cnt 201.4   In  Adj 0.363
  F: Cost  1308.7  Hx  -0.103  Hy  -0.095  Ld   0.000 +- 1.00
  B:  Mean -2.317 rad  Kappa     0.14
 
-S    5  LEAF Dad    2  Age 149  Sz 118.1  Use Fac Vv  0.95B +-0.145 Avv-0.073 
+S    5  LEAF Dad    2  Age 149  Sz 118.1  Use Fac Vv  0.95  +-0.145 Avv-0.073 
 Pcosts  S:    33.39  F:    69.55  D:     0.00  B:    69.55
-Tcosts  S:  4103.03  F:  3616.03  D:     0.00  B:  3616.03
+Tcosts  S:  4103.03  F:  3392.33  D:     0.00  B:  3616.03
 Vcost     ---------  F:   223.70
 totals  S:  4136.43  F:  3685.58  D:     0.00  B:  3685.58
 V  1  Cnt 118.1   In  Adj 0.737
@@ -278,7 +278,7 @@ V  5  Cnt 118.1   In  Adj 0.531
 
 S    3   DAD Dad    1  Age 159  Sz 398.6  Use Fac Vv  0.90  +-0.414 Avv-0.022    2 sons
 Pcosts  S:    35.40  F:    70.27  D:    71.97  B:    71.97
-Tcosts  S: 12360.00  F: 11966.42  D: 11862.04  B: 11862.04
+Tcosts  S: 12360.00  F: 11841.30  D: 11862.04  B: 11862.04
 Vcost     ---------  F:   348.82
 totals  S: 12395.39  F: 12260.40  D: 11934.01  B: 11934.01
 V  1  Cnt 398.6   In  Adj 0.483
@@ -309,7 +309,7 @@ V  5  Cnt 398.6   In  Adj 0.483
 
 S    6  LEAF Dad    3  Age 149  Sz 199.4  Use Pln(Vv  0.82  +-0.654 Avv-0.010)
 Pcosts  S:    20.93  F:   121.00  D:     0.00  B:    20.93
-Tcosts  S:  5884.95  F:  5674.47  D:     0.00  B:  5884.95
+Tcosts  S:  5884.95  F:  5927.74  D:     0.00  B:  5884.95
 Vcost     ---------  F:    95.55
 totals  S:  5905.88  F:  6144.29  D:     0.00  B:  5905.88
 V  1  Cnt 199.4   In  Adj 0.636
@@ -333,9 +333,9 @@ V  5  Cnt 199.4   In  Adj 0.300
  F: Cost   981.0  Hx  10.612  Hy   0.497  Ld  -0.052 +- 0.00
  B:  Mean  1.525 rad  Kappa     9.71
 
-S    7  LEAF Dad    3  Age 149  Sz 199.2  Use Pln(Vv  0.49  +-0.651 Avv-0.009)
+S    7  LEAF Dad    3  Age 149  Sz 199.2  Use Pln(Vv  0.49B +-0.651 Avv-0.009)
 Pcosts  S:    20.78  F:    64.34  D:     0.00  B:    20.78
-Tcosts  S:  5977.09  F:  5991.97  D:     0.00  B:  5977.09
+Tcosts  S:  5977.09  F:  6035.11  D:     0.00  B:  5977.09
 Vcost     ---------  F:    52.41
 totals  S:  5997.87  F:  6151.86  D:     0.00  B:  5997.87
 V  1  Cnt 199.2   In  Adj 0.300
@@ -358,7 +358,5 @@ V  5  Cnt 199.2   In  Adj 0.300
  S: Cost   982.4  Hx   8.398  Hy   5.201+-   0.312
  F: Cost   990.3  Hx   7.806  Hy   4.840  Ld  -0.024 +- 0.00
  B:  Mean  1.016 rad  Kappa     9.88
-P1     9 classes,    5 leaves,  Pcost   315.9  Tcost   25519.3,  Cost   25835.2
-Sample  1 vm_Trial_Data
 P1     9 classes,    5 leaves,  Pcost   315.9  Tcost   25519.3,  Cost   25835.2
 Sample  1 vm_Trial_Data
