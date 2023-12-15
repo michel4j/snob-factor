@@ -6078,7 +6078,7 @@ void kapcode(double hx, double hy, double *vmst) {
     ik = (int)skap;
     del = skap - ik;
 
-    if ((0 < ik) && (ik < maxik)) {
+    if ((0 <= ik) && (ik < maxik)) {
         /*	Interpolate   */
         va = lgi0[ik];
         da = atab[ik] * kapstep;
