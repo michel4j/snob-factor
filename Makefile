@@ -1,4 +1,4 @@
-CC = gcc -g3 -Wall -fPIC -fopenmp -O3
+CC = gcc -g3 -Wall -fPIC -O3
 
 SRC = main.c dotypes.c glob.c reals.c samples.c inputs.c poplns.c \
 	classes.c expmults.c doall.c tune.c block.c listen.c \
