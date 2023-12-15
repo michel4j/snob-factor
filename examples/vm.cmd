@@ -13,5 +13,4 @@ trymoves 2
 tree
  
 prclass -2 1
-trep vm.rep
 stop

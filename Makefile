@@ -1,4 +1,4 @@
-CC = gcc -g3 -Wall -fPIC -fopenmp -O3 -flto=auto
+CC = gcc -g3 -Wall -fPIC -fopenmp -O3 #-flto=auto
 
 SRC = main.c dotypes.c glob.c reals.c samples.c inputs.c poplns.c \
 	classes.c expmults.c doall.c tune.c block.c listen.c \
@@ -34,4 +34,4 @@ clean:
 	rm -f *.o snob-factor pro snob-factors libsnob.so
 
 test: all
-	./test.sh test
+	./test.sh vm

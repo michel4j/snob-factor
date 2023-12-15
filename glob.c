@@ -77,7 +77,7 @@ void show_smpl_names() {
 
 void log_msg(int level, const char *format, ...) {
 
-    if (level > Debug) {
+    if (level >= Debug) {
         if (NumRepChars > 0) {
             printf("\n");
         }

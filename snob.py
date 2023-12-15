@@ -201,7 +201,7 @@ EXAMPLES = [
     '6r1c', '6r1b', 'd2', 'vm',
 ]
 if __name__ == '__main__':
-    snob.initialize(0, 0, 0)
+    snob.initialize(0, 1, 0)
     if len(sys.argv) > 1:
         EXAMPLES = sys.argv[1:]
 
