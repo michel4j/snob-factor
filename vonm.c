@@ -6,15 +6,15 @@
 
 #include "glob.h"
 
-typedef struct Vmpackst {
-    double kap;
-    double rkap;
-    double lgi0;
-    double aa;
-    double daa;
-    double fh;
-    double dfh;
-} Vmpack;
+typedef struct VonMisesPackStruct {
+    double kappa;
+    double kappa_inv;
+    double log_i0;
+    double log_i0_d1;
+    double log_i0_d2;
+    double fisher_sqrt;
+    double fisher_sqrt_d1;
+} VonMisesPack;
 
 void kapcode(double hx, double hy, double *vmst);
 
@@ -235,14 +235,13 @@ int set_datum(char *loc, int iv, void *value) {
     epsfac = ((Saux *)(smpl_var->saux))->epsfac; /*	Get quantization effect from Saux  */
 
     xn.xx = *(double *)(value);
-    *loc = (isnan(xn.xx)) ? 1 : 0;
     int active = (isnan(xn.xx)) ? -1 : 1;
     if (unit) {
         xn.xx *= (PI / 180.0);
     }
     xn.sinxx = epsfac * sin(xn.xx);
     xn.cosxx = epsfac * cos(xn.xx);
-    memcpy(loc + 1, &xn, sizeof(Datum));
+    memcpy(loc, &xn, sizeof(Datum));
     return active * sizeof(double); // size actually read from value, not size of Datum
 }
 
@@ -250,7 +249,7 @@ int set_datum(char *loc, int iv, void *value) {
 /*	To print a Datum value   */
 void print_datum(char *loc) {
     /*	Print datum from address loc   */
-    printf("%9.4f", (*(Datum *)(loc + 1)).xx);
+    printf("%9.4f", (*(Datum *)(loc)).xx);
     return;
 }
 
@@ -6070,16 +6069,16 @@ void kapcode(double hx, double hy, double *vmst) {
     double va, vb, da, db;
     double kap;
     int ik;
-    Vmpack *vmp;
+    VonMisesPack *vmp;
 
-    vmp = (Vmpack *)vmst;
-    vmp->kap = kap = sqrt(hx * hx + hy * hy);
-    vmp->rkap = (kap > 1.0e-6) ? 1.0 / kap : 1.0e6;
+    vmp = (VonMisesPack *)vmst;
+    vmp->kappa = kap = sqrt(hx * hx + hy * hy);
+    vmp->kappa_inv = (kap > 1.0e-6) ? 1.0 / kap : 1.0e6;
     skap = kap * kscale;
     ik = (int)skap;
     del = skap - ik;
 
-    if (ik < maxik) {
+    if ((0 < ik) && (ik < maxik)) {
         /*	Interpolate   */
         va = lgi0[ik];
         da = atab[ik] * kapstep;
@@ -6096,19 +6095,19 @@ void kapcode(double hx, double hy, double *vmst) {
         vb -= va;
         c2 = 3.0 * vb - 2.0 * da - db;
         c3 = -2.0 * vb + da + db;
-        vmp->lgi0 = ((c3 * del + c2) * del + da) * del + va;
+        vmp->log_i0 = ((c3 * del + c2) * del + da) * del + va;
 
         /*	We get aa as derivative of the cubic interpolation, times kscale */
-        vmp->aa = ((3.0 * c3 * del + 2.0 * c2) * del + da) * kscale;
-        vmp->daa = (6.0 * c3 * del + 2.0 * c2) * (kscale * kscale);
+        vmp->log_i0_d1 = ((3.0 * c3 * del + 2.0 * c2) * del + da) * kscale;
+        vmp->log_i0_d2 = (6.0 * c3 * del + 2.0 * c2) * (kscale * kscale);
 
     } else {
         /*	For large kap, logi0 asymptotes to:   kap + 0.5 log (2Pi / kap)   */
         del = 1.0 / kap;
 
-        vmp->lgi0 = kap + 0.5 * log(twopi * del) + ((0.067 * del + 0.0625) * del + 0.125) * del;
-        vmp->aa = 1.0 - 0.5 * del - del * del * (0.125 + del * (0.125 + del * 0.201));
-        vmp->daa = del * del * (0.5 + del * (0.25 + del * (0.375 + del * 0.804)));
+        vmp->log_i0 = kap + 0.5 * log(twopi * del) + ((0.067 * del + 0.0625) * del + 0.125) * del;
+        vmp->log_i0_d1 = 1.0 - 0.5 * del - del * del * (0.125 + del * (0.125 + del * 0.201));
+        vmp->log_i0_d2 = del * del * (0.5 + del * (0.25 + del * (0.375 + del * 0.804)));
     }
 #ifdef ACC
     /*	Now, Fh is the square root of a/k - a^2/k^2 - a^3/k
@@ -6127,7 +6126,7 @@ void kapcode(double hx, double hy, double *vmst) {
 
 #ifndef ACC
     /*	Approximate Fh by 0.5 * (1 - aa*aa)  */
-    vmp->fh = 0.5 * (1.0 - vmp->aa * vmp->aa);
-    vmp->dfh = -vmp->aa * vmp->daa;
+    vmp->fisher_sqrt = 0.5 * (1.0 - vmp->log_i0_d1 * vmp->log_i0_d1);
+    vmp->fisher_sqrt_d1 = -vmp->log_i0_d1 * vmp->log_i0_d2;
 #endif
 }

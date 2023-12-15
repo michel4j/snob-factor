@@ -23,39 +23,43 @@ void print_var_datum(int i, int n) {
         printf("    =====");
         return;
     }
-    // field += 1;
+    field += 1;
     (*vtp->print_datum)(field);
     return;
 }
 
 void peek_data() {
-    Sample *samp;
-    VSetVar *avi;
-    SampleVar *svi;
-    VarType *vtp;
+    int caseid;
     char *field;
+    VSetVar *vset_var;
 
-    samp = CurCtx.sample;
+    // print header
+    printf("%7s", "id");
+    for (int i = 0; i < CurCtx.vset->length; i++) {
+        vset_var = &CurCtx.vset->variables[i];
+        printf("%9s", vset_var->name);
+    }
+    printf("\n");
+
     for (int n = 0; n < CurCtx.sample->num_cases; n++) {
-        if ((n > 5) && (n < CurCtx.sample->num_cases - 5)) continue;
-        field = (char *)samp->records + n * samp->record_length;
-        //printf("%7c", *(short *)(field));
-        for (int i = 0; i < CurCtx.vset->length; i++) {
-            svi = &CurCtx.sample->variables[i];
-            avi = &CurCtx.vset->variables[i];
-            vtp = avi->vtype;
-
-            field += svi->offset;
-            /*	Test for missing  */
-            if (*field == 1) {
-                printf("    =====");
-            } else {
-                (*vtp->print_datum)(field);
+        if ((n > 5) && (n < CurCtx.sample->num_cases - 5))
+            continue;
+        field = CurCtx.sample->records + n * CurCtx.sample->record_length + 1;
+        caseid = *(int *)(field);
+        if (n == 5) {
+            printf("%7s", "...");
+            for (int i = 0; i < CurCtx.vset->length; i++)
+                printf("%9s", "...");
+        } else {
+            printf("%7d", caseid);
+            for (int i = 0; i < CurCtx.vset->length; i++) {
+                print_var_datum(i, n);
             }
         }
         printf("\n");
     }
-    return;
+
+    printf("[%d items x %d attributes]\n\n",CurCtx.sample->num_cases, CurCtx.vset->length);
 }
 /*	------------------------ readvset ------------------------------ */
 /*	To read in a vset from a file. Returns index of vset  */
@@ -454,7 +458,7 @@ gotit:
             smpl_var = &CurCtx.sample->variables[i];
             vset_var = &CurCtx.vset->variables[i];
             vtype = vset_var->vtype;
-            kread = (*vtype->read_datum)(field, i);
+            kread = (*vtype->read_datum)(field + 1, i);
             if (kread < 0) {
                 printf("Data error case %d var %d\n", n + 1, i + 1);
                 swallow();
@@ -462,6 +466,7 @@ gotit:
             if (kread)
                 *field = 1; /* Data missing */
             else {
+                *field = 0;
                 smpl_var->nval++;
             }
             field += (vtype->data_size + 1);
@@ -564,15 +569,13 @@ int create_sample(char *name, int size, int *units, double *precision) {
             CurCtx.sample->variables = smpl_var_list;
 
             // initialize sample_var_list
-
+            record_length = 1 + sizeof(int); /* active flag and ident  */
             for (int i = 0; i < CurCtx.vset->length; i++) {
                 smpl_var_list[i].id = -1;
                 smpl_var_list[i].saux = 0;
                 smpl_var_list[i].offset = 0;
                 smpl_var_list[i].nval = 0;
-            }
-            record_length = 1 + sizeof(int); /* active flag and ident  */
-            for (int i = 0; i < CurCtx.vset->length; i++) {
+
                 smpl_var = &CurCtx.sample->variables[i];
                 vset_var = &CurCtx.vset->variables[i];
                 smpl_var->id = i;
@@ -628,7 +631,7 @@ int add_record(int index, char *bytes) {
     SampleVar *smpl_var;
     int offset = 0;
 
-    char *field = (char *)CurCtx.sample->records + index * (CurCtx.sample->record_length + 1);
+    char *field = (char *)CurCtx.sample->records + index * CurCtx.sample->record_length;
     if (caseid < 0) {
         caseid = -caseid;
         *field = 0;
@@ -645,14 +648,16 @@ int add_record(int index, char *bytes) {
         smpl_var = &CurCtx.sample->variables[i];
         vset_var = &CurCtx.vset->variables[i];
         vtype = vset_var->vtype;
-        field += smpl_var->offset;
-        kread = (*vtype->set_datum)(field, i, bytes + offset);
-        if (kread > 0) {
-            smpl_var->nval++;
-        }
-        (*vtype->print_datum)(field);
-        field += (vtype->data_size + 1);
+        kread = (*vtype->set_datum)(field + 1, i, bytes + offset);
         offset += abs(kread);
+        if (kread < 0) {
+            *field = 1;
+        } else {
+            smpl_var->nval++;
+            *field = 0;
+        }
+        (*vtype->print_datum)(field + 1);
+        field += (vtype->data_size + 1);
     }
     printf("\n");
     CurCtx.sample->num_added++;

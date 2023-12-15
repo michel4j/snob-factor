@@ -180,16 +180,14 @@ int read_datum(char *loc, int iv) {
     i = read_double(&xn, 1);
     if (!i)
         set_datum(loc, iv, &xn);
-    else
-        *loc = 1;
+
     return (i);
 }
 int set_datum(char *loc, int iv, void *value) {
 
     double val = *(double *)(value);
-    *loc = (isnan(val)) ? 1 : 0;
     int active = (isnan(val)) ? -1 : 1;
-    memcpy(loc + 1, value, sizeof(double));
+    memcpy(loc, value, sizeof(double));
     return active * sizeof(double);
 }
 
@@ -197,7 +195,7 @@ int set_datum(char *loc, int iv, void *value) {
 /*	To print a Datum value   */
 void print_datum(char *loc) {
     /*	Print datum from address loc   */
-    printf("%9.4f", *((double *)(loc + 1)));
+    printf("%9.4f", *((double *)(loc)));
 }
 
 /*	---------------------  setsizes  -----------------------   */

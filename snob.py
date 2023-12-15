@@ -180,16 +180,10 @@ class DataSet():
         print(f'SAMPLE:{smpl_index} Added with {size} records')
         snob.show_smpl_names()
         snob.report_space(1)
-        print(self.data)
-        for n in range(5):
-            print(f"{n:7d}", end='')
-            for j in range(len(self.attrs)):
-                snob.print_var_datum(j, n)
-            print()
-        #snob.init_population()
+        snob.peek_data()
 
     def fit(self) -> list:
-        result = snob.classify(20, 50, 3, 0.05)
+        result = snob.classify(15, 50, 2, 0.01)
         buffer_size = (result.classes + result.leaves) * (result.attrs + 1) * 80 * 4
         buffer = ct.create_string_buffer(buffer_size)
 
@@ -207,25 +201,25 @@ EXAMPLES = [
     '6r1c', '6r1b', 'd2', 'vm',
 ]
 if __name__ == '__main__':
-    snob.initialize(0, -1, 0)
+    snob.initialize(0, 0, 0)
     if len(sys.argv) > 1:
         EXAMPLES = sys.argv[1:]
 
-    # df = pd.read_csv("./examples/sst.csv")
-    # dset = DataSet(
-    #     data = df, 
-    #     name = 'sst',
-    #     types={
-    #         'theta': 'radians', 
-    #         'phi': "radians", 
-    #         "ctheta": "radians", 
-    #         "cphi": 'radians'
-    #     }
-    # )
-    # print(dset.attrs)
-    # dset.setup()
-    # dset.fit()
-    # sys.exit(1)
+    df = pd.read_csv("./examples/sst.csv")
+    dset = DataSet(
+        data = df, 
+        name = 'sst',
+        types={
+            'theta': 'radians', 
+            'phi': "radians", 
+            "ctheta": "radians", 
+            "cphi": 'radians'
+        }
+    )
+    print(dset.attrs)
+    dset.setup()
+    dset.fit()
+    sys.exit(1)
         
 
     for name in EXAMPLES:
@@ -251,7 +245,7 @@ if __name__ == '__main__':
         
         # parse JSON classification result
         snob.get_class_details(buffer, buffer_size)
-        print(buffer.value.decode('utf-8'))
+        #print(buffer.value.decode('utf-8'))
         info = json.loads(buffer.value.decode('utf-8'))
 
         tree = subtree(-1, info)

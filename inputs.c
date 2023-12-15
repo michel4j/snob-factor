@@ -429,7 +429,7 @@ a new line.  flp() does a new line.  */
 
 
 void rep(int ch) {
-    if (Debug) {
+    if (Debug > 0) {
         putchar(ch);
         NumRepChars++;
         if (NumRepChars == 80) {

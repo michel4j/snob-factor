@@ -77,7 +77,7 @@ void show_smpl_names() {
 
 void log_msg(int level, const char *format, ...) {
 
-    if (level >= Debug) {
+    if (level > Debug) {
         if (NumRepChars > 0) {
             printf("\n");
         }
@@ -235,7 +235,7 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
         cleanup_population();
         log_msg(1, "TRYMOVE: Attempting class moves until %d successive failures", move_steps);
         try_moves(move_steps);
-
+        log_msg(1, "Cycle %d Complete: Cost dropped by %0.3f%%", cycle, delta);
         show_population();
         root = CurCtx.popln->classes[CurCtx.popln->root];
         delta = 100.0 * (cost - root->best_cost) / cost;
@@ -249,7 +249,7 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
         if ((no_change_count > 2) || (Stop)) {
             break;
         }
-            
+        
     } while (cycle < max_cycles);
 
     if (cycle > max_cycles) {

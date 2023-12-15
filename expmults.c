@@ -250,16 +250,13 @@ int set_datum(char *loc, int iv, void *value) {
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     Vaux *vaux = (Vaux *)vset_var->vaux;
     if (!xn) {
-        *loc = 1;
         return -1 * (int)sizeof(Datum); /* Missing */
     }
     xn--;
     if ((xn < 0) || (xn >= vaux->states)) {
-        *loc = 1;
         return -1 * (int)sizeof(Datum);
     }
-    *loc = 0;
-    memcpy(loc + 1, &xn, sizeof(Datum));
+    memcpy(loc, &xn, sizeof(Datum));
     return sizeof(Datum);
 }
 
@@ -267,7 +264,7 @@ int set_datum(char *loc, int iv, void *value) {
 /*	To print a Datum value   */
 void print_datum(char *loc) {
     /*	Print datum from address loc   */
-    printf("%3d", (*((Datum *)(loc + 1)) + 1));
+    printf("%9d", (*((Datum *)(loc)) + 1));
     return;
 }
 
@@ -992,7 +989,7 @@ void details(Class *cls, int iv, MemBuffer *buffer) {
     if (cls->num_sons > 1) {
         print_buffer(buffer, "\"frequency\": [");
         write_probs(nap, states, pr, buffer);
-        print_buffer(buffer, "], ");
+        print_buffer(buffer, "]");
     } else if (cls->use == Fac) {
         print_buffer(buffer, "\"frequency\": [");
         for (k = 0; k < states; k++) {
