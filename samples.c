@@ -34,7 +34,7 @@ void peek_data() {
     VSetVar *vset_var;
 
     // print header
-    printf("%7s", "id");
+    printf("%9s", "id");
     for (int i = 0; i < CurCtx.vset->length; i++) {
         vset_var = &CurCtx.vset->variables[i];
         printf("%9s", vset_var->name);
@@ -47,11 +47,11 @@ void peek_data() {
         field = CurCtx.sample->records + n * CurCtx.sample->record_length + 1;
         caseid = *(int *)(field);
         if (n == 5) {
-            printf("%7s", "...");
+            printf("%9s", "...");
             for (int i = 0; i < CurCtx.vset->length; i++)
                 printf("%9s", "...");
         } else {
-            printf("%7d", caseid);
+            printf("%9d", caseid);
             for (int i = 0; i < CurCtx.vset->length; i++) {
                 print_var_datum(i, n);
             }
