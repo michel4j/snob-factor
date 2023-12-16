@@ -5,6 +5,11 @@ included in many other files, as well as being compiled and loaded itself.
 suppressed when included in other files by #define NOTGLOB 1 in those other
 files. The declarations herein then become converted to "EXT" declarations.
     */
+#ifdef _WIN32
+#define LIBRARY_API __declspec(dllexport)
+#else
+#define LIBRARY_API 
+#endif
 
 #include <math.h>
 #include <signal.h>
@@ -336,7 +341,7 @@ void flp();
 /*	In POPLNS.c   */
 void next_class(Class **ptr);
 int make_population(int fill);
-int init_population();
+LIBRARY_API int init_population();
 void make_subclasses(int kk);
 void destroy_population(int px);
 int copy_population(int p1, int fill, char *newname);
@@ -416,40 +421,42 @@ void do_types();
 /*		end dotypes.c		*/
 
 /*	In SAMPLES.c	*/
-void print_var_datum(int i, int n);
-int read_vset();
-int load_vset(const char *fname);
-int load_sample(const char *fname);
-int find_sample(char *nam, int expect);
-int find_vset(char *nam);
-int sort_sample(Sample *samp);
-int find_sample_index(int id);
-int item_list(char *tlstname);
-void destroy_sample(int sx);
-void destroy_vset(int vx);
-int get_assignments(int *ids, int *prim_cls, double *prim_probs, int *sec_cls, double *sec_probs);
-int create_vset(const char *name, int num_vars);
-int add_attribute(int index, const char *name, int itype, int aux);
-int create_sample(char *name, int size, int *units, double* precision);
-int add_record(int index, char *bytes);
-int sort_current_sample();
-void peek_data();
+LIBRARY_API void print_var_datum(int i, int n);
+LIBRARY_API int read_vset();
+LIBRARY_API int load_vset(const char *fname);
+LIBRARY_API int load_sample(const char *fname);
+LIBRARY_API int find_sample(char *nam, int expect);
+LIBRARY_API int find_vset(char *nam);
+LIBRARY_API int sort_sample(Sample *samp);
+LIBRARY_API int find_sample_index(int id);
+LIBRARY_API int item_list(char *tlstname);
+LIBRARY_API void destroy_sample(int sx);
+LIBRARY_API void destroy_vset(int vx);
+
+LIBRARY_API int create_vset(const char *name, int num_vars);
+LIBRARY_API int add_attribute(int index, const char *name, int itype, int aux);
+LIBRARY_API int create_sample(char *name, int size, int *units, double* precision);
+LIBRARY_API int add_record(int index, char *bytes);
+
 /*		end samples.c		*/
 
 /*	In glob.c	*/
 char *serial_to_str(Class *cls);
-void cleanup_population();
-void show_population();
-void show_smpl_names();
-void show_pop_names();
-
 void log_msg(int level, const char *format, ...) __attribute__((format(printf, 2, 3)));
 int error_value(const char *message, const int value);
 void print_progress(size_t count, size_t max);
-void reset();
-void initialize(int lib, int debug, int threads);
-void get_class_details(char *buffer, size_t buffer_size);
-void print_buffer(MemBuffer *buffer, const char *format, ...) __attribute__((format(printf, 2, 3)));
-Result classify(const int max_cycles, const int do_steps, const int move_steps, const double tol);
-int save_model(char *filename);
-int load_model(char *filename);
+
+LIBRARY_API void cleanup_population();
+LIBRARY_API void show_population();
+LIBRARY_API void show_smpl_names();
+LIBRARY_API void show_pop_names();
+LIBRARY_API void reset();
+LIBRARY_API void initialize(int lib, int debug, int threads);
+LIBRARY_API void get_class_details(char *buffer, size_t buffer_size);
+LIBRARY_API void print_buffer(MemBuffer *buffer, const char *format, ...) __attribute__((format(printf, 2, 3)));
+LIBRARY_API Result classify(const int max_cycles, const int do_steps, const int move_steps, const double tol);
+LIBRARY_API int save_model(char *filename);
+LIBRARY_API int load_model(char *filename);
+LIBRARY_API void peek_data();
+LIBRARY_API int get_assignments(int *ids, int *prim_cls, double *prim_probs, int *sec_cls, double *sec_probs);
+LIBRARY_API int sort_current_sample();
