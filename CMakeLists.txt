@@ -1,32 +1,59 @@
 # Specify the minimum version for CMake
 cmake_minimum_required(VERSION 3.5..3.27)
+set (CMAKE_C_STANDARD 11)
 
-# Project's name
-project(Snob)
+project(snob)
 
-# Define the C++ compiler flags
+# Define the C compiler flags
 # Note: CMake automatically handles the '-c' and '-o' flags
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(CMAKE_C_COMPILER gcc)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -fPIC -fopenmp -O3")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -fPIC -O3")
 endif ()
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(CMAKE_C_COMPILER gcc)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -fPIC -fopenmp -O3")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -fPIC -O3")
 endif ()
 
-
+include_directories(
+    ${PROJECT_SOURCE_DIR}/src
+)
 # Define the source files
-set(SOURCE_FILES dotypes.c glob.c reals.c samples.c inputs.c poplns.c classes.c expmults.c doall.c tune.c block.c listen.c tactics.c badmoves.c expbin.c vonm.c)
+set(SOURCE_FILES 
+    "${CMAKE_SOURCE_DIR}/src/dotypes.c"
+    "${CMAKE_SOURCE_DIR}/src/glob.c"
+    "${CMAKE_SOURCE_DIR}/src/reals.c" 
+    "${CMAKE_SOURCE_DIR}/src/samples.c" 
+    "${CMAKE_SOURCE_DIR}/src/inputs.c" 
+    "${CMAKE_SOURCE_DIR}/src/poplns.c" 
+    "${CMAKE_SOURCE_DIR}/src/classes.c" 
+    "${CMAKE_SOURCE_DIR}/src/expmults.c" 
+    "${CMAKE_SOURCE_DIR}/src/doall.c" 
+    "${CMAKE_SOURCE_DIR}/src/tune.c" 
+    "${CMAKE_SOURCE_DIR}/src/block.c" 
+    "${CMAKE_SOURCE_DIR}/src/listen.c" 
+    "${CMAKE_SOURCE_DIR}/src/tactics.c" 
+    "${CMAKE_SOURCE_DIR}/src/badmoves.c" 
+    "${CMAKE_SOURCE_DIR}/src/expbin.c" 
+    "${CMAKE_SOURCE_DIR}/src/vonm.c"
+)
 
-# Add the executable targets
-add_executable(snob-factor ${SOURCE_FILES} main.c)
-add_executable(snob-factors ${SOURCE_FILES} snob.c)
+add_library(snob SHARED ${SOURCE_FILES})
+add_executable(snob-factor ${SOURCE_FILES} "${CMAKE_SOURCE_DIR}/src/main.c")
+add_executable(auto-snob ${SOURCE_FILES} "${CMAKE_SOURCE_DIR}/src/snob.c")
 
-# Link libraries (if any)
-target_link_libraries(snob-factor m)
-target_link_libraries(snob-factors m)
+set_target_properties (snob PROPERTIES PREFIX "")
+set_target_properties (snob PROPERTIES OUTPUT_NAME "_snob")
+
+if (WIN32)
+  set_target_properties (snob PROPERTIES SUFFIX ".pyd")
+else()
+  set_target_properties (snob PROPERTIES SUFFIX ".so")
+endif()
 
 # Add the shared library target
-add_library(snob SHARED ${SOURCE_FILES})
+target_link_libraries(snob m)
+target_link_libraries(snob-factor m)
+target_link_libraries(auto-snob m)
+
