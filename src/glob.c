@@ -104,10 +104,7 @@ int error_value(const char *message, const int value) {
     return value;
 }
 
-
-void handle_sigint(int sig) {
-    Stop = 1;
-}
+void handle_sigint(int sig) { Stop = 1; }
 
 /// @brief Initialize SNOB parameters
 /// @param interact integer specifying if running from a library or not 1 = interactive, 0 = non interactive
@@ -121,7 +118,6 @@ void initialize(int interact, int debug, int seed) {
     Interactive = interact;
     Debug = debug;
     Stop = 0;
-    signal(SIGINT, handle_sigint);
 
     SeeAll = 2;
     Fix = DFix = Partial;
@@ -133,16 +129,26 @@ void initialize(int interact, int debug, int seed) {
         RSeed = time(NULL);
     }
 
-    default_tune();
-    do_types();
+    if (!Initialized) {
+        signal(SIGINT, handle_sigint);
+        default_tune();
+        do_types();
 
-    for (k = 0; k < MAX_POPULATIONS; k++)
-        Populations[k] = 0;
-    for (k = 0; k < MAX_SAMPLES; k++)
-        Samples[k] = 0;
-    for (k = 0; k < MAX_VSETS; k++)
-        VarSets[k] = 0;
-
+        for (k = 0; k < MAX_POPULATIONS; k++)
+            Populations[k] = 0;
+        for (k = 0; k < MAX_SAMPLES; k++)
+            Samples[k] = 0;
+        for (k = 0; k < MAX_VSETS; k++)
+            VarSets[k] = 0;
+    } else {
+        // Cleanup 
+        for (k = 0; k < MAX_POPULATIONS; k++)
+            destroy_population(k);
+        for (k = 0; k < MAX_SAMPLES; k++)
+            destroy_sample(k);
+        for (k = 0; k < MAX_VSETS; k++)
+            destroy_vset(k);
+    }
     Initialized = 1;
 }
 
@@ -249,7 +255,7 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
         if ((no_change_count > 2) || (Stop)) {
             break;
         }
-        
+
     } while (cycle < max_cycles);
 
     if (cycle > max_cycles) {
@@ -273,19 +279,17 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
     return result;
 }
 
-
 /// @brief Save a Classificationi Model to file
-/// @param filename model file 
-/// @return >= 0 if successful 
+/// @param filename model file
+/// @return >= 0 if successful
 int save_model(char *filename) {
     int result;
-    //result = copy_population(CurCtx.popln->id, 0, "predict");
-    //if (result >= 0) {
-        result = save_population(CurCtx.popln->id, 0, filename);
+    // result = copy_population(CurCtx.popln->id, 0, "predict");
+    // if (result >= 0) {
+    result = save_population(CurCtx.popln->id, 0, filename);
     //}
     return result;
 }
-
 
 int load_model(char *filename) {
     int result;

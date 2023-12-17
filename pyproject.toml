@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "snob"
+version = "0.1.0"
+description = "Mixture modelling by Minimum Message Length (MML) using Factor Snob"
+requires-python = ">=3.7.5"
+license = { file = "LICENSE" }
+readme = "README.md"
+keywords = ["MML", "Unsupervised Classification", "Machine Learning", "Snob", "Factor Analysis"]
+authors = [
+    { name = "Chris Wallace", email = "csw@cs.monash.edu.au"},
+    { name = "Michel Fodje", email = "michel.fodje@lightsource.ca" },
+]
+maintainers = [
+     { name = "Michel Fodje", email = "michel.fodje@lightsource.ca" },
+]
+dependencies = [
+    "pandas",
+    "numpy"
+]
+classifiers = [
+    "Intended Audience :: Data Scientsts",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Natural Language :: English",
+    "Programming Language :: C",
+    "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+documentation = "https://github.com/michel4j/snob-factor"
+repository = "https://github.com/michel4j/snob-factor"
