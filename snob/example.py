@@ -14,7 +14,7 @@ EXAMPLES = [
 
 
 # Function to make a tree structure from flat data
-def subtree(node: int, info: dict, level=0):
+def subtree(node: int, info: list, level=0):
     return {
         v: subtree(v, info)
         for v in [x['id'] for x in info if x['parent'] == node]
@@ -31,7 +31,6 @@ def show_tree(self):
 
 
 if __name__ == '__main__':
-    snob.initialize(1, 0)
     if len(sys.argv) > 1:
         EXAMPLES = sys.argv[1:]
 
@@ -63,7 +62,7 @@ if __name__ == '__main__':
         print('#' * 80)
         print(f"Classifying: {name}")
 
-        dset = dset.setup_from_files(vset_file, sample_file)
+        dset.setup_from_files(vset_file, sample_file)
         classes = dset.fit()
         class_tree = subtree(-1, classes)
         tr = LeftAligned()

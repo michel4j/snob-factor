@@ -162,12 +162,12 @@ class DataSet():
             self.attrs[field]['aux'] = aux
 
     def setup_from_files(self, vset_file: str | Path, sample_file: str | Path):
-        initialize()
+        initialize(log_level=1)
         lib.load_vset(str(vset_file).encode('utf-8'))
         lib.load_sample(str(sample_file).encode('utf-8'))
 
     def setup(self):
-        initialize()
+        initialize(log_level=1)
         # Create a Variable Set
         vset_index = lib.create_vset(self.name.encode("utf-8"), len(self.attrs))
 
