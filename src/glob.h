@@ -17,7 +17,7 @@ EXT volatile sig_atomic_t Stop;
 /*	general:	*/
 EXT int NTypes;     /* The number of different attribute types */
 EXT VarType *Types; /* a vector of Ntypes type definitions,    created in dotypes */
-EXT Context CurCtx; /* current context */
+EXT Context CurCtx, BkpCtx; /* current context */
 EXT VarSet *VarSets[MAX_VSETS];
 EXT Sample *Samples[MAX_SAMPLES];
 EXT Population *Populations[MAX_POPULATIONS];
