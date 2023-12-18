@@ -1,0 +1,8 @@
+graft src
+graft docs
+graft tests
+graft examples
+include CMakeLists.txt
+prune .vscode/*
+prune .idea/*
+prune .github/*
