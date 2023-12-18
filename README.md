@@ -1,7 +1,16 @@
 
 About this Project
 ------------------
-This repository is an updated version of the open-source Factor Snob  program for Mixture modelling by Minimum Message Length (MML) written in C. The original source code was obtained from Lloyd Allison's website at: http://www.allisons.org/ll/MML/Notes/SNOB-factor/. This project started as an attempt to learn how the program works in order to create a C-library that can be used for mixture modelling from Python. As a result, I have made many changes to the code mainly to improve readability, and also fixed some minor bugs I discovered along the way. The current version produces the same output as the original, except for a couple of display bugs present in the original version (see below) Here is a summary of the changes:  
+This repository is an updated version of the open-source Factor Snob
+program for Mixture modelling by Minimum Message Length (MML) written in C.
+The original source code was obtained from Lloyd Allison's website
+at: http://www.allisons.org/ll/MML/Notes/SNOB-factor/. This project started
+as an attempt to learn how the program works in order to create a C-library
+that can be used for mixture modelling from Python. As a result, I have made
+many changes to the code mainly to improve readability, and also fixed some
+minor bugs I discovered along the way. The current version produces the same
+output as the original, except for a couple of display bugs present in the
+original version (see below) Here is a summary of the changes:  
 
 * Refactored function declarations into a central "snob.h" include file.
   Previous version included "glob.c" within other files.
@@ -12,14 +21,14 @@ This repository is an updated version of the open-source Factor Snob  program fo
 * Replaced many print statements with a logging facility that can be dialed down using a debug level.
 * Added functions for printing a summary of the existing sample data
 * Added functions for generating a JSON representation of the classification result equivalent to the data produced by the `prclass` command.
-* Added functions for generating class assignments to the sample items. Also useful for classification through Python.
-* Added a sample Python program that can provide the data, run the Factor Snob routines and extract the results within Python, using `ctypes`.
+* Added functions for generating class assignments to the sample items. Also, useful for classification through Python.
+* Added a python module that can provide the data, run the Factor Snob routines and extract the results within Python, using `ctypes`.
 
 The documentation below has been pieced together from the original README file as well as notes and guides originally authored by Lloyd Allison. The original notes and guides can be read at http://www.allisons.org/ll/MML/Notes/SNOB-factor/. Information from Vanilla Snob, the previous version of Snob is also included in the docs folder as it provides additional information and details relevant for understanding Factor Snob.
 
 Factor Snob
 -----------
-Llyod Allison: Chris Wallace had been refining "Factor Snob" for some years
+Lloyd Allison: Chris Wallace had been refining "Factor Snob" for some years
 before his death in 2004, when he found time from his other
 projects, including his book [1] (2005). Some of us at his department had run it on several problems,
 but Chris did not want to make it publicly available before
@@ -40,7 +49,6 @@ available under the GNU General Public License, GPL
 
 About Factor Snob
 -----------------
-
 Snob does mixture modelling by Minimum Message Length (MML). Factor
 Snob can handle correlated variables by finding single-factor models.
 Finding such a factor can reduce the number of classes and
@@ -52,7 +60,6 @@ taking the tree structure into the calculation for message length.
 
 Short History of Snob
 ---------------------
-
 Wallace & Boulton [2] gave a method for estimation of Multivariate
 Mixture Models over Gaussian and Multinomial probability distributions.
 It was inconsistent because it totally (rather than probabilistically)
@@ -67,7 +74,6 @@ The MML book [1] is the best general reference on MML.
 
 The MML Book
 ------------
-
 [1] C. S. Wallace,
     Statistical and Inductive Inference by Minimum Message Length,
     Springer, isbn-13:978-0-387-23795-4, 2005.
@@ -75,7 +81,6 @@ The MML Book
 
 Other References
 ----------------
-
 [2] C. S. Wallace & D. M. Boulton,
     An Information Measure for Classification,
     Computer J., Vol.11, No.2, pp.185-194, 1968.
