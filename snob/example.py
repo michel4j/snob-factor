@@ -66,8 +66,8 @@ if __name__ == '__main__':
         classes = dset.fit()
         class_tree = subtree(-1, classes)
         tr = LeftAligned()
-        print("-" * 79)
+        print("-" * 80)
         print("Classification Tree")
-        print("-" * 79)
+        print("-" * 80)
         print(tr(class_tree))
 
