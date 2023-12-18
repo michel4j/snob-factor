@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import ctypes as ct
 import json
-import struct
-import pandas as pd
-import numpy as np
 import os
-from typing import Any
+import struct
+from enum import IntFlag, auto
 from pathlib import Path
+from typing import Dict, LiteralString, Any
+import numpy as np
+import pandas as pd
 
 # Load the shared library
 lib_path = os.path.join(os.path.dirname(__file__), '_snob.so')
@@ -54,7 +55,7 @@ lib.save_model.argtypes = [ct.c_char_p]
 lib.save_model.restype = ct.c_int
 lib.load_model.argtypes = [ct.c_char_p]
 lib.load_model.restype = ct.c_int
-
+lib.set_control_flags.argtypes = [ct.c_int]
 # create_vset
 lib.create_vset.argtypes = [ct.c_char_p, ct.c_int]
 lib.create_vset.restype = ct.c_int
@@ -74,27 +75,8 @@ lib.add_record.restype = ct.c_int
 # print_data
 lib.print_var_datum.argtypes = [ct.c_int, ct.c_int]
 
-# Mapping from Pandas dtypes to struct format characters
-dtype_to_struct_fmt = {
-    'int64': 'q',  # 64-bit integer
-    'float64': 'd',  # double precision float
-}
 
 
-# Function to create format string from DataFrame
-def create_format_string(df):
-    """
-    Given a Pandas data-frame, generate a format string for packing row data into a binary
-    representation.
-
-    :param df: Pandas Data Frame
-    :return: string
-    """
-    format_string = ''.join(
-        dtype_to_struct_fmt.get(df[col].dtype.name, '')
-        for col in df.columns
-    )
-    return format_string
 
 
 
@@ -108,94 +90,134 @@ def get_prec(col, err=1e-6):
 
 def get_type(col):
     return {
-        'int64': 'multistate',
+        'int64': 'multi-state',
         'float64': 'real',
     }.get(col.dtype.name, 1)
 
 
-class DataSet():
-    TYPES = {
+DataType = LiteralString['real', 'multi-state', 'binary', 'degrees', 'radians']
+
+
+class SnobContextManager:
+    """
+    Saves the SNOB Context before performing certain operations
+    and restores it after.
+    """
+    def __enter__(self):
+        lib.save_context()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        lib.restore_context()
+
+
+class SNOBClassifier:
+    TypeValue = {
         'real': 1,
-        'multistate': 2,
+        'multi-state': 2,
         'binary': 3,
         'degrees': 4,
         'radians': 4,
     }
-    fit_info: Classification
-    results: list
+    TypeFormat = {
+        'real': 'd',
+        'multi-state': 'q',
+        'binary': 'q',
+        'degrees': 'd',
+        'radians': 'd'
+    }
+    summary: Classification | None
+    classes_: list
 
     def __init__(
             self,
-            data: pd.DataFrame,
-            name: str = 'sample',
-            types: dict | None = None,
-            precision: dict | None = None,
-            auxs: dict | None = None
+            attrs: Dict[str, DataType],
+            cycles: int = 20,
+            steps: int = 50,
+            moves: int = 3,
+            tol: float = 5e-2,
+            name: str = 'mml'
     ):
         """
-        :param data: Pandas data frame containing
-        :param name: name of sample data
-        :param types: data types
-        :param precision: data precision
-        :param auxs: auxiliary information
+        :param attrs: a dictionary mapping attribute  names to attribute types
+        :param cycles: Maximum number of cost-assign-adjust-move cycles
+        :param steps: number of steps of cost-assign-adjust
+        :param moves: maximum number of failed attempts to move classes
+        :param tol:  Convergence tolerance. Stops trying if percentage drop in message costs is less than this
+        :param name: Internal Name of classifier, default "mml"
         """
-        types = {} if not types else types
-        precision = {} if not precision else precision
-        auxs = {} if not auxs else auxs
 
+        self.attrs = attrs
+        self.columns = self.attrs.keys()
+        self.format = self.get_format_string()
+        self.cycles = cycles
+        self.steps = steps
+        self.moves = moves
+        self.tol = tol
         self.name = name
-        self.data = data
-        self.columns = data.columns[1:]
-        self.format = create_format_string(self.data[self.columns])
-        self.attrs = {
-            field: {'prec': get_prec(data[field]), 'type': get_type(data[field])}
-            for field in self.columns
-        }
 
-        for field, prec in precision.items():
-            self.attrs[field]['prec'] = prec
+        self.summary = None
 
-        for field, type_ in types.items():
-            self.attrs[field]['type'] = type_
+    def get_format_string(self):
+        """
+        Generate a format string for packing row data into a binary
+        representation.
+        :return: string
+        """
+        return ''.join(self.TypeFormat[type_] for field, type_ in self.attrs.items())
 
-        for field, aux in auxs.items():
-            self.attrs[field]['aux'] = aux
+    @staticmethod
+    def get_precision(col) -> float:
+        """
+        Given an array of floats, return the estimated precision of the values
+        :param col: array
+        :return: integer
+        """
+        err = 1e-6
+        prec = 1
+        while prec < 6 and (col - col.round(prec)).abs().mean() * 10 ** prec > err:
+            prec += 1
+        return 10 ** -prec
 
-    def setup_from_files(self, vset_file: str | Path, sample_file: str | Path):
-        initialize(log_level=1)
-        lib.load_vset(str(vset_file).encode('utf-8'))
-        lib.load_sample(str(sample_file).encode('utf-8'))
+    def add_vset(self, data: pd.DataFrame):
+        """
+        Create a new vset for this data
+        :param data: Pandas data frame containing the data
+        """
 
-    def setup(self):
-        initialize(log_level=1)
-        # Create a Variable Set
-        vset_index = lib.create_vset(self.name.encode("utf-8"), len(self.attrs))
-
+        index = lib.create_vset(self.name.encode("utf-8"), len(self.attrs))
         # Add attributes
-        for i, (name, attr) in enumerate(self.attrs.items()):
-            out = lib.add_attribute(
-                i, name.encode('utf-8'),
-                self.TYPES[attr['type']],
-                attr.get('aux', 0)
-            )
-            print(f'Attribute {out}:{name} added!')
-        print(f"VSET:{vset_index} Added with {len(self.attrs)} attributes")
-        self.add_data(self.data, 'sample')
+        for i, (name, _type) in enumerate(self.attrs.items()):
+            if _type in ['multi-state', 'binary']:
+                aux = data[name].notnull().nunique()
+                if aux == 2:
+                    # Force use of Binary for 2-valued states
+                    _type = 'binary'
+                    self.attrs[name] = 'binary'
+                elif aux > 20:
+                    # Limit auto to 20, remaining values will be marked as missing
+                    aux = 20
+            else:
+                aux = 0
+            out = lib.add_attribute(i, name.encode('utf-8'), self.TypeValue[_type], aux)
 
     def add_data(self, data: pd.DataFrame, name: str = 'sample'):
-        # Create Sample with Auxillary information
+        """
+        Create a new sample and load the data
+        :param data: Pandas data frame containing the data
+        :param name: name of dataset, default "sample"
+        """
         units = np.array([
-            1 if attr['type'] == 'degrees' else 0
-            for name, attr in self.attrs.items()
+            1 if type_ == 'degrees' else 0
+            for name, type_ in self.attrs.items()
         ], dtype='int64')
         precs = np.array([
-            10 ** -attr['prec']
-            for name, attr in self.attrs.items()
+            self.get_precision(data[name]) for name, type_ in self.attrs.items()
         ], dtype='float64')
 
         size = len(data.index)
-        smpl_index = lib.create_sample(
-            self.name.encode('utf-8'),
+        index = lib.create_sample(
+            name.encode('utf-8'),
             size,
             units.ctypes.data_as(ct.POINTER(ct.c_int)),
             precs.ctypes.data_as(ct.POINTER(ct.c_double))
@@ -207,37 +229,45 @@ class DataSet():
 
         # sort the samples
         lib.sort_current_sample()
-        print(f'SAMPLE:{smpl_index} Added with {size} records')
         lib.show_smpl_names()
         lib.report_space(1)
         lib.peek_data()
 
-    def fit(self) -> list:
-        result = lib.classify(15, 50, 2, 0.01)
-        self.fit_info = result
+    def fit(self, data: pd.DataFrame, y: Any = None) -> list:
+        """
+        Build and Fit the model
+        :param data: Pandas data frame. Columns are features, and rows are samples
+        :param y: Not used, present for compatibility with Scikit-Learn interface
+        :return: list of dictionaries with each representing details about classes found
+        """
+        initialize(log_level=1)
+        self.add_vset(data)
+        self.add_data(data, name='sample')
+        result = lib.classify(self.cycles, self.steps, self.moves, 0.01)
+        self.summary = result
         buffer_size = (result.classes + result.leaves) * (result.attrs + 1) * 80 * 4
         buffer = ct.create_string_buffer(buffer_size)
 
         # parse JSON classification result
         lib.get_class_details(buffer, buffer_size)
-        self.results = json.loads(buffer.value.decode('utf-8'))
-        return self.results
+        self.classes_ = json.loads(buffer.value.decode('utf-8'))
+        return self.classes_
 
     def save_model(self, filename: str):
         lib.save_model(str(filename).encode('utf-8'))
 
     def predict(self, data: pd.DataFrame | None) -> pd.DataFrame:
         if data is not None:
-            self.add_data(data, 'predict')
+            set_control_flags(Adjust.SCORES)
+            with SnobContextManager():
+                self.add_data(data, 'predict')
 
-        result = self.fit_info
-
-        # Get Class Assignments
-        ids = (ct.c_int * result.cases)()
-        prim_cls = (ct.c_int * result.cases)()
-        prim_probs = (ct.c_double * result.cases)()
-        sec_cls = (ct.c_int * result.cases)()
-        sec_probs = (ct.c_double * result.cases)()
+        # get assignments
+        ids = (ct.c_int * self.summary.cases)()
+        prim_cls = (ct.c_int * self.summary.cases)()
+        prim_probs = (ct.c_double * self.summary.cases)()
+        sec_cls = (ct.c_int * self.summary.cases)()
+        sec_probs = (ct.c_double * self.summary.cases)()
         lib.get_assignments(ids, prim_cls, prim_probs, sec_cls, sec_probs)
 
         # Create a Pandas DataFrame
@@ -251,6 +281,20 @@ class DataSet():
         return df
 
 
+class Adjust(IntFlag):
+    SCORES = auto()
+    TREE = auto()
+    PARAMS = auto()
+    ALL = SCORES | TREE | PARAMS
+
+
+class ClassType(IntFlag):
+    DAD = auto()
+    LEAF = auto()
+    SUB = auto()
+    ALL = DAD | LEAF | SUB
+
+
 def initialize(log_level: int = 0, seed: int = 0):
     """
     Initialize SNOB system. Do this before loading new
@@ -260,3 +304,25 @@ def initialize(log_level: int = 0, seed: int = 0):
 
     """
     lib.initialize(0, log_level, seed)
+
+
+def set_control_flags(flags: Adjust):
+    """
+    Set Adjustment flags
+    :param flags: Adjust Flags
+    """
+    lib.set_control_flags(flags)
+
+
+def classify(vset_file: str, sample_file: str, cycles: int = 3, steps: int = 50, moves: int = 3, tol: float = 1e-2 ):
+    initialize(log_level=1)
+    lib.load_vset(str(vset_file).encode('utf-8'))
+    lib.load_sample(str(sample_file).encode('utf-8'))
+
+    result = lib.classify(cycles, steps, moves, tol)
+    buffer_size = (result.classes + result.leaves) * (result.attrs + 1) * 80 * 4
+    buffer = ct.create_string_buffer(buffer_size)
+
+    # parse JSON classification result
+    lib.get_class_details(buffer, buffer_size)
+    return json.loads(buffer.value.decode('utf-8'))

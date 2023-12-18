@@ -16,22 +16,16 @@ LIBOBJ = dotypes.o glob.o reals.o samples.o inputs.o poplns.o \
 	classes.o expmults.o doall.o tune.o block.o listen.o \
 	tactics.o badmoves.o expbin.o vonm.o 
 
-all: clean snob-factor snob-factors libsnob.so
+all: clean snob-factor auto-snob
 
 snob-factor:	$(OBJ)
 	$(CC)  $(OBJ) -lm -o snob-factor
 
-snob-factors:	$(SMALLOBJ)
-	$(CC) $(SMALLOBJ) -lm -o snob-factors
-
-libsnob.so: $(LIBOBJ)
-	$(CC) -shared $(LIBOBJ)  -o libsnob.so 
-
-pro: prompt.c
-	$(CC) -o pro prompt.c
+auto-snob:	$(SMALLOBJ)
+	$(CC) $(SMALLOBJ) -lm -o auto-snob
 
 clean:
-	rm -f *.o snob-factor pro snob-factors libsnob.so
+	rm -f *.o snob-factor auto-snob
 
 test: all
-	./test.sh vm
+	cd .. && ./tests/test.sh vm

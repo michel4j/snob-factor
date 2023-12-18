@@ -22,7 +22,7 @@ def subtree(node: int, info: list, level=0):
 
 
 def show_tree(self):
-    tree = subtree(-1, self.results)
+    tree = subtree(-1, self.classes_)
     tr = LeftAligned()
     print("-" * 79)
     print("Classification Tree")
@@ -35,7 +35,7 @@ if __name__ == '__main__':
         EXAMPLES = sys.argv[1:]
 
     df = pd.read_csv("./examples/sst.csv")
-    dset = snob.DataSet(
+    dset = snob.SNOBClassifier(
         data=df,
         name='sst',
         types={

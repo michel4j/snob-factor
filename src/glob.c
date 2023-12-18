@@ -141,7 +141,7 @@ void initialize(int interact, int debug, int seed) {
         for (k = 0; k < MAX_VSETS; k++)
             VarSets[k] = 0;
     } else {
-        // Cleanup 
+        // Cleanup
         for (k = 0; k < MAX_POPULATIONS; k++)
             destroy_population(k);
         for (k = 0; k < MAX_SAMPLES; k++)
@@ -296,3 +296,7 @@ int load_model(char *filename) {
     result = load_population(filename);
     return set_work_population(result);
 }
+
+void save_context() { memcpy(&BkpCtx, &CurCtx, sizeof(Context)); }
+void restore_context() { memcpy(&CurCtx, &BkpCtx, sizeof(Context)); }
+void set_control_flags(int flags){Control = flags;}

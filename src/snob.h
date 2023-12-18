@@ -440,6 +440,9 @@ char *serial_to_str(Class *cls);
 void log_msg(int level, const char *format, ...) __attribute__((format(printf, 2, 3)));
 int error_value(const char *message, const int value);
 void print_progress(size_t count, size_t max);
+void save_context();
+void restore_context();
+void set_control_flags(int flags);
 
 void cleanup_population();
 void show_population();

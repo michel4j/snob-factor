@@ -5,7 +5,7 @@ file1="examples/$1.log"
 file2="testing.log"
 
 # Run program
-../bin/snob-factor < ../examples/$1.cmd | tee "$file2"
+./src/snob-factor < examples/$1.cmd | tee "$file2"
 
 
 # Check if both files exist
