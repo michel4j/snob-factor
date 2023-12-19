@@ -298,4 +298,4 @@ int load_model(char *filename) {
 
 void save_context() { memcpy(&BkpCtx, &CurCtx, sizeof(Context)); }
 void restore_context() { memcpy(&CurCtx, &BkpCtx, sizeof(Context)); }
-void set_control_flags(int flags){Control = flags;}
+void set_control_flags(int flags){Control = DControl = flags;}
