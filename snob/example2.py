@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 
-import pprint
 import sys
 from pathlib import Path
-
-import pandas as pd
-from asciitree import LeftAligned
 
 import snob
 
