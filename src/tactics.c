@@ -651,9 +651,11 @@ void trial(int param) {
 }
 
 /*	----------------------  bestmoveclass ---------------------   */
-/*	Lokks for the best moveclass. If force, or if an improvement,
+/*
+Looks for the best moveclass. If force, or if an improvement,
 does it. Returns 1 if an improvement, 0 if best no improvement, -1 if none
-possible.	*/
+possible.
+*/
 int best_move_class(int force) {
     Context oldctx;
     Class *cls1, *cls2, *odad, *root;
@@ -661,14 +663,15 @@ int best_move_class(int force) {
     int bser1, bser2, ser1, ser2, od2, newp, succ;
     double res, bestdrop, origcost;
 
-    /*	We look for all pairs ser1,ser2 of serials where:
+    /*
+    We look for all pairs ser1,ser2 of serials where:
     ser2 is a dad, ser1 is not an ancestor of ser2, ser1 is non-sub, and
     ser1 is not a son of ser2.
-        For each pair, we copy the pop to TrialPop, switch context to
+    For each pair, we copy the pop to TrialPop, switch context to
     TrialPop, and do a moveclass on the pair. We note the pair giving the
     largest moveclass, again copy to TrialPop, repeat the moveclass, and relax
     with doall, .
-        */
+    */
 
     /*	To get all pairs, we need a double loop over class indexes. I use
     i1, i2 as the indices.   */
@@ -689,53 +692,53 @@ int best_move_class(int force) {
 
     i1 = 0;
 outer:
-    if (i1 == CurCtx.popln->root)
+    if (i1 == CurCtx.popln->root) {
         goto i1done;
+    }
     cls1 = CurCtx.popln->classes[i1];
-    if (!cls1)
+    if ((!cls1) || (cls1->type == Vacant) || (cls1->type == Sub)) {
         goto i1done;
-    if ((cls1->type == Vacant) || (cls1->type == Sub))
-        goto i1done;
+    }
     ser1 = cls1->serial;
     i2 = 0;
-inner:
-    if (i2 == i1)
-        goto i2done;
-    cls2 = CurCtx.popln->classes[i2];
-    if (!cls2)
-        goto i2done;
-    if (cls2->type != Dad)
-        goto i2done;
-    if (cls1->dad_id == i2)
-        goto i2done;
-    /*	Check i1 not an ancestor of i2  */
-    for (od2 = cls2->dad_id; od2 >= 0; od2 = odad->dad_id) {
-        if (od2 == i1)
+    while (i2 <= hiid) {
+
+        if (i2 == i1) {
             goto i2done;
-        odad = CurCtx.popln->classes[od2];
-    }
-    ser2 = cls2->serial;
-    if (chk_bad_move(3, ser1, ser2))
-        goto i2done;
+        }
+        cls2 = CurCtx.popln->classes[i2];
+        if ((!cls2) || (cls2->type != Dad) || (cls1->dad_id == i2)) {
+            goto i2done;
+        }
+        /*	Check i1 not an ancestor of i2  */
+        for (od2 = cls2->dad_id; od2 >= 0; od2 = odad->dad_id) {
+            if (od2 == i1)
+                goto i2done;
+            odad = CurCtx.popln->classes[od2];
+        }
+        ser2 = cls2->serial;
+        if (chk_bad_move(3, ser1, ser2)) {
+            goto i2done;
+        }
 
-    /*	Copy pop to TrialPop, unfilled  */
-    newp = copy_population(CurCtx.popln->id, 0, "TrialPop");
-    if (newp < 0)
-        goto popfails;
-    CurCtx.popln = Populations[newp];
-    root = CurCtx.popln->classes[CurCtx.popln->root];
-    res = move_class(ser1, ser2);
-    if (res > bestdrop) {
-        bestdrop = res;
-        bser1 = ser1;
-        bser2 = ser2;
+        /*	Copy pop to TrialPop, unfilled  */
+        newp = copy_population(CurCtx.popln->id, 0, "TrialPop");
+        if (newp < 0) {
+            goto popfails;
+        }
+        CurCtx.popln = Populations[newp];
+        root = CurCtx.popln->classes[CurCtx.popln->root];
+        res = move_class(ser1, ser2);
+        if (res > bestdrop) {
+            bestdrop = res;
+            bser1 = ser1;
+            bser2 = ser2;
+        }
+    i2done:
+        memcpy(&CurCtx, &oldctx, sizeof(Context));
+        i2++;
     }
-i2done:
-    memcpy(&CurCtx, &oldctx, sizeof(Context));
 
-    i2++;
-    if (i2 <= hiid)
-        goto inner;
 i1done:
     i1++;
     if (i1 <= hiid)

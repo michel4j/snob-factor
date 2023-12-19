@@ -205,7 +205,7 @@ void get_details_for(Class *cls, MemBuffer *buffer) {
     double vrms;
     vrms = sqrt(cls->sum_score_sq / cls->weights_sum);
     print_buffer(buffer,  "{\"id\": %d, ", cls->id);
-    print_buffer(buffer,  "\"leaf\": %s,", (cls->type == 3) ? "true": "false");
+    print_buffer(buffer,  "\"type\": %d,", cls->type == 3);
     print_buffer(buffer,  "\"parent\": %d, ", (cls->dad_id >= 0) ? cls->dad_id: -1);
     print_buffer(buffer,  "\"factor\": %s, ", (cls->use == 2) ? "true": "false");
     print_buffer(buffer,  "\"strength\": %0.3f, ", vrms);
