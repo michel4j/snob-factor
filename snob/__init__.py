@@ -316,7 +316,7 @@ def classify(
     initialize(log_level=1)
     lib.load_vset(str(vset_file).encode('utf-8'))
     lib.load_sample(str(sample_file).encode('utf-8'))
-
+    lib.peek_data()
     result = lib.classify(cycles, steps, moves, tol)
     buffer_size = (result.classes + result.leaves) * (result.attrs + 1) * 80 * 4
     buffer = ct.create_string_buffer(buffer_size)

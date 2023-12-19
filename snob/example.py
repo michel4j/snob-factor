@@ -59,7 +59,7 @@ if __name__ == '__main__':
         print('#' * 80)
         print(f"Classifying: {name}")
 
-        classes = snob.classify(vset_file, sample_file, cycles=3, steps=50, moves=2, tol=0.01)
+        classes = snob.classify(vset_file, sample_file, cycles=20, steps=20, moves=2, tol=0.01)
         class_tree = subtree(-1, classes)
         tr = LeftAligned()
         print("-" * 80)
