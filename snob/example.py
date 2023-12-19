@@ -32,4 +32,3 @@ if __name__ == '__main__':
     )
     results = dset.fit(df)
     snob.show_classes(results)
-    snob.show_tree(results)

@@ -391,43 +391,38 @@ def ascii_tree(tree_dict: dict, prefix: str = "", root: bool = False) -> str:
         else:
             elbow, stem = ('├', '│') if i < size - 1 else ('└', ' ')
 
-        text += f'{prefix}{elbow}── {node}\n'
+        text += f'{prefix}{elbow}── {node}  \n'
         text += ascii_tree(sub_dict, f'{prefix}{stem}   ')
     return text
 
 
-def show_tree(info):
-    """
-    Build and display an ascii tree from the classification results
-    :param info: list of class dictionaries
-    """
-    tree_dict = build_tree(-1, info)
-    tree_text = ascii_tree(tree_dict, root=True)
-    print("-" * 80)
-    print("Classification Tree")
-    print("-" * 80)
-    print(tree_text)
-    print("-" * 80)
-
-
 def show_classes(info):
-    import pprint
-    pprint.pprint(info)
     from prettytable import PrettyTable
+
     x = PrettyTable()
-    x.align = 'r'
+    x.field_names = [
+        'ID', 'Tree', 'Size', 'Age',
+        'Model Cost', 'Data Cost', 'Total Cost', 'Factor'
+    ]
+
+    x.align['Tree'] = 'l'
     x.float_format = '0.2'
+    x.custom_format['Size'] = lambda f, v: f"{v:,.1f}"
+    x.align['Size'] = 'r'
     for col in ['Model Cost', 'Data Cost', 'Total Cost']:
         x.custom_format[col] = lambda f, v: f"{v:,.2f}"
-    x.custom_format['Size'] = lambda f, v: f"{v:,.1f}"
-    x.field_names = [
-        'ID', 'Parent', 'Type', 'Size', 'Age',
-        'Model Cost', 'Data Cost', 'Total Cost', 'Factor', 'Tiny'
-    ]
-    for cls in info:
+        x.align[col] = 'r'
+
+    # Build tree information
+    tree_dict = build_tree(-1, info)
+    tree_text = ascii_tree(tree_dict, root=True)
+    tree_data = tree_text.split('\n')
+
+    for i, cls in enumerate(info):
         x.add_row([
-            cls['id'], cls['parent'], cls['type'], cls['size'], cls['age'],
-            cls['costs']['model'], cls['costs']['data'], cls['costs']['total'], cls['factor'], cls['tiny']
+            cls['id'], tree_data[i], cls['size'], cls['age'],
+            cls['costs']['model'], cls['costs']['data'], cls['costs']['total'],
+            '*' if cls['factor'] else ' ',
         ])
     print(x)
 
