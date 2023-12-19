@@ -5,7 +5,7 @@ import json
 import os
 import struct
 import time
-import re
+
 from enum import IntFlag, auto
 from pathlib import Path
 from typing import Dict, Literal, Any
@@ -132,10 +132,17 @@ class SNOBClassifier:
     }
     TypeFormat = {
         'real': 'd',
-        'multi-state': 'q',
-        'binary': 'q',
+        'multi-state': 'i',
+        'binary': 'i',
         'degrees': 'd',
         'radians': 'd'
+    }
+    Converter = {
+        'real': float,
+        'binary': int,
+        'degrees': float,
+        'radians': float,
+        'multi-state': int,
     }
     summary: Classification | None
     classes_: list
@@ -201,19 +208,19 @@ class SNOBClassifier:
 
         index = lib.create_vset(self.name.encode("utf-8"), len(self.attrs))
         # Add attributes
-        for i, (name, _type) in enumerate(self.attrs.items()):
-            if _type in ['multi-state', 'binary']:
-                aux = data[name].notnull().nunique()
+        for i, (name, type_) in enumerate(self.attrs.items()):
+            if type_ in ['multi-state', 'binary']:
+                aux = data[name].dropna().nunique()
                 if aux == 2:
                     # Force use of Binary for 2-valued states
-                    _type = 'binary'
+                    type_ = 'binary'
                     self.attrs[name] = 'binary'
                 elif aux > 20:
                     # Limit auto to 20, remaining values will be marked as missing
                     aux = 20
             else:
                 aux = 0
-            out = lib.add_attribute(i, name.encode('utf-8'), self.TypeValue[_type], aux)
+            out = lib.add_attribute(i, name.encode('utf-8'), self.TypeValue[type_], aux)
 
     def add_data(self, data: pd.DataFrame, name: str = 'sample'):
         """
@@ -238,8 +245,10 @@ class SNOBClassifier:
         )
 
         # Now add records
-        for row in data[self.columns].itertuples():
-            lib.add_record(row[0], struct.pack(self.format, *row[1:]))
+        for i, row in data[self.columns].iterrows():
+            row_values = [self.Converter[self.attrs[col]](row[col]) for col in self.columns]
+            bytestring = struct.pack(self.format, *row_values)
+            lib.add_record(i, bytestring)
 
         # sort the samples
         lib.sort_current_sample()
@@ -251,7 +260,7 @@ class SNOBClassifier:
         """
         Build and Fit the model
         :param data: Pandas data frame. Columns are features, and rows are samples
-        :param y: Not used, present for compatibility with Scikit-Learn interface
+        :param y: Ignored, This parameter exists only for compatibility with Pipeline.
         :return: list of dictionaries with each representing details about classes found
         """
         with Timer():
@@ -271,7 +280,7 @@ class SNOBClassifier:
     def save_model(self, filename: str | Path):
         lib.save_model(str(filename).encode('utf-8'))
 
-    def predict(self, data: pd.DataFrame | None) -> pd.DataFrame:
+    def predict(self, data: pd.DataFrame | None = None) -> pd.DataFrame:
         if data is not None:
             set_control_flags(Adjust.SCORES)
             with SnobContextManager():

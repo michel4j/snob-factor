@@ -195,7 +195,7 @@ int set_datum(char *loc, int iv, void *value) {
 /*	To print a Datum value   */
 void print_datum(char *loc) {
     /*	Print datum from address loc   */
-    printf("%9.4f", *((double *)(loc)));
+    printf("%9.3g ", *((double *)(loc)));
 }
 
 /*	---------------------  setsizes  -----------------------   */

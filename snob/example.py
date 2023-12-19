@@ -16,3 +16,4 @@ if __name__ == '__main__':
     )
     results = dset.fit(df)
     snob.show_classes(results)
+    print(dset.predict())

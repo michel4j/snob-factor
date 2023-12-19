@@ -34,10 +34,10 @@ void peek_data() {
     VSetVar *vset_var;
 
     // print header
-    printf("%9s", "id");
+    printf("%9s ", "id");
     for (int i = 0; i < CurCtx.vset->length; i++) {
         vset_var = &CurCtx.vset->variables[i];
-        printf("%9s", vset_var->name);
+        printf("%9s ", vset_var->name);
     }
     printf("\n");
 
@@ -47,11 +47,11 @@ void peek_data() {
         field = CurCtx.sample->records + n * CurCtx.sample->record_length + 1;
         caseid = *(int *)(field);
         if (n == 5) {
-            printf("%9s", "...");
+            printf("%9s ", "...");
             for (int i = 0; i < CurCtx.vset->length; i++)
                 printf("%9s", "...");
         } else {
-            printf("%9d", caseid);
+            printf("%9d ", caseid);
             for (int i = 0; i < CurCtx.vset->length; i++) {
                 print_var_datum(i, n);
             }
@@ -642,7 +642,7 @@ int add_record(int index, char *bytes) {
     field++;
     memcpy(field, &caseid, sizeof(int));
     field += sizeof(int);
-
+    //printf("%9d", caseid);
     /*	Posn now points to where the (missing, val) pair for the attribute should start.  */
     for (int i = 0; i < CurCtx.vset->length; i++) {
         smpl_var = &CurCtx.sample->variables[i];
@@ -656,10 +656,10 @@ int add_record(int index, char *bytes) {
             smpl_var->nval++;
             *field = 0;
         }
-        // (*vtype->print_datum)(field + 1);
+        //(*vtype->print_datum)(field + 1);
         field += (vtype->data_size + 1);
     }
-
+    //printf("\n");
     CurCtx.sample->num_added++;
     return CurCtx.sample->num_added;
 }

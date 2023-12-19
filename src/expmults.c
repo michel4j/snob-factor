@@ -245,26 +245,27 @@ int read_datum(char *loc, int iv) {
 }
 
 int set_datum(char *loc, int iv, void *value) {
-
-    int xn = *(Datum *)(value);
+    int xn = *(int *)(value);
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     Vaux *vaux = (Vaux *)vset_var->vaux;
+
     if (!xn) {
-        return -1 * (int)sizeof(Datum); /* Missing */
+        return -1 * (int)sizeof(int); /* Missing */
     }
     xn--;
     if ((xn < 0) || (xn >= vaux->states)) {
-        return -1 * (int)sizeof(Datum);
+        return -1 * (int)sizeof(int);
     }
-    memcpy(loc, &xn, sizeof(Datum));
-    return sizeof(Datum);
+
+    memcpy(loc, &xn, sizeof(int));
+    return sizeof(int);
 }
 
 /*	---------------------  print_datum --------------------------  */
 /*	To print a Datum value   */
 void print_datum(char *loc) {
     /*	Print datum from address loc   */
-    printf("%9d", (*((Datum *)(loc)) + 1));
+    printf("%9d ", (*((Datum *)(loc)) + 1));
     return;
 }
 

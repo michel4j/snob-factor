@@ -627,9 +627,10 @@ void recordit(FILE *fll, void *from, int nn) {
 char *const saveheading = "Scnob-Model-Save-File";
 /*	------------------- savepop ---------------------  */
 /*	Copies poplns[p1] into a file called <newname>.
-    If fill, item weights and scores are recorded. If not, just
+
+If fill, item weights and scores are recorded. If not, just
 Basics and Stats. If fill but pop->nc = 0, behaves as for fill = 0.
-    Returns length of recorded file.
+Returns length of recorded file.
 */
 int save_population(int p1, int fill, char *newname) {
 
@@ -639,7 +640,7 @@ int save_population(int p1, int fill, char *newname) {
     Class *cls;
     ClassVar *cls_var;
     ExplnVar *exp_var;
-    int leng, nch, i, iv, nc, jcl;
+    int leng =0, nch, i, iv, nc, jcl;
     Population *popln = 0;
 
     memcpy(&oldctx, &CurCtx, sizeof(Context));
@@ -716,42 +717,37 @@ namefixed:
     fputc('\n', file_ptr);
 
     /*	We must begin copying classes, begining with pop's root  */
-    jcl = 0;
     /*	The classes should be lined up in pop->classes  */
 
-newclass:
-    cls = popln->classes[jcl];
-    leng = 0;
-    nch = ((char *)&cls->id) - ((char *)cls);
-    recordit(file_ptr, cls, nch);
-    leng += nch;
-
-    /*	Copy Basics..  */
-    for (iv = 0; iv < CurCtx.vset->length; iv++) {
-        cls_var = cls->basics[iv];
-        nch = CurCtx.vset->variables[iv].basic_size;
-        recordit(file_ptr, cls_var, nch);
+    for (jcl = 0; jcl < popln->num_classes; jcl++) {
+        cls = popln->classes[jcl];
+        leng = 0;
+        nch = ((char *)&cls->id) - ((char *)cls);
+        recordit(file_ptr, cls, nch);
         leng += nch;
-    }
 
-    /*	Copy stats  */
-    for (iv = 0; iv < CurCtx.vset->length; iv++) {
-        exp_var = cls->stats[iv];
-        nch = CurCtx.vset->variables[iv].stats_size;
-        recordit(file_ptr, exp_var, nch);
-        leng += nch;
-    }
-    if (nc == 0)
-        goto classdone;
+        /*	Copy Basics..  */
+        for (iv = 0; iv < CurCtx.vset->length; iv++) {
+            cls_var = cls->basics[iv];
+            nch = CurCtx.vset->variables[iv].basic_size;
+            recordit(file_ptr, cls_var, nch);
+            leng += nch;
+        }
 
-    /*	Copy scores  */
-    nch = nc * sizeof(short);
-    recordit(file_ptr, cls->factor_scores, nch);
-    leng += nch;
-classdone:
-    jcl++;
-    if (jcl < popln->num_classes)
-        goto newclass;
+        /*	Copy stats  */
+        for (iv = 0; iv < CurCtx.vset->length; iv++) {
+            exp_var = cls->stats[iv];
+            nch = CurCtx.vset->variables[iv].stats_size;
+            recordit(file_ptr, exp_var, nch);
+            leng += nch;
+        }
+        if (nc != 0) {
+            /*	Copy scores  */
+            nch = nc * sizeof(short);
+            recordit(file_ptr, cls->factor_scores, nch);
+            leng += nch;
+        }
+    }
 
 finish:
     fclose(file_ptr);
@@ -798,8 +794,9 @@ int load_population(char *nam) {
     fscanf(file_ptr, "%s", name);          /* Reading sample name */
     fscanf(file_ptr, "%d%d", &fncl, &fnc); /* num of classes, cases */
                                            /*	Advance to real data */
-    while (fgetc(file_ptr) != '+')
-        ;
+    while (fgetc(file_ptr) != '+'){
+        // do nothing
+    }
     fgetc(file_ptr);
     if (fnc) {
         j = find_sample(name, 1);

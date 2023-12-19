@@ -159,24 +159,24 @@ int read_datum(char *loc, int iv) {
 }
 
 int set_datum(char *loc, int iv, void *value) {
-    Datum xn = *(Datum *)(value);
+    int xn = *(int *)(value);
     if (!xn) {
-        return -1 * (int)sizeof(Datum); /* Missing */
+        return -1 * (int)sizeof(int); /* Missing */
     }
     xn--;
     if ((xn < 0) || (xn >= 2)) {
-        return -1 * (int)sizeof(Datum);
+        return -1 * (int)sizeof(int);
     }
     *loc = 0;
-    memcpy(loc, &xn, sizeof(Datum));
-    return (int)sizeof(Datum);
+    memcpy(loc, &xn, sizeof(int));
+    return (int)sizeof(int);
 }
 
 /*	---------------------  print_datum --------------------------  */
 /*	To print a Datum value   */
 void print_datum(char *loc) {
     /*	Print datum from address loc   */
-    printf("%9d", (*((Datum *)(loc)) + 1));
+    printf("%9d ", (*((Datum *)(loc)) + 1));
     return;
 }
 
