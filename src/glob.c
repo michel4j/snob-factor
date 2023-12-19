@@ -234,12 +234,12 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
     double cost = root->best_cost, delta = 0.0;
     do {
         log_msg(1, "Cycle %d", 1 + cycle);
-        log_msg(1, "DOALL:   Doing %d steps of re-estimation and assignment.", do_steps);
+        log_msg(1, "Doing %d steps of costing, assignment and adjustments.", do_steps);
         cleanup_population();
         do_all(do_steps, 1);
 
         cleanup_population();
-        log_msg(1, "TRYMOVE: Attempting class moves until %d successive failures", move_steps);
+        log_msg(1, "Attempting class moves until %d successive failures", move_steps);
         try_moves(move_steps);
         log_msg(1, "Cycle %d Complete: Cost dropped by %0.3f%%", cycle, delta);
         show_population();
@@ -264,7 +264,6 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
         log_msg(1, "WARNING: Classification interrupted after %d cycles", cycle);
     } else {
         log_msg(1, "Classification converged after %d cycles", cycle);
-        log_msg(1, "%4d classes,  %4d leaves,  Cost %8.1f", prev_classes, prev_leaves, cost);
     }
 
     //  Prepare return structure

@@ -14,7 +14,7 @@ void flatten() {
 
     tidy(0, NoSubs);
     if (root->num_sons == 0) {
-        log_msg(1, "Nothing to flatten");
+        log_msg(0, "Nothing to flatten");
         return;
     }
     for (i = 0; i <= popln->hi_class; i++) {
@@ -44,12 +44,13 @@ void flatten() {
     do_dads(3);
     do_all(3, 0);
     if (Interactive & Heard) {
-        log_msg(1, "Flatten ends prematurely");
+        log_msg(0, "Flatten ends prematurely");
     }
     if (NoSubs > 0) {
         NoSubs--;
     }
-    print_tree();
+    if (Debug < 1)
+        print_tree();
 }
 
 /*	------------------------  insdad  ------------------------------  */
@@ -182,7 +183,7 @@ int best_insert_dad(int force) {
     origcost = root->best_cost;
     hiid = CurCtx.popln->hi_class;
     if (CurCtx.popln->num_classes < 4) {
-        log_msg(1, "Model has only%2d class", CurCtx.popln->num_classes);
+        log_msg(0, "Model has only%2d class", CurCtx.popln->num_classes);
         succ = -1;
         goto alldone;
     }
@@ -244,7 +245,7 @@ i1done:
 
 alldone:
     if (bser1 < 0) {
-        log_msg(1, "No possible dad insertions");
+        log_msg(0, "No possible dad insertions");
         succ = newser = -1;
         goto finish;
     }
@@ -254,7 +255,7 @@ alldone:
         goto popfails;
     CurCtx.popln = Populations[newp];
     root = CurCtx.popln->classes[CurCtx.popln->root];
-    log_msg(1, "TRYING INSERT %6d,%6d", bser1 >> 2, bser2 >> 2);
+    log_msg(0, "TRYING INSERT %6d,%6d", bser1 >> 2, bser2 >> 2);
     res = insert_dad(bser1, bser2, &newid);
     /*	But check it is not killed off   */
     newser = CurCtx.popln->classes[newid]->serial;
@@ -262,7 +263,7 @@ alldone:
     do_all(1, 1);
     Control = AdjAll;
     if (Heard) {
-        log_msg(1, "BestInsDad ends prematurely");
+        log_msg(0, "BestInsDad ends prematurely");
         return (0);
     }
     if (newser != CurCtx.popln->classes[newid]->serial)
@@ -278,17 +279,18 @@ alldone:
     newser = 0;
     memcpy(&CurCtx, &oldctx, sizeof(Context));
 
-    log_msg(1, "Failed ******");
+    log_msg(0, "Failed ******");
     goto finish;
 
 popfails:
     succ = newser = -1;
-    log_msg(1, "Cannot make TrialPop");
+    log_msg(0, "Cannot make TrialPop");
     goto finish;
 
 winner:
-    log_msg(1, "%s", (succ) ? "ACCEPTED !!!" : "FORCED");
-    print_tree();
+    log_msg(0, "%s", (succ) ? "ACCEPTED !!!" : "FORCED");
+    if (Debug < 1)
+        print_tree();
     clr_bad_move();
     /*	Reverse roles of 'work' and TrialPop  */
     strcpy(oldctx.popln->name, "TrialPop");
@@ -304,9 +306,7 @@ finish:
 
 /*	---------------  rebuild  --------------------------------  */
 /*	Flattens and the rebuilds the tree  */
-void rebuild() {
-    log_msg(1, "Rebuild obsolete!");
-}
+void rebuild() { log_msg(0, "Rebuild obsolete!"); }
 
 /*	------------------  deldad  -------------------------  */
 /*	If class ser is Dad (not root), it is removed, and its sons become
@@ -405,7 +405,7 @@ i1done:
         goto loop;
 
     if (bser < 0) {
-        log_msg(1, "No possible dad deletions");
+        log_msg(0, "No possible dad deletions");
         goto finish;
     }
     newp = copy_population(CurCtx.popln->id, 1, "TrialPop");
@@ -414,13 +414,13 @@ i1done:
     popln = CurCtx.popln = Populations[newp];
 
     root = popln->classes[popln->root];
-    log_msg(1, "TRYING DELETE %6d", bser >> 2);
+    log_msg(0, "TRYING DELETE %6d", bser >> 2);
     res = splice_dad(bser);
     Control = 0;
     do_all(1, 1);
     Control = AdjAll;
     if (Heard) {
-        log_msg(1, "BestDelDad ends prematurely");
+        log_msg(0, "BestDelDad ends prematurely");
         return (0);
     }
     if (root->best_cost < origcost)
@@ -429,18 +429,19 @@ i1done:
     bser = 0;
     memcpy(&CurCtx, &oldctx, sizeof(Context));
 
-    log_msg(1, "Failed ******");
+    log_msg(0, "Failed ******");
     goto finish;
 
 popfails:
-    log_msg(1, "BestDelDad cannot make TrialPop");
+    log_msg(0, "BestDelDad cannot make TrialPop");
     bser = -1;
     goto finish;
 
 winner:
     clr_bad_move();
-    log_msg(1, "ACCEPTED !!!");
-    print_tree();
+    log_msg(0, "ACCEPTED !!!");
+    if (Debug < 1)
+        print_tree();
     strcpy(oldctx.popln->name, "TrialPop");
     strcpy(CurCtx.popln->name, "work");
     track_best(1);
@@ -486,7 +487,8 @@ delloop:
         goto kicked;
 
 finish:
-    print_tree();
+    if (Debug < 1)
+        print_tree();
     if (NoSubs > 0)
         NoSubs--;
     clr_bad_move();
@@ -496,7 +498,7 @@ kicked:
     nn = find_population("work");
     CurCtx.popln = Populations[nn];
 
-    log_msg(1, "BinHier ends prematurely");
+    log_msg(0, "BinHier ends prematurely");
     goto finish;
 }
 
@@ -510,15 +512,15 @@ void ranclass(int nn) {
     Class *root = popln->classes[popln->root];
 
     if (!popln) {
-        log_msg(1, "Ranclass needs a model");
+        log_msg(0, "Ranclass needs a model");
         goto finish;
     }
     if (!popln->sample_size) {
-        log_msg(1, "Model has no sample");
+        log_msg(0, "Model has no sample");
         goto finish;
     }
     if (nn > (popln->cls_vec_len - 2)) {
-        log_msg(1, "Too many classes");
+        log_msg(0, "Too many classes");
         goto finish;
     }
 
@@ -557,7 +559,7 @@ again:
     dad = Sons[ib];
     if (split_leaf(dad->id))
         goto windup;
-    log_msg(1, "Splitting %s size%8.1f", serial_to_str(dad), dad->weights_sum);
+    log_msg(0, "Splitting %s size%8.1f", serial_to_str(dad), dad->weights_sum);
     dad->hold_type = Forever;
     n++;
     goto again;
@@ -568,7 +570,8 @@ windup:
     flatten();
     do_all(6, 0);
     do_all(4, 1);
-    print_tree();
+    if (Debug < 1)
+        print_tree();
     root->hold_type = 0;
 
 finish:
@@ -597,18 +600,18 @@ double move_class(int ser1, int ser2) {
         goto nullit;
     cls2 = popln->classes[k2];
     if (cls2->type != Dad) {
-        log_msg(1, "Class %4d is not a dad", ser2);
+        log_msg(0, "Class %4d is not a dad", ser2);
         goto nullit;
     }
     /*	Check that a change is needed  */
     if (cls1->dad_id == k2) {
-        log_msg(1, "No change needed");
+        log_msg(0, "No change needed");
         goto nullit;
     }
     /*	Check that cls1 is not an ancestor of cls2  */
     for (od2 = cls2->dad_id; od2 >= 0; od2 = odad->dad_id) {
         if (od2 == k1) {
-            log_msg(1, "Class %4d is ancestor of class %4d", ser1, ser2);
+            log_msg(0, "Class %4d is ancestor of class %4d", ser1, ser2);
             goto nullit;
         }
         odad = popln->classes[od2];
@@ -632,7 +635,7 @@ double move_class(int ser1, int ser2) {
     goto done;
 
 kicked:
-    log_msg(1, "Moveclass interrupted prematurely");
+    log_msg(0, "Moveclass interrupted prematurely");
 
 nullit:
     drop = -1.0e20;
@@ -643,7 +646,7 @@ done:
 
 /*	-----------------  trial  ---------------------------------  */
 void trial(int param) {
-    log_msg(1, "Running TRIAL");
+    log_msg(0, "Running TRIAL");
     correlpops(param);
 }
 
@@ -678,7 +681,7 @@ int best_move_class(int force) {
     origcost = root->best_cost;
     hiid = CurCtx.popln->hi_class;
     if (CurCtx.popln->num_classes < 4) {
-        log_msg(1, "Model has only%2d class", CurCtx.popln->num_classes);
+        log_msg(0, "Model has only%2d class", CurCtx.popln->num_classes);
         succ = -1;
         goto alldone;
     }
@@ -743,7 +746,7 @@ i1done:
 alldone:
     if (bser1 < 0) {
         succ = -1;
-        log_msg(1, "No possible class move");
+        log_msg(0, "No possible class move");
         goto finish;
     }
     /*	Copy pop to TrialPop, filled  */
@@ -753,13 +756,13 @@ alldone:
     CurCtx.popln = Populations[newp];
 
     root = CurCtx.popln->classes[CurCtx.popln->root];
-    log_msg(1, "TRYING MOVE CLASS %6d TO DAD %6d", bser1 >> 2, bser2 >> 2);
+    log_msg(0, "TRYING MOVE CLASS %6d TO DAD %6d", bser1 >> 2, bser2 >> 2);
     res = move_class(bser1, bser2);
     Control = 0;
     do_all(1, 1);
     Control = AdjAll;
     if (Heard)
-        log_msg(1, "BestMoveClass ends prematurely");
+        log_msg(0, "BestMoveClass ends prematurely");
     /*	Setting dogood's target to origcost-1 allows early exit  */
     /*	See if the trial model has improved over original  */
     succ = 1;
@@ -771,17 +774,18 @@ alldone:
     set_bad_move(3, bser1, bser2);
     memcpy(&CurCtx, &oldctx, sizeof(Context));
 
-    log_msg(1, "Failed ******");
+    log_msg(0, "Failed ******");
     goto finish;
 
 popfails:
     succ = -1;
-    log_msg(1, "Cannot make TrialPop");
+    log_msg(0, "Cannot make TrialPop");
     goto finish;
 
 winner:
-    log_msg(1, "%s", (succ) ? "ACCEPTED !!!" : "FORCED");
-    print_tree();
+    log_msg(0, "%s", (succ) ? "ACCEPTED !!!" : "FORCED");
+    if (Debug < 1)
+        print_tree();
     clr_bad_move();
     /*	Reverse roles of 'work' and TrialPop  */
     strcpy(oldctx.popln->name, "TrialPop");
@@ -814,7 +818,7 @@ void try_moves(int ntry) {
         if (succ)
             nfail = 0;
         if ((Heard) || (Stop)) {
-            log_msg(1, "Trymoves ends prematurely");
+            log_msg(0, "Trymoves ends prematurely");
             break;
         }
     }

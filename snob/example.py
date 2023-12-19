@@ -21,8 +21,8 @@ def subtree(node: int, info: list, level=0):
     }
 
 
-def show_tree(self):
-    tree = subtree(-1, self.classes_)
+def show_tree(classes):
+    tree = subtree(-1, classes)
     tr = LeftAligned()
     print("-" * 79)
     print("Classification Tree")
@@ -36,25 +36,22 @@ if __name__ == '__main__':
 
     df = pd.read_csv("./examples/sst.csv")
     dset = snob.SNOBClassifier(
-        data=df,
         name='sst',
-        types={
-            'theta': 'radians',
-            'phi': "radians",
-            "ctheta": "radians",
-            "cphi": 'radians'
-        }
+        attrs={
+            'cdist': 'real',
+            'ctheta': "radians",
+            "cphi": "radians",
+        },
+        cycles=20, steps=50, moves=2, tol=0.05
     )
-    print(dset.attrs)
-    dset.setup()
-    results = dset.fit()
+    results = dset.fit(df)
     pprint.pprint(results)
+    show_tree(results)
 
+    # Loop through examples and do a more traditional classification with files
     for name in EXAMPLES:
         vset_file = Path('./examples') / f'{name}.v'
         sample_file = Path('./examples') / f'{name}.s'
-        model_file = Path(f'/tmp/{name}.mod')
-        report_file = Path(f'/tmp/{name}.rep')
 
         if not (vset_file.exists() and sample_file.exists()):
             continue
@@ -62,8 +59,7 @@ if __name__ == '__main__':
         print('#' * 80)
         print(f"Classifying: {name}")
 
-        dset.setup_from_files(vset_file, sample_file)
-        classes = dset.fit()
+        classes = snob.classify(vset_file, sample_file, cycles=3, steps=50, moves=2, tol=0.01)
         class_tree = subtree(-1, classes)
         tr = LeftAligned()
         print("-" * 80)

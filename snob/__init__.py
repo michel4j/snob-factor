@@ -6,7 +6,7 @@ import os
 import struct
 from enum import IntFlag, auto
 from pathlib import Path
-from typing import Dict, LiteralString, Any
+from typing import Dict, Literal, Any
 import numpy as np
 import pandas as pd
 
@@ -75,27 +75,7 @@ lib.add_record.restype = ct.c_int
 # print_data
 lib.print_var_datum.argtypes = [ct.c_int, ct.c_int]
 
-
-
-
-
-
-
-def get_prec(col, err=1e-6):
-    prec = 1
-    while prec < 6 and (col - col.round(prec)).abs().mean() * 10 ** prec > err:
-        prec += 1
-    return prec
-
-
-def get_type(col):
-    return {
-        'int64': 'multi-state',
-        'float64': 'real',
-    }.get(col.dtype.name, 1)
-
-
-DataType = LiteralString['real', 'multi-state', 'binary', 'degrees', 'radians']
+DataType = Literal['real', 'multi-state', 'binary', 'degrees', 'radians']
 
 
 class SnobContextManager:
@@ -103,6 +83,7 @@ class SnobContextManager:
     Saves the SNOB Context before performing certain operations
     and restores it after.
     """
+
     def __enter__(self):
         lib.save_context()
         return self
@@ -134,7 +115,7 @@ class SNOBClassifier:
             attrs: Dict[str, DataType],
             cycles: int = 20,
             steps: int = 50,
-            moves: int = 3,
+            moves: int = 2,
             tol: float = 5e-2,
             name: str = 'mml'
     ):
@@ -243,7 +224,7 @@ class SNOBClassifier:
         initialize(log_level=1)
         self.add_vset(data)
         self.add_data(data, name='sample')
-        result = lib.classify(self.cycles, self.steps, self.moves, 0.01)
+        result = lib.classify(self.cycles, self.steps, self.moves, self.tol)
         self.summary = result
         buffer_size = (result.classes + result.leaves) * (result.attrs + 1) * 80 * 4
         buffer = ct.create_string_buffer(buffer_size)
@@ -253,7 +234,7 @@ class SNOBClassifier:
         self.classes_ = json.loads(buffer.value.decode('utf-8'))
         return self.classes_
 
-    def save_model(self, filename: str):
+    def save_model(self, filename: str | Path):
         lib.save_model(str(filename).encode('utf-8'))
 
     def predict(self, data: pd.DataFrame | None) -> pd.DataFrame:
@@ -314,7 +295,24 @@ def set_control_flags(flags: Adjust):
     lib.set_control_flags(flags)
 
 
-def classify(vset_file: str, sample_file: str, cycles: int = 3, steps: int = 50, moves: int = 3, tol: float = 1e-2 ):
+def classify(
+        vset_file: str | Path,
+        sample_file: str | Path,
+        cycles: int = 3,
+        steps: int = 50,
+        moves: int = 3,
+        tol: float = 1e-2
+):
+    """
+    Run a classification based on vset and sample files
+    :param vset_file: VSET File
+    :param sample_file: Sample File
+    :param cycles:  Number of classification cycles
+    :param steps: Number of doall steps
+    :param moves: Number of trymoves steps
+    :param tol:  percentage drop above which we should continue trying
+    :return: list of class dictionaries
+    """
     initialize(log_level=1)
     lib.load_vset(str(vset_file).encode('utf-8'))
     lib.load_sample(str(sample_file).encode('utf-8'))
