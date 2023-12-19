@@ -33,14 +33,8 @@ int chk_bad_move(int code, int w1, int w2) {
     hi = hi % BadSize;
     bad = 0;
     if (BadKey[hi] == key) {
-        flp();
         bad = 1;
-        printf("Badmove rejects %s", movestr[code]);
-        if (w1)
-            printf("%6d", w1 >> 2);
-        if (w2)
-            printf("%6d", w2 >> 2);
-        printf("\n");
+        log_msg(0, "Badmove rejects %s %6d %6d", movestr[code], w1 >> 2, w2 >> 2);
     }
     return (bad);
 }

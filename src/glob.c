@@ -241,7 +241,7 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
         cleanup_population();
         log_msg(1, "Attempting class moves until %d successive failures", move_steps);
         try_moves(move_steps);
-        log_msg(1, "Cycle %d Complete: Cost dropped by %0.3f%%", cycle, delta);
+        log_msg(1, "Cost dropped by %8.3f%%", delta);
         show_population();
         root = CurCtx.popln->classes[CurCtx.popln->root];
         delta = 100.0 * (cost - root->best_cost) / cost;
