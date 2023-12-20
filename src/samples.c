@@ -20,7 +20,7 @@ void print_var_datum(int i, int n) {
     field += svi->offset;
     /*	Test for missing  */
     if (*field == 1) {
-        printf("    =====");
+        printf("%9s ", "=====");
         return;
     }
     field += 1;

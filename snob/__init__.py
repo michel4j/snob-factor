@@ -8,7 +8,7 @@ import time
 
 from enum import IntFlag, auto
 from pathlib import Path
-from typing import Dict, Literal, Any
+from typing import Dict, Literal, Any, List, Sequence
 
 import numpy as np
 import pandas as pd
@@ -122,6 +122,35 @@ class Timer:
         )
 
 
+class CategoryEncoder:
+    """
+    Keep a sorted list of states for converting categories to integers
+    """
+    states: Sequence[Any]
+
+    def __init__(self, states: Sequence[Any] = ()):
+        self.states = sorted(states)
+
+    def set_states(self, states: Sequence[Any]):
+        self.states = sorted(states)
+
+    def __call__(self, state: Any) -> int:
+        try:
+            return self.states.index(state) + 1
+        except ValueError:
+            return -1
+
+
+MAX_CATEGORIES = 20
+CONVERTERS = {
+    'real': float,
+    'binary': int,
+    'degrees': float,
+    'radians': float,
+    'multi-state': int,
+}
+
+
 class SNOBClassifier:
     TypeValue = {
         'real': 1,
@@ -137,13 +166,7 @@ class SNOBClassifier:
         'degrees': 'd',
         'radians': 'd'
     }
-    Converter = {
-        'real': float,
-        'binary': int,
-        'degrees': float,
-        'radians': float,
-        'multi-state': int,
-    }
+
     summary: Classification | None
     classes_: list
 
@@ -169,30 +192,24 @@ class SNOBClassifier:
 
         self.attrs = attrs
         self.columns = self.attrs.keys()
-        self.format = self.get_format_string()
         self.cycles = cycles
         self.steps = steps
         self.moves = moves
         self.tol = tol
         self.name = name
         self.seed = seed
-
         self.summary = None
+        self.encoder = {}
+        self.format = ''.join(
+            self.TypeFormat[type_] for field, type_ in self.attrs.items()
+        )
 
-    def get_format_string(self):
-        """
-        Generate a format string for packing row data into a binary
-        representation.
-        :return: string
-        """
-        return ''.join(self.TypeFormat[type_] for field, type_ in self.attrs.items())
-
-    def encode(self, data: pd.DataFrame) -> pd.DataFrame:
-        for key, type_ in self.attrs.items():
-            if type_ in ['multi-state', 'binary']:
-                data[key] = pd.Categorical(data[key])
-                data[key] = data[key].cat.codes + 1
-        return data
+        # initialize encoders
+        for name, type_ in self.attrs.items():
+            if type_ in ['binary', 'multi-state']:
+                self.encoder[name] = CategoryEncoder()
+            else:
+                self.encoder[name] = float
 
     @staticmethod
     def get_precision(col) -> float:
@@ -217,7 +234,9 @@ class SNOBClassifier:
         # Add attributes
         for i, (name, type_) in enumerate(self.attrs.items()):
             if type_ in ['multi-state', 'binary']:
-                aux = data[name].dropna().nunique()
+                unique_values = data[name].dropna().unique()[:MAX_CATEGORIES]
+                self.encoder[name].set_states(unique_values)
+                aux = len(unique_values)
                 if aux == 2:
                     # Force use of Binary for 2-valued states
                     type_ = 'binary'
@@ -235,17 +254,17 @@ class SNOBClassifier:
         :param data: Pandas data frame containing the data
         :param name: name of dataset, default "sample"
         """
-        data = self.encode(data)
         units = np.array([
             1 if type_ == 'degrees' else 0
             for name, type_ in self.attrs.items()
         ], dtype='int64')
         precs = np.array([
-            self.get_precision(data[name]) for name, type_ in self.attrs.items()
+            0.0 if type_ in ['multi-state', 'binary'] else self.get_precision(data[name])
+            for name, type_ in self.attrs.items()
         ], dtype='float64')
 
         size = len(data.index)
-        index = lib.create_sample(
+        lib.create_sample(
             name.encode('utf-8'),
             size,
             units.ctypes.data_as(ct.POINTER(ct.c_int)),
@@ -254,7 +273,10 @@ class SNOBClassifier:
 
         # Now add records
         for i, row in data[self.columns].iterrows():
-            row_values = [self.Converter[self.attrs[col]](row[col]) for col in self.columns]
+            row_values = [
+                self.encoder[col](row[col])
+                for col in self.columns
+            ]
             bytestring = struct.pack(self.format, *row_values)
             lib.add_record(i, bytestring)
 

@@ -229,8 +229,8 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
     init_population();
     cleanup_population();
     print_class(CurCtx.popln->root, 0);
-    root = CurCtx.popln->classes[CurCtx.popln->root];
 
+    root = CurCtx.popln->classes[CurCtx.popln->root];
     double cost = root->best_cost, delta = 0.0;
     do {
         log_msg(1, "Cycle %d", 1 + cycle);
@@ -245,8 +245,11 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
         show_population();
         root = CurCtx.popln->classes[CurCtx.popln->root];
         delta = 100.0 * (cost - root->best_cost) / cost;
-        if ((prev_classes == CurCtx.popln->num_classes) && (prev_leaves == CurCtx.popln->num_leaves) && (delta < tol)) {
-            no_change_count++;
+        if ((CurCtx.popln->num_classes > 1)) {
+            // test convergence if we are not at the beginning
+            if ((prev_classes == CurCtx.popln->num_classes) && (prev_leaves == CurCtx.popln->num_leaves) && (delta < tol)) {
+                no_change_count++;
+            }
         }
         prev_classes = CurCtx.popln->num_classes;
         prev_leaves = CurCtx.popln->num_leaves;
@@ -298,4 +301,4 @@ int load_model(char *filename) {
 
 void save_context() { memcpy(&BkpCtx, &CurCtx, sizeof(Context)); }
 void restore_context() { memcpy(&CurCtx, &BkpCtx, sizeof(Context)); }
-void set_control_flags(int flags){Control = DControl = flags;}
+void set_control_flags(int flags) { Control = DControl = flags; }
