@@ -14,10 +14,10 @@ files. The declarations herein then become converted to "EXT" declarations.
 #include <time.h>
 #include <unistd.h>
 
-#define MAX_SAMPLES 10 /* Max number of samples */
+#define MAX_SAMPLES 5 /* Max number of samples */
 #define MAX_VSETS 3
-#define MAX_POPULATIONS 10 /* Max number of popln models */
-#define MAX_CLASSES 250
+#define MAX_POPULATIONS 5 /* Max number of popln models */
+#define MAX_CLASSES 500
 #define MAX_ZERO 100          /*  Length of the Zero vector  */
 #define INPUT_BUFFER_SIZE 450 /*    Length of input line buffer */
 

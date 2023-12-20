@@ -5,7 +5,7 @@ import snob
 
 
 if __name__ == '__main__':
-    df = pd.read_csv("/tmp/wholesale.csv")
+    df = pd.read_csv("examples/wholesale.csv")
 
     dset = snob.SNOBClassifier(
         name='wholesale',
@@ -19,7 +19,7 @@ if __name__ == '__main__':
             'Detergents_Paper': 'real',
             'Delicassen': 'real'
         },
-        cycles=20, steps=50, moves=2, tol=0.01
+        cycles=50, steps=50, moves=2, tol=0.0005, seed=1234567
     )
     results = dset.fit(df)
     snob.show_classes(results)

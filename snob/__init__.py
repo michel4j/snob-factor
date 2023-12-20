@@ -187,6 +187,13 @@ class SNOBClassifier:
         """
         return ''.join(self.TypeFormat[type_] for field, type_ in self.attrs.items())
 
+    def encode(self, data: pd.DataFrame) -> pd.DataFrame:
+        for key, type_ in self.attrs.items():
+            if type_ in ['multi-state', 'binary']:
+                data[key] = pd.Categorical(data[key])
+                data[key] = data[key].cat.codes + 1
+        return data
+
     @staticmethod
     def get_precision(col) -> float:
         """
@@ -228,6 +235,7 @@ class SNOBClassifier:
         :param data: Pandas data frame containing the data
         :param name: name of dataset, default "sample"
         """
+        data = self.encode(data)
         units = np.array([
             1 if type_ == 'degrees' else 0
             for name, type_ in self.attrs.items()
