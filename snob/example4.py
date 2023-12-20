@@ -4,8 +4,8 @@ from ucimlrepo import fetch_ucirepo
 
 
 if __name__ == '__main__':
-    iris = fetch_ucirepo(id=105)
-    df = iris.data.features
+    dataset = fetch_ucirepo(id=105)
+    df = dataset.data.features
     print(df)
 
     dset = snob.SNOBClassifier(
