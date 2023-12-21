@@ -447,6 +447,8 @@ void set_control_flags(int flags);
 void cleanup_population();
 void show_population();
 void show_smpl_names();
+void select_sample(char *name);
+void select_population(char *name);
 void show_pop_names();
 void initialize(int interact, int debug, int seed);
 void get_class_details(char *buffer, size_t buffer_size);

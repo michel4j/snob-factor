@@ -75,6 +75,56 @@ void show_smpl_names() {
     NumRepChars = 0;
 }
 
+/// @brief Select the sample by the given name
+/// @param name name of sample to select
+void select_sample(char *name) {
+    int smpl_id, k;
+    smpl_id = find_sample(name, 1);
+    if (smpl_id >= 0) {
+        log_msg(1, "Selecting sample [%d] %s", smpl_id, Samples[smpl_id]->name);
+        k = copy_population(CurCtx.popln->id, 0, "OldWork");
+        if (k >= 0) {
+            if (CurCtx.popln) {
+                destroy_population(CurCtx.popln->id);
+            }
+            CurCtx.popln = 0;
+            CurCtx.sample = Samples[smpl_id];
+            log_msg(0, "Preparing Initial Population for sample [%d] %s", smpl_id, Samples[smpl_id]->name);
+            k = init_population();
+            if (k < 0) {
+                log_msg(1, "Cannot make first population for sample");
+                return;
+            }
+        } else {
+            log_msg(1, "Can't make OldWork copy of work");
+        }
+        select_population("OldWork");
+        cleanup_population();
+    }
+}
+
+/// @brief Select a population by name
+/// @param name
+void select_population(char *name) {
+    int k, p = find_population(name);
+    if (p >= 0) {
+        if (!strcmp(Populations[p]->name, "work")) {
+            if (CurCtx.popln && (CurCtx.popln->id == p)) {
+                log_msg(0, "Work already picked");
+            } else {
+                log_msg(0, "Switching context to existing 'work'");
+            }
+            k = p;
+        } else {
+            k = set_work_population(p);
+        }
+        CurCtx.popln = Populations[k];
+    } else {
+        log_msg(0, "No existing population '%s'", name);
+    }
+    show_population();
+}
+
 void log_msg(int level, const char *format, ...) {
 
     if (level >= Debug) {
@@ -191,7 +241,6 @@ void cleanup_population() {
     if (index >= 0) {
         destroy_population(index);
     }
-
     Fix = DFix;
     Control = DControl;
     tidy(1, NoSubs);
@@ -235,12 +284,13 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
     do {
         log_msg(1, "Cycle %d", 1 + cycle);
         log_msg(1, "Doing %d steps of costing, assignment and adjustments.", do_steps);
-        cleanup_population();
         do_all(do_steps, 1);
-
         cleanup_population();
+
         log_msg(1, "Attempting class moves until %d successive failures", move_steps);
         try_moves(move_steps);
+        cleanup_population();
+
         log_msg(1, "Cost dropped by %8.3f%%", delta);
         show_population();
         root = CurCtx.popln->classes[CurCtx.popln->root];

@@ -512,6 +512,7 @@ error:
     if (CurSource->cfile)
         revert(0);
 loop:
+
     k = find_population("TrialPop");
     if (k >= 0)
         destroy_population(k);
@@ -566,6 +567,7 @@ loop:
         if (new_line())
             goto error;
     }
+
     kk = menu(1);
     if (kk < 0)
         goto error;
@@ -993,10 +995,9 @@ pickapop:
         else
             printf("Switching context to existing 'work'");
         k = i;
-        goto picked;
+    } else {
+        k = set_work_population(i);
     }
-    k = set_work_population(i);
-picked:
     CurCtx.popln = popln = Populations[k];
     Log "%s", Populations[i]->name EL goto loop;
 #ifdef ZZ

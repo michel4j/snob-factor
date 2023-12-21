@@ -645,11 +645,10 @@ void do_case(int item, int all, int derivs, int num_son) {
     }
 
     /*	Deal with every class, as set up in sons[]  */
-
     clc = 0;
     while (clc < num_son) {
         cls = Sons[clc];
-        set_class_score(Sons[clc], item);
+        set_class_score(cls, item);
         if ((!SeeAll) && (Scores.CaseFacInt & 1)) { /* Ignore this and decendants */
             clc = NextIc[clc];
             continue;

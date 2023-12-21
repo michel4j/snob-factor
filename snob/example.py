@@ -2,18 +2,20 @@
 
 import pandas as pd
 import snob
-
+snob.LOG_LEVEL = 1
 if __name__ == '__main__':
     df = pd.read_csv("./examples/sst.csv")
     dset = snob.SNOBClassifier(
         name='sst',
         attrs={
             'cdist': 'real',
-            'ctheta': "radians",
-            "cphi": "radians",
+            'ctheta': 'radians',
+            'cphi': 'radians',
         },
-        cycles=20, steps=50, moves=2, tol=0.01, seed=1234567
+        cycles=3, steps=40, moves=2, tol=0.01, seed=1234567
     )
+
     results = dset.fit(df)
     snob.show_classes(results)
     print(dset.predict())
+    print(dset.predict(df))

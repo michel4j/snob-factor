@@ -930,7 +930,6 @@ int get_assignments(int *ids, int *prim_cls, double *prim_probs, int *sec_cls, d
 
         record = CurCtx.sample->records + nn * CurCtx.sample->record_length;
         memcpy(&ids[nn], record + 1, sizeof(int));
-
         for (i = 0; i < num_son; i++) {
             cls = Sons[i];
             if ((cls->type == Leaf) && (cls->case_weight > best_weight)) {
@@ -940,12 +939,12 @@ int get_assignments(int *ids, int *prim_cls, double *prim_probs, int *sec_cls, d
             }
         }
         if ((next_leaf >= 0) && (Sons[next_leaf]->case_weight > 1e-3)) {
-            prim_cls[nn] = Sons[best_leaf]->id;
+            prim_cls[nn] = Sons[best_leaf]->serial;
             prim_probs[nn] = Sons[best_leaf]->case_weight;
-            sec_cls[nn] = Sons[next_leaf]->id;
+            sec_cls[nn] = Sons[next_leaf]->serial;
             sec_probs[nn] = Sons[next_leaf]->case_weight;
         } else {
-            prim_cls[nn] = Sons[best_leaf]->id;
+            prim_cls[nn] = Sons[best_leaf]->serial;
             prim_probs[nn] = Sons[best_leaf]->case_weight;
             sec_cls[nn] = -1;
             sec_probs[nn] = 0.0;

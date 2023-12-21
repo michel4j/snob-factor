@@ -5,7 +5,7 @@ import json
 import os
 import struct
 import time
-
+import uuid
 from enum import IntFlag, auto
 from pathlib import Path
 from typing import Dict, Literal, Any, List, Sequence
@@ -17,6 +17,7 @@ import pandas as pd
 lib_path = os.path.join(os.path.dirname(__file__), '_snob.so')
 lib = ct.CDLL(lib_path)
 
+LOG_LEVEL = 1
 
 class Classification(ct.Structure):
     """ Result """
@@ -74,6 +75,10 @@ lib.create_sample.restype = ct.c_int
 # add_record
 lib.add_record.argtypes = [ct.c_int, ct.c_char_p]
 lib.add_record.restype = ct.c_int
+
+# select_sample
+lib.select_sample.argtypes = [ct.c_char_p]
+lib.select_population.argtypes = [ct.c_char_p]
 
 # print_data
 lib.print_var_datum.argtypes = [ct.c_int, ct.c_int]
@@ -168,7 +173,10 @@ class SNOBClassifier:
     }
 
     summary: Classification | None
-    classes_: list
+    classes_: list      # list of class information after fitting
+    num_records: int    # Number of records for fitted data
+    num_features: int   # Number of features
+    has_fit: bool       # Whether the Classifier has been fitted
 
     def __init__(
             self,
@@ -190,6 +198,7 @@ class SNOBClassifier:
         :param seed:  Random number seed, 0 implies no seed.
         """
 
+        self.has_fit = False
         self.attrs = attrs
         self.columns = self.attrs.keys()
         self.cycles = cycles
@@ -197,6 +206,9 @@ class SNOBClassifier:
         self.moves = moves
         self.tol = tol
         self.name = name
+        self.classes_ = []
+        self.num_records = 0
+        self.num_features = len(attrs)
         self.seed = seed
         self.summary = None
         self.encoder = {}
@@ -246,13 +258,14 @@ class SNOBClassifier:
                     aux = 20
             else:
                 aux = 0
-            out = lib.add_attribute(i, name.encode('utf-8'), self.TypeValue[type_], aux)
+            out = lib.add_attribute(i, str(name).encode('utf-8'), self.TypeValue[type_], aux)
 
-    def add_data(self, data: pd.DataFrame, name: str = 'sample'):
+    def add_data(self, data: pd.DataFrame, name: str = 'sample') -> int:
         """
         Create a new sample and load the data
         :param data: Pandas data frame containing the data
         :param name: name of dataset, default "sample"
+        :return: the number of cases added
         """
         units = np.array([
             1 if type_ == 'degrees' else 0
@@ -285,6 +298,7 @@ class SNOBClassifier:
         lib.show_smpl_names()
         lib.report_space(1)
         lib.peek_data()
+        return size
 
     def fit(self, data: pd.DataFrame, y: Any = None) -> list:
         """
@@ -294,9 +308,9 @@ class SNOBClassifier:
         :return: list of dictionaries with each representing details about classes found
         """
         with Timer():
-            initialize(log_level=1, seed=self.seed)
+            initialize(log_level=LOG_LEVEL, seed=self.seed)
             self.add_vset(data)
-            self.add_data(data, name='sample')
+            self.num_records = self.add_data(data, name=self.name)
             result = lib.classify(self.cycles, self.steps, self.moves, self.tol)
             self.summary = result
             buffer_size = (result.classes + result.leaves) * (result.attrs + 1) * 80 * 4
@@ -305,23 +319,44 @@ class SNOBClassifier:
             # parse JSON classification result
             lib.get_class_details(buffer, buffer_size)
             self.classes_ = json.loads(buffer.value.decode('utf-8'))
+            self.has_fit = True
             return self.classes_
 
     def save_model(self, filename: str | Path):
-        lib.save_model(str(filename).encode('utf-8'))
+        if self.has_fit:
+            lib.save_model(str(filename).encode('utf-8'))
+        else:
+            print("No fitted model to save!")
 
-    def predict(self, data: pd.DataFrame | None = None) -> pd.DataFrame:
+    def predict(self, data: pd.DataFrame | None = None, name: str | None = None) -> pd.DataFrame:
+        """
+        Assign classes to records in the provided dataset.
+        :param data: Data frame similar to fitted data frame, if not provided, returns assignments
+            for fitted data
+        :param name: Name of dataset
+        :return: pandas data Frame with columns [id, class, prob, next_class, next_prob] corresponding
+            to the top-two class assignments for each record
+        """
+
+        if not self.has_fit:
+            print("No fitted model!")
+            return pd.DataFrame()
+
         if data is not None:
+            sample_name = str(uuid.uuid4())[:8]
             set_control_flags(Adjust.SCORES)
             with SnobContextManager():
-                self.add_data(data, 'predict')
+                size = self.add_data(data, name=sample_name)
+            select_sample(sample_name)
+        else:
+            size = self.num_records
 
         # get assignments
-        ids = (ct.c_int * self.summary.cases)()
-        prim_cls = (ct.c_int * self.summary.cases)()
-        prim_probs = (ct.c_double * self.summary.cases)()
-        sec_cls = (ct.c_int * self.summary.cases)()
-        sec_probs = (ct.c_double * self.summary.cases)()
+        ids = (ct.c_int * size)()
+        prim_cls = (ct.c_int * size)()
+        prim_probs = (ct.c_double * size)()
+        sec_cls = (ct.c_int * size)()
+        sec_probs = (ct.c_double * size)()
         lib.get_assignments(ids, prim_cls, prim_probs, sec_cls, sec_probs)
 
         # Create a Pandas DataFrame
@@ -368,6 +403,22 @@ def set_control_flags(flags: Adjust):
     lib.set_control_flags(flags)
 
 
+def select_sample(name: str):
+    """
+    Select the sample by name
+    :param name: Sample Name
+    """
+    lib.select_sample(name.encode('utf-8'))
+
+
+def select_population(name: str):
+    """
+    Select the population by name
+    :param name: Population Name
+    """
+    lib.select_population(name.encode('utf-8'))
+
+
 def classify(
         vset_file: str | Path,
         sample_file: str | Path,
@@ -387,7 +438,7 @@ def classify(
     :return: list of class dictionaries
     """
     with Timer():
-        initialize(log_level=1)
+        initialize(log_level=LOG_LEVEL)
         lib.load_vset(str(vset_file).encode('utf-8'))
         lib.load_sample(str(sample_file).encode('utf-8'))
         lib.peek_data()

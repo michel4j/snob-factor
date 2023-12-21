@@ -979,7 +979,7 @@ finish:
     /*	Restore 'nc' of copied popln  */
     if (fpop)
         fpop->sample_size = fpopnc;
-    if (windx >= 0)
+    if ((windx >= 0) && (Debug < 1))
         print_tree();
     return (windx);
 }

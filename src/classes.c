@@ -23,7 +23,9 @@ int serial_to_id(int ss) {
 }
 
 /*	---------------------  set_class_score --------------------------   */
-void set_class_score(Class *cls, int item) { cls->case_score = Scores.CaseFacInt = cls->factor_scores[item]; }
+void set_class_score(Class *cls, int item) { 
+    cls->case_score = Scores.CaseFacInt = cls->factor_scores[item]; 
+}
 
 /*	---------------------   makeclass  -------------------------   */
 /*	Makes the basic structure of a class (Class) with vector of
@@ -203,10 +205,12 @@ void get_details_for(Class *cls, MemBuffer *buffer) {
     int i;
     VarType *vtype;
     double vrms;
+    Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;
+    
     vrms = sqrt(cls->sum_score_sq / cls->weights_sum);
-    print_buffer(buffer,  "{\"id\": %d, ", cls->id);
+    print_buffer(buffer,  "{\"id\": %d, ", cls->serial);
     print_buffer(buffer,  "\"type\": %d,", ((int)cls->type));
-    print_buffer(buffer,  "\"parent\": %d, ", (cls->dad_id >= 0) ? cls->dad_id: -1);
+    print_buffer(buffer,  "\"parent\": %d, ", (dad) ? dad->serial: -1);
     print_buffer(buffer,  "\"factor\": %s, ", (cls->use == 2) ? "true": "false");
     print_buffer(buffer,  "\"strength\": %0.3f, ", vrms);
     print_buffer(buffer,  "\"tiny\": %s, ", (cls->use == 0) ? "true": "false");
