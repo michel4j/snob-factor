@@ -642,7 +642,6 @@ int add_record(int index, char *bytes) {
     field++;
     memcpy(field, &caseid, sizeof(int));
     field += sizeof(int);
-    //printf("%9d", caseid);
     /*	Posn now points to where the (missing, val) pair for the attribute should start.  */
     for (int i = 0; i < CurCtx.vset->length; i++) {
         smpl_var = &CurCtx.sample->variables[i];
@@ -659,7 +658,6 @@ int add_record(int index, char *bytes) {
         //(*vtype->print_datum)(field + 1);
         field += (vtype->data_size + 1);
     }
-    //printf("\n");
     CurCtx.sample->num_added++;
     return CurCtx.sample->num_added;
 }

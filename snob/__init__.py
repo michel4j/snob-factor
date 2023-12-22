@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import binascii
 import ctypes as ct
 import json
 import os
@@ -285,12 +286,13 @@ class SNOBClassifier:
         )
 
         # Now add records
+        print(self.format)
         for i, row in data[self.columns].iterrows():
             row_values = [
                 self.encoder[col](row[col])
                 for col in self.columns
             ]
-            bytestring = struct.pack(self.format, *row_values)
+            bytestring = struct.pack('=' + self.format, *row_values)
             lib.add_record(i, bytestring)
 
         # sort the samples

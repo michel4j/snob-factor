@@ -10,18 +10,20 @@ if __name__ == '__main__':
     dset = snob.SNOBClassifier(
         name='wholesale',
         attrs={
-            'Channel': 'multi-state',
             'Region': 'multi-state',
+            'Channel': 'multi-state',
             'Fresh': 'real',
             'Milk': 'real',
             'Grocery': 'real',
             'Frozen': 'real',
             'Detergents_Paper': 'real',
-            'Delicassen': 'real'
+            'Delicassen': 'real',
+
         },
         cycles=50, steps=50, moves=2, tol=0.0005, seed=1234567
     )
     results = dset.fit(df)
     snob.show_classes(results)
     print(dset.predict())
+    print(dset.predict(df))
 

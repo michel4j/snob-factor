@@ -184,7 +184,6 @@ int read_datum(char *loc, int iv) {
     return (i);
 }
 int set_datum(char *loc, int iv, void *value) {
-
     double val = *(double *)(value);
     int active = (isnan(val)) ? -1 : 1;
     memcpy(loc, value, sizeof(double));

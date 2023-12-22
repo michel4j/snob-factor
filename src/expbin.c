@@ -147,7 +147,7 @@ int set_smpl_aux(void *sax, int unit, double prec) { return (0); }
 /*	To read a value for this variable type         */
 int read_datum(char *loc, int iv) {
     int i;
-    Datum xn;
+    int xn;
 
     /*	Read datum into xn, return error.  */
     i = read_int(&xn, 1);
@@ -167,8 +167,8 @@ int set_datum(char *loc, int iv, void *value) {
     if ((xn < 0) || (xn >= 2)) {
         return -1 * (int)sizeof(int);
     }
-    *loc = 0;
     memcpy(loc, &xn, sizeof(int));
+
     return (int)sizeof(int);
 }
 
@@ -176,7 +176,7 @@ int set_datum(char *loc, int iv, void *value) {
 /*	To print a Datum value   */
 void print_datum(char *loc) {
     /*	Print datum from address loc   */
-    printf("%9d ", (*((Datum *)(loc)) + 1));
+    printf("%9d ", (*((int *)(loc)) + 1));
     return;
 }
 
