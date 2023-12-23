@@ -36,30 +36,43 @@ void peek_data() {
     // print header
     printf("%9s ", "id");
     for (int i = 0; i < CurCtx.vset->length; i++) {
+        if ((CurCtx.vset->length > 10) && (i > 5) && (i < CurCtx.vset->length - 5))
+            continue;
         vset_var = &CurCtx.vset->variables[i];
-        printf("%9s ", vset_var->name);
+        if ((i == 5) && (CurCtx.vset->length > 10)) {
+            printf("%9s ", "...");
+        } else {
+            printf("%9s ", vset_var->name);
+        }
     }
     printf("\n");
 
     for (int n = 0; n < CurCtx.sample->num_cases; n++) {
-        if ((n > 5) && (n < CurCtx.sample->num_cases - 5))
+        if ((CurCtx.sample->num_cases > 20) && (n > 5) && (n < CurCtx.sample->num_cases - 5))
             continue;
         field = CurCtx.sample->records + n * CurCtx.sample->record_length + 1;
         caseid = *(int *)(field);
-        if (n == 5) {
+        if ((n == 5) && (CurCtx.sample->num_cases > 20)) {
             printf("%9s ", "...");
-            for (int i = 0; i < CurCtx.vset->length; i++)
+            for (int i = 0; i < CurCtx.vset->length; i++) {
                 printf("%9s", "...");
+            }
         } else {
             printf("%9d ", caseid);
             for (int i = 0; i < CurCtx.vset->length; i++) {
-                print_var_datum(i, n);
+                if ((CurCtx.vset->length > 10) && (i > 5) && (i < CurCtx.vset->length - 5))
+                    continue;
+                if ((i == 5) && (CurCtx.vset->length > 10)) {
+                    printf("%9s ", "...");
+                } else {
+                    print_var_datum(i, n);
+                }
             }
         }
         printf("\n");
     }
 
-    printf("[%d items x %d attributes]\n\n",CurCtx.sample->num_cases, CurCtx.vset->length);
+    printf("[%d items x %d attributes]\n\n", CurCtx.sample->num_cases, CurCtx.vset->length);
 }
 /*	------------------------ readvset ------------------------------ */
 /*	To read in a vset from a file. Returns index of vset  */

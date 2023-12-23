@@ -286,7 +286,6 @@ class SNOBClassifier:
         )
 
         # Now add records
-        print(self.format)
         for i, row in data[self.columns].iterrows():
             row_values = [
                 self.encoder[col](row[col])
