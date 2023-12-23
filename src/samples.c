@@ -55,7 +55,9 @@ void peek_data() {
         if ((n == 5) && (CurCtx.sample->num_cases > 20)) {
             printf("%9s ", "...");
             for (int i = 0; i < CurCtx.vset->length; i++) {
-                printf("%9s", "...");
+                if ((CurCtx.vset->length > 10) && (i > 5) && (i < CurCtx.vset->length - 5))
+                    continue;
+                printf("%9s ", "...");
             }
         } else {
             printf("%9d ", caseid);
@@ -644,7 +646,7 @@ int add_record(int index, char *bytes) {
     SampleVar *smpl_var;
     int offset = 0;
 
-    char *field = (char *)CurCtx.sample->records + index * CurCtx.sample->record_length;
+    char *field = (char *)CurCtx.sample->records + CurCtx.sample->num_added * CurCtx.sample->record_length;
     if (caseid < 0) {
         caseid = -caseid;
         *field = 0;
