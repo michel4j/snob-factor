@@ -16,6 +16,9 @@ if __name__ == '__main__':
     )
 
     results = dset.fit(df)
+    dset.save_model('/tmp/sst.model')
     snob.show_classes(results)
+    snob.lib.show_pop_names()
     print(dset.predict())
     print(dset.predict(df))
+

@@ -16,12 +16,8 @@ if __name__ == '__main__':
         },
         cycles=20, steps=50, moves=2, tol=0.005, seed=1234567
     )
-    print(df)
-    training = np.random.choice(df.index, size=1000, replace=False)
-    print(training)
-    dfs = df.iloc[training].copy(deep=True)
-    print(dfs)
-    results = dset.fit(dfs)
+    results = dset.fit(df.sample(3000), )
+    dset.save_model('/tmp/zfish.model')
     snob.show_classes(results)
     pdf = dset.predict(df)
     img_data = pdf['class'].to_numpy().reshape((108, 120, -1))
@@ -30,5 +26,5 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     mpl.use('TkAgg')
-    plt.imshow(img_data)
+    plt.imshow(img_data, cmap=mpl.colormaps['tab20'])
     plt.show()

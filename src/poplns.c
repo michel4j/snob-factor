@@ -640,60 +640,64 @@ int save_population(int p1, int fill, char *newname) {
     Class *cls;
     ClassVar *cls_var;
     ExplnVar *exp_var;
-    int leng =0, nch, i, iv, nc, jcl;
+    int leng = 0, nch, i, iv, sample_size, jcl;
     Population *popln = 0;
 
-    memcpy(&oldctx, &CurCtx, sizeof(Context));
     file_ptr = 0;
     if (!Populations[p1]) {
         log_msg(1, "No popln index %d", p1);
-        leng = -106;
-        goto finish;
+        return -106;
     }
     /*	Begin by copying the popln to a clean TrialPop   */
     popln = Populations[p1];
     if (!strcmp(popln->name, "TrialPop")) {
         log_msg(1, "Cannot save TrialPop");
-        leng = -105;
-        goto finish;
+        return -105;
     }
+
+
+    memcpy(&oldctx, &CurCtx, sizeof(Context));
+
     /*	Save old name  */
     strcpy(oldname, popln->name);
     /*	If name begins "BST_", change it to "BSTP" to avoid overwriting
     a perhaps better BST_ model existing at time of restore.  */
-    for (i = 0; i < 4; i++)
-        if (oldname[i] != "BST_"[i])
-            goto namefixed;
-    oldname[3] = 'P';
-    log_msg(1, "This model will be saved with name BSTP... not BST_...");
-namefixed:
+    if (strncmp(oldname, "BST_", 4) == 0) {
+        oldname[3] = 'P';
+        log_msg(1, "This model will be saved with name BSTP... not BST_...");
+    }
+
     i = find_population("TrialPop");
-    if (i >= 0)
+    if (i >= 0) {
         destroy_population(i);
-    nc = popln->sample_size;
-    if (!nc)
+    }
+    sample_size = popln->sample_size;
+    if (sample_size == 0) {
         fill = 0;
-    if (!fill)
-        nc = 0;
+    }
+    if (!fill) {
+        sample_size = 0;
+    }
     i = copy_population(p1, fill, "TrialPop");
     if (i < 0) {
-        leng = i;
-        goto finish;
+        memcpy(&CurCtx, &oldctx, sizeof(Context));
+        return i;
     }
+
     /*	We can now be sure that, in TrialPop, all subs are gone and classes
         have id-s from 0 up, starting with root  */
     /*	switch context to TrialPop  */
     CurCtx.popln = Populations[i];
     CurCtx.vset = VarSets[find_vset(popln->vst_name)];
-    nc = popln->sample_size;
+    sample_size = popln->sample_size;
     if (!fill)
-        nc = 0;
+        sample_size = 0;
 
     file_ptr = fopen(newname, "w");
     if (!file_ptr) {
         log_msg(1, "Cannot open %s", newname);
-        leng = -102;
-        goto finish;
+        memcpy(&CurCtx, &oldctx, sizeof(Context));
+        return -102;
     }
     /*	Output some heading material  */
     for (jp = saveheading; *jp; jp++) {
@@ -712,7 +716,7 @@ namefixed:
         fputc(*jp, file_ptr);
     }
     fputc('\n', file_ptr);
-    fprintf(file_ptr, "%4d%10d\n", popln->num_classes, nc);
+    fprintf(file_ptr, "%4d%10d\n", popln->num_classes, sample_size);
     fputc('+', file_ptr);
     fputc('\n', file_ptr);
 
@@ -741,15 +745,14 @@ namefixed:
             recordit(file_ptr, exp_var, nch);
             leng += nch;
         }
-        if (nc != 0) {
+        if (sample_size != 0) {
             /*	Copy scores  */
-            nch = nc * sizeof(short);
+            nch = sample_size * sizeof(short);
             recordit(file_ptr, cls->factor_scores, nch);
             leng += nch;
         }
     }
 
-finish:
     fclose(file_ptr);
     log_msg(1, "\nModel %s  Cost %10.2f  saved in file %s", oldname, popln->classes[0]->best_cost, newname);
     memcpy(&CurCtx, &oldctx, sizeof(Context));
@@ -794,7 +797,7 @@ int load_population(char *nam) {
     fscanf(file_ptr, "%s", name);          /* Reading sample name */
     fscanf(file_ptr, "%d%d", &fncl, &fnc); /* num of classes, cases */
                                            /*	Advance to real data */
-    while (fgetc(file_ptr) != '+'){
+    while (fgetc(file_ptr) != '+') {
         // do nothing
     }
     fgetc(file_ptr);

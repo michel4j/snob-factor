@@ -331,16 +331,13 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
     return result;
 }
 
-/// @brief Save a Classificationi Model to file
+/// @brief Save a Classification Model to file
 /// @param filename model file
 /// @return >= 0 if successful
 int save_model(char *filename) {
-    int result;
-    // result = copy_population(CurCtx.popln->id, 0, "predict");
-    // if (result >= 0) {
-    result = save_population(CurCtx.popln->id, 0, filename);
-    //}
-    return result;
+    int best;
+    best = copy_population(get_best_pop(), 0, "SavedModel");
+    return save_population(best, 0, filename);
 }
 
 int load_model(char *filename) {

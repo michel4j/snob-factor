@@ -20,6 +20,7 @@ lib = ct.CDLL(lib_path)
 
 LOG_LEVEL = 1
 
+
 class Classification(ct.Structure):
     """ Result """
 
