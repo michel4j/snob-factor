@@ -3,7 +3,7 @@ requires = ["setuptools>=64", "wheel", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "snob"
+name = "snobfactor"
 dynamic = ["version"]
 description = "Mixture modelling by Minimum Message Length (MML) using Factor Snob"
 requires-python = ">=3.7.5"

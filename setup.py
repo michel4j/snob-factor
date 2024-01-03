@@ -10,7 +10,6 @@ from setuptools.command.install_lib import install_lib
 from setuptools.command.install_scripts import install_scripts
 
 BITS = struct.calcsize("P") * 8
-PACKAGE_NAME = "snob"
 
 
 def my_version():
@@ -182,7 +181,7 @@ class BuildCMakeExt(build_ext):
 
 
 setup(
-    name='snob',
+    name='snobfactor',
     use_scm_version=my_version,
     packages=find_packages(),
     ext_modules=[CMakeExtension(name="snob._snob")],
