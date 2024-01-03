@@ -52,7 +52,7 @@ Using the Python Module
 
 The Python module can be installed using `pip` as follows:
 
-    pip install snob
+    pip install snob-factor
 
 The module can be used in a similar way to other Scikit-learn classification models. The following example shows how to
 use the module to fit a Factor Snob model to some sample data and then use the model to predict the class of some new
