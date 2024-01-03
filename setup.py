@@ -181,7 +181,7 @@ class BuildCMakeExt(build_ext):
 
 
 setup(
-    name='snobfactor',
+    name='snob-factor',
     use_scm_version=my_version,
     packages=find_packages(),
     ext_modules=[CMakeExtension(name="snob._snob")],
