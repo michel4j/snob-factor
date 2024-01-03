@@ -43,17 +43,14 @@ set(SOURCE_FILES
 add_library(snob SHARED ${SOURCE_FILES})
 set_target_properties (snob PROPERTIES PREFIX "")
 set_target_properties (snob PROPERTIES OUTPUT_NAME "_snob")
-#set_target_properties (snob PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/snob")
 set_target_properties (snob PROPERTIES SUFFIX ".so")
 target_link_libraries(snob m)
 
 # Interactive SNOB Factor target
 add_executable(snob-factor ${SOURCE_FILES} "${CMAKE_SOURCE_DIR}/src/main.c")
-#set_target_properties (snob-factor PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 target_link_libraries(snob-factor m)
 
 # Auto SNOB target
 add_executable(auto-snob ${SOURCE_FILES} "${CMAKE_SOURCE_DIR}/src/snob.c")
-#set_target_properties (auto-snob PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 target_link_libraries(auto-snob m)
 
