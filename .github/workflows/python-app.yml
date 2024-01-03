@@ -4,10 +4,8 @@
 name: Python application
 
 on:
-  release:
-    types: [ "created" ]
-    branches:
-      - main
+  push:
+    tags: ["v*"]
 
 permissions:
   contents: read
