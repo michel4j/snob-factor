@@ -36,3 +36,6 @@ classifiers = [
 Homepage = "https://github.com/michel4j/snob-factor"
 documentation = "https://github.com/michel4j/snob-factor"
 repository = "https://github.com/michel4j/snob-factor"
+
+
+[tool.setuptools_scm]
