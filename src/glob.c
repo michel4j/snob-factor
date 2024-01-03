@@ -340,10 +340,25 @@ int save_model(char *filename) {
     return save_population(best, 0, filename);
 }
 
-int load_model(char *filename) {
-    int result;
-    result = load_population(filename);
-    return set_work_population(result);
+Result load_model(char *filename) {
+    int pop;
+    Result result;
+    Class *root;
+
+    pop = load_population(filename);
+    set_work_population(pop);
+
+    //  Prepare return structure
+    root = CurCtx.popln->classes[CurCtx.popln->root];
+    result.num_classes = CurCtx.popln->num_classes;
+    result.num_leaves = CurCtx.popln->num_leaves;
+    result.model_length = root->best_par_cost;
+    result.data_length = root->best_case_cost;
+    result.message_length = root->best_cost;
+    result.num_attrs = CurCtx.vset->length;
+    result.num_cases = CurCtx.sample->num_cases;
+
+    return result;
 }
 
 void save_context() { memcpy(&BkpCtx, &CurCtx, sizeof(Context)); }

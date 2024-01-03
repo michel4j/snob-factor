@@ -12,13 +12,14 @@ if __name__ == '__main__':
             'ctheta': 'radians',
             'cphi': 'radians',
         },
+        from_file='/tmp/sst.model',
         cycles=3, steps=40, moves=2, tol=0.01, seed=1234567
     )
 
-    results = dset.fit(df)
-    dset.save_model('sst.model')
-    snob.show_classes(results)
+    #results = dset.fit(df)
+    #dset.save_model('sst.model')
+    pred = dset.predict(df)
+    snob.show_classes(dset.classes_)
     snob.lib.show_pop_names()
-    print(dset.predict())
-    print(dset.predict(df))
+    print(pred)
 

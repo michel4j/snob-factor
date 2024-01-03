@@ -455,7 +455,7 @@ void get_class_details(char *buffer, size_t buffer_size);
 void print_buffer(MemBuffer *buffer, const char *format, ...) __attribute__((format(printf, 2, 3)));
 Result classify(const int max_cycles, const int do_steps, const int move_steps, const double tol);
 int save_model(char *filename);
-int load_model(char *filename);
+Result load_model(char *filename);
 void peek_data();
 int get_assignments(int *ids, int *prim_cls, double *prim_probs, int *sec_cls, double *sec_probs);
 int sort_current_sample();

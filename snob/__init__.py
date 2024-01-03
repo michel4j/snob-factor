@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import binascii
 import ctypes as ct
 import json
 import os
@@ -11,6 +10,7 @@ from enum import IntFlag, auto
 from pathlib import Path
 from typing import Dict, Literal, Any, List, Sequence
 
+from numpy.typing import NDArray
 import numpy as np
 import pandas as pd
 
@@ -60,7 +60,7 @@ lib.get_class_details.argtypes = [ct.c_char_p, ct.c_size_t]
 lib.save_model.argtypes = [ct.c_char_p]
 lib.save_model.restype = ct.c_int
 lib.load_model.argtypes = [ct.c_char_p]
-lib.load_model.restype = ct.c_int
+lib.load_model.restype = Classification
 lib.set_control_flags.argtypes = [ct.c_int]
 # create_vset
 lib.create_vset.argtypes = [ct.c_char_p, ct.c_int]
@@ -188,7 +188,8 @@ class SNOBClassifier:
             moves: int = 2,
             tol: float = 5e-2,
             name: str = 'mml',
-            seed: int = 0
+            seed: int = 0,
+            from_file: str | Path | None = None,
     ):
         """
         :param attrs: a dictionary mapping attribute  names to attribute types
@@ -198,11 +199,14 @@ class SNOBClassifier:
         :param tol:  Convergence tolerance. Stops trying if percentage drop in message costs is less than this
         :param name: Internal Name of classifier, default "mml"
         :param seed:  Random number seed, 0 implies no seed.
+        :param from_file: File name of saved model to load
         """
 
         self.has_fit = False
+        self.file_pending = False
+        self.from_file = Path(from_file) if from_file is not None else None
         self.attrs = attrs
-        self.columns = self.attrs.keys()
+        self.columns = list(self.attrs.keys())
         self.cycles = cycles
         self.steps = steps
         self.moves = moves
@@ -224,6 +228,10 @@ class SNOBClassifier:
                 self.encoder[name] = CategoryEncoder()
             else:
                 self.encoder[name] = float
+
+        if self.from_file is not None and self.from_file.exists():
+            self.has_fit = True
+            self.file_pending = True
 
     @staticmethod
     def get_precision(col) -> float:
@@ -260,7 +268,7 @@ class SNOBClassifier:
                     aux = 20
             else:
                 aux = 0
-            out = lib.add_attribute(i, str(name).encode('utf-8'), self.TypeValue[type_], aux)
+            lib.add_attribute(i, str(name).encode('utf-8'), self.TypeValue[type_], aux)
 
     def add_data(self, data: pd.DataFrame, name: str = 'sample') -> int:
         """
@@ -302,13 +310,16 @@ class SNOBClassifier:
         lib.peek_data()
         return size
 
-    def fit(self, data: pd.DataFrame, y: Any = None) -> list:
+    def fit(self, data: pd.DataFrame | NDArray, y: None = None) -> SNOBClassifier:
         """
         Build and Fit the model
-        :param data: Pandas data frame. Columns are features, and rows are samples
+        :param data: Pandas data frame or Numpy NDArray. Columns are features, and rows are samples
         :param y: Ignored, This parameter exists only for compatibility with Pipeline.
-        :return: list of dictionaries with each representing details about classes found
+        :return: Returns a reference to itself
         """
+        if isinstance(data, np.ndarray):
+            data = pd.DataFrame({field: data[:,i] for i, field in enumerate(self.columns)})
+
         with Timer():
             initialize(log_level=LOG_LEVEL, seed=self.seed)
             self.add_vset(data)
@@ -322,38 +333,56 @@ class SNOBClassifier:
             lib.get_class_details(buffer, buffer_size)
             self.classes_ = json.loads(buffer.value.decode('utf-8'))
             self.has_fit = True
-            return self.classes_
+            return self
+
+    def get_classes(self) -> list:
+        """
+        Get the classification details for all classes
+        :return: list of dictionaries representing classification details per class
+        """
+        return self.classes_
+
+    def score(self) -> float:
+        """
+        Get the score of the fitted model as the total message length in bits.
+        Note that smaller message lengths are better.
+        :return: score
+        """
+        if self.summary is None:
+            return 0.0
+        return self.summary.message_length
 
     def save_model(self, filename: str | Path):
+        """
+        Save the model to a file
+        :param filename: path to model file
+        """
         if self.has_fit:
             lib.save_model(str(filename).encode('utf-8'))
         else:
             print("No fitted model to save!")
 
-    def predict(self, data: pd.DataFrame | None = None, name: str | None = None) -> pd.DataFrame:
+    @staticmethod
+    def fetch_classification(summary: Classification) -> list:
         """
-        Assign classes to records in the provided dataset.
-        :param data: Data frame similar to fitted data frame, if not provided, returns assignments
-            for fitted data
-        :param name: Name of dataset
-        :return: pandas data Frame with columns [id, class, prob, next_class, next_prob] corresponding
-            to the top-two class assignments for each record
+        Get the classification details for all classes
+        :param summary: Classification summary
+        :return: list of dictionaries representing classification details per class
         """
 
-        if not self.has_fit:
-            print("No fitted model!")
-            return pd.DataFrame()
+        buffer_size = (summary.classes + summary.leaves) * (summary.attrs + 1) * 80 * 4
+        buffer = ct.create_string_buffer(buffer_size)
+        lib.get_class_details(buffer, buffer_size)
+        return json.loads(buffer.value.decode('utf-8'))
 
-        if data is not None:
-            sample_name = str(uuid.uuid4())[:8]
-            set_control_flags(Adjust.SCORES)
-            with SnobContextManager():
-                size = self.add_data(data, name=sample_name)
-            select_sample(sample_name)
-        else:
-            size = self.num_records
+    @staticmethod
+    def fetch_assignments(size: int) -> pd.DataFrame:
+        """
+        Get the assignments for all records
+        :param size: Number of records
+        :return: data Frame
+        """
 
-        # get assignments
         ids = (ct.c_int * size)()
         prim_cls = (ct.c_int * size)()
         prim_probs = (ct.c_double * size)()
@@ -370,6 +399,43 @@ class SNOBClassifier:
             'next_prob': np.ctypeslib.as_array(sec_probs)
         })
         return df
+
+    def predict(self, data: pd.DataFrame | NDArray | None = None, name: str | None = None) -> pd.DataFrame:
+        """
+        Assign classes to records in the provided dataset.
+        :param data: Data frame similar to fitted data frame, if not provided, returns assignments
+            for fitted data
+        :param name: Name of dataset
+        :return: pandas data Frame with columns
+            [index, class-id, probability, next_class, next_class_probability] corresponding
+            to the top-two class assignments for each record
+        """
+        if isinstance(data, np.ndarray):
+            data = pd.DataFrame({field: data[:,i] for i, field in enumerate(self.columns)})
+
+        sample_name = str(uuid.uuid4())[:8] if name is None else name
+        if not self.has_fit:
+            print("No fitted model!")
+            return pd.DataFrame()
+        elif self.file_pending and data is not None:
+            self.file_pending = False
+            initialize(log_level=LOG_LEVEL, seed=self.seed)
+            set_control_flags(Adjust.SCORES)
+            self.add_vset(data)
+            self.num_records = self.add_data(data, name=sample_name)
+            self.summary = lib.load_model(str(self.from_file).encode('utf-8'))
+            self.classes_ = self.fetch_classification(self.summary)
+            self.has_fit = True
+            size = self.num_records
+        elif data is not None:
+            set_control_flags(Adjust.SCORES)
+            with SnobContextManager():
+                size = self.add_data(data, name=sample_name)
+            select_sample(sample_name)
+        else:
+            size = self.num_records
+
+        return self.fetch_assignments(size)
 
 
 class Adjust(IntFlag):
@@ -430,7 +496,7 @@ def classify(
         tol: float = 1e-2
 ):
     """
-    Run a classification based on vset and sample files
+    Run a classification based on vset and sample files like original SNOB
     :param vset_file: VSET File
     :param sample_file: Sample File
     :param cycles:  Number of classification cycles

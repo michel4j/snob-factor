@@ -6,13 +6,15 @@ name: Python application
 on:
   release:
     types: [ "created" ]
+    branches:
+      - main
 
 permissions:
   contents: read
 
 jobs:
 
-  build:
+  build_wheel:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
