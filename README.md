@@ -145,9 +145,9 @@ sfc = snob.SNOBClassifier(
     from_file='sst.mod'       # load the model from the file
 )
 new_data = pd.read_csv('new_data.csv')
-new_pred = sfc.predict(new_data)
+new_pred = sfc.predict(new_data)    # No need to run fit again, the model will be loaded from the file
 
-class_info = sfc.get_classes()
+class_info = sfc.get_classes()      # must run predict first to fully parameterize the model
 snob.show_classes(class_info)
 print(new_pred)
 
