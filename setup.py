@@ -76,50 +76,22 @@ class InstallCMakeLibs(install_lib):
         self.announce("Moving library files", level=3)
 
         # We have already built the libraries in the previous build_ext step
-
         self.skip_build = True
 
         bin_dir = self.distribution.bin_dir
-
-        # Depending on the files that are generated from your cmake
-        # build chain, you may need to change the below code, such that
-        # your files are moved to the appropriate location when the installation
-        # is run
-
-        libs = [os.path.join(bin_dir, _lib) for _lib in
-                os.listdir(bin_dir) if
-                os.path.isfile(os.path.join(bin_dir, _lib)) and
-                os.path.splitext(_lib)[1] in [".dll", ".so"]
-                and not (_lib.startswith("python") or _lib.startswith(PACKAGE_NAME))]
+        lib_dir = self.distribution.package_dir
+        libs = [
+            os.path.join(bin_dir, _lib) for _lib in os.listdir(bin_dir)
+            if os.path.isfile(os.path.join(bin_dir, _lib)) and _lib.endswith('.so')
+        ]
 
         for lib in libs:
-            shutil.move(lib, os.path.join(self.build_dir, os.path.basename(lib)))
+            shutil.move(lib, lib_dir)
 
-        # Mark the libs for installation, adding them to 
-        # distribution.data_files seems to ensure that setuptools' record 
-        # writer appends them to installed-files.txt in the package's egg-info
-        #
-        # Also tried adding the libraries to the distribution.libraries list, 
-        # but that never seemed to add them to the installed-files.txt in the 
-        # egg-info, and the online recommendation seems to be adding libraries 
-        # into eager_resources in the call to setup(), which I think puts them 
-        # in data_files anyways. 
-        # 
-        # What is the best way?
-
-        # These are the additional installation files that should be
-        # included in the package, but are resultant of the cmake build
-        # step; depending on the files that are generated from your cmake
-        # build chain, you may need to modify the below code
-
-        self.distribution.data_files = [os.path.join(self.install_dir,
-                                                     os.path.basename(lib))
-                                        for lib in libs]
+        self.distribution.data_files = [os.path.join(self.install_dir, os.path.basename(lib)) for lib in libs]
 
         # Must be forced to run after adding the libs to data_files
-
         self.distribution.run_command("install_data")
-
         super().run()
 
 
@@ -139,7 +111,7 @@ class InstallCMakeScripts(install_scripts):
         self.skip_build = True
 
         bin_dir = self.distribution.bin_dir
-        scripts = [os.path.join(bin_dir, file) for file in os.listdir(bin_dir)]
+        scripts = [os.path.join(bin_dir, file) for file in os.listdir(bin_dir) if not file.endswith('.so')]
 
         # Mark the scripts for installation, adding them to 
         # distribution.scripts seems to ensure that the setuptools' record 
@@ -203,20 +175,10 @@ class BuildCMakeExt(build_ext):
         # Troubleshooting: if it fails on the line above then delete all possible
         # temporary CMake files including "CMakeCache.txt" in top level dir.
         os.chdir(str(cwd))
-        self.spawn(['tree'])
 
         self.announce("Moving built python module", level=3)
         self.distribution.bin_dir = bin_dir
-
-        # After build_ext is run, the following commands will run:
-        # 
-        # install_lib
-        # install_scripts
-        # 
-        # These commands are subclassed above to avoid pitfalls that
-        # setuptools tries to impose when installing these, as it usually
-        # wants to build those libs and scripts as well or move them to a
-        # different place. See comments above for additional information
+        self.distribution.package_dir = str(ext_path.parent.absolute())
 
 
 setup(
