@@ -317,7 +317,7 @@ int load_sample(const char *fname) {
     int caseid;
     Buffer bufst, *buf;
     Context oldctx;
-    char *saux, vstnam[80], sampname[80];
+    char vstnam[80], sampname[80];
     VSetVar *vset_var;
     VarType *vtype;
     SampleVar *smpl_var, *smpl_var_list;
@@ -396,7 +396,7 @@ gotit:
     /*	Read in the info for each variable into svars   */
     for (i = 0; i < CurCtx.vset->length; i++) {
         smpl_var_list[i].id = -1;
-        smpl_var_list[i].saux = 0;
+        SAUX(&smpl_var_list[i]) = 0;
         smpl_var_list[i].offset = 0;
         smpl_var_list[i].nval = 0;
     }
@@ -408,19 +408,23 @@ gotit:
         vtype = vset_var->vtype;
 
         /*	Make the saux block  */
-        saux = (char *)alloc_blocks(0, vtype->smpl_aux_size);
-        if (!saux) {
-            printf("Cant make auxilliary var block\n");
-            i = -6;
-            goto error;
+        for (int t = 0; t < MAX_THREADS; t++) {
+            smpl_var->saux_array[t] = (char *)alloc_blocks(0, vtype->smpl_aux_size);
+            if (!smpl_var->saux_array[t]) {
+                printf("Cant make auxilliary var block\n");
+                i = -6;
+                goto error;
+            }
         }
-        smpl_var->saux = saux;
 
         /*	Read auxilliary information   */
-        if ((*vtype->read_aux_smpl)(saux)) {
+        if ((*vtype->read_aux_smpl)(smpl_var->saux_array[0])) {
             printf("Error in reading auxilliary info var %d\n", i + 1);
             i = -7;
             goto error;
+        }
+        for (int t = 1; t < MAX_THREADS; t++) {
+            memcpy(smpl_var->saux_array[t], smpl_var->saux_array[0], vtype->smpl_aux_size);
         }
 
         /*	Set the offset of the (missing, value) pair  */
@@ -537,7 +541,6 @@ searched:
 int create_sample(char *name, int size, int *units, double *precision) {
     int found = -1, out = 0;
     Context oldctx;
-    char *saux;
     VSetVar *vset_var;
     VarType *vtype;
     SampleVar *smpl_var, *smpl_var_list;
@@ -587,7 +590,7 @@ int create_sample(char *name, int size, int *units, double *precision) {
             record_length = 1 + sizeof(int); /* active flag and ident  */
             for (int i = 0; i < CurCtx.vset->length; i++) {
                 smpl_var_list[i].id = -1;
-                smpl_var_list[i].saux = 0;
+                SAUX(&smpl_var_list[i]) = 0;
                 smpl_var_list[i].offset = 0;
                 smpl_var_list[i].nval = 0;
 
@@ -596,18 +599,23 @@ int create_sample(char *name, int size, int *units, double *precision) {
                 smpl_var->id = i;
                 vtype = vset_var->vtype;
 
-                saux = (char *)alloc_blocks(0, vtype->smpl_aux_size); /*	Make the saux block  */
-                if (!saux) {
-                    log_msg(2, "Cant make auxilliary var block");
-                    out = -6;
-                    break;
+                for (int t = 0; t < MAX_THREADS; t++) {
+                    smpl_var->saux_array[t] = (char *)alloc_blocks(0, vtype->smpl_aux_size);
+                    if (!smpl_var->saux_array[t]) {
+                        log_msg(2, "Cant make auxilliary var block");
+                        out = -6;
+                        break;
+                    }
                 }
-                smpl_var->saux = saux;
+                if (out < 0) break;
 
-                if ((*vtype->set_aux_smpl)(saux, units[i], precision[i])) {
+                if ((*vtype->set_aux_smpl)(smpl_var->saux_array[0], units[i], precision[i])) {
                     log_msg(2, "Error setting auxilliary info var %d\n", i + 1);
                     out = -7;
                     break;
+                }
+                for (int t = 1; t < MAX_THREADS; t++) {
+                    memcpy(smpl_var->saux_array[t], smpl_var->saux_array[0], vtype->smpl_aux_size);
                 }
                 smpl_var->offset = record_length;
                 record_length += (1 + vtype->data_size); /* missing flag and value */
@@ -903,13 +911,13 @@ int item_list(char *tlstname) {
         bs = CurCtx.sample->num_cases + 1;
         for (i = 0; i < num_son; i++) {
             cls = Sons[i];
-            if ((cls->case_weight > 0.5) && (cls->weights_sum < bs)) {
+            if ((lcs[cls->id].case_weight > 0.5) && (cls->weights_sum < bs)) {
                 bc = i;
                 bs = cls->weights_sum;
             }
-            if ((cls->type == Leaf) && (cls->case_weight > bw)) {
+            if ((cls->type == Leaf) && (lcs[cls->id].case_weight > bw)) {
                 bl = i;
-                bw = cls->case_weight;
+                bw = lcs[cls->id].case_weight;
             }
         }
         record = CurCtx.sample->records + nn * CurCtx.sample->record_length;
@@ -945,20 +953,20 @@ int get_assignments(int *ids, int *prim_cls, double *prim_probs, int *sec_cls, d
         memcpy(&ids[nn], record + 1, sizeof(int));
         for (i = 0; i < num_son; i++) {
             cls = Sons[i];
-            if ((cls->type == Leaf) && (cls->case_weight > best_weight)) {
+            if ((cls->type == Leaf) && (lcs[cls->id].case_weight > best_weight)) {
                 next_leaf = best_leaf;
                 best_leaf = i;
-                best_weight = cls->case_weight;
+                best_weight = lcs[cls->id].case_weight;
             }
         }
-        if ((next_leaf >= 0) && (Sons[next_leaf]->case_weight > 1e-3)) {
+        if ((next_leaf >= 0) && (lcs[Sons[next_leaf]->id].case_weight > 1e-3)) {
             prim_cls[nn] = Sons[best_leaf]->serial;
-            prim_probs[nn] = Sons[best_leaf]->case_weight;
+            prim_probs[nn] = lcs[Sons[best_leaf]->id].case_weight;
             sec_cls[nn] = Sons[next_leaf]->serial;
-            sec_probs[nn] = Sons[next_leaf]->case_weight;
+            sec_probs[nn] = lcs[Sons[next_leaf]->id].case_weight;
         } else {
             prim_cls[nn] = Sons[best_leaf]->serial;
-            prim_probs[nn] = Sons[best_leaf]->case_weight;
+            prim_probs[nn] = lcs[Sons[best_leaf]->id].case_weight;
             sec_cls[nn] = -1;
             sec_probs[nn] = 0.0;
         }

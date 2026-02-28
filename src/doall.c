@@ -8,15 +8,21 @@ static double rcons = (1.0 / (2048.0 * 1024.0 * 1024.0));
 #define B32 0x80000000
 int rand_int() {
     int js;
-    RSeed = 69069 * RSeed + 103322787;
-    js = RSeed & M32;
+    #pragma omp critical(rand)
+    {
+        RSeed = 69069 * RSeed + 103322787;
+        js = RSeed & M32;
+    }
     return (js);
 }
 
 int rand_uint() {
     int js;
-    RSeed = 69069 * RSeed + 103322787;
-    js = RSeed & M32;
+    #pragma omp critical(rand)
+    {
+        RSeed = 69069 * RSeed + 103322787;
+        js = RSeed & M32;
+    }
     if (js & B32)
         js = M32 - js;
     return (js & M32);
@@ -24,8 +30,11 @@ int rand_uint() {
 
 double rand_float() {
     int js;
-    RSeed = 69069 * RSeed + 103322787;
-    js = RSeed & M32;
+    #pragma omp critical(rand)
+    {
+        RSeed = 69069 * RSeed + 103322787;
+        js = RSeed & M32;
+    }
     if (js & B32)
         js = M32 - js;
     return (rcons * js);
@@ -292,6 +301,7 @@ void find_and_estimate(int *all, int niter, int ncycles) {
             clear_costs(Sons[k]);
         }
 
+        #pragma omp parallel for
         for (int j = 0; j < CurCtx.sample->num_cases; j++) {
             do_case(j, *all, 1, num_son);
             /*	docase ignores classes with ignore bit in cls->vv[] for the case unless SeeAll is on.  */
@@ -635,7 +645,7 @@ void do_case(int item, int all, int derivs, int num_son) {
     'xn' field is at the beginning of the Saux. Also the "missing" flag. */
     for (i = 0; i < CurCtx.vset->length; i++) {
         field = record + CurCtx.sample->variables[i].offset;
-        psaux = (PSaux *)CurCtx.sample->variables[i].saux;
+        psaux = (PSaux *)SAUX(&CurCtx.sample->variables[i]);
         if (*field == 1) {
             psaux->missing = 1;
         } else {
@@ -652,8 +662,10 @@ void do_case(int item, int all, int derivs, int num_son) {
         if ((!SeeAll) && (Scores.CaseFacInt & 1)) { /* Ignore this and decendants */
             clc = NextIc[clc];
             continue;
-        } else if (!SeeAll)
+        } else if (!SeeAll) {
+            #pragma omp atomic
             cls->scancnt++;
+        }
         /*	Score and cost the class  */
         score_all_vars(cls, item);
         cost_all_vars(cls, item);
@@ -666,28 +678,28 @@ void do_case(int item, int all, int derivs, int num_son) {
     if (num_son != 1) { /*  Not Just doing root  */
         /*	Clear all casewts   */
         for (clc = 0; clc < num_son; clc++)
-            Sons[clc]->case_weight = 0.0;
+            lcs[Sons[clc]->id].case_weight = 0.0;
         mincost = 1.0e30;
         clc = 0;
         while (clc < num_son) {
             cls = Sons[clc];
-            if ((!SeeAll) && (cls->case_score & 1)) {
-                cls->total_case_cost = 1.0e30;
+            if ((!SeeAll) && (lcs[cls->id].case_score & 1)) {
+                lcs[cls->id].total_case_cost = 1.0e30;
                 clc = NextIc[clc];
                 continue;
             }
             clc++;
             if (Fix == Random) {
                 w1 = 2.0 * rand_float();
-                cls->total_case_cost += w1;
-                cls->fac_case_cost += w1;
-                cls->nofac_case_cost += w1;
+                lcs[cls->id].total_case_cost += w1;
+                lcs[cls->id].fac_case_cost += w1;
+                lcs[cls->id].nofac_case_cost += w1;
             }
             if (cls->type != Leaf) {
                 continue;
             }
-            if (cls->total_case_cost < mincost) {
-                mincost = cls->total_case_cost;
+            if (lcs[cls->id].total_case_cost < mincost) {
+                mincost = lcs[cls->id].total_case_cost;
             }
         }
 
@@ -697,7 +709,7 @@ void do_case(int item, int all, int derivs, int num_son) {
             clc = 0;
             while (clc < num_son) {
                 cls = Sons[clc];
-                if ((cls->case_score & 1) && (!SeeAll)) {
+                if ((lcs[cls->id].case_score & 1) && (!SeeAll)) {
                     clc = NextIc[clc];
                     continue;
                 }
@@ -705,15 +717,15 @@ void do_case(int item, int all, int derivs, int num_son) {
                 if (cls->type != Leaf) {
                     continue;
                 }
-                cls->case_weight = exp(mincost - cls->total_case_cost);
-                sum += cls->case_weight;
+                lcs[cls->id].case_weight = exp(mincost - lcs[cls->id].total_case_cost);
+                sum += lcs[cls->id].case_weight;
             }
         } else {
             for (clc = 0; clc < num_son; clc++) {
                 cls = Sons[clc];
-                if ((cls->type == Leaf) && (cls->total_case_cost == mincost)) {
+                if ((cls->type == Leaf) && (lcs[cls->id].total_case_cost == mincost)) {
                     sum += 1.0;
-                    cls->case_weight = 1.0;
+                    lcs[cls->id].case_weight = 1.0;
                 }
             }
         }
@@ -727,12 +739,12 @@ void do_case(int item, int all, int derivs, int num_son) {
             rootcost = mincost;
         else
             rootcost = mincost - log(sum);
-        root->dad_case_cost = root->total_case_cost = rootcost;
+        lcs[root->id].dad_case_cost = lcs[root->id].total_case_cost = rootcost;
         sum = 1.0 / sum;
         clc = 0;
         while (clc < num_son) {
             cls = Sons[clc];
-            if ((cls->case_score & 1) && (!SeeAll)) {
+            if ((lcs[cls->id].case_score & 1) && (!SeeAll)) {
                 clc = NextIc[clc];
                 continue;
             }
@@ -740,10 +752,10 @@ void do_case(int item, int all, int derivs, int num_son) {
             if (cls->type != Leaf) {
                 continue;
             }
-            cls->case_weight *= sum;
+            lcs[cls->id].case_weight *= sum;
             /*	Can distribute this weight among subs, if any  */
             /*	But only if subs included  */
-            if ((!(all & Sub)) || (cls->num_sons != 2) || (cls->case_weight == 0.0)) {
+            if ((!(all & Sub)) || (cls->num_sons != 2) || (lcs[cls->id].case_weight == 0.0)) {
                 continue;
             }
             sub1 = popln->classes[cls->son_id];
@@ -751,52 +763,52 @@ void do_case(int item, int all, int derivs, int num_son) {
 
             /*	Test subclass ignore flags unless seeall   */
             if (!(SeeAll)) {
-                if (sub1->case_score & 1) {
-                    if (!(sub2->case_score & 1)) {
-                        sub2->case_weight = cls->case_weight;
-                        cls->dad_case_cost = sub2->total_case_cost;
+                if (lcs[sub1->id].case_score & 1) {
+                    if (!(lcs[sub2->id].case_score & 1)) {
+                        lcs[sub2->id].case_weight = lcs[cls->id].case_weight;
+                        lcs[cls->id].dad_case_cost = lcs[sub2->id].total_case_cost;
                         continue;
                     }
                 } else {
-                    if (sub2->case_score & 1) { /* Only sub1 has weight */
-                        sub1->case_weight = cls->case_weight;
-                        cls->dad_case_cost = sub1->total_case_cost;
+                    if (lcs[sub2->id].case_score & 1) { /* Only sub1 has weight */
+                        lcs[sub1->id].case_weight = lcs[cls->id].case_weight;
+                        lcs[cls->id].dad_case_cost = lcs[sub1->id].total_case_cost;
                         continue;
                     }
                 }
             }
 
             /*	Both subs costed  */
-            diff = sub1->total_case_cost - sub2->total_case_cost;
+            diff = lcs[sub1->id].total_case_cost - lcs[sub2->id].total_case_cost;
             /*	Diff can be used to set cls's casencost  */
             if (diff < 0.0) {
-                low = sub1->total_case_cost;
+                low = lcs[sub1->id].total_case_cost;
                 w2 = exp(diff);
                 w1 = 1.0 / (1.0 + w2);
                 w2 *= w1;
                 if (w2 < MinSubWt)
-                    sub2->case_score |= 1;
+                    lcs[sub2->id].case_score |= 1;
                 else
-                    sub2->case_score &= -2;
-                sub2->factor_scores[item] = sub2->case_score;
+                    lcs[sub2->id].case_score &= -2;
+                sub2->factor_scores[item] = lcs[sub2->id].case_score;
                 if (Fix == Random)
-                    cls->dad_case_cost = low;
+                    lcs[cls->id].dad_case_cost = low;
                 else
-                    cls->dad_case_cost = low + log(w1);
+                    lcs[cls->id].dad_case_cost = low + log(w1);
             } else {
-                low = sub2->total_case_cost;
+                low = lcs[sub2->id].total_case_cost;
                 w1 = exp(-diff);
                 w2 = 1.0 / (1.0 + w1);
                 w1 *= w2;
                 if (w1 < MinSubWt)
-                    sub1->case_score |= 1;
+                    lcs[sub1->id].case_score |= 1;
                 else
-                    sub1->case_score &= -2;
-                sub1->factor_scores[item] = sub1->case_score;
+                    lcs[sub1->id].case_score &= -2;
+                sub1->factor_scores[item] = lcs[sub1->id].case_score;
                 if (Fix == Random)
-                    cls->dad_case_cost = low;
+                    lcs[cls->id].dad_case_cost = low;
                 else
-                    cls->dad_case_cost = low + log(w2);
+                    lcs[cls->id].dad_case_cost = low + log(w2);
             }
             /*	Assign randomly if sub age 0, or to-best if sub age < MinAge */
             if (sub1->age < MinAge) {
@@ -807,8 +819,8 @@ void do_case(int item, int all, int derivs, int num_son) {
                 }
                 w2 = 1.0 - w1;
             }
-            sub1->case_weight = cls->case_weight * w1;
-            sub2->case_weight = cls->case_weight * w2;
+            lcs[sub1->id].case_weight = lcs[cls->id].case_weight * w1;
+            lcs[sub2->id].case_weight = lcs[cls->id].case_weight * w2;
         }
 
         /*	We have now assigned caseweights to all Leafs and Subs.
@@ -819,26 +831,26 @@ void do_case(int item, int all, int derivs, int num_son) {
                 if ((cls->type == Sub) || ((!SeeAll) && (cls->factor_scores[item] & 1))) {
                     continue;
                 }
-                if (cls->case_weight < MinWt)
+                if (lcs[cls->id].case_weight < MinWt)
                     cls->factor_scores[item] |= 1;
                 else
                     cls->factor_scores[item] &= -2;
                 if (cls->dad_id >= 0)
-                    popln->classes[cls->dad_id]->case_weight += cls->case_weight;
+                    lcs[popln->classes[cls->dad_id]->id].case_weight += lcs[cls->id].case_weight;
                 if (cls->type == Dad) {
                     /*	casecost for the completed dad is root's cost - log
                      * dad's wt
                      */
-                    if (cls->case_weight > 0.0)
-                        cls->dad_case_cost = rootcost - log(cls->case_weight);
+                    if (lcs[cls->id].case_weight > 0.0)
+                        lcs[cls->id].dad_case_cost = rootcost - log(lcs[cls->id].case_weight);
                     else
-                        cls->dad_case_cost = rootcost + 200.0;
-                    cls->total_case_cost = cls->dad_case_cost;
+                        lcs[cls->id].dad_case_cost = rootcost + 200.0;
+                    lcs[cls->id].total_case_cost = lcs[cls->id].dad_case_cost;
                 }
             }
         }
     }
-    root->case_weight = 1.0;
+    lcs[root->id].case_weight = 1.0;
     /*	Now all classes have casewt assigned, I hope. Can proceed to
     collect statistics from this case  */
     if (!derivs) {
@@ -846,7 +858,8 @@ void do_case(int item, int all, int derivs, int num_son) {
     }
     for (clc = 0; clc < num_son; clc++) {
         cls = Sons[clc];
-        if (cls->case_weight > 0.0) {
+        if (lcs[cls->id].case_weight > 0.0) {
+            #pragma omp critical
             deriv_all_vars(cls, item);
         }
     }

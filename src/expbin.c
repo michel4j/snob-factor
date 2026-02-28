@@ -91,7 +91,7 @@ when installing a new type of variable. It is also necessary to change the
 "Ntypes" constant, and to decide on a type id (an integer) for the new type.
     */
 
-void expbinary_define(typindx) int typindx;
+void expbinary_define(int typindx)
 /*	typindx is the index in types[] of this type   */
 {
     VarType *vtype;
@@ -264,7 +264,7 @@ void score_var(int iv, Class *cls) {
     double cc, pr0, pr1, ff, ft, dbyv, hdffbydv, hdftbydv;
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-    Saux *saux = (Saux *)(smpl_var->saux);
+    Saux *saux = (Saux *)(SAUX(smpl_var));
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
 
@@ -320,7 +320,7 @@ void cost_var(int iv, int fac, Class *cls) {
     double cc, ff, ft, hdffbydc, hdftbydc, pr0, pr1, small;
 
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-    Saux *saux = (Saux *)(smpl_var->saux);
+    Saux *saux = (Saux *)(SAUX(smpl_var));
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
 
@@ -385,10 +385,10 @@ facdone:
 /*	Given item weight in cwt, calcs derivs of item cost wrt basic
 params and accumulates in paramd1, paramd2  */
 void deriv_var(int iv, int fac, Class *cls) {
-    const double case_weight = cls->case_weight;
+    const double case_weight = lcs[cls->id].case_weight;
 
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-    Saux *saux = (Saux *)(smpl_var->saux);
+    Saux *saux = (Saux *)(SAUX(smpl_var));
     Stats *exp_var = (Stats *)cls->stats[iv];
 
     set_var(iv, cls);

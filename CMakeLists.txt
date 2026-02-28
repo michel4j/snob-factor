@@ -9,11 +9,9 @@ project(snob)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(CMAKE_C_COMPILER gcc)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -fPIC -O3")
-endif ()
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(CMAKE_C_COMPILER gcc)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -fPIC -O3")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -fPIC -O3 -fopenmp")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fopenmp")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fopenmp")
 endif ()
 
 # Define the source files
