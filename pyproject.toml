@@ -6,8 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "snob-factor"
 dynamic = ["version"]
 description = "Mixture modelling by Minimum Message Length (MML) using Factor Snob"
-requires-python = ">=3.9"
-license = { file = "LICENSE" }
+requires-python = ">=3.10"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 readme = "README.md"
 keywords = ["MML", "Unsupervised Classification", "Machine Learning", "Snob", "Factor Analysis"]
 authors = [
@@ -19,13 +20,14 @@ maintainers = [
 ]
 dependencies = [
     "pandas",
-    "numpy"
+    "numpy",
+    "prettytable"
 ]
 classifiers = [
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Topic :: Scientific/Engineering :: Machine Learning",
     "Natural Language :: English",
     "Programming Language :: C",
     "Programming Language :: Python :: 3",
@@ -37,5 +39,7 @@ Homepage = "https://github.com/michel4j/snob-factor"
 documentation = "https://github.com/michel4j/snob-factor"
 repository = "https://github.com/michel4j/snob-factor"
 
+[tool.cibuildwheel]
+container-engine = "podman"
 
 [tool.setuptools_scm]
