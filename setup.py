@@ -166,6 +166,15 @@ class BuildCMakeExt(build_ext):
             '-DCMAKE_BUILD_TYPE=' + config
         ]
 
+        # Clean off old cmake configurations that could cause cibuildwheel to fail due to host path conflicts
+        cmake_cache = build_temp / 'CMakeCache.txt'
+        if cmake_cache.exists():
+            cmake_cache.unlink()
+
+        cmake_files = build_temp / 'CMakeFiles'
+        if cmake_files.exists():
+            shutil.rmtree(cmake_files, ignore_errors=True)
+
         self.announce("Configuring cmake project", level=3)
         build_args = ['--config', config,  '--', '-j4']
         os.chdir(str(build_temp))
