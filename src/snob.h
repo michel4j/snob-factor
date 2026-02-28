@@ -7,6 +7,7 @@ files. The declarations herein then become converted to "EXT" declarations.
     */
 
 #include <math.h>
+#include <omp.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,6 +79,17 @@ typedef struct ExplnVarStruct { /* Stuff for var in class in expln */
     int id;
 } ExplnVar;
 
+typedef struct {
+    int case_score;          /*  Integer score of current case  */
+    double total_case_cost;  /*  tcost of current case  */
+    double nofac_case_cost;  /* Cost of current case in no-fac class */
+    double fac_case_cost;    /* """"""""""""""""""""""" factor class */
+    double coding_case_cost; /* Part of casefcost due to coding score */
+    double dad_case_cost;    /* """""""""""""""""""""""  dad   class */
+    double case_weight;      /*  weight of current case  */
+    double case_fac_score, case_fac_score_sq, cvvsprd, clvsprd;
+} LocalClassState;
+
 typedef struct ClassStruct {
     double relab;
     double mlogab;                         /*  - log relab  */
@@ -116,14 +128,7 @@ typedef struct ClassStruct {
     /*	********************  Items below here are generated locally by
             docase for each case, and need not be distributed or
             returned  */
-    int case_score;          /*  Integer score of current case  */
-    double total_case_cost;  /*  tcost of current case  */
-    double nofac_case_cost;  /* Cost of current case in no-fac class */
-    double fac_case_cost;    /* """"""""""""""""""""""" factor class */
-    double coding_case_cost; /* Part of casefcost due to coding score */
-    double dad_case_cost;    /* """""""""""""""""""""""  dad   class */
-    double case_weight;      /*  weight of current case  */
-    double case_fac_score, case_fac_score_sq, cvvsprd, clvsprd;
+
     /*	*******************
         Items below this line are set up when class is made by makeclass()
     and should NOT be copied to a new class structure. IT IS ASSUMED THAT
@@ -215,12 +220,24 @@ typedef struct VSetStruct {
 
 /*	--------------------  Samples  ---------------------------   */
 
+#ifdef _OPENMP
+#include <omp.h>
+#define MAX_THREADS 64
+#else
+#define MAX_THREADS 1
+#endif
 typedef struct SampleVarStruct {
     int id;
     int nval;
-    char *saux;
+    char *saux_array[MAX_THREADS];
     int offset; /*  offset of (missing, value) in record  */
 } SampleVar;
+
+#ifdef _OPENMP
+#define SAUX(sample) ((sample)->saux_array[omp_get_thread_num()])
+#else
+#define SAUX(sample) ((sample)->saux_array[0])
+#endif
 
 /*	Sample data is packed into a block of 'records' addressed by
 the 'recs' pointer in a Sample structure. There is one record per item in the

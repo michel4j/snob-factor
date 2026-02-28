@@ -1067,9 +1067,9 @@ void correlpops(int xid) {
         do_case(n, Leaf, 0, num_son);
         /*	Should now have caseweights set in leaves of both poplns  */
         for (wic = 0; wic < wnl; wic++) {
-            wwt = wsons[wic]->case_weight;
+            wwt = lcs[wsons[wic]->id].case_weight;
             for (xic = 0; xic < xnl; xic++) {
-                table[wic][xic] += wwt * xsons[xic]->case_weight;
+                table[wic][xic] += wwt * lcs[xsons[xic]->id].case_weight;
             }
         }
     ndone:;

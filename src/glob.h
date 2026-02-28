@@ -34,9 +34,17 @@ EXT int Control, DControl; /*	To control what is adjusted  */
 EXT int DFix, Fix;         /*	To determine how weights are distributed  */
 EXT int NumRepChars;
 
-EXT Score Scores;
+EXT Score Scores_array[MAX_THREADS];
+EXT LocalClassState lcs_array[MAX_THREADS][MAX_CLASSES];
 
-/*	re Doall   */
+#ifdef _OPENMP
+#include <omp.h>
+#define Scores (Scores_array[omp_get_thread_num()])
+#define lcs (lcs_array[omp_get_thread_num()])
+#else
+#define Scores (Scores_array[0])
+#define lcs (lcs_array[0])
+#endif
 EXT int RSeed; /*	Seed for random routines */
 EXT int NoSubs;
 EXT int NewSubs;

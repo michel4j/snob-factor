@@ -16,8 +16,7 @@ static int allocated = 0; /*  Total block space allocated  */
         */
 void *alloc_blocks(int gr, int size) {
     Block *blk;
-
-    blk = (Block *)malloc(size + SpUnit);
+    blk = (Block *)calloc(1, size + SpUnit);
     if (!blk) {
         printf("No more memory available\n");
         return (0);

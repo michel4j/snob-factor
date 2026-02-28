@@ -178,7 +178,7 @@ skip:
             buf->nch--;
             return (2);
         }
-        if (new_line(buf))
+        if (new_line())
             return (-1);
     case ' ':
     case '\t':
@@ -194,7 +194,7 @@ skip:
         v = i - '0';
         goto begun;
     }
-    reperror(buf);
+    reperror();
     return (-1);
 
 begun:
@@ -239,7 +239,7 @@ skip:
             buf->nch--;
             return (2);
         }
-        if (new_line(buf))
+        if (new_line())
             return (-1);
     case ' ':
     case '\t':
@@ -257,7 +257,7 @@ skip:
     }
     if (i == '.')
         goto part;
-    reperror(buf);
+    reperror();
     return (-1);
 
 begun:
@@ -311,7 +311,7 @@ skip:
             buf->nch--;
             return (2);
         }
-        if (new_line(buf))
+        if (new_line())
             return (-1);
     case ' ':
     case '\t':
@@ -350,7 +350,7 @@ miss: /* An '=' signifies missing value  */
 
 err:
     *str = 0;
-    reperror(buf);
+    reperror();
     return (-1);
 }
 
@@ -368,7 +368,7 @@ skip:
             buf->nch--;
             return (2);
         }
-        if (new_line(buf))
+        if (new_line())
             return (-1);
         goto skip;
     }
@@ -419,7 +419,7 @@ void revert(int flag) {
     if (flag)
         CurSource->nch = 0;
     else
-        new_line(CommsBuffer.inl);
+        new_line();
     return;
 }
 
