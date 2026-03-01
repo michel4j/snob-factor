@@ -1,72 +1,105 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-
-name: Build and Publish to PyPI
+name: Build and upload to PyPI
 
 on:
+  workflow_dispatch:
+  pull_request:
   push:
     tags: ["v*"]
   release:
     types: [published]
-  workflow_dispatch:
-    inputs:
-      logLevel:
-        description: 'Log level'
-        required: true
-        default: 'warning'
-        type: choice
-        options:
-        - info
-        - warning
-        - debug
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Build wheels for ${{ matrix.os }}
+    runs-on: ${{ matrix.runs-on }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: linux-intel
+            runs-on: ubuntu-latest
+          - os: linux-arm
+            runs-on: ubuntu-24.04-arm
+          - os: windows-intel
+            runs-on: windows-latest
+          - os: windows-arm
+            runs-on: windows-11-arm
+          - os: macos-intel
+            # macos-15-intel is the last x86_64 runner
+            runs-on: macos-15-intel
+          - os: macos-arm
+            # macos-14+ (including latest) are ARM64 runners
+            runs-on: macos-latest
+          - os: android-intel
+            runs-on: ubuntu-latest
+            platform: android
+          - os: android-arm
+            # GitHub Actions doesn’t currently support the Android emulator on any ARM
+            # runner. So we build on a non-ARM runner, which will skip the tests.
+            runs-on: ubuntu-latest
+            platform: android
+            archs: arm64_v8a
+          - os: ios
+            runs-on: macos-latest
+            platform: ios
+          - os: pyodide
+            runs-on: ubuntu-latest
+            platform: pyodide
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.23.2
+      - uses: actions/checkout@v6
         with:
-          output-dir: wheelhouse
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+          persist-credentials: false
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v3.3.1
+        env:
+          CIBW_PLATFORM: ${{ matrix.platform || 'auto' }}
+          CIBW_ARCHS: ${{ matrix.archs || 'auto' }}
+        # Can also be configured directly, using `with:`
+        # with:
+        #   package-dir: .
+        #   output-dir: wheelhouse
+        #   config-file: "{package}/pyproject.toml"
+
+      - uses: actions/upload-artifact@v4
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
-          path: wheelhouse/*.whl
+          path: ./wheelhouse/*.whl
 
   build_sdist:
-    name: Build SDist
+    name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Build SDist
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Build sdist
         run: pipx run build --sdist
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+
+      - uses: actions/upload-artifact@v4
         with:
           name: cibw-sdist
           path: dist/*.tar.gz
 
-  publish:
-    name: Publish to PyPI
+  upload_pypi:
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/snob-factor
+    environment: pypi
     permissions:
-      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
+    if: github.event_name == 'release' && github.event.action == 'published'
+    # or, alternatively, upload to PyPI on every tag starting with 'v' (remove on: release above to use this)
+    # if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
+          # unpacks all CIBW artifacts into dist/
           pattern: cibw-*
           path: dist
           merge-multiple: true
-      - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        # To test uploads to TestPyPI, uncomment the following:
+        # with:
+        #   repository-url: https://test.pypi.org/legacy/
