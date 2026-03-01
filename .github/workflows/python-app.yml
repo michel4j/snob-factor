@@ -19,10 +19,6 @@ on:
         - info
         - warning
         - debug
-      environment:
-        description: 'Environment to deploy to'
-        required: true
-        type: environment
 
 jobs:
   build_wheels:
@@ -40,7 +36,6 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: cibw-wheels-${{ matrix.os }}
           path: wheelhouse/*.whl
 
   build_sdist:
@@ -53,7 +48,6 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: cibw-sdist
           path: dist/*.tar.gz
 
   publish:
@@ -62,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/<your-pypi-project-name>
+      url: https://pypi.org/p/snob-factor
     permissions:
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
