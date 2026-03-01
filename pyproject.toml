@@ -27,7 +27,6 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Topic :: Scientific/Engineering :: Machine Learning",
     "Natural Language :: English",
     "Programming Language :: C",
     "Programming Language :: Python :: 3",
