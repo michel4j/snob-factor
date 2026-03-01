@@ -39,7 +39,4 @@ Homepage = "https://github.com/michel4j/snob-factor"
 documentation = "https://github.com/michel4j/snob-factor"
 repository = "https://github.com/michel4j/snob-factor"
 
-[tool.cibuildwheel]
-container-engine = "podman"
-
 [tool.setuptools_scm]
