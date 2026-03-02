@@ -153,3 +153,43 @@ print(new_pred)
 
 ```
 
+Description:
+-----------
+This program implements an unsupervised classification (or clustering) algorithm based on the Minimum Message Length (MML) principle. The fundamental goal is to find the best
+  model to explain the structure of your data, where "best" means the model that allows for the most compact description of the data.
+
+  The total "message length" is the sum of two parts:
+   1. Part 1: The Model Cost: The length of the message required to describe the classification model itself (i.e., the number of classes and all their parameters).
+   2. Part 2: The Data Cost: The length of the message required to describe the data, given the model.
+
+  The algorithm works as a two-level iterative process to find the model that minimizes this total message length.
+
+  1. The Outer Loop: Model Discovery ("Surgery")
+
+  This is the high-level search for the optimal number of classes and their relationships. The algorithm starts with an initial set of classes and then iteratively tries to
+  improve the model by performing "surgical" operations:
+
+   * Splitting: A single class is split into two.
+   * Merging: Two classes are merged into one.
+   * Deleting: An entire class is removed.
+
+  After each operation, the algorithm re-evaluates the total message length. The change is only kept if it results in a shorter, more efficient explanation of the data.
+
+  2. The Inner Loop: Parameter Estimation (like E-M)
+
+  For any given set of classes, the algorithm must find the optimal parameters for them. This inner loop is very similar to the well-known Expectation-Maximization (E-M)
+  algorithm:
+
+   * Assignment Step (like "E-Step"): For each data point, the algorithm calculates the probability that it belongs to each of the current classes. This is a "soft" assignment.
+   * Update Step (like "M-Step"): The parameters of each class (e.g., the mean and standard deviation for a Gaussian attribute, or the probabilities for a categorical attribute)
+     are recalculated based on the weighted collection of data points assigned to them in the previous step.
+
+  This inner loop repeats until the class parameters and assignments stabilize.
+
+  The "Factor" in Snob Factor
+
+  This is not just a simple mixture model. Within each class, it can also model the covariance between attributes using a latent factor. This is a hidden, continuous variable
+  that can influence multiple attributes simultaneously. By using a factor, the model can explain correlations between variables within a class, leading to a more powerful and
+  compact model (i.e., a shorter message length) than if all attributes were assumed to be independent.
+
+
