@@ -1,0 +1,423 @@
+Number of active cases = 59292
+Begin sort of 59292 cases
+Finished sort
+ll.la
+S    1  LEAF    Root Age   5  Sz59292.0  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    10.34  F:   110.34  D:     0.00  B:    10.34
+Tcosts  S:601851.12  F:1194778.53  D:     0.00  B:601851.12
+Vcost     ---------  F:     0.00
+totals  S:601861.46  F:1194888.88  D:     0.00  B:601861.46
+
+Cycle 1
+Doing 50 steps of costing, assignment and adjustments.
+aa...
+Changing type of class    1  from Leaf to Dad
+AAAA.AA...
+Changing type of class    2  from Leaf to Dad
+Changing type of class    3  from Leaf to Dad
+AAAA.AA...
+Changing type of class    5  from Leaf to Dad
+Changing type of class    6  from Leaf to Dad
+A
+Changing type of class    6  from Dad to Leaf
+A
+Changing type of class    4  from Leaf to Dad
+Changing type of class    7  from Leaf to Dad
+AAAAA...
+Changing type of class    8  from Leaf to Dad
+Changing type of class    9  from Leaf to Dad
+AA
+Changing type of class   10  from Leaf to Dad
+Changing type of class   13  from Leaf to Dad
+AAAAA...
+Changing type of class   21  from Leaf to Dad
+A
+Changing type of class   20  from Leaf to Dad
+AAAAA
+Attempting class moves until 2 successive failures
+AAdDDddddddDdDdddddDddDDdddddDDdDdddddDDdDddddDDdDddddddDDdDddddDDDDdDddddddDDdD
+ddddddDDdDdddddDDDdDddddDDdDddddDddDddddDdDddddddDDDDDddddddDDddddddDDdddddddDdd
+ddddDDddddddDDdddddDDDddddDdDDddddDdDddddddDDdddddDDDdddddDDDdddddDDDddddddDDddd
+ddDdDdddddDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDddddd
+DddddDdddDddddDdDdDddddDdDdDDddddDdDdDddddddDdDddddDdDdDddddDdDdDddddDdDdDddddDd
+DddddDdDddddDdDddddddDddddddDDddddddDddddddDddddddDddddddDdddddDDDddddDdDdddddDd
+dddDDdDdddddDddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDDDdddddDDddddddDddddddD
+ddddddDddddddDddddDDdDdddddDDDddddddDddddddDdddddDDDDdddddDddddddDDdddddDDdddddd
+DddddddDdddddDdDdddddDDddddddDddddddDdddddDDdddddDDdddddDDDdddddDdddddDdDdddddDD
+dddddDDdddddDDddddDdDdddddDDddddDDDdddddDdDDdddddddDddddDDdDdddddddDddddDDdDdddd
+dDdDDDDddddDddDddddDddDdddddddDddddDdDdddddDdDddddDddddDdddddDdddddDddddddDddddd
+DdDdddddDdddddDddddddDDddddddDdddddDdDddddDdddddddddDdddddDddddddDdddddDdDdddddD
+dddddDdddddDDDdddddDDdddddDDdddddDddddDDdDdddddDDdddddDDdddddDdddddDdDdddddDDddd
+ddDDdddddDDDdddddDDdddddDdddddDddddDDdDdddddDDdddddDDdddddDdddddDdDdddddDDdddddD
+DdddddDddDdddddDdddddDdDdddddDdddddDdDdddddDdddddDdddddDdddddDdDdddddDdddddDdddd
+dDdddddDdddddDdDdddddDdDdddddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDddddddDDD
+ddddddDdddddDDDddddddDddddddDDddddDDDddddddDddddddDddddddDddddDDdddddDDDDddddddD
+dddddDDDddddddDddddddDDddddDDDddddddDddddddDddddddDdddddDdddddDDDdddddDdddddDdDD
+dddddDdddddDdDdddddDdddddDdddddDdddddDdddddDdddddDdddddDddDdddddDdddddDdDdddddDd
+ddddDdDdddddDDdddddDdddddDdddddDdddddDdddddDdddddDDDdddddDdddddDDDDdddddDdddddDd
+DddddDDDDdddddDdddddDdddddDddddDDDdddddDdddddDDDdddddDDdddddDDdddddDdddddDdDdddd
+dDdddddDdddddDdddddDddddDDdddddDdddd
+TRYING MOVE CLASS      7 TO DAD      8
+DdDdDddddLllaAAAAA
+Failed ******
+AdDDddddddDdDdddddDddDDdddddDDdDdddddDDdDddddDDdDddddddDDdDddddDDDDdDddddddDDdDd
+dddddDDdDdddddDDDdDddddDDdDddddDddDddddDdDddddddDDDDDddddddDDddddddDDdddddddDddd
+dddDDddddddDDdddddDDDddddDdDDddddDdDddddddDDdddddDDDdddddDDDdddddDDDdddddDDDdddd
+dDdDdddddDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddD
+ddddDdddDddddDdDdDddddDdDdDDddddDdDdDddddddDdDdddd
+Badmove rejects Move      7      8
+DdDdDddddDdDdDddddDdDddddDdDddddDdDddddddDddddddDDddddddDddddddDddddddDddddddDdd
+dddDDDddddDdDdddddDddddDDdddddDddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDDDddd
+ddDDddddddDddddddDdddd
+Badmove rejects Move      8      7
+ddDddddDDdDdddddDDddddddDddddddDdddddDDDDdddddDddddddDDdddddDDddddddDddddddDdddd
+dDdddddDDddddddDddddddDdddddDDdddddDDdddddDDDdddddDdddddDdDdddddDDdddddDDdddddDD
+ddddDdDdddddDDddddDDDdddddDdDDdddddddDddddDDdDdddddddDddddDDdDdddddDdDDDDddddDdd
+DddddDddDdddddddDddddDdDdddddDdDddddDddddDdddddDdddddDddddddDdddddDdDdddddDddddd
+DddddddDDddddddDdddddDdddddddddddddDdddddDddddddDdddddDdDdddddDdddddDdddddDDDddd
+ddDDdddddDDdddddDddddDDdddddDDdddddDDdddddDdddddDdDdddddDDdddddDDdddddDDDdddddDD
+dddddDdddddDddddDDdddddDDdddddDDdddddDdddddDdDdddddDDdddddDDdddddDdddddDdddddDdD
+dddddDdddddDdDdddddDdddddDdddddDdddddDdDdddddDdddddDdddddDdddddDdddddDdDdddddDdd
+dddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDddddddDDDddddddDdddddDDDddddddDdddd
+ddDDddddDDDddddddDddddddDddddddDddddDDdddddDDDDddddddDdddddDDDddddddDddddddDDddd
+dDDDddddddDddddddDddddddDdddddDdddddDDDdddddDdddddDdDDdddddDdddddDdDdddddDdddddD
+dddddDdddddDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDdDdddddDDdddddDdddddDddd
+ddDdddddDdddddDdddddDDDdddddDDdddddDDDDdddddDdddddDdDddddDDDDdddddDdddddDDdddddD
+DddddDDDddddDDDdddddDDDdddddDDdddddDDdddddDdddddDdDdddddDdddddDdddddDDdddddDDddd
+dDDdddddDdddd
+TRYING MOVE CLASS      7 TO DAD      5
+DdDdDddddLllaAAAAA
+Failed ******
+A
+Cost dropped by    0.000%
+
+--------------------------------------------------------------------------------
+P1    25 classes,   13 leaves,  Pcost   272.4  Tcost  453886.2,  Cost  454158.6
+Sample  1 XRFTest
+--------------------------------------------------------------------------------
+Cycle 2
+Doing 50 steps of costing, assignment and adjustments.
+AA........AA........aA........aA........aA......aAA
+Attempting class moves until 2 successive failures
+AAdDDddddddDdDdddddDddDDdddddDDdDdddddDDdDddddDDdDddddddDDdDddddDDDDdDddddddDDdD
+ddddddDDdDdddddDDDddddDDdDddddDdDDddddDdDddddddDDDDDddddddDDddddddDDdddddddDdddd
+ddDDddddddDDdddddDDDddddDdDDddddDdDddddddDDdddddDDDdddddDDDdddddDDDdddddDDDddddd
+DdDdddddDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDd
+dddDdddDddddDdDdDddddDdDdDDddddDdDdDddddddDdDddddDdDdDddddDdDdDddddDdDdDddddDdDd
+dddDdDddddDdDddddddDddddddDDddddddDddddddDddddddDddddddDdddddDDDddddDdDdddddDddd
+dDDdddddDddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDDDdddddDDddddDdDddddddDdddd
+DdDddddddDddddDDdDddddddDddddddDddddddDdddddDDDDdddddDddddddDDdddddDDddddddDdddd
+ddDdddddDdddddDDddddddDddddddDdddddDDdddddDDdddddDDDdddddDdddddDdDdddddDDdddddDD
+dddddDDddddDdDdddddDDddddDDDdddddDdDDdddddddDddddDDdDdddddddDddddDDdDdddddDdDDDD
+ddddDddDddddDddDddddDddDddddDdDdddddDddddDddddDdddddDdddddDddddddDdddddDdDdddddD
+dddddDddddddDDddddDdDdddddDddddDdddddddddDdddddDddddddDdddddDdDdddddDdddddDddddd
+DDDdddddDDdddddDDdddddDddddDDdddddDDdddddDDdddddDdddddDdDdddddDDdddddDDdddddDDDd
+ddddDDdddddDdddddDddddDDdddddDDdddddDDddddDDdddddDdDdddddDDdddddDDdddddDddDddddd
+DdddddDdddddDddddDDdDdddddDdddddDdddddDdddddDdDdddddDdddddDdddddDdddddDdddddDddd
+ddDdddddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDddddddDDDddddddDdddddDDDdddddd
+DddddddDDddddDDDddddddDddddddDddddddDddddDDdddddDDDDddddddDdddddDDDddddddDdddddd
+DDddddDDDddddddDddddddDddddddDdddddDdddddDDDdddddDdddddDdDDdddddDdddddDdDdddddDd
+ddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDdDdddddDdddddDddddd
+DdddddDdddddDdddddDdddddDDDdddddDDdddddDDDDdddddDdddddDdDddddDDDDdddddDdddddDDdd
+dddDDddddDDDddddDDDdddddDDDdddddDDdddddDDdddddDdddddDdDddddDDDdddddDdddddDDddddd
+DDddddDDdddddDdddd
+TRYING MOVE CLASS      7 TO DAD      5
+DdDdDddddLLL
+Changing type of class   20  from Dad to Leaf
+aAAAAA
+Failed ******
+AdDDddddddDdDdddddDddDDdddddDDdDdddddDDdDddddDDdDddddddDDdDddddDDDDdDddddddDDdDd
+dddddDDdDdddddDDDddddDDdDddddDdDDddddDdDddddddDDDDDddddddDDddddddDDdddddddDddddd
+dDDddddddDDdddddDDDddddDdDDddddDdDdddd
+Badmove rejects Move      5      7
+dDDDdddddDDDdddddDDDdddddDDDdddddDdDdddddDdddddDdDdddddDdDdddddDdDdddddDdDdddddD
+dDdddddDdDdddddDdDdddddDdDdddddDddddDdddDddddDdDdDddddDdDdDDdddd
+Badmove rejects Move      7      5
+ddDdDddddDdDdDddddDdDdDddddDdDdDddddDdDddddDdDddddDdDddddddDddddddDDddddddDddddd
+dDddddddDddddddDdddddDDDddddDdDdddddDddddDDdddddDddddDdddddDdddddDDdddddDdDddddd
+DdddddDdddddDDDdddddDDddddDdDddddddDddddDdDddddddDddddDDdDddddddDddddddDddddddDd
+ddddDDDDdddddDddddddDDdddddDDddddddDddddddDdddddDdddddDDddddddDddddddDdddddDDddd
+ddDDdddddDDDdddddDdddddDdDdddddDDdddddDDdddddDDddddDdDdddddDDddddDDDdddddDdDDddd
+ddddDddddDDdDdddddddDddddDDdDdddddDdDDDDddddDddDddddDddDddddDddDddddDdDdddddDddd
+dDddddDdddddDdddddDddddddDdddddDdDdddddDdddddDddddddDDddddDdDdddddDddddDdddddddd
+dDdddddDddddddDdddddDdDdddddDdddddDdddddDDDdddddDDdddddDdddddDddddDDdDdddddDDddd
+ddDDdddddDdddddDdDdddddDDdddddDDdddddDDDdddddDDdddddDdddddDddddDDdDdddddDDdddddD
+DddddDDdddddDdDdddddDDdddddDDdddddDddDdddddDdddddDdddddDddddDDdDdddddDdddddDdddd
+dDdddddDdDdddddDdddddDdddddDdddddDdddddDdddddDdDdddddDdDdddddDdddddDdddddDDddddd
+DdDdddddDdddddDddddddDDDddddddDdddddDDDddddddDddddddDDddddDDDddddddDddddddDddddd
+dDddddDDdddddDDDDddddddDdddddDDDddddddDddddddDDddddDDDddddddDddddddDddddddDddddd
+DdddddDDDdddddDdddddDdDDdddddDdddddDdDdddddDdddddDdddddDdddddDdddddDdddddDdddddD
+dddddDdddddDdDdddddDdddddDdDdddddDdddddDdddddDdddddDdddddDdddddDdddddDDDdddddDDd
+ddddDDDDdddddDdddddDdDddddDDDDdddddDdddddDDdddddDDddddDDDddddDDDdddddDDDdddddDDd
+ddddDDdddddDdddddDdDddddDDDdddddDdddddDDdddddDDddddDDdddddDdddd
+TRYING MOVE CLASS      7 TO DAD      8
+DdDdDddddLLL
+Changing type of class   20  from Dad to Leaf
+aAAAAA
+Failed ******
+A
+Cost dropped by   24.541%
+
+--------------------------------------------------------------------------------
+P1    25 classes,   13 leaves,  Pcost   272.3  Tcost  453842.1,  Cost  454114.4
+Sample  1 XRFTest
+--------------------------------------------------------------------------------
+Classification converged after 2 cycles
+
+S    1   DAD    Root Age 111  Sz59292.0  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    10.34  F:   110.34  D:   272.25  B:   272.25
+Tcosts  S:601851.12  F:1194778.53  D:453842.12  B:453842.12
+Vcost     ---------  F:     0.00
+totals  S:601861.46  F:1194888.88  D:454114.37  B:454114.37
+V  1  Cnt59292.0   In
+ N: Cost     5.7  Mu   7.343+-   4.232  SD   0.897+-   1.140
+ S: Cost601861.5  Mu  10.231  SD   6.196
+ F: Cost601961.5  Mu  10.231  SD   6.196  Ld   0.000
+
+S    2   DAD Dad    1  Age 106  Sz43362.1  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    12.39  F:   112.39  D:   145.99  B:   145.99
+Tcosts  S:401854.08  F:835482.13  D:344777.03  B:344777.03
+Vcost     ---------  F:     0.00
+totals  S:401866.47  F:835594.52  D:344923.02  B:344923.02
+V  1  Cnt43362.1   In
+ N: Cost     5.0  Mu  11.470+-   2.553  SD   0.292+-   0.293
+ S: Cost388298.8  Mu  13.846  SD   1.821
+ F: Cost388398.8  Mu  10.240  SD   6.199  Ld   0.000
+
+S    4   DAD Dad    2  Age  96  Sz38049.5  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    12.50  F:   112.50  D:    60.37  B:    60.37
+Tcosts  S:298014.68  F:678470.22  D:288766.74  B:288766.74
+Vcost     ---------  F:     0.00
+totals  S:298027.19  F:678582.72  D:288827.11  B:288827.11
+V  1  Cnt38044.8   In
+ N: Cost     5.6  Mu  14.392+-   0.988  SD   0.159+-   0.125
+ S: Cost281150.4  Mu  14.419  SD   0.396
+ F: Cost281250.4  Mu  14.023  SD   1.456  Ld   0.000
+
+S   10   DAD Dad    4  Age  86  Sz28269.4  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    10.89  F:   110.89  D:    32.63  B:    32.63
+Tcosts  S:216865.90  F:499525.23  D:215793.46  B:215793.46
+Vcost     ---------  F:     0.00
+totals  S:216876.79  F:499636.13  D:215826.09  B:215826.09
+V  1  Cnt28265.2   In
+ N: Cost     2.9  Mu  14.249+-   0.628  SD   0.210+-   0.137
+ S: Cost195940.2  Mu  14.227  SD   0.244
+ F: Cost196040.2  Mu  14.383  SD   0.425  Ld   0.000
+
+S   18  LEAF Dad   10  Age  76  Sz11158.6  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     9.14  F:   109.14  D:     0.00  B:     9.14
+Tcosts  S: 99140.93  F:210309.95  D:     0.00  B: 99140.93
+Vcost     ---------  F:     0.00
+totals  S: 99150.07  F:210419.10  D:     0.00  B: 99150.07
+V  1  Cnt11116.2   In
+ S: Cost 80582.9  Mu  14.188  SD   0.340
+ F: Cost 80682.9  Mu  14.167  SD   0.226  Ld   0.000
+
+S   19  LEAF Dad   10  Age  76  Sz17110.8  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    10.16  F:   110.16  D:     0.00  B:    10.16
+Tcosts  S:132336.38  F:303833.00  D:     0.00  B:132336.38
+Vcost     ---------  F:     0.00
+totals  S:132346.54  F:303943.17  D:     0.00  B:132346.54
+V  1  Cnt17149.0   In
+ S: Cost111033.8  Mu  14.253  SD   0.157
+ F: Cost111133.8  Mu  14.167  SD   0.222  Ld   0.000
+
+S   11  LEAF Dad    4  Age  86  Sz9780.1  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    11.28  F:   111.28  D:     0.00  B:    11.28
+Tcosts  S: 74785.83  F:172588.39  D:     0.00  B: 74785.83
+Vcost     ---------  F:     0.00
+totals  S: 74797.11  F:172699.67  D:     0.00  B: 74797.11
+V  1  Cnt9779.6   In
+ S: Cost 57173.1  Mu  14.972  SD   0.084
+ F: Cost 57273.1  Mu  14.390  SD   0.430  Ld   0.000
+
+S    5   DAD Dad    2  Age  96  Sz5312.6  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    10.57  F:   110.57  D:    69.40  B:    69.40
+Tcosts  S: 62741.32  F:115919.98  D: 59226.40  B: 59226.40
+Vcost     ---------  F:     0.00
+totals  S: 62751.89  F:116030.55  D: 59295.80  B: 59295.80
+V  1  Cnt5317.2   In
+ N: Cost     3.4  Mu  10.050+-   2.235  SD   0.267+-   0.276
+ S: Cost 49925.0  Mu   9.743  SD   2.823
+ F: Cost 50025.0  Mu  14.012  SD   1.479  Ld   0.000
+
+S    8   DAD Dad    5  Age  86  Sz1630.7  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:     9.22  F:   109.22  D:    29.13  B:    29.13
+Tcosts  S: 17270.64  F: 33584.39  D: 16007.30  B: 16007.30
+Vcost     ---------  F:     0.00
+totals  S: 17279.87  F: 33693.61  D: 16036.43  B: 16036.43
+V  1  Cnt1630.8   In
+ N: Cost     3.7  Mu   8.663+-   1.523  SD   0.089+-   0.067
+ S: Cost 11419.9  Mu   8.204  SD   0.255
+ F: Cost 11519.9  Mu   8.586  SD   1.673  Ld   0.000
+
+S   14  LEAF Dad    8  Age  76  Sz1199.5  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     9.35  F:   109.35  D:     0.00  B:     9.35
+Tcosts  S: 11488.29  F: 23489.31  D:     0.00  B: 11488.29
+Vcost     ---------  F:     0.00
+totals  S: 11497.64  F: 23598.66  D:     0.00  B: 11497.64
+V  1  Cnt1199.6   In
+ S: Cost  6818.7  Mu   8.052  SD   0.071
+ F: Cost  6918.7  Mu   8.247  SD   0.325  Ld   0.000
+
+S   15  LEAF Dad    8  Age  76  Sz 431.2  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     8.44  F:   108.44  D:     0.00  B:     8.44
+Tcosts  S:  4519.02  F:  8836.55  D:     0.00  B:  4519.02
+Vcost     ---------  F:     0.00
+totals  S:  4527.46  F:  8944.99  D:     0.00  B:  4527.46
+V  1  Cnt 431.3   In
+ S: Cost  2404.4  Mu   8.630  SD   0.062
+ F: Cost  2504.4  Mu   8.252  SD   0.332  Ld   0.000
+
+S    9   DAD Dad    5  Age  86  Sz3681.9  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    10.13  F:   110.13  D:    28.05  B:    28.05
+Tcosts  S: 45270.01  F: 82140.36  D: 43873.37  B: 43873.37
+Vcost     ---------  F:     0.00
+totals  S: 45280.14  F: 82250.48  D: 43901.42  B: 43901.42
+V  1  Cnt3686.4   In
+ N: Cost     2.6  Mu  10.349+-   2.588  SD   0.731+-   0.716
+ S: Cost 35035.4  Mu  10.423  SD   3.205
+ F: Cost 35135.4  Mu   8.614  SD   1.741  Ld   0.000
+
+S   16  LEAF Dad    9  Age  76  Sz1758.3  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     8.94  F:   108.94  D:     0.00  B:     8.94
+Tcosts  S: 20030.47  F: 37669.62  D:     0.00  B: 20030.47
+Vcost     ---------  F:     0.00
+totals  S: 20039.41  F: 37778.56  D:     0.00  B: 20039.41
+V  1  Cnt1763.3   In
+ S: Cost 13835.7  Mu  13.352  SD   0.614
+ F: Cost 13935.7  Mu   9.936  SD   3.320  Ld   0.000
+
+S   17  LEAF Dad    9  Age  76  Sz1923.6  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     8.19  F:   108.19  D:     0.00  B:     8.19
+Tcosts  S: 24087.78  F: 43324.30  D:     0.00  B: 24087.78
+Vcost     ---------  F:     0.00
+totals  S: 24095.97  F: 43432.49  D:     0.00  B: 24095.97
+V  1  Cnt1923.1   In
+ S: Cost 17503.2  Mu   7.748  SD   2.160
+ F: Cost 17603.2  Mu   9.896  SD   3.295  Ld   0.000
+
+S    3   DAD Dad    1  Age 106  Sz15929.9  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    12.10  F:   112.10  D:   109.34  B:   109.34
+Tcosts  S:153328.41  F:312634.37  D:109280.89  B:109280.89
+Vcost     ---------  F:     0.00
+totals  S:153340.51  F:312746.47  D:109390.23  B:109390.23
+V  1  Cnt15929.9   In
+ N: Cost     6.0  Mu   1.870+-   2.128  SD   0.122+-   0.146
+ S: Cost132404.4  Mu   0.392  SD   1.009
+ F: Cost132504.4  Mu  10.222  SD   6.193  Ld   0.000
+
+S    6  LEAF Dad    3  Age  96  Sz13566.3  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    14.41  F:   114.41  D:     0.00  B:    14.41
+Tcosts  S: 85164.95  F:220834.91  D:     0.00  B: 85164.95
+Vcost     ---------  F:     0.00
+totals  S: 85179.37  F:220949.32  D:     0.00  B: 85179.37
+V  1  Cnt13566.3   In
+ S: Cost 65170.4  Mu  -0.000  SD   0.030
+ F: Cost 65270.4  Mu   0.670  SD   1.579  Ld   0.000
+
+S    7   DAD Dad    3  Age  96  Sz2363.6  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:     9.64  F:   109.64  D:    78.77  B:    78.77
+Tcosts  S: 26658.38  F: 50300.11  D: 24121.26  B: 24121.26
+Vcost     ---------  F:     0.00
+totals  S: 26668.02  F: 50409.75  D: 24200.03  B: 24200.03
+V  1  Cnt2363.6   In
+ N: Cost     3.8  Mu   2.356+-   1.209  SD   0.084+-   0.084
+ S: Cost 19052.2  Mu   2.640  SD   0.789
+ F: Cost 19152.2  Mu   0.714  SD   1.621  Ld   0.000
+
+S   12  LEAF Dad    7  Age  86  Sz 933.7  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     9.97  F:   109.97  D:     0.00  B:     9.97
+Tcosts  S:  8613.61  F: 17957.86  D:     0.00  B:  8613.61
+Vcost     ---------  F:     0.00
+totals  S:  8623.58  F: 18067.83  D:     0.00  B:  8623.58
+V  1  Cnt 933.9   In
+ S: Cost  4747.1  Mu   2.626  SD   0.039
+ F: Cost  4847.1  Mu   2.948  SD   0.963  Ld   0.000
+
+S   13   DAD Dad    7  Age  86  Sz1429.9  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:     9.98  F:   109.98  D:    57.04  B:    57.04
+Tcosts  S: 17202.89  F: 31505.45  D: 16063.93  B: 16063.93
+Vcost     ---------  F:     0.00
+totals  S: 17212.86  F: 31615.43  D: 16120.97  B: 16120.97
+V  1  Cnt1429.7   In
+ N: Cost     3.6  Mu   2.244+-   1.011  SD   0.142+-   0.123
+ S: Cost 11887.6  Mu   2.649  SD   1.014
+ F: Cost 11987.6  Mu   2.936  SD   0.967  Ld   0.000
+
+S   20   DAD Dad   13  Age  76  Sz 310.1  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:     7.32  F:   107.32  D:    19.81  B:    19.81
+Tcosts  S:  4087.20  F:  7212.31  D:  4015.16  B:  4015.16
+Vcost     ---------  F:     0.00
+totals  S:  4094.51  F:  7319.63  D:  4034.96  B:  4034.96
+V  1  Cnt 312.0   In
+ N: Cost     2.8  Mu   1.464+-   0.869  SD   0.261+-   0.200
+ S: Cost  2455.6  Mu   1.083  SD   0.563
+ F: Cost  2555.6  Mu   2.478  SD   1.156  Ld   0.000
+
+S   24  LEAF Dad   20  Age  66  Sz 185.4  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     6.18  F:   106.18  D:     0.00  B:     6.18
+Tcosts  S:  2322.75  F:  4180.50  D:     0.00  B:  2322.75
+Vcost     ---------  F:     0.00
+totals  S:  2328.93  F:  4286.68  D:     0.00  B:  2328.93
+V  1  Cnt 185.3   In
+ S: Cost  1260.2  Mu   0.691  SD   0.209
+ F: Cost  1360.2  Mu   0.860  SD   0.437  Ld   0.000
+
+S   25  LEAF Dad   20  Age  66  Sz 124.6  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     4.89  F:   104.89  D:     0.00  B:     4.89
+Tcosts  S:  1756.97  F:  3028.42  D:     0.00  B:  1756.97
+Vcost     ---------  F:     0.00
+totals  S:  1761.86  F:  3133.31  D:     0.00  B:  1761.86
+V  1  Cnt 126.7   In
+ S: Cost   980.9  Mu   1.663  SD   0.526
+ F: Cost  1080.9  Mu   0.890  SD   0.415  Ld   0.000
+
+S   21   DAD Dad   13  Age  76  Sz1119.9  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:     8.39  F:   108.39  D:    26.05  B:    26.05
+Tcosts  S: 12981.06  F: 24163.17  D: 12138.04  B: 12138.04
+Vcost     ---------  F:     0.00
+totals  S: 12989.45  F: 24271.57  D: 12164.09  B: 12164.09
+V  1  Cnt1117.7   In
+ N: Cost     2.5  Mu   2.946+-   0.864  SD   0.114+-   0.098
+ S: Cost  8553.0  Mu   3.082  SD   0.515
+ F: Cost  8653.0  Mu   2.526  SD   1.139  Ld   0.000
+
+S   22  LEAF Dad   21  Age  66  Sz 698.5  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     7.45  F:   107.45  D:     0.00  B:     7.45
+Tcosts  S:  7805.11  F: 14773.12  D:     0.00  B:  7805.11
+Vcost     ---------  F:     0.00
+totals  S:  7812.56  F: 14880.57  D:     0.00  B:  7812.56
+V  1  Cnt 696.3   In
+ S: Cost  4719.9  Mu   2.713  SD   0.210
+ F: Cost  4819.9  Mu   3.207  SD   0.601  Ld   0.000
+
+S   23  LEAF Dad   21  Age  66  Sz 421.4  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     8.92  F:   108.92  D:     0.00  B:     8.92
+Tcosts  S:  4333.17  F:  8551.98  D:     0.00  B:  4333.17
+Vcost     ---------  F:     0.00
+totals  S:  4342.09  F:  8660.91  D:     0.00  B:  4342.09
+V  1  Cnt 421.4   In
+ S: Cost  2257.7  Mu   3.696  SD   0.050
+ F: Cost  2357.7  Mu   3.255  SD   0.578  Ld   0.000
+
+--------------------------------------------------------------------------------
+P1    25 classes,   13 leaves,  Pcost   272.3  Tcost  453842.1,  Cost  454114.4
+Sample  1 XRFTest
+--------------------------------------------------------------------------------
+       id    energy 
+   750000    -0.105 
+   760000      -0.1 
+   760100      -0.1 
+   770000    -0.095 
+   770100    -0.095 
+      ...       ... 
+ 31440100      15.2 
+ 31450000      15.2 
+ 31460000      15.2 
+ 31470000      15.3 
+ 31480000      15.3 
+[59292 items x 1 attributes]
+
+CPU Time:          3.450 s
+Elapsed Time:      3.466 s

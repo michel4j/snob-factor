@@ -1,0 +1,95 @@
+Number of active cases = 1000
+Begin sort of 1000 cases
+Finished sort
+ll.la
+S    1  LEAF    Root Age   5  Sz1000.0  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    40.70  F:   740.70  D:     0.00  B:    40.70
+Tcosts  S: 43967.08  F: 53972.45  D:     0.00  B: 43967.08
+Vcost     ---------  F:     0.00
+totals  S: 44007.78  F: 54713.15  D:     0.00  B: 44007.78
+
+Cycle 1
+Doing 50 steps of costing, assignment and adjustments.
+aa...
+Changing type of class    1  from Leaf to Dad
+AAAA.AA...
+Changing type of class    2  from Leaf to Dad
+Changing type of class    3  from Leaf to Dad
+aAAA.AA
+Changing type of class    1  from Dad to Leaf
+AAAA....AA........AA......AAA
+Attempting class moves until 2 successive failures
+AA
+Model has only 1 class
+No possible class move
+A
+Cost dropped by    0.000%
+
+--------------------------------------------------------------------------------
+P1     1 classes,    1 leaves,  Pcost   104.3  Tcost   39054.8,  Cost   39159.1
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+Cycle 2
+Doing 50 steps of costing, assignment and adjustments.
+AA........AA........AA........AA........AA......AAA
+Attempting class moves until 2 successive failures
+AA
+Model has only 1 class
+No possible class move
+A
+Cost dropped by   11.018%
+
+--------------------------------------------------------------------------------
+P1     1 classes,    1 leaves,  Pcost   108.6  Tcost   39019.1,  Cost   39127.7
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+Classification converged after 2 cycles
+
+S    1  LEAF    Root Age 109  Sz1000.0  Use Fac Vv  1.16  +-0.126 Avv 0.000 
+Pcosts  S:    40.71  F:   108.61  D:     0.00  B:   108.61
+Tcosts  S: 43967.07  F: 36758.74  D:     0.00  B: 39019.12
+Vcost     ---------  F:  2260.38
+totals  S: 44007.78  F: 39127.73  D:     0.00  B: 39127.73
+V  1  Cnt1000.0   In  Adj    0.30
+ S: AP -0.022
+ F: AP -0.027
+ F: BP  0.420 +-  0.035
+V  2  Cnt1000.0   In
+ S: Cost  6371.2  Mu  -0.020  SD   1.405
+ F: Cost  6027.3  Mu  -0.020  SD   0.992  Ld  -0.847
+V  3  Cnt1000.0   In
+ S: Cost  6836.4  Mu  -0.072  SD   2.238
+ F: Cost  6005.4  Mu  -0.072  SD   0.970  Ld  -1.715
+V  4  Cnt1000.0   In
+ S: Cost  7177.7  Mu  -0.108  SD   3.148
+ F: Cost  6039.1  Mu  -0.108  SD   1.002  Ld  -2.538
+V  5  Cnt1000.0   In
+ S: Cost  7435.3  Mu  -0.112  SD   4.073
+ F: Cost  6057.9  Mu  -0.112  SD   1.021  Ld  -3.354
+V  6  Cnt1000.0   In
+ S: Cost  7656.7  Mu  -0.144  SD   5.082
+ F: Cost  6009.1  Mu  -0.144  SD   0.972  Ld  -4.243
+V  7  Cnt1000.0   In
+ S: Cost  7833.9  Mu   0.169  SD   6.067
+ F: Cost  6114.3  Mu   0.169  SD   1.080  Ld   5.078
+
+--------------------------------------------------------------------------------
+P1     1 classes,    1 leaves,  Pcost   108.6  Tcost   39019.1,  Cost   39127.7
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+       id        VB        V1        V2        V3        V4        V5        V6 
+     1001         1     -0.27      0.36     -0.38     -1.01      2.11     -0.39 
+     1002         1         1     -1.18      1.92      2.43      3.95     -3.24 
+     1003         2     -3.47     -5.15     -7.24     -6.95     -10.8      15.2 
+     1004         1     -1.89     -2.04     -2.71     -1.12     -2.35      2.87 
+     1005         2     -3.05     -3.89     -5.83     -7.02     -7.89      10.4 
+      ...       ...       ...       ...       ...       ...       ...       ... 
+     1996         2     -2.15     -1.84     -0.88     -4.23     -4.06      5.58 
+     1997         1     -0.76     -0.36      2.12        -0      0.63     -0.43 
+     1998         1      1.39      2.75       1.5      5.91      7.68      -8.2 
+     1999         2      0.14      -2.2      -3.4     -1.12     -3.99      5.55 
+     2000         2     -3.48     -6.11     -7.69     -9.97     -10.8        12 
+[1000 items x 7 attributes]
+
+CPU Time:          0.039 s
+Elapsed Time:      0.039 s

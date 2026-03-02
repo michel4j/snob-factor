@@ -1,0 +1,88 @@
+Number of active cases = 200
+Begin sort of 200 cases
+Finished sort
+ll.la
+S    1  LEAF    Root Age   5  Sz 200.0  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    27.94  F:   627.94  D:     0.00  B:    27.94
+Tcosts  S:  8644.65  F: 10649.22  D:     0.00  B:  8644.65
+Vcost     ---------  F:     0.00
+totals  S:  8672.59  F: 11277.16  D:     0.00  B:  8672.59
+
+Cycle 1
+Doing 50 steps of costing, assignment and adjustments.
+aa...
+Changing type of class    1  from Leaf to Dad
+AAAA.AA.
+Changing type of class    1  from Dad to Leaf
+AAAA...AA........AA........AA......AAA
+Attempting class moves until 2 successive failures
+AA
+Model has only 1 class
+No possible class move
+A
+Cost dropped by    0.000%
+
+--------------------------------------------------------------------------------
+P1     1 classes,    1 leaves,  Pcost    81.5  Tcost    7692.2,  Cost    7773.8
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+Cycle 2
+Doing 50 steps of costing, assignment and adjustments.
+AA........AA........AA........AA........AA......AAA
+Attempting class moves until 2 successive failures
+aA
+Model has only 1 class
+No possible class move
+A
+Cost dropped by   10.364%
+
+--------------------------------------------------------------------------------
+P1     1 classes,    1 leaves,  Pcost    84.2  Tcost    7686.1,  Cost    7770.3
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+Classification converged after 2 cycles
+
+S    1  LEAF    Root Age 109  Sz 200.0  Use Fac Vv  1.20  +-0.134 Avv 0.000 
+Pcosts  S:    27.97  F:    84.22  D:     0.00  B:    84.22
+Tcosts  S:  8644.63  F:  7237.90  D:     0.00  B:  7686.11
+Vcost     ---------  F:   448.21
+totals  S:  8672.60  F:  7770.32  D:     0.00  B:  7770.32
+V  1  Cnt 200.0   In
+ S: Cost  1271.6  Mu  -0.047  SD   1.358
+ F: Cost  1206.8  Mu  -0.047  SD   0.964  Ld  -0.788
+V  2  Cnt 200.0   In
+ S: Cost  1370.8  Mu   0.012  SD   2.230
+ F: Cost  1210.8  Mu   0.012  SD   0.981  Ld  -1.650
+V  3  Cnt 200.0   In
+ S: Cost  1438.2  Mu   0.045  SD   3.124
+ F: Cost  1236.5  Mu   0.045  SD   1.114  Ld  -2.404
+V  4  Cnt 200.0   In
+ S: Cost  1490.5  Mu   0.183  SD   4.057
+ F: Cost  1216.4  Mu   0.183  SD   1.005  Ld  -3.238
+V  5  Cnt 200.0   In
+ S: Cost  1532.6  Mu   0.193  SD   5.007
+ F: Cost  1207.3  Mu   0.193  SD   0.957  Ld  -4.048
+V  6  Cnt 200.0   In
+ S: Cost  1568.8  Mu  -0.177  SD   6.001
+ F: Cost  1239.8  Mu  -0.177  SD   1.126  Ld   4.856
+
+--------------------------------------------------------------------------------
+P1     1 classes,    1 leaves,  Pcost    84.2  Tcost    7686.1,  Cost    7770.3
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+       id        V1        V2        V3        V4        V5        V6 
+     1001      0.39      0.32     -0.72      -0.3     -0.81     -0.55 
+     1002      -1.4     -5.43     -4.13     -5.29     -7.52      9.66 
+     1003     -0.02     -1.17     -1.14     -3.34     -1.07      2.31 
+     1004       0.1      1.15     -1.28      2.46      1.92     -1.43 
+     1005     -0.33      0.66      0.21      1.01      0.93      -1.4 
+      ...       ...       ...       ...       ...       ...       ... 
+     1196      0.69     -0.64      -2.7     -1.75      -2.8      4.69 
+     1197      0.04      1.06      0.34      0.04     -0.16      -0.6 
+     1198      0.11      0.04      0.46     -0.61      0.49      1.66 
+     1199       0.4       0.5      0.46      1.07      1.36     -0.68 
+     1200      0.95     -0.91     -0.52     -0.24     -1.83      3.59 
+[200 items x 6 attributes]
+
+CPU Time:          0.007 s
+Elapsed Time:      0.007 s

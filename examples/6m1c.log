@@ -1,0 +1,93 @@
+Number of active cases = 2000
+Begin sort of 2000 cases
+Finished sort
+Ll.la
+S    1  LEAF    Root Age   5  Sz2000.0  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    29.82  F:   629.82  D:     0.00  B:    29.82
+Tcosts  S: 10476.89  F: 30482.61  D:     0.00  B: 10476.89
+Vcost     ---------  F:     0.00
+totals  S: 10506.70  F: 31112.42  D:     0.00  B: 10506.70
+
+Cycle 1
+Doing 50 steps of costing, assignment and adjustments.
+aa...
+Changing type of class    1  from Leaf to Dad
+AAAA.AA........AA........AA........Aa......Aaa
+Attempting class moves until 2 successive failures
+aa
+Model has only 3 class
+No possible class move
+Cost dropped by    0.000%
+
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost    67.4  Tcost    9817.8,  Cost    9885.2
+Sample  1 Spec_s6m1c__000000022222
+--------------------------------------------------------------------------------
+Cycle 2
+Doing 50 steps of costing, assignment and adjustments.
+aa........aA........aa......
+Changing type of class    1  from Dad to Leaf
+AAAA........AA......AAA
+Attempting class moves until 2 successive failures
+aA
+Model has only 1 class
+No possible class move
+A
+Cost dropped by    5.915%
+
+--------------------------------------------------------------------------------
+P1     1 classes,    1 leaves,  Pcost    58.4  Tcost    9803.6,  Cost    9862.0
+Sample  1 Spec_s6m1c__000000022222
+--------------------------------------------------------------------------------
+Classification converged after 2 cycles
+
+S    1  LEAF    Root Age 109  Sz2000.0  Use Fac Vv  0.84  +-0.576 Avv-0.011 
+Pcosts  S:    29.82  F:    58.36  D:     0.00  B:    58.36
+Tcosts  S: 10476.89  F:  8664.05  D:     0.00  B:  9803.59
+Vcost     ---------  F:  1139.55
+totals  S: 10506.70  F:  9861.95  D:     0.00  B:  9861.95
+V  1  Cnt2000.0   In  Adj    0.30
+ PR:   0.307  0.383  0.311
+ FR:   0.288  0.420  0.292
+ BP:  -0.458  0.923 -0.465 +-  0.043
+V  2  Cnt2000.0   In  Adj    1.30
+ PR:   0.381  0.246  0.372
+ FR:   0.396  0.222  0.382
+ BP:  -0.964  0.049  0.915 +-  0.047
+V  3  Cnt2000.0   In  Adj    1.30
+ PR:   0.321  0.361  0.318
+ FR:   0.327  0.385  0.288
+ BP:   0.959 -0.986  0.027 +-  0.046
+V  4  Cnt2000.0   In  Adj    1.30
+ PR:   0.500  0.500
+ FR:   0.498  0.502
+ BP:  -0.439  0.439 +-  0.030
+V  5  Cnt2000.0   In  Adj    1.30
+ PR:   0.688  0.312
+ FR:   0.723  0.277
+ BP:  -0.537  0.537 +-  0.033
+V  6  Cnt2000.0   In  Adj    1.30
+ PR:   0.358  0.642
+ FR:   0.311  0.689
+ BP:   0.752 -0.752 +-  0.037
+
+--------------------------------------------------------------------------------
+P1     1 classes,    1 leaves,  Pcost    58.4  Tcost    9803.6,  Cost    9862.0
+Sample  1 Spec_s6m1c__000000022222
+--------------------------------------------------------------------------------
+       id        V1        V2        V3        V4        V5        V6 
+     1001         1         1         2         1         1         2 
+     1002         1         1         2         1         1         2 
+     1003         3         1         3         1         1         2 
+     1004         3         1         2         1         1         2 
+     1005         3         1         2         1         1         2 
+      ...       ...       ...       ...       ...       ...       ... 
+     2996         3         3         1         2         2         1 
+     2997         2         3         1         2         1         1 
+     2998         2         3         1         2         2         1 
+     2999         2         3         1         2         2         1 
+     3000         2         3         1         2         2         1 
+[2000 items x 6 attributes]
+
+CPU Time:          0.406 s
+Elapsed Time:      0.407 s

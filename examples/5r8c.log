@@ -1,0 +1,431 @@
+Number of active cases = 400
+Begin sort of 400 cases
+Finished sort
+ll.la
+S    1  LEAF    Root Age   5  Sz 400.0  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    26.74  F:   526.74  D:     0.00  B:    26.74
+Tcosts  S: 15229.99  F: 19234.91  D:     0.00  B: 15229.99
+Vcost     ---------  F:     0.00
+totals  S: 15256.73  F: 19761.64  D:     0.00  B: 15256.73
+
+Cycle 1
+Doing 50 steps of costing, assignment and adjustments.
+aa...
+Changing type of class    1  from Leaf to Dad
+AAAA.AA...
+Changing type of class    2  from Leaf to Dad
+Changing type of class    3  from Leaf to Dad
+AAAA.AA...
+Changing type of class    6  from Leaf to Dad
+a
+Changing type of class    5  from Leaf to Dad
+Changing type of class    7  from Leaf to Dad
+aA
+Changing type of class    4  from Leaf to Dad
+aAAA........AA......AAA
+Attempting class moves until 2 successive failures
+aADdDDdddddddDDDdDDdddddddDDdDDddddDdDDdddddddDDDdddddddDDDddddDdDDddddddDddddDD
+DDddddddDddddddDddddDdDDddddddDddddDDDDddddddDddddddDddddDdDDddddddDddddddDddddd
+dDddddDDDDddddDdDDddddddDddddddDddddddDddddDDDDdddddDdDdddddDdDdddddDdDdddddDddd
+ddDdddddDdddddDdDdddddDdDdddddDdDdddddDdddddDdddddDdddddDdDddddDDDDdddddDdDddddD
+DdddddDdddddDdddddDdDdddddDDDdddddDdDdddddDdddddDdddddDdddddDdDdddddDdDdddddDdDd
+ddddDdddddDdddddDdddddDdDdddddDdDdddddDdDdddddDdddddDdddddDdddddDdDdddddDdDddddd
+DdDdddddDdddddDdddddDdddddDdDdddddDdDdddddDdDdddddDdddddDdddddDdddd
+TRYING MOVE CLASS      6 TO DAD      7
+DDDDddddLLlaAaaAA
+ACCEPTED !!!
+Popln  3 on sample  1,  14 classes,   400 things  Cost   10746.10
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan     400 RelAb 1.000  Size   400.0
+       2  Dad       Scan     200 RelAb 0.500  Size   200.0
+          4  Dad   Fac Scan     116 RelAb 0.249  Size    99.5
+            14 Leaf       Scan      68 RelAb 0.128  Size    51.4
+            15 Leaf       Scan      66 RelAb 0.120  Size    48.1
+          5  Dad   Fac Scan     115 RelAb 0.251  Size   100.5
+            10 Leaf       Scan      64 RelAb 0.122  Size    48.8
+            11 Leaf       Scan      66 RelAb 0.129  Size    51.7
+       3  Dad       Scan     200 RelAb 0.500  Size   200.0
+          6  Dad   Fac Scan     119 RelAb 0.249  Size    99.8
+             8 Leaf       Scan      64 RelAb 0.121  Size    48.6
+             9 Leaf       Scan      65 RelAb 0.128  Size    51.2
+         12 Leaf       Scan      75 RelAb 0.132  Size    52.6
+         13 Leaf       Scan      62 RelAb 0.120  Size    47.7
+aaDdDDdddddDdDDddddDdDDddddDDDDddddddDddddddDdddddDdDdddddDdDdddddDdddddDdDddddd
+DdddddDdDdddddDdDdddddDdddddDdDdddddDddddDdDDddddDDDDddddddDddddddDdddddDdDddddd
+DDDddddDDdddddDdDdddddDdddddDdDdddddDDDdddddDdddddDdDdddddDddddDdDDddddddDDDDddd
+DDDddddddDDDDddddDdDDddddddDddddddDddddddDddddddDDdddddDdDdddddDdddddDdddddDDDdd
+dddDDDdddddDdDdddddDdddddDdddddDDDdddddDdDdddddDdddddDdddddDdddddDdddddDdDdddddD
+dddddDdddddDddddDDdddd
+TRYING MOVE CLASS      5 TO DAD      4
+DDDDddddLLlaAaaAA
+ACCEPTED !!!
+Popln  1 on sample  1,  13 classes,   400 things  Cost   10736.87
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan     400 RelAb 1.000  Size   400.0
+       2  Dad       Scan     200 RelAb 0.500  Size   200.0
+          5  Dad   Fac Scan     115 RelAb 0.251  Size   100.5
+            10 Leaf       Scan      64 RelAb 0.122  Size    48.8
+            11 Leaf       Scan      66 RelAb 0.129  Size    51.7
+         14 Leaf       Scan      68 RelAb 0.129  Size    51.4
+         15 Leaf       Scan      66 RelAb 0.121  Size    48.1
+       3  Dad       Scan     200 RelAb 0.500  Size   200.0
+          6  Dad   Fac Scan     119 RelAb 0.249  Size    99.8
+             8 Leaf       Scan      64 RelAb 0.121  Size    48.5
+             9 Leaf       Scan      65 RelAb 0.128  Size    51.3
+         12 Leaf       Scan      75 RelAb 0.132  Size    52.5
+         13 Leaf       Scan      62 RelAb 0.120  Size    47.7
+aaDdDDddddddDDDDDDdddddDdDdddddDdddddDdddddDdddddDdDdddddDdddddDdddddDddddDdDDdd
+ddddDddddddDddddddDDdddddDDdddddDdddddDddddddDDdddddDDdddddDdddddDddddDdDDdddddd
+DDDDddddDdDDddddddDddddddDdddddDDDdddddDdddddDdddddDDdddddDDDdddddDdddddDdddddDD
+dddddDdDdddddDdddddDdddddDdddddDdDdddddDdddddDdddddDdddd
+TRYING MOVE CLASS     10 TO DAD      2
+dDDddddLlLaAAAAA
+ACCEPTED !!!
+Popln  3 on sample  1,  12 classes,   400 things  Cost   10726.61
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan     400 RelAb 1.000  Size   400.0
+       2  Dad       Scan     200 RelAb 0.500  Size   200.0
+          5 Leaf       Scan     115 RelAb 0.129  Size    51.8
+         10 Leaf       Scan      64 RelAb 0.122  Size    48.9
+         14 Leaf       Scan      68 RelAb 0.128  Size    51.3
+         15 Leaf       Scan      66 RelAb 0.120  Size    48.1
+       3  Dad       Scan     200 RelAb 0.500  Size   200.0
+          6  Dad   Fac Scan     119 RelAb 0.249  Size    99.8
+             8 Leaf       Scan      64 RelAb 0.121  Size    48.5
+             9 Leaf       Scan      65 RelAb 0.128  Size    51.3
+         12 Leaf       Scan      75 RelAb 0.132  Size    52.5
+         13 Leaf       Scan      62 RelAb 0.120  Size    47.7
+aaDdDddddddDDDddddddDDdddddDdddddDddddddDDdddddDdddddDddddddDDdddddDdddddDdddddd
+DDdddddDdddddDdddddDDDddddDdDddddddDdddddDDdddddDDdddddDDdddddDDdddddDDdddddDDdd
+dddDdDdddddDdddddDdddddDdDdddddDdddddDdddd
+TRYING MOVE CLASS      8 TO DAD      3
+dDDddddLlLaAAAAA
+ACCEPTED !!!
+Popln  1 on sample  1,  11 classes,   400 things  Cost   10716.62
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan     400 RelAb 1.000  Size   400.0
+       2  Dad       Scan     200 RelAb 0.500  Size   200.0
+          5 Leaf       Scan     115 RelAb 0.129  Size    51.7
+         10 Leaf       Scan      64 RelAb 0.122  Size    48.9
+         14 Leaf       Scan      68 RelAb 0.128  Size    51.3
+         15 Leaf       Scan      66 RelAb 0.120  Size    48.1
+       3  Dad       Scan     200 RelAb 0.500  Size   200.0
+          6 Leaf       Scan     119 RelAb 0.131  Size    52.1
+          8 Leaf       Scan      64 RelAb 0.121  Size    48.5
+         12 Leaf       Scan      75 RelAb 0.129  Size    51.9
+         13 Leaf       Scan      62 RelAb 0.119  Size    47.5
+aadDDddddddDdddddDddddddDdddddDddddddDdddddDddddddDdddddDdddddDDddddddDdddddDddd
+dddDdddddDddddddDdddddDddddddDdddddDdddd
+TRYING MOVE CLASS      2 TO DAD      3
+dDDddddLLlAAaaaA
+Failed ******
+A
+Badmove rejects Move      2      3
+ddDdddddDddddddDdddddDddddddDdddddDddddddDdddddDdddd
+Badmove rejects Move      3      2
+ddDdddddDddddddDdddddDddddddDdddddDddddddDdddddDdddd
+TRYING MOVE CLASS     12 TO DAD      1
+ddDddddLLLAAaaaA
+Failed ******
+a
+Cost dropped by    0.000%
+
+--------------------------------------------------------------------------------
+P1    11 classes,    8 leaves,  Pcost   288.7  Tcost   10427.9,  Cost   10716.6
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+Cycle 2
+Doing 50 steps of costing, assignment and adjustments.
+Aa........Aa........aa.......aaaa
+Attempting class moves until 2 successive failures
+aadDDddddddDdddddDddddddDdddddDddddddDdddddDddddddDdddddDdddddDDddddddDdddddDddd
+dddDdddddDddddddDdddddDddddddDdddddDdddd
+TRYING MOVE CLASS      2 TO DAD      3
+dDDddddlLlAAaaaA
+Failed ******
+a
+Badmove rejects Move      2      3
+ddDdddddDddddddDdddddDddddddDdddddDddddddDdddddDdddd
+Badmove rejects Move      3      2
+ddDdddddDddddddDdddddDddddddDdddddDddddddDdddddDdddd
+TRYING MOVE CLASS     12 TO DAD      1
+ddDddddlLLAAaaaA
+Failed ******
+Cost dropped by   29.758%
+
+--------------------------------------------------------------------------------
+P1    11 classes,    8 leaves,  Pcost   288.7  Tcost   10427.9,  Cost   10716.6
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+Classification converged after 2 cycles
+
+S    1   DAD    Root Age 118  Sz 400.0  Use Fac Vv  1.29  +-0.048 Avv 0.000    2 sons
+Pcosts  S:    26.75  F:   283.96  D:   288.73  B:   288.73
+Tcosts  S: 15229.98  F: 10854.75  D: 10427.88  B: 10427.88
+Vcost     ---------  F:  1346.50
+totals  S: 15256.73  F: 12485.20  D: 10716.61  B: 10716.61
+V  1  Cnt 400.0   In
+ N: Cost    13.5  Mu  10.278+-   6.927  SD   0.315+-   0.057
+ S: Cost  3337.3  Mu  10.277  SD  10.004
+ F: Cost  2308.0  Mu  10.276  SD   0.748  Ld   7.739
+V  2  Cnt 400.0   In
+ N: Cost    12.8  Mu  10.243+-   6.914  SD   0.326+-   0.073
+ S: Cost  3337.1  Mu  10.245  SD   9.999
+ F: Cost  2308.6  Mu  10.245  SD   0.749  Ld   7.735
+V  3  Cnt 400.0   In
+ N: Cost    12.3  Mu  10.237+-   6.934  SD   0.342+-   0.087
+ S: Cost  3338.3  Mu  10.244  SD  10.028
+ F: Cost  2299.5  Mu  10.244  SD   0.732  Ld   7.759
+V  4  Cnt 400.0   In
+ N: Cost    13.3  Mu  10.254+-   6.925  SD   0.329+-   0.060
+ S: Cost  3337.5  Mu  10.245  SD  10.008
+ F: Cost  2307.8  Mu  10.245  SD   0.747  Ld   7.743
+V  5  Cnt 400.0   In
+ N: Cost    11.8  Mu  -0.004+-   0.041  SD   0.278+-   0.047
+ S: Cost  1906.5  Mu  -0.003  SD   0.280
+ F: Cost  1910.0  Mu  -0.003  SD   0.280  Ld  -0.008
+
+S    2   DAD Dad    1  Age 113  Sz 200.0  Use Pln(Vv  0.32B +-0.951 Avv-0.001)   4 sons
+Pcosts  S:    38.48  F:    51.52  D:   110.42  B:   110.42
+Tcosts  S:  5397.59  F:  5389.36  D:  5186.46  B:  5186.46
+Vcost     ---------  F:    10.46
+totals  S:  5436.07  F:  5451.34  D:  5296.88  B:  5296.88
+V  1  Cnt 200.0   In
+ N: Cost     9.7  Mu   0.327+-   0.851  SD   0.293+-   0.044
+ S: Cost  1085.9  Mu   0.296  SD   0.508
+ F: Cost  1087.9  Mu   0.295  SD   0.502  Ld  -0.035
+V  2  Cnt 200.0   In
+ N: Cost     9.8  Mu   0.312+-   0.851  SD   0.300+-   0.052
+ S: Cost  1084.0  Mu   0.270  SD   0.511
+ F: Cost  1080.8  Mu   0.269  SD   0.498  Ld  -0.105
+V  3  Cnt 200.0   In
+ N: Cost     9.9  Mu   0.265+-   0.820  SD   0.288+-   0.065
+ S: Cost  1077.7  Mu   0.238  SD   0.500
+ F: Cost  1076.7  Mu   0.239  SD   0.492  Ld   0.082
+V  4  Cnt 200.0   In
+ N: Cost     9.6  Mu   0.317+-   0.943  SD   0.296+-   0.042
+ S: Cost  1097.7  Mu   0.261  SD   0.535
+ F: Cost  1098.2  Mu   0.261  SD   0.530  Ld   0.067
+V  5  Cnt 200.0   In
+ N: Cost     3.8  Mu   0.004+-   0.033  SD   0.279+-   0.036
+ S: Cost   952.1  Mu   0.005  SD   0.279
+ F: Cost   954.2  Mu   0.005  SD   0.278  Ld  -0.019
+
+S    5  LEAF Dad    2  Age 109  Sz  51.7  Use Pln(Vv  0.36B +-0.895 Avv-0.000)
+Pcosts  S:    14.25  F:    23.44  D:     0.00  B:    14.25
+Tcosts  S:  1338.94  F:  1339.17  D:     0.00  B:  1338.94
+Vcost     ---------  F:     3.87
+totals  S:  1353.19  F:  1366.48  D:     0.00  B:  1353.19
+V  1  Cnt  51.7   In
+ S: Cost   244.7  Mu  -0.006  SD   0.265
+ F: Cost   246.2  Mu  -0.005  SD   0.262  Ld  -0.031
+V  2  Cnt  51.7   In
+ S: Cost   245.8  Mu   0.046  SD   0.268
+ F: Cost   247.2  Mu   0.045  SD   0.265  Ld   0.038
+V  3  Cnt  51.7   In
+ S: Cost   260.4  Mu   0.943  SD   0.332
+ F: Cost   260.7  Mu   0.944  SD   0.322  Ld  -0.084
+V  4  Cnt  51.7   In
+ S: Cost   247.0  Mu   0.023  SD   0.275
+ F: Cost   247.9  Mu   0.024  SD   0.271  Ld  -0.052
+V  5  Cnt  51.7   In
+ S: Cost   249.5  Mu  -0.001  SD   0.289
+ F: Cost   250.9  Mu  -0.001  SD   0.286  Ld   0.037
+
+S   10  LEAF Dad    2  Age 105  Sz  48.9  Use Pln(Vv  0.55  +-0.789 Avv-0.012)
+Pcosts  S:    13.49  F:    22.76  D:     0.00  B:    13.49
+Tcosts  S:  1273.81  F:  1267.63  D:     0.00  B:  1273.81
+Vcost     ---------  F:     9.72
+totals  S:  1287.30  F:  1300.12  D:     0.00  B:  1287.30
+V  1  Cnt  48.9   In
+ S: Cost   237.2  Mu   0.056  SD   0.289
+ F: Cost   237.7  Mu   0.057  SD   0.281  Ld   0.073
+V  2  Cnt  48.9   In
+ S: Cost   245.3  Mu   1.017  SD   0.326
+ F: Cost   242.3  Mu   1.019  SD   0.301  Ld   0.146
+V  3  Cnt  48.9   In
+ S: Cost   231.5  Mu  -0.060  SD   0.258
+ F: Cost   232.4  Mu  -0.059  SD   0.251  Ld   0.056
+V  4  Cnt  48.9   In
+ S: Cost   238.2  Mu  -0.026  SD   0.293
+ F: Cost   240.0  Mu  -0.026  SD   0.291  Ld   0.024
+V  5  Cnt  48.9   In
+ S: Cost   232.4  Mu   0.012  SD   0.276
+ F: Cost   231.3  Mu   0.012  SD   0.264  Ld  -0.098
+
+S   14  LEAF Dad    2  Age 105  Sz  51.3  Use Pln(Vv  0.56  +-0.774 Avv 0.004)
+Pcosts  S:    13.41  F:    23.11  D:     0.00  B:    13.41
+Tcosts  S:  1338.63  F:  1330.42  D:     0.00  B:  1338.63
+Vcost     ---------  F:    10.98
+totals  S:  1352.04  F:  1364.51  D:     0.00  B:  1352.04
+V  1  Cnt  51.3   In
+ S: Cost   254.9  Mu   1.031  SD   0.314
+ F: Cost   253.5  Mu   1.031  SD   0.299  Ld   0.116
+V  2  Cnt  51.3   In
+ S: Cost   247.7  Mu  -0.003  SD   0.286
+ F: Cost   244.7  Mu  -0.004  SD   0.263  Ld   0.127
+V  3  Cnt  51.3   In
+ S: Cost   252.0  Mu   0.015  SD   0.303
+ F: Cost   253.7  Mu   0.015  SD   0.299  Ld  -0.040
+V  4  Cnt  51.3   In
+ S: Cost   248.8  Mu  -0.009  SD   0.291
+ F: Cost   247.5  Mu  -0.009  SD   0.277  Ld  -0.107
+V  5  Cnt  51.3   In
+ S: Cost   243.3  Mu   0.008  SD   0.275
+ F: Cost   244.9  Mu   0.008  SD   0.273  Ld   0.036
+
+S   15  LEAF Dad    2  Age 105  Sz  48.1  Use Pln(Vv  0.61  +-0.731 Avv-0.007)
+Pcosts  S:    13.74  F:    23.43  D:     0.00  B:    13.74
+Tcosts  S:  1246.32  F:  1234.88  D:     0.00  B:  1246.32
+Vcost     ---------  F:    12.97
+totals  S:  1260.06  F:  1271.28  D:     0.00  B:  1260.06
+V  1  Cnt  48.1   In
+ S: Cost   233.9  Mu   0.078  SD   0.292
+ F: Cost   232.8  Mu   0.079  SD   0.278  Ld   0.106
+V  2  Cnt  48.1   In
+ S: Cost   237.0  Mu   0.039  SD   0.308
+ F: Cost   233.0  Mu   0.039  SD   0.279  Ld   0.153
+V  3  Cnt  48.1   In
+ S: Cost   221.5  Mu   0.021  SD   0.231
+ F: Cost   222.6  Mu   0.021  SD   0.226  Ld  -0.047
+V  4  Cnt  48.1   In
+ S: Cost   237.1  Mu   1.098  SD   0.305
+ F: Cost   236.8  Mu   1.097  SD   0.294  Ld  -0.099
+V  5  Cnt  48.1   In
+ S: Cost   228.7  Mu   0.002  SD   0.278
+ F: Cost   227.4  Mu   0.002  SD   0.265  Ld   0.105
+
+S    3   DAD Dad    1  Age 113  Sz 200.0  Use Pln(Vv  0.42B +-0.917 Avv-0.000)   4 sons
+Pcosts  S:    39.48  F:    51.92  D:   108.45  B:   108.45
+Tcosts  S:  5414.17  F:  5396.03  D:  5241.42  B:  5241.42
+Vcost     ---------  F:    19.17
+totals  S:  5453.64  F:  5467.12  D:  5349.87  B:  5349.87
+V  1  Cnt 200.0   In
+ N: Cost     9.6  Mu  20.228+-   0.904  SD   0.303+-   0.041
+ S: Cost  1093.7  Mu  20.258  SD   0.521
+ F: Cost  1084.3  Mu  20.258  SD   0.499  Ld  -0.155
+V  2  Cnt 200.0   In
+ N: Cost     9.6  Mu  20.173+-   0.881  SD   0.298+-   0.054
+ S: Cost  1091.4  Mu  20.221  SD   0.524
+ F: Cost  1094.0  Mu  20.221  SD   0.525  Ld  -0.020
+V  3  Cnt 200.0   In
+ N: Cost    10.4  Mu  20.207+-   0.790  SD   0.326+-   0.053
+ S: Cost  1082.2  Mu  20.250  SD   0.508
+ F: Cost  1075.9  Mu  20.250  SD   0.492  Ld   0.132
+V  4  Cnt 200.0   In
+ N: Cost     9.6  Mu  20.196+-   0.879  SD   0.326+-   0.047
+ S: Cost  1095.3  Mu  20.229  SD   0.529
+ F: Cost  1097.4  Mu  20.229  SD   0.527  Ld   0.036
+V  5  Cnt 200.0   In
+ N: Cost     3.5  Mu  -0.012+-   0.034  SD   0.277+-   0.042
+ S: Cost   952.5  Mu  -0.012  SD   0.280
+ F: Cost   953.1  Mu  -0.012  SD   0.278  Ld   0.035
+
+S    6  LEAF Dad    3  Age 106  Sz  51.6  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    13.52  F:   513.52  D:     0.00  B:    13.52
+Tcosts  S:  1345.11  F:  1864.72  D:     0.00  B:  1345.11
+Vcost     ---------  F:     0.00
+totals  S:  1358.64  F:  2378.25  D:     0.00  B:  1358.64
+V  1  Cnt  51.6   In
+ S: Cost   250.9  Mu  19.999  SD   0.296
+ F: Cost   350.9  Mu  19.998  SD   0.285  Ld  -0.093
+V  2  Cnt  51.6   In
+ S: Cost   245.0  Mu  20.984  SD   0.266
+ F: Cost   345.0  Mu  20.983  SD   0.256  Ld  -0.072
+V  3  Cnt  51.6   In
+ S: Cost   254.9  Mu  20.056  SD   0.319
+ F: Cost   354.9  Mu  20.057  SD   0.312  Ld   0.070
+V  4  Cnt  51.6   In
+ S: Cost   252.2  Mu  19.993  SD   0.308
+ F: Cost   352.2  Mu  19.994  SD   0.297  Ld   0.092
+V  5  Cnt  51.6   In
+ S: Cost   250.0  Mu  -0.018  SD   0.294
+ F: Cost   350.0  Mu  -0.018  SD   0.287  Ld   0.074
+
+S    8  LEAF Dad    3  Age 105  Sz  48.6  Use Pln(Vv  0.58  +-0.755 Avv 0.001)
+Pcosts  S:    13.09  F:    22.39  D:     0.00  B:    13.09
+Tcosts  S:  1276.49  F:  1268.02  D:     0.00  B:  1276.49
+Vcost     ---------  F:    11.53
+totals  S:  1289.58  F:  1301.94  D:     0.00  B:  1289.58
+V  1  Cnt  48.6   In
+ S: Cost   234.7  Mu  20.008  SD   0.289
+ F: Cost   236.2  Mu  20.008  SD   0.286  Ld  -0.042
+V  2  Cnt  48.6   In
+ S: Cost   232.9  Mu  19.954  SD   0.277
+ F: Cost   234.8  Mu  19.954  SD   0.275  Ld  -0.018
+V  3  Cnt  48.6   In
+ S: Cost   244.8  Mu  19.983  SD   0.342
+ F: Cost   240.1  Mu  19.983  SD   0.308  Ld   0.177
+V  4  Cnt  48.6   In
+ S: Cost   246.0  Mu  21.003  SD   0.345
+ F: Cost   242.4  Mu  21.004  SD   0.317  Ld   0.167
+V  5  Cnt  48.6   In
+ S: Cost   228.8  Mu  -0.008  SD   0.267
+ F: Cost   230.6  Mu  -0.008  SD   0.265  Ld  -0.027
+
+S   12  LEAF Dad    3  Age 105  Sz  52.3  Use Pln(Vv  0.59  +-0.754 Avv 0.006)
+Pcosts  S:    13.29  F:    22.73  D:     0.00  B:    13.29
+Tcosts  S:  1386.43  F:  1376.68  D:     0.00  B:  1386.43
+Vcost     ---------  F:    12.68
+totals  S:  1399.73  F:  1412.09  D:     0.00  B:  1399.73
+V  1  Cnt  52.3   In
+ S: Cost   259.6  Mu  20.014  SD   0.316
+ F: Cost   260.5  Mu  20.014  SD   0.310  Ld   0.071
+V  2  Cnt  52.3   In
+ S: Cost   262.6  Mu  19.956  SD   0.330
+ F: Cost   255.9  Mu  19.957  SD   0.290  Ld  -0.184
+V  3  Cnt  52.3   In
+ S: Cost   259.9  Mu  20.925  SD   0.324
+ F: Cost   258.4  Mu  20.925  SD   0.306  Ld   0.121
+V  4  Cnt  52.3   In
+ S: Cost   256.4  Mu  19.972  SD   0.310
+ F: Cost   257.6  Mu  19.972  SD   0.305  Ld   0.060
+V  5  Cnt  52.3   In
+ S: Cost   254.8  Mu  -0.001  SD   0.299
+ F: Cost   256.8  Mu  -0.001  SD   0.297  Ld   0.022
+
+S   13  LEAF Dad    3  Age 105  Sz  47.5  Use Pln(Vv  0.55  +-0.788 Avv 0.021)
+Pcosts  S:    13.08  F:    22.45  D:     0.00  B:    13.08
+Tcosts  S:  1249.72  F:  1243.50  D:     0.00  B:  1249.72
+Vcost     ---------  F:     9.48
+totals  S:  1262.80  F:  1275.43  D:     0.00  B:  1262.80
+V  1  Cnt  47.5   In
+ S: Cost   233.6  Mu  21.061  SD   0.303
+ F: Cost   232.8  Mu  21.059  SD   0.291  Ld   0.104
+V  2  Cnt  47.5   In
+ S: Cost   234.7  Mu  19.959  SD   0.309
+ F: Cost   234.9  Mu  19.961  SD   0.298  Ld  -0.086
+V  3  Cnt  47.5   In
+ S: Cost   234.0  Mu  19.992  SD   0.314
+ F: Cost   235.3  Mu  19.994  SD   0.308  Ld  -0.059
+V  4  Cnt  47.5   In
+ S: Cost   239.4  Mu  19.976  SD   0.339
+ F: Cost   238.8  Mu  19.978  SD   0.325  Ld  -0.115
+V  5  Cnt  47.5   In
+ S: Cost   219.7  Mu  -0.024  SD   0.250
+ F: Cost   219.0  Mu  -0.024  SD   0.239  Ld  -0.085
+
+--------------------------------------------------------------------------------
+P1    11 classes,    8 leaves,  Pcost   288.7  Tcost   10427.9,  Cost   10716.6
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+       id        V1        V2        V3        V4        V5 
+     1001      1.22     -0.15      0.37      0.12      0.39 
+     1002      1.31      0.29      -0.3     -0.47      0.71 
+     1003       1.1     -0.03      0.47      0.03     -0.36 
+     1004      0.79      -0.4      0.26     -0.49       0.2 
+     1005      1.47      0.37      -0.4      -0.2     -0.29 
+      ...       ...       ...       ...       ...       ... 
+     8046      19.8      19.9      19.9      20.7      0.12 
+     8047      20.3      19.9      19.3      20.7      0.25 
+     8048      19.5      19.8      20.8      21.9       0.1 
+     8049      20.1      19.4      20.4      20.6     -0.08 
+     8050      19.9      19.9      20.7      21.3      0.15 
+[400 items x 5 attributes]
+
+CPU Time:          0.074 s
+Elapsed Time:      0.074 s
