@@ -7,7 +7,7 @@ import snob
 
 EXAMPLES = [
     'phi', 'sd1', '5m1c', '5r8c', '6m1c', '6m2r2c',
-    '6r1c', '6r1b', 'd2', 'vm',
+    '6r1c', '6r1b', 'd2', 'vm', 'vmd',
 ]
 
 if __name__ == '__main__':

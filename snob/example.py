@@ -14,12 +14,12 @@ if __name__ == '__main__':
             'ctheta': 'radians',
             'cphi': 'radians',
         },
-        from_file='/tmp/sst.mod',
+        #from_file='/tmp/sst.mod',
         cycles=3, steps=40, moves=2, tol=0.01, seed=1234567
     )
 
-    #sfc.fit(train_data)
-    #sfc.save_model('/tmp/sst.mod')
+    sfc.fit(train_data)
+    sfc.save_model('/tmp/sst.mod')
     pred = sfc.predict(train_data)
     snob.show_classes(sfc.get_classes())
     print(pred)
