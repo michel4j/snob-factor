@@ -3,8 +3,7 @@
 import re
 import sys
 
-#P1     9 classes,    5 leaves,  Pcost   312.7  Tcost   25524.9,  Cost   25837.6
-#P3     8 classes,    6 leaves,  Pcost   272.0  Tcost   25608.6,  Cost   25880.6
+
 pattern = re.compile(
     r"^P\d\s+(?P<classes>\d+)\s+classes,\s+"
     r"(?P<leaves>\d+)\s+leaves,\s+Pcost\s+(?P<p_cost>\d+\.\d+)\s+"

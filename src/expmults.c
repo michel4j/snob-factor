@@ -143,9 +143,8 @@ when installing a new type of variable. It is also necessary to change the
 "Ntypes" constant, and to decide on a type id (an integer) for the new type.
     */
 
-void expmults_define(typindx) int typindx;
-/*	typindx is the index in types[] of this type   */
-{
+void expmults_define(int typindx) {
+    /*	typindx is the index in types[] of this type   */
     int ig;
     double xg;
     VarType *vtype;

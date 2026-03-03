@@ -10,7 +10,7 @@
 
 /* Initialize some variables */
 int Interactive = 0;
-int Debug = 1;
+int Debug = 0;
 int NumRepChars = 0;
 
 /*    To assist in printing class serials  */
@@ -226,14 +226,20 @@ void show_population() {
     Sample *sample = CurCtx.sample;
 
     root = popln->classes[popln->root];
-    printf("\n--------------------------------------------------------------------------------\n");
-    printf("P%1d  %4d classes, %4d leaves,  Pcost%8.1f", popln->id + 1, popln->num_classes, popln->num_leaves, root->best_par_cost);
+    log_msg(2, "--------------------------------------------------------------------------------");
     if (popln->sample_size) {
-        printf("  Tcost%10.1f,  Cost%10.1f", root->best_case_cost, root->best_cost);
+        log_msg(
+            2, "P%1d  %4d classes, %4d leaves,  Pcost%8.1f  Tcost%10.1f,  Cost%10.1f",
+            popln->id + 1, popln->num_classes, popln->num_leaves, root->best_par_cost, root->best_case_cost, root->best_cost
+        );
+    } else {
+        log_msg(
+            2, "P%1d  %4d classes, %4d leaves,  Pcost%8.1f",
+            popln->id + 1, popln->num_classes, popln->num_leaves, root->best_par_cost
+        );
     }
-    printf("\n");
-    printf("Sample %2d %s", (sample) ? sample->id + 1 : 0, (sample) ? sample->name : "NULL");
-    printf("\n--------------------------------------------------------------------------------\n");
+    log_msg(2, "Sample %2d %s", (sample) ? sample->id + 1 : 0, (sample) ? sample->name : "NULL");
+    log_msg(2, "--------------------------------------------------------------------------------");
 }
 
 void cleanup_population() {
@@ -282,8 +288,10 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
     root = CurCtx.popln->classes[CurCtx.popln->root];
     double cost = root->best_cost, delta = 0.0;
     do {
-        log_msg(1, "Cycle %d", 1 + cycle);
-        log_msg(1, "Doing %d steps of costing, assignment and adjustments.", do_steps);
+        log_msg(1, "\n");
+        log_msg(1, "================================================================================");
+        log_msg(1, "Cycle %d | %d steps of costing, assignment and adjustments", 1 + cycle, do_steps);
+        log_msg(1, "================================================================================");
         do_all(do_steps, 1);
         cleanup_population();
 
@@ -294,11 +302,13 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
         log_msg(1, "Cost dropped by %8.3f%%", delta);
         show_population();
         root = CurCtx.popln->classes[CurCtx.popln->root];
-        delta = 100.0 * (cost - root->best_cost) / cost;
+        delta = fabs(100.0 * (cost - root->best_cost) / cost);
         if ((CurCtx.popln->num_classes > 1)) {
             // test convergence if we are not at the beginning
             if ((prev_classes == CurCtx.popln->num_classes) && (prev_leaves == CurCtx.popln->num_leaves) && (delta < tol)) {
                 no_change_count++;
+            } else {
+                no_change_count = 0;
             }
         }
         prev_classes = CurCtx.popln->num_classes;
@@ -311,7 +321,7 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
 
     } while (cycle < max_cycles);
 
-    if (cycle > max_cycles) {
+    if (cycle >= max_cycles) {
         log_msg(1, "WARNING: Classification did not converge after %d cycles", max_cycles);
     } else if (Stop) {
         log_msg(1, "WARNING: Classification interrupted after %d cycles", cycle);

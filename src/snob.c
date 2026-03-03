@@ -5,11 +5,11 @@
 #include <time.h>
 
 #define DO_ALL_STEPS 50
-#define TRY_MOVE_STEPS 2
+#define TRY_MOVE_STEPS 4
 
 /*    ---------------------  main  ---------------------------  */
 int main(int argc, char *argv[]) {
-    int index, cycles = 2;
+    int index, cycles = 25;
 
     clock_t cpu_start, cpu_end;
     struct timespec wall_start, wall_end;
@@ -24,19 +24,26 @@ int main(int argc, char *argv[]) {
     cpu_start = clock();
     timespec_get(&wall_start, TIME_UTC);
 
-    initialize(0, 0, 8);
+    initialize(0, 1, 0);
 
+    log_msg(1, "################################################################################");
+    log_msg(1, "Factor SNOB - Mixture Modelling by Minimum Message Length (MML) with Factors");
+    log_msg(1, "################################################################################");
+
+    log_msg(1, "Loading vset: %s", argv[1]);
     index = load_vset(argv[1]);
     if (index < 0) {
         log_msg(2, "Error[ %d ] reading vset: %s", index, argv[1]);
         exit(2);
     }
 
+    log_msg(1, "Loading sample: %s", argv[2]);
     index = load_sample(argv[2]);
     if (index < 0) {
         log_msg(2, "Error[ %d ] reading sample: %s", index, argv[2]);
         exit(2);
-    }
+    }    
+    peek_data();
     classify(cycles, DO_ALL_STEPS, TRY_MOVE_STEPS, 0.01);  // % tolerance of 0.01 % for convergence of cost
    
     // display tree and classes
@@ -52,7 +59,7 @@ int main(int argc, char *argv[]) {
     timespec_get(&wall_end, TIME_UTC);
     cpu_time = ((double) (cpu_end - cpu_start)) / CLOCKS_PER_SEC;
     wall_time = (wall_end.tv_sec - wall_start.tv_sec) +  (wall_end.tv_nsec - wall_start.tv_nsec) / 1E9;
-    peek_data();
+
     log_msg(1, "CPU Time:     %10.3f s", cpu_time);
     log_msg(1, "Elapsed Time: %10.3f s", wall_time);
 }

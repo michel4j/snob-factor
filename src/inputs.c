@@ -441,7 +441,7 @@ void rep(int ch) {
 }
 
 void flp() {
-    if (NumRepChars) {
+    if (NumRepChars && (Debug < 1)) {
         putchar('\n');
         NumRepChars = 0;
     }

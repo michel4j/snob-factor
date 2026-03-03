@@ -183,9 +183,9 @@ class SNOBClassifier:
     def __init__(
             self,
             attrs: Dict[str, DataType],
-            cycles: int = 20,
+            cycles: int = 25,
             steps: int = 50,
-            moves: int = 5,
+            moves: int = 4,
             tol: float = 5e-3,
             name: str = 'mml',
             seed: int = 0,
