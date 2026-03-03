@@ -28,5 +28,5 @@ clean:
 	rm -f *.o snob-factor auto-snob
 
 test: all
-	cd .. && ./tests/test.sh vm 
+	cd .. && ./tests/test.sh 5r8c 
 

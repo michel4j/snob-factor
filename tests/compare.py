@@ -45,7 +45,7 @@ if __name__ == "__main__":
         if abs(int(final_expected['classes']) - int(final_actual['classes'])) > 1:
             print("Classes do not match!")
             success = False
-        if abs(int(final_expected['leaves']) - int(final_actual['leaves'])) > 1:
+        if abs(int(final_expected['leaves']) - int(final_actual['leaves'])) > 0:
             print("Leaves do not match!")
             success = False
         if abs(float(final_actual['p_cost']) - float(final_expected['p_cost'])) / float(final_expected['p_cost']) > 0.05:

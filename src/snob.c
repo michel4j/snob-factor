@@ -5,11 +5,11 @@
 #include <time.h>
 
 #define DO_ALL_STEPS 50
-#define TRY_MOVE_STEPS 2
+#define TRY_MOVE_STEPS 5
 
 /*    ---------------------  main  ---------------------------  */
 int main(int argc, char *argv[]) {
-    int index, cycles = 20;
+    int index, cycles = 50;
 
     clock_t cpu_start, cpu_end;
     struct timespec wall_start, wall_end;
@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     cpu_start = clock();
     timespec_get(&wall_start, TIME_UTC);
 
-    initialize(0, 0, 8);
+    initialize(0, 0, 0);
 
     index = load_vset(argv[1]);
     if (index < 0) {
@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
         log_msg(2, "Error[ %d ] reading sample: %s", index, argv[2]);
         exit(2);
     }
-    classify(cycles, DO_ALL_STEPS, TRY_MOVE_STEPS, 0.01);  // % tolerance of 0.01 % for convergence of cost
+    classify(cycles, DO_ALL_STEPS, TRY_MOVE_STEPS, 0.005);  // % tolerance of 0.01 % for convergence of cost
    
     // display tree and classes
     print_class(-2, 1);
