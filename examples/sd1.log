@@ -1,129 +1,11 @@
+################################################################################
+Factor SNOB - Mixture Modelling by Minimum Message Length (MML) with Factors
+################################################################################
+Loading vset: ../examples/sd1.v
+Loading sample: ../examples/sd1.s
 Number of active cases = 300
 Begin sort of 300 cases
 Finished sort
-ll.la
-S    1  LEAF    Root Age   5  Sz 300.0  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:    12.13  F:   312.13  D:     0.00  B:    12.13
-Tcosts  S:  2590.50  F:  5595.27  D:     0.00  B:  2590.50
-Vcost     ---------  F:     0.00
-totals  S:  2602.63  F:  5907.40  D:     0.00  B:  2602.63
-
-Cycle 1
-Doing 50 steps of costing, assignment and adjustments.
-aa...
-Changing type of class    1  from Leaf to Dad
-AAAA.AA.....
-Changing type of class    3  from Leaf to Dad
-aAAAA........AA........Aa......Aaa
-Attempting class moves until 2 successive failures
-aaDDddddDDdddddDdddd
-TRYING MOVE CLASS      2 TO DAD      3
-DDddddLllaAaaaa
-ACCEPTED !!!
-Popln  3 on sample  1,   4 classes,   300 things  Cost    2502.14
-
-  Assign mode Partial    --- Adjust: Params Scores Tree
-    1  Dad   Fac Scan     300 RelAb 1.000  Size   300.0
-       2 Leaf       Scan     146 RelAb 0.376  Size   112.9
-       4 Leaf       Scan     146 RelAb 0.278  Size    83.3
-       5 Leaf       Scan     147 RelAb 0.346  Size   103.9
-aa
-No possible class move
-Cost dropped by    0.000%
-
---------------------------------------------------------------------------------
-P3     4 classes,    3 leaves,  Pcost    48.6  Tcost    2453.5,  Cost    2502.1
-Sample  1 Old_Snob_sd1_sample
---------------------------------------------------------------------------------
-Cycle 2
-Doing 50 steps of costing, assignment and adjustments.
-aa........aa........aa........a
-Attempting class moves until 2 successive failures
-aa
-No possible class move
-Cost dropped by    3.861%
-
---------------------------------------------------------------------------------
-P3     4 classes,    3 leaves,  Pcost    48.6  Tcost    2453.5,  Cost    2502.1
-Sample  1 Old_Snob_sd1_sample
---------------------------------------------------------------------------------
-Classification converged after 2 cycles
-
-S    1   DAD    Root Age  96  Sz 300.0  Use Fac Vv  0.84  +-0.565 Avv-0.004    3 sons
-Pcosts  S:    12.13  F:    23.27  D:    48.63  B:    48.63
-Tcosts  S:  2590.50  F:  2371.64  D:  2453.51  B:  2453.51
-Vcost     ---------  F:   175.41
-totals  S:  2602.63  F:  2570.33  D:  2502.14  B:  2502.14
-V  1  Cnt 300.0   In
- N: Cost     4.3  Mu  26.152+-  22.748  SD   8.959+-   4.596
- S: Cost  2059.6  Mu  25.443  SD  22.715
- F: Cost  1920.3  Mu  25.503  SD  14.201  Ld  17.442
-V  2  Cnt 300.0   In  Adj    1.30
- NR:   0.338  0.321  0.341 +-  1.248
- PR:   0.396  0.284  0.320
- FR:   0.469  0.225  0.306
- BP:  -1.273  0.129  1.144 +-  0.130
-V  3  Cnt 300.0   In  Adj    0.30
- NR:   0.496  0.504 +-  0.413
- PR:   0.490  0.510
- FR:   0.490  0.510
- BP:  -0.036  0.036 +-  0.069
-
-S    2  LEAF Dad    1  Age  94  Sz 112.8  Use Pln(Vv  0.09B +-0.996 Avv-0.006)
-Pcosts  S:    10.34  F:    15.65  D:     0.00  B:    10.34
-Tcosts  S:   944.16  F:   948.58  D:     0.00  B:   944.16
-Vcost     ---------  F:     0.51
-totals  S:   954.50  F:   964.74  D:     0.00  B:   954.50
-V  1  Cnt 112.8   In
- S: Cost   694.1  Mu   0.666  SD  10.779
- F: Cost   696.6  Mu   0.654  SD  10.714  Ld   0.049
-V  2  Cnt 112.8   In  Adj    0.33
- PR:   0.823  0.061  0.116
- FR:   0.838  0.058  0.103
- BP:  -0.001 -0.000  0.001 +-  0.907
-V  3  Cnt 112.8   In  Adj    0.33
- PR:   0.519  0.481
- FR:   0.519  0.481
- BP:  -0.001  0.001 +-  0.706
-
-S    4  LEAF Dad    1  Age  84  Sz  83.4  Use Pln(Vv  0.11B +-0.995 Avv-0.002)
-Pcosts  S:     9.78  F:    14.61  D:     0.00  B:     9.78
-Tcosts  S:   680.27  F:   684.51  D:     0.00  B:   680.27
-Vcost     ---------  F:     0.54
-totals  S:   690.05  F:   699.66  D:     0.00  B:   690.05
-V  1  Cnt  83.4   In
- S: Cost   475.7  Mu  28.814  SD   6.842
- F: Cost   478.1  Mu  28.810  SD   6.792  Ld   0.001
-V  2  Cnt  83.4   In  Adj    0.33
- PR:   0.048  0.839  0.113
- FR:   0.049  0.850  0.102
- BP:  -0.004 -0.001  0.005 +-  0.910
-V  3  Cnt  83.4   In  Adj    0.33
- PR:   0.439  0.561
- FR:   0.437  0.563
- BP:   0.000 -0.000 +-  0.698
-
-S    5  LEAF Dad    1  Age  84  Sz 103.8  Use Pln(Vv  0.09B +-0.996 Avv 0.001)
-Pcosts  S:    10.30  F:    15.97  D:     0.00  B:    10.30
-Tcosts  S:   861.67  F:   866.15  D:     0.00  B:   861.67
-Vcost     ---------  F:     0.43
-totals  S:   871.97  F:   882.55  D:     0.00  B:   871.97
-V  1  Cnt 103.8   In
- S: Cost   602.8  Mu  49.689  SD   7.628
- F: Cost   605.3  Mu  49.694  SD   7.587  Ld   0.003
-V  2  Cnt 103.8   In  Adj    0.33
- PR:   0.215  0.080  0.706
- FR:   0.190  0.080  0.729
- BP:  -0.000  0.002 -0.002 +-  0.887
-V  3  Cnt 103.8   In  Adj    0.33
- PR:   0.502  0.498
- FR:   0.499  0.501
- BP:   0.001 -0.001 +-  0.733
-
---------------------------------------------------------------------------------
-P3     4 classes,    3 leaves,  Pcost    48.6  Tcost    2453.5,  Cost    2502.1
-Sample  1 Old_Snob_sd1_sample
---------------------------------------------------------------------------------
        id        V1        V2        V3 
      1008     -8.83         3         2 
      1009     -2.02         1         1 
@@ -138,5 +20,160 @@ Sample  1 Old_Snob_sd1_sample
      3291        43         3         1 
 [300 items x 3 attributes]
 
-CPU Time:          0.034 s
-Elapsed Time:      0.034 s
+ll.la
+S    1  LEAF    Root Age   5  Sz 300.0  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    12.13  F:   312.13  D:     0.00  B:    12.13
+Tcosts  S:  2590.50  F:  5595.27  D:     0.00  B:  2590.50
+Vcost     ---------  F:     0.00
+totals  S:  2602.63  F:  5907.40  D:     0.00  B:  2602.63
+
+
+
+================================================================================
+Cycle 1 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa...
+Changing type of class    1  from Leaf to Dad
+AAAA.AA.....
+Changing type of class    3  from Leaf to Dad
+aAAAA........AA........Aa......Aaa
+Attempting class moves until 4 successive failures
+aaDDddddDDdddddDdddd
+TRYING MOVE CLASS      2 TO DAD      3
+DDddddLllaAaaaa
+ACCEPTED !!!
+Popln  3 on sample  1,   4 classes,   300 things  Cost    2502.14
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad       Scan     300 RelAb 1.000  Size   300.0
+       2 Leaf       Scan     146 RelAb 0.376  Size   112.9
+       4 Leaf       Scan     146 RelAb 0.278  Size    83.3
+       5 Leaf       Scan     147 RelAb 0.346  Size   103.8
+aa
+No possible class move
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     4 classes,    3 leaves,  Pcost    48.6  Tcost    2453.5,  Cost    2502.1
+Sample  1 Old_Snob_sd1_sample
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 2 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........a
+Attempting class moves until 4 successive failures
+aa
+No possible class move
+a
+Cost dropped by    3.861%
+--------------------------------------------------------------------------------
+P3     4 classes,    3 leaves,  Pcost    48.6  Tcost    2453.5,  Cost    2502.1
+Sample  1 Old_Snob_sd1_sample
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 3 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........a
+Attempting class moves until 4 successive failures
+aa
+No possible class move
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     4 classes,    3 leaves,  Pcost    48.6  Tcost    2453.5,  Cost    2502.1
+Sample  1 Old_Snob_sd1_sample
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 4 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........a
+Attempting class moves until 4 successive failures
+aa
+No possible class move
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     4 classes,    3 leaves,  Pcost    48.6  Tcost    2453.5,  Cost    2502.1
+Sample  1 Old_Snob_sd1_sample
+--------------------------------------------------------------------------------
+Classification converged after 4 cycles
+
+S    1   DAD    Root Age 162  Sz 300.0  Use Pln(Vv  0.98  +-0.991 Avv 0.084)   3 sons
+Pcosts  S:    12.13  F:    15.58  D:    48.63  B:    48.63
+Tcosts  S:  2590.50  F:  2801.04  D:  2453.51  B:  2453.51
+Vcost     ---------  F:   145.15
+totals  S:  2602.63  F:  2961.77  D:  2502.14  B:  2502.14
+V  1  Cnt 300.0   In
+ N: Cost     4.3  Mu  26.152+-  22.745  SD   8.960+-   4.596
+ S: Cost  2059.6  Mu  25.443  SD  22.722
+ F: Cost  2040.0  Mu  25.393  SD  22.231  Ld   4.669
+V  2  Cnt 300.0   In  Adj    0.30
+ NR:   0.338  0.321  0.341 +-  1.248
+ PR:   0.396  0.284  0.320
+ FR:   0.400  0.280  0.319
+ BP:  -0.178  0.026  0.152 +-  0.078
+V  3  Cnt 300.0   In  Adj    0.30
+ NR:   0.496  0.504 +-  0.413
+ PR:   0.490  0.510
+ FR:   0.489  0.511
+ BP:  -0.004  0.004 +-  0.059
+
+S    2  LEAF Dad    1  Age 160  Sz 112.8  Use Pln(Vv  0.07B +-0.995 Avv 0.001)
+Pcosts  S:    10.34  F:    15.82  D:     0.00  B:    10.34
+Tcosts  S:   944.15  F:   948.67  D:     0.00  B:   944.15
+Vcost     ---------  F:     0.29
+totals  S:   954.49  F:   964.77  D:     0.00  B:   954.49
+V  1  Cnt 112.8   In
+ S: Cost   694.1  Mu   0.666  SD  10.779
+ F: Cost   696.7  Mu   0.654  SD  10.741  Ld  -0.347
+V  2  Cnt 112.8   In  Adj    0.33
+ PR:   0.823  0.061  0.116
+ FR:   0.841  0.053  0.106
+ BP:  -0.002  0.003 -0.001 +-  0.946
+V  3  Cnt 112.8   In  Adj    0.33
+ PR:   0.519  0.481
+ FR:   0.520  0.480
+ BP:  -0.000  0.000 +-  0.799
+
+S    4  LEAF Dad    1  Age 150  Sz  83.4  Use Pln(Vv  0.11B +-0.995 Avv 0.004)
+Pcosts  S:     9.78  F:    14.62  D:     0.00  B:     9.78
+Tcosts  S:   680.30  F:   684.49  D:     0.00  B:   680.30
+Vcost     ---------  F:     0.55
+totals  S:   690.07  F:   699.65  D:     0.00  B:   690.07
+V  1  Cnt  83.4   In
+ S: Cost   475.7  Mu  28.814  SD   6.842
+ F: Cost   478.1  Mu  28.810  SD   6.792  Ld   0.000
+V  2  Cnt  83.4   In  Adj    0.33
+ PR:   0.048  0.839  0.113
+ FR:   0.043  0.853  0.104
+ BP:  -0.001  0.001  0.001 +-  0.912
+V  3  Cnt  83.4   In  Adj    0.33
+ PR:   0.439  0.561
+ FR:   0.435  0.565
+ BP:  -0.000  0.000 +-  0.695
+
+S    5  LEAF Dad    1  Age 150  Sz 103.8  Use Pln(Vv  0.09B +-0.996 Avv-0.003)
+Pcosts  S:    10.30  F:    15.96  D:     0.00  B:    10.30
+Tcosts  S:   861.66  F:   866.08  D:     0.00  B:   861.66
+Vcost     ---------  F:     0.44
+totals  S:   871.96  F:   882.48  D:     0.00  B:   871.96
+V  1  Cnt 103.8   In
+ S: Cost   602.8  Mu  49.689  SD   7.627
+ F: Cost   605.3  Mu  49.694  SD   7.586  Ld  -0.017
+V  2  Cnt 103.8   In  Adj    0.33
+ PR:   0.215  0.080  0.706
+ FR:   0.204  0.067  0.730
+ BP:   0.001 -0.001  0.000 +-  0.890
+V  3  Cnt 103.8   In  Adj    0.33
+ PR:   0.502  0.498
+ FR:   0.502  0.498
+ BP:   0.000 -0.000 +-  0.730
+--------------------------------------------------------------------------------
+P3     4 classes,    3 leaves,  Pcost    48.6  Tcost    2453.5,  Cost    2502.1
+Sample  1 Old_Snob_sd1_sample
+--------------------------------------------------------------------------------
+CPU Time:          0.056 s
+Elapsed Time:      0.056 s

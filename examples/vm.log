@@ -1,335 +1,11 @@
+################################################################################
+Factor SNOB - Mixture Modelling by Minimum Message Length (MML) with Factors
+################################################################################
+Loading vset: ../examples/vm.v
+Loading sample: ../examples/vm.s
 Number of active cases = 800
 Begin sort of 800 cases
 Finished sort
-ll.la
-S    1  LEAF    Root Age   5  Sz 800.0  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:    37.72  F:   537.72  D:     0.00  B:    37.72
-Tcosts  S: 28502.81  F: 36508.07  D:     0.00  B: 28502.81
-Vcost     ---------  F:     0.00
-totals  S: 28540.53  F: 37045.79  D:     0.00  B: 28540.53
-
-Cycle 1
-Doing 50 steps of costing, assignment and adjustments.
-aa...
-Changing type of class    1  from Leaf to Dad
-AAAA.AA...
-Changing type of class    2  from Leaf to Dad
-Changing type of class    3  from Leaf to Dad
-aAAA.AA...
-Changing type of class    6  from Leaf to Dad
-Changing type of class    7  from Leaf to Dad
-aAAA.AA
-Changing type of class    7  from Dad to Leaf
-AAAA
-Changing type of class    8  from Leaf to Dad
-aAAAAA......AAA
-Attempting class moves until 2 successive failures
-AAdDdddddDDddddddDDdddddDddDdddddDddDdddddDdDDdddddDddDdddddDDdddddDddDdddddDdDd
-ddddDddDdddddDDddddDDdDddddDdDDdddddDDdddddDDddddDdDdddddDddddDdDddddDdDddddDdDd
-ddddDdddddDdddddDDdddddDdddddDdddddDdddddDDDdddddDdddddDdDdddddDdddddDDDdddddDdd
-dd
-TRYING MOVE CLASS      6 TO DAD      1
-DDdDddddLllaAAAAA
-Failed ******
-AdDdddddDDddddddDDdddddDddDdddddDddDdddddDdDDdddddDddDdddddDDdddddDddDdddddDdDdd
-dddDddDdddddDDdddd
-Badmove rejects Move      6      1
-DdDDdddddDDdddddDDddddDdDdddddDddddDdDddddDdDddddDdDdddddDdddddDdddddDDdddddDddd
-ddDdddddDdddddDDDdddddDdddddDdDdddddDdddddDdDdddddDdddd
-TRYING MOVE CLASS      6 TO DAD      2
-DdDDddddLllaAAAAA
-Failed ******
-A
-Cost dropped by    0.000%
-
---------------------------------------------------------------------------------
-P1    11 classes,    6 leaves,  Pcost   285.5  Tcost   25604.6,  Cost   25890.1
-Sample  1 vm_Trial_Data
---------------------------------------------------------------------------------
-Cycle 2
-Doing 50 steps of costing, assignment and adjustments.
-AA.......
-Changing type of class    8  from Dad to Leaf
-AAaa.......Aa........Aa........Aa......Aa
-Attempting class moves until 2 successive failures
-AAdDdddddDDdddddDdddddDDdddddDdDdddddDDdddddDdDdddddDDDdddddDDddddDDDddddDdDdddd
-dDdddddDddddDDdddddDdddddDddddDDddddDDdddddDddddDDdddd
-TRYING MOVE CLASS      9 TO DAD      1
-DDddddLllaAAAAA
-Failed ******
-AdDdddddDDdddddDdddddDDdddddDdDdddddDDdddddDdDdddddDDDdddddDDddddDDDddddDdDddddd
-DdddddDddddDDdddddDdddddDddddDDdddd
-Badmove rejects Move      9      1
-dDddddDDdddd
-TRYING MOVE CLASS      9 TO DAD      3
-DDddddLllaAAAAA
-Failed ******
-Cost dropped by    9.286%
-
---------------------------------------------------------------------------------
-P1     9 classes,    5 leaves,  Pcost   312.7  Tcost   25524.9,  Cost   25837.6
-Sample  1 vm_Trial_Data
---------------------------------------------------------------------------------
-Classification converged after 2 cycles
-
-S    1   DAD    Root Age 111  Sz 800.0  Use Fac Vv  0.93  +-0.289 Avv-0.005    2 sons
-Pcosts  S:    37.72  F:    62.23  D:   312.66  B:   312.66
-Tcosts  S: 28502.81  F: 27085.92  D: 25524.92  B: 25524.92
-Vcost     ---------  F:   992.10
-totals  S: 28540.53  F: 28140.25  D: 25837.58  B: 25837.58
-V  1  Cnt 800.0   In  Adj 0.300
- N: Cost     3.2  Hx  -0.571  Hy   1.387+-   5.178
- S: Cost  5156.5  Hx   0.095  Hy   0.156+-   0.050
- F: Cost  5133.2  Hx   0.167  Hy   0.365  Ld  -0.469 +- 0.14
- B:  Mean -0.390 rad  Kappa     1.50
-V  2  Cnt 800.0   In  Adj 0.300
- N: Cost     3.0  Hx  -2.105  Hy  -0.035+-   4.824
- S: Cost  8258.4  Hx  -0.875  Hy  -0.250+-   0.055
- F: Cost  7865.9  Hx  -2.077  Hy  -0.678  Ld   0.972 +- 0.06
- B:  Mean  -91.0 deg  Kappa     2.10
-V  3  Cnt 800.0   In  Adj 0.363
- N: Cost     2.9  Hx  -1.306  Hy   0.918+-   4.857
- S: Cost  5035.2  Hx  -0.831  Hy   0.191+-   0.054
- F: Cost  4454.6  Hx  -2.772  Hy   1.147  Ld   1.008 +- 0.05
- B:  Mean -0.958 rad  Kappa     1.60
-V  4  Cnt 800.0   In  Adj 0.330
- N: Cost     3.0  Hx   0.736  Hy   1.849+-   4.804
- S: Cost  5039.8  Hx   0.066  Hy   0.833+-   0.054
- F: Cost  5041.2  Hx   0.011  Hy   0.739  Ld  -1.813 +- 0.30
- B:  Mean  0.379 rad  Kappa     1.99
-V  5  Cnt 800.0   In  Adj 0.300
- N: Cost     2.9  Hx   1.674  Hy  -0.385+-   4.786
- S: Cost  5050.7  Hx   0.780  Hy   0.142+-   0.054
- F: Cost  4648.0  Hx   1.958  Hy   0.735  Ld   1.048 +- 0.07
- B:  Mean  1.797 rad  Kappa     1.72
-
-S    2   DAD Dad    1  Age 106  Sz 398.5  Use Fac Vv  0.89  +-0.434 Avv-0.009    2 sons
-Pcosts  S:    35.39  F:    71.07  D:    71.87  B:    71.87
-Tcosts  S: 12358.18  F: 11865.14  D: 11860.23  B: 11860.23
-Vcost     ---------  F:   330.00
-totals  S: 12393.57  F: 12266.21  D: 11932.10  B: 11932.10
-V  1  Cnt 398.5   In  Adj 0.483
- N: Cost     2.6  Hx  -0.056  Hy   2.563+-   8.110
- S: Cost  2574.9  Hx   0.133  Hy   0.038+-   0.071
- F: Cost  2231.0  Hx  -2.744  Hy  -0.356  Ld  -1.382 +- 0.06
- B:  Mean -0.022 rad  Kappa     2.56
-V  2  Cnt 398.5   In  Adj 1.250
- N: Cost     5.4  Hx  -9.384  Hy  -3.108+-   2.208
- S: Cost  3558.9  Hx -10.046  Hy  -3.396+-   0.230
- F: Cost  3565.6  Hx -10.048  Hy  -3.393  Ld   0.011 +- 0.01
- B:  Mean -108.3 deg  Kappa     9.89
-V  3  Cnt 398.5   In  Adj 0.483
- N: Cost     5.9  Hx  -8.872  Hy   2.736+-   1.916
- S: Cost  1962.4  Hx  -9.386  Hy   2.857+-   0.221
- F: Cost  1969.6  Hx  -9.348  Hy   2.847  Ld   0.006 +- 0.01
- B:  Mean -1.272 rad  Kappa     9.28
-V  4  Cnt 398.5   In  Adj 0.439
- N: Cost     6.7  Hx   0.167  Hy   9.565+-   1.513
- S: Cost  1960.6  Hx   0.140  Hy   9.890+-   0.222
- F: Cost  1967.8  Hx   0.140  Hy   9.847  Ld   0.007 +- 0.01
- B:  Mean  0.017 rad  Kappa     9.57
-V  5  Cnt 398.5   In  Adj 1.250
- N: Cost     3.5  Hx   7.401  Hy   2.108+-   3.616
- S: Cost  2059.0  Hx   6.035  Hy   1.868+-   0.177
- F: Cost  1919.6  Hx  11.626  Hy   3.640  Ld  -0.153 +- 0.01
- B:  Mean  1.293 rad  Kappa     7.69
-
-S    4  LEAF Dad    2  Age  96  Sz 199.4  Use Pln(Vv  0.54B +-0.509 Avv-0.007)
-Pcosts  S:    20.92  F:    62.86  D:     0.00  B:    20.92
-Tcosts  S:  5885.10  F:  5934.57  D:     0.00  B:  5885.10
-Vcost     ---------  F:    90.44
-totals  S:  5906.02  F:  6087.87  D:     0.00  B:  5906.02
-V  1  Cnt 199.4   In  Adj 0.483
- S: Cost   919.7  Hx  -0.647  Hy  18.073+-   0.425
- F: Cost   938.3  Hx  -0.406  Hy  11.250  Ld  -0.023 +- 0.00
- B:  Mean -0.036 rad  Kappa    18.08
-V  2  Cnt 199.4   In  Adj 0.363
- S: Cost  1771.9  Hx -10.808  Hy  -3.662+-   0.330
- F: Cost  1766.3  Hx  -9.667  Hy  -3.276  Ld   0.112 +- 0.00
- B:  Mean -108.7 deg  Kappa    11.41
-V  3  Cnt 199.4   In  Adj 0.363
- S: Cost   974.8  Hx  -9.955  Hy   2.980+-   0.314
- F: Cost   976.2  Hx  -9.173  Hy   2.756  Ld   0.092 +- 0.00
- B:  Mean -1.280 rad  Kappa    10.39
-V  4  Cnt 199.4   In  Adj 0.330
- S: Cost   977.6  Hx   0.026  Hy  10.129+-   0.305
- F: Cost  1044.1  Hx   0.007  Hy   5.257  Ld  -0.327 +- 0.01
- B:  Mean  0.003 rad  Kappa    10.13
-V  5  Cnt 199.4   In  Adj 0.300
- S: Cost   985.1  Hx   9.688  Hy   0.444+-   0.309
- F: Cost   990.9  Hx   8.727  Hy   0.410  Ld  -0.069 +- 0.00
- B:  Mean  1.525 rad  Kappa     9.70
-
-S    5  LEAF Dad    2  Age  96  Sz 199.2  Use Pln(Vv  0.46B +-0.728 Avv 0.026)
-Pcosts  S:    20.75  F:    59.08  D:     0.00  B:    20.75
-Tcosts  S:  5975.13  F:  6064.68  D:     0.00  B:  5975.13
-Vcost     ---------  F:    37.18
-totals  S:  5995.88  F:  6160.95  D:     0.00  B:  5995.88
-V  1  Cnt 199.2   In  Adj 0.531
- S: Cost   980.7  Hx   1.797  Hy -10.058+-   0.320
- F: Cost  1086.1  Hx   0.526  Hy  -3.072  Ld  -0.267 +- 0.01
- B:  Mean  2.965 rad  Kappa    10.22
-V  2  Cnt 199.2   In  Adj 0.439
- S: Cost  1787.0  Hx  -9.489  Hy  -3.200+-   0.311
- F: Cost  1784.5  Hx  -9.519  Hy  -3.239  Ld   0.055 +- 0.00
- B:  Mean -108.6 deg  Kappa    10.01
-V  3  Cnt 199.2   In  Adj 0.439
- S: Cost   987.3  Hx  -8.969  Hy   2.776+-   0.299
- F: Cost   993.4  Hx  -8.542  Hy   2.630  Ld   0.029 +- 0.00
- B:  Mean -1.271 rad  Kappa     9.39
-V  4  Cnt 199.2   In  Adj 0.300
- S: Cost   981.9  Hx   0.251  Hy   9.769+-   0.300
- F: Cost   988.9  Hx   0.232  Hy   9.548  Ld   0.023 +- 0.00
- B:  Mean  0.026 rad  Kappa     9.77
-V  5  Cnt 199.2   In  Adj 0.707
- S: Cost   982.1  Hx   8.391  Hy   5.197+-   0.312
- F: Cost   989.4  Hx   7.757  Hy   4.819  Ld   0.024 +- 0.00
- B:  Mean  1.016 rad  Kappa     9.87
-
-S    3   DAD Dad    1  Age 106  Sz 401.5  Use Fac Vv  0.86  +-0.479 Avv-0.006    2 sons
-Pcosts  S:    39.42  F:    65.03  D:   218.93  B:   218.93
-Tcosts  S: 14783.10  F: 14301.00  D: 13670.82  B: 13670.82
-Vcost     ---------  F:   295.40
-totals  S: 14822.51  F: 14661.43  D: 13889.75  B: 13889.75
-V  1  Cnt 401.5   In  Adj 0.300
- N: Cost     2.5  Hx  -2.616  Hy   3.931+-   6.640
- S: Cost  2587.8  Hx   0.058  Hy   0.275+-   0.071
- F: Cost  2470.0  Hx  -0.113  Hy  -1.101  Ld   1.904 +- 0.18
- B:  Mean -0.587 rad  Kappa     4.72
-V  2  Cnt 401.5   In  Adj 0.439
- N: Cost     3.0  Hx   0.278  Hy   2.957+-   7.463
- S: Cost  4213.9  Hx   0.209  Hy   0.155+-   0.071
- F: Cost  4102.9  Hx  -0.963  Hy  -0.448  Ld   1.754 +- 0.17
- B:  Mean    5.4 deg  Kappa     2.97
-V  3  Cnt 401.5   In  Adj 0.439
- N: Cost     3.2  Hx   3.179  Hy   1.265+-   7.578
- S: Cost  2583.5  Hx   0.285  Hy  -0.202+-   0.072
- F: Cost  2509.4  Hx   0.861  Hy  -0.311  Ld  -0.772 +- 0.08
- B:  Mean  1.192 rad  Kappa     3.42
-V  4  Cnt 401.5   In  Adj 0.439
- N: Cost     3.1  Hx   3.003  Hy  -1.599+-   7.561
- S: Cost  2581.8  Hx   0.096  Hy  -0.361+-   0.072
- F: Cost  2486.1  Hx   0.165  Hy  -1.043  Ld  -0.757 +- 0.07
- B:  Mean  2.060 rad  Kappa     3.40
-V  5  Cnt 401.5   In  Adj 0.439
- N: Cost     3.0  Hx  -0.220  Hy  -3.759+-   7.378
- S: Cost  2578.7  Hx  -0.303  Hy  -0.283+-   0.072
- F: Cost  2515.8  Hx  -0.617  Hy  -0.639  Ld  -0.676 +- 0.07
- B:  Mean -3.083 rad  Kappa     3.77
-
-S    6   DAD Dad    3  Age  96  Sz 279.8  Use Pln(Vv  0.78  +-0.602 Avv 0.038)   2 sons
-Pcosts  S:    41.72  F:    66.90  D:   129.11  B:   129.11
-Tcosts  S: 10331.82  F: 10180.23  D:  9957.90  B:  9957.90
-Vcost     ---------  F:   140.99
-totals  S: 10373.54  F: 10388.12  D: 10087.01  B: 10087.01
-V  1  Cnt 279.8   In  Adj 0.439
- N: Cost     2.6  Hx   3.464  Hy   2.090+-   6.433
- S: Cost  1785.1  Hx   0.644  Hy   0.031+-   0.089
- F: Cost  1789.1  Hx   0.647  Hy   0.015  Ld  -0.133 +- 0.05
- B:  Mean  1.028 rad  Kappa     4.05
-V  2  Cnt 279.8   In  Adj 0.643
- N: Cost     2.6  Hx   3.904  Hy  -3.605+-   8.849
- S: Cost  2927.4  Hx   0.276  Hy  -0.428+-   0.087
- F: Cost  2836.9  Hx   0.450  Hy  -1.058  Ld  -0.940 +- 0.07
- B:  Mean  132.7 deg  Kappa     5.31
-V  3  Cnt 279.8   In  Adj 0.701
- N: Cost     2.5  Hx  -0.193  Hy  -4.982+-   7.975
- S: Cost  1782.9  Hx  -0.151  Hy  -0.658+-   0.089
- F: Cost  1773.7  Hx  -0.278  Hy  -0.700  Ld  -0.443 +- 0.06
- B:  Mean -3.103 rad  Kappa     4.99
-V  4  Cnt 279.8   In  Adj 0.701
- N: Cost     2.6  Hx  -4.428  Hy  -2.619+-   8.605
- S: Cost  1792.9  Hx  -0.476  Hy  -0.253+-   0.088
- F: Cost  1782.8  Hx  -0.601  Hy  -0.159  Ld  -0.608 +- 0.08
- B:  Mean -2.105 rad  Kappa     5.14
-V  5  Cnt 279.8   In  Adj 0.707
- N: Cost     2.6  Hx  -5.129  Hy   1.848+-   8.738
- S: Cost  1791.1  Hx  -0.515  Hy   0.230+-   0.088
- F: Cost  1765.8  Hx  -0.691  Hy   0.341  Ld  -0.654 +- 0.07
- B:  Mean -1.225 rad  Kappa     5.45
-
-S    8  LEAF Dad    6  Age  86  Sz  78.8  Use Fac Vv  0.96  +-0.254 Avv-0.004 
-Pcosts  S:    27.64  F:    68.75  D:     0.00  B:    68.75
-Tcosts  S:  2574.91  F:  2290.20  D:     0.00  B:  2397.91
-Vcost     ---------  F:   107.71
-totals  S:  2602.55  F:  2466.66  D:     0.00  B:  2466.66
-V  1  Cnt  78.8   In  Adj 1.250
- S: Cost   424.3  Hx   4.805  Hy   0.972+-   0.350
- F: Cost   386.8  Hx  12.484  Hy   2.551  Ld   0.209 +- 0.00
- B:  Mean  1.369 rad  Kappa    12.74
-V  2  Cnt  78.8   In  Adj 1.250
- S: Cost   744.8  Hx   2.997  Hy  -3.782+-   0.348
- F: Cost   681.2  Hx  13.004  Hy -16.465  Ld   0.237 +- 0.00
- B:  Mean  141.7 deg  Kappa    20.98
-V  3  Cnt  78.8   In  Adj 1.250
- S: Cost   416.0  Hx  -1.429  Hy  -5.782+-   0.387
- F: Cost   373.5  Hx  -4.101  Hy -16.739  Ld   0.193 +- 0.00
- B:  Mean -2.901 rad  Kappa    17.23
-V  4  Cnt  78.8   In  Adj 1.250
- S: Cost   418.6  Hx  -5.316  Hy  -1.868+-   0.376
- F: Cost   366.5  Hx -18.561  Hy  -6.472  Ld   0.208 +- 0.00
- B:  Mean -1.906 rad  Kappa    19.66
-V  5  Cnt  78.8   In  Adj 1.250
- S: Cost   416.3  Hx  -4.906  Hy   3.339+-   0.387
- F: Cost   364.4  Hx -17.086  Hy  11.690  Ld   0.202 +- 0.00
- B:  Mean -0.971 rad  Kappa    20.70
-
-S    9  LEAF Dad    6  Age  86  Sz 201.0  Use Tny(Vv  0.00B +-1.000 Avv-0.000)
-Pcosts  S:    41.54  F:    54.85  D:     0.00  B:    41.54
-Tcosts  S:  7566.30  F:  7570.87  D:     0.00  B:  7566.30
-Vcost     ---------  F:     0.00
-totals  S:  7607.84  F:  7625.72  D:     0.00  B:  7607.84
-V  1  Cnt 201.0   In  Adj 0.300
- S: Cost  1301.9  Hx   0.170  Hy  -0.099+-   0.100
- F: Cost  1304.6  Hx   0.170  Hy  -0.099  Ld   0.000 +- 1.00
- B:  Mean  2.098 rad  Kappa     0.20
-V  2  Cnt 201.0   In  Adj 0.300
- S: Cost  2117.9  Hx  -0.060  Hy  -0.033+-   0.100
- F: Cost  2120.5  Hx  -0.060  Hy  -0.033  Ld  -0.000 +- 1.00
- B:  Mean -118.9 deg  Kappa     0.07
-V  3  Cnt 201.0   In  Adj 0.399
- S: Cost  1302.7  Hx  -0.028  Hy  -0.175+-   0.100
- F: Cost  1305.4  Hx  -0.028  Hy  -0.175  Ld   0.000 +- 1.00
- B:  Mean -2.982 rad  Kappa     0.18
-V  4  Cnt 201.0   In  Adj 0.399
- S: Cost  1303.8  Hx   0.029  Hy  -0.104+-   0.100
- F: Cost  1306.5  Hx   0.029  Hy  -0.104  Ld  -0.000 +- 1.00
- B:  Mean  2.867 rad  Kappa     0.11
-V  5  Cnt 201.0   In  Adj 0.399
- S: Cost  1303.5  Hx  -0.100  Hy  -0.094+-   0.100
- F: Cost  1306.2  Hx  -0.100  Hy  -0.094  Ld  -0.000 +- 1.00
- B:  Mean -2.323 rad  Kappa     0.14
-
-S    7  LEAF Dad    3  Age  96  Sz 121.7  Use Fac Vv  0.94  +-0.141 Avv-0.086 
-Pcosts  S:    33.42  F:    68.75  D:     0.00  B:    68.75
-Tcosts  S:  4252.57  F:  3498.03  D:     0.00  B:  3731.11
-Vcost     ---------  F:   233.07
-totals  S:  4285.99  F:  3799.85  D:     0.00  B:  3799.85
-V  1  Cnt 121.7   In  Adj 1.250
- S: Cost   712.0  Hx  -1.888  Hy   1.290+-   0.190
- F: Cost   576.3  Hx -12.067  Hy   9.962  Ld   0.433 +- 0.01
- B:  Mean -0.881 rad  Kappa    15.65
-V  2  Cnt 121.7   In  Adj 1.250
- S: Cost  1206.3  Hx   0.108  Hy   2.240+-   0.189
- F: Cost  1063.6  Hx   2.378  Hy  16.705  Ld   0.442 +- 0.01
- B:  Mean    8.1 deg  Kappa    16.87
-V  3  Cnt 121.7   In  Adj 1.250
- S: Cost   712.2  Hx   1.946  Hy   1.199+-   0.190
- F: Cost   561.2  Hx  17.503  Hy   8.358  Ld   0.441 +- 0.01
- B:  Mean  1.125 rad  Kappa    19.40
-V  4  Cnt 121.7   In  Adj 1.190
- S: Cost   708.7  Hx   2.175  Hy  -0.975+-   0.194
- F: Cost   564.3  Hx  16.065  Hy  -9.151  Ld   0.424 +- 0.01
- B:  Mean  2.089 rad  Kappa    18.49
-V  5  Cnt 121.7   In  Adj 1.082
- S: Cost   717.9  Hx   0.235  Hy  -2.120+-   0.184
- F: Cost   568.2  Hx   0.170  Hy -17.409  Ld   0.462 +- 0.01
- B:  Mean  3.132 rad  Kappa    17.41
-
---------------------------------------------------------------------------------
-P1     9 classes,    5 leaves,  Pcost   312.7  Tcost   25524.9,  Cost   25837.6
-Sample  1 vm_Trial_Data
---------------------------------------------------------------------------------
        id        V1        V2        V3        V4        V5 
      1001     0.465      1.54      2.04     -2.78      -2.1 
      1002      1.08      2.12      2.88     -1.97     -1.02 
@@ -344,5 +20,627 @@ Sample  1 vm_Trial_Data
      4200       1.1     -3.08      -2.6      3.08      2.62 
 [800 items x 5 attributes]
 
-CPU Time:          0.117 s
-Elapsed Time:      0.117 s
+ll.la
+S    1  LEAF    Root Age   5  Sz 800.0  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    37.72  F:   537.72  D:     0.00  B:    37.72
+Tcosts  S: 28502.81  F: 36508.07  D:     0.00  B: 28502.81
+Vcost     ---------  F:     0.00
+totals  S: 28540.53  F: 37045.79  D:     0.00  B: 28540.53
+
+
+
+================================================================================
+Cycle 1 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa...
+Changing type of class    1  from Leaf to Dad
+AAAA.AA...
+Changing type of class    2  from Leaf to Dad
+Changing type of class    3  from Leaf to Dad
+aAAA.AA...
+Changing type of class    4  from Leaf to Dad
+AAAA.AA
+Changing type of class    5  from Leaf to Dad
+aAA
+Changing type of class    8  from Leaf to Dad
+Changing type of class    9  from Leaf to Dad
+aA
+Changing type of class    5  from Dad to Leaf
+AAAAA.AA...AAA
+Attempting class moves until 4 successive failures
+AAdDdDddddDDddddDdDdddddDDDddddddDDddddDDdDddddDddDdddddDDdddddDDddddDdDdddddDDd
+ddddDDdddddDdDdddddDDdddddDddDdddddDDdddddDDdddddDdDdddddDdDDdddddDddDdddddDDddd
+ddDDddddDDdDddddDDDddddDdDdddddDddddDdDddddDdDddddddDddddDDddddDDdDDddddDDdDdddd
+dDddddDDddddDDdddddDdddddddDdddddDdddddDdddddddddDdDdddddDDDdddddDDdddddDDdddddD
+DdddddDdddddDDdddddDDdddddDdddddDDdddd
+TRYING MOVE CLASS      4 TO DAD      1
+DDdDddddLllaAAAAA
+Failed ******
+AdDdDddddDDddddDdDdddddDDDddddddDDdddd
+Badmove rejects Move      4      1
+DddDdddddDDdddddDDddddDdDdddddDDdddddDDdddddDdDdddddDDdddddDddDdddddDDdddddDDddd
+ddDdDdddddDdDDdddddDddDdddddDDdddddDDddddDDdDddddDDDddddDdDdddddDddddDdDddddDdDd
+dddddDddddDDddddDDdDDddddDDdDdddddDddddDDddddDDdddddDdddddddDdddddDdddddDddddddd
+ddDdDdddddDDDdddddDDdddddDDdddddDDdddddDdddddDDdddddDDddddDDdddddDDdddd
+TRYING MOVE CLASS      8 TO DAD      1
+DDdDddddLLLAAAAAA
+ACCEPTED !!!
+Popln  3 on sample  1,  12 classes,   800 things  Cost   25923.06
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan     800 RelAb 1.000  Size   800.0
+       2  Dad   Fac Scan     420 RelAb 0.204  Size   162.3
+          4  Dad       Scan     337 RelAb 0.085  Size    67.0
+            14 Leaf       Scan      64 RelAb 0.043  Size    33.7
+            15 Leaf       Scan      52 RelAb 0.042  Size    33.3
+          5 Leaf   Fac Scan     114 RelAb 0.119  Size    95.3
+       3  Dad   Fac Scan     401 RelAb 0.498  Size   398.9
+          6 Leaf       Scan     200 RelAb 0.249  Size   199.5
+          7 Leaf       Scan     201 RelAb 0.249  Size   199.4
+       8  Dad       Scan     279 RelAb 0.297  Size   238.8
+         12 Leaf       Scan      55 RelAb 0.048  Size    39.1
+         13 Leaf       Scan     242 RelAb 0.249  Size   199.7
+aaddDdDddddddDDDddddDDDddddDDDddddDdDddddddDddddddDddddddDddddDDdDddddDDddddDDdd
+dddDdddddDdddddDdddddddddDDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDddddd
+DdddddDdddddDdddddDDddddddDddddddDDddddddDdddddDdddddDdDdddddDDdddddDDDdddddDddd
+ddDdDdddddDDdddddDdDdddd
+TRYING MOVE CLASS      4 TO DAD      8
+DDDddddLllaAAAAA
+Failed ******
+AddDdDddddddDDDddddDDDdddd
+Badmove rejects Move      4      8
+DdDddddddDdddd
+Badmove rejects Move      8      4
+ddDddddDDdDddddDDddddDDdddddDdddddDdddddDdddddddddDDdddddDdddddDdddddDdddddDdddd
+dDdddddDdddddDdddddDdddddDdddddDdddddDdddddDDddddddDddddddDDddddddDdddddDdddddDd
+DdddddDDdddddDDDdddddDdddddDdDdddddDDdddddDdDdddd
+TRYING MOVE CLASS      4 TO DAD      1
+DDDddddLllaAAAAA
+Failed ******
+AddDdDddddddDDDdddd
+Badmove rejects Move      4      1
+Badmove rejects Move      4      8
+DdDddddddDdddd
+Badmove rejects Move      8      4
+ddDddddDDdDddddDDddddDDdddddDdddddDdddddDdddddddddDDdddddDdddddDdddddDdddddDdddd
+dDdddddDdddddDdddddDdddddDdddddDdddddDdddddDDddddddDddddddDDddddddDdddddDdddddDd
+DdddddDDdddddDDDdddddDdddddDdDdddddDDdddddDdDdddd
+TRYING MOVE CLASS     12 TO DAD      4
+DDddddLllAAAAAA
+ACCEPTED !!!
+Popln  1 on sample  1,  11 classes,   800 things  Cost   25900.51
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan     800 RelAb 1.000  Size   800.0
+       2  Dad   Fac Scan     420 RelAb 0.251  Size   200.1
+          4  Dad   Fac Scan     337 RelAb 0.132  Size   105.3
+            12 Leaf       Scan      55 RelAb 0.050  Size    40.2
+            14 Leaf       Scan      64 RelAb 0.042  Size    33.4
+            15 Leaf       Scan      52 RelAb 0.040  Size    31.7
+          5 Leaf   Fac Scan     114 RelAb 0.119  Size    94.9
+       3  Dad   Fac Scan     401 RelAb 0.498  Size   398.8
+          6 Leaf       Scan     200 RelAb 0.249  Size   199.5
+          7 Leaf       Scan     201 RelAb 0.249  Size   199.4
+       8 Leaf       Scan     279 RelAb 0.251  Size   201.0
+aaddDDddddDDDddddDdDdddddDdDddddddDdddddDdddddDdddddDDdddddDdddddDdddddDdddddDdd
+ddddDddddddDDdddddDdddddDdDdddddDDdddddDdddddDdDdddddDDddddddDddddddDdddddDDdddd
+dDdDdddddDDdddddDdddd
+TRYING MOVE CLASS      4 TO DAD      1
+DDDddddLllaAA
+Changing type of class    4  from Dad to Leaf
+AAA
+Failed ******
+AddDDdddd
+Badmove rejects Move      4      1
+DdDdddddDdDddddddDdddddDdddddDdddddDDdddddDdddddDdddddDdddddDddddddDddddddDDdddd
+dDdddddDdDdddddDDdddddDdddddDdDdddddDDddddddDddddddDdddddDDdddddDdDdddddDDdddddD
+dddd
+TRYING MOVE CLASS      4 TO DAD      3
+DdDddddLllaA
+Changing type of class    4  from Dad to Leaf
+AAAA
+Failed ******
+AddDDdddd
+Badmove rejects Move      4      1
+Badmove rejects Move      4      3
+dDdDddddddDdddddDdddddDdddddDDdddddDdddddDdddddDdddddDddddddDdddd
+Badmove rejects Move      3      4
+dDdddddDdDdddddDDdddddDdDdddddDdDdddddDDddddddDddddddDdddddDDdddddDdDdddddDDdddd
+dDdddd
+TRYING MOVE CLASS      5 TO DAD      4
+dDddddLLLAAAAAA
+ACCEPTED !!!
+Popln  3 on sample  1,  10 classes,   800 things  Cost   25894.38
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan     800 RelAb 1.000  Size   800.0
+       2  Dad   Fac Scan     420 RelAb 0.250  Size   199.6
+          5 Leaf   Fac Scan     114 RelAb 0.118  Size    94.4
+         12 Leaf       Scan      55 RelAb 0.050  Size    40.1
+         14 Leaf       Scan      64 RelAb 0.043  Size    34.3
+         15 Leaf       Scan      52 RelAb 0.039  Size    30.9
+       3  Dad   Fac Scan     401 RelAb 0.498  Size   398.8
+          6 Leaf       Scan     200 RelAb 0.249  Size   199.5
+          7 Leaf       Scan     201 RelAb 0.249  Size   199.4
+       8 Leaf       Scan     279 RelAb 0.252  Size   201.5
+aaddDdddddDDdddddDDdddddDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddddDdddddDDdd
+dddDDdddddDddddddDdddddDDdddd
+TRYING MOVE CLASS      6 TO DAD      1
+dDddddLllaAAAAA
+Failed ******
+AddDdddddDDdddddDDdddddDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddd
+Badmove rejects Move      6      1
+dDDdddddDDdddddDddddddDdddddDDdddd
+TRYING MOVE CLASS     12 TO DAD      1
+dDDddddLLLAAAAAA
+Failed ******
+AddDdddd
+Badmove rejects Move     12      1
+dDDdddddDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddd
+Badmove rejects Move      6      1
+dDDdddddDDdddddDddddddDdddddDDdddd
+TRYING MOVE CLASS      5 TO DAD      1
+dDddddLLLAaaaaA
+Failed ******
+AddDdddd
+Badmove rejects Move     12      1
+dDDdddddDDdddddDDdddddDdddddDDdddd
+Badmove rejects Move      5      1
+dDDddddddDdddd
+Badmove rejects Move      6      1
+dDDdddddDDdddddDddddddDdddddDDdddd
+TRYING MOVE CLASS      7 TO DAD      1
+dDDddddLllaAAAAA
+Failed ******
+A
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3    10 classes,    7 leaves,  Pcost   310.7  Tcost   25583.1,  Cost   25893.8
+Sample  1 vm_Trial_Data
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 2 | 50 steps of costing, assignment and adjustments
+================================================================================
+aA........Aa........Aa........Aa........Aa......Aa
+Attempting class moves until 4 successive failures
+AaddDdddddDDdddddDDdddddDDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddddDdddddDDd
+ddddDDdddddDddddddDdddddDDdddd
+TRYING MOVE CLASS      6 TO DAD      1
+dDddddLLLaAAAAA
+Failed ******
+addDdddddDDdddddDDdddddDDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddd
+Badmove rejects Move      6      1
+dDDdddddDDdddddDddddddDdddddDDdddd
+TRYING MOVE CLASS     12 TO DAD      1
+dDDddddLLLAAaAAA
+Failed ******
+addDdddd
+Badmove rejects Move     12      1
+dDDdddddDDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddd
+Badmove rejects Move      6      1
+dDDdddddDDdddddDddddddDdddddDDdddd
+TRYING MOVE CLASS      7 TO DAD      1
+dDDddddLllaAAAAA
+Failed ******
+addDdddd
+Badmove rejects Move     12      1
+dDDdddddDDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddd
+Badmove rejects Move      6      1
+dDDdddd
+Badmove rejects Move      7      1
+dDddddddDdddddDDdddd
+TRYING MOVE CLASS      5 TO DAD      3
+dDDddddLllAAAAAA
+Failed ******
+Cost dropped by    9.273%
+--------------------------------------------------------------------------------
+P3    10 classes,    7 leaves,  Pcost   314.0  Tcost   25576.9,  Cost   25890.9
+Sample  1 vm_Trial_Data
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 3 | 50 steps of costing, assignment and adjustments
+================================================================================
+aA........Aa........Aa........Aa........Aa......aa
+Attempting class moves until 4 successive failures
+aaddDdddddDDdddddDDdddddDDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddddDdddddDDd
+ddddDDdddddDddddddDdddddDDdddd
+TRYING MOVE CLASS      6 TO DAD      1
+dDddddLllaAAAAA
+Failed ******
+addDdddddDDdddddDDdddddDDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddd
+Badmove rejects Move      6      1
+dDDdddddDDdddddDddddddDdddddDDdddd
+TRYING MOVE CLASS     12 TO DAD      1
+dDDddddLLLAaaAAA
+Failed ******
+addDdddd
+Badmove rejects Move     12      1
+dDDdddddDDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddd
+Badmove rejects Move      6      1
+dDDdddddDDdddddDddddddDdddddDDdddd
+TRYING MOVE CLASS      7 TO DAD      1
+dDDddddLLLaAAAAA
+Failed ******
+addDdddd
+Badmove rejects Move     12      1
+dDDdddddDDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddd
+Badmove rejects Move      6      1
+dDDdddd
+Badmove rejects Move      7      1
+dDddddddDdddddDDdddd
+TRYING MOVE CLASS      5 TO DAD      3
+dDDddddLllaAAAAA
+Failed ******
+Cost dropped by    0.011%
+--------------------------------------------------------------------------------
+P3    10 classes,    7 leaves,  Pcost   314.5  Tcost   25576.1,  Cost   25890.6
+Sample  1 vm_Trial_Data
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 4 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........Aa........aa........Aa........Aa......Aa
+Attempting class moves until 4 successive failures
+aaddDdddddDDdddddDDdddddDDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddddDdddddDDd
+ddddDDdddddDddddddDdddddDDdddd
+TRYING MOVE CLASS      6 TO DAD      1
+dDddddLllaAAAAA
+Failed ******
+addDdddddDDdddddDDdddddDDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddd
+Badmove rejects Move      6      1
+dDDdddddDDdddddDddddddDdddddDDdddd
+TRYING MOVE CLASS     12 TO DAD      1
+dDDddddLLLAaaAAA
+Failed ******
+addDdddd
+Badmove rejects Move     12      1
+dDDdddddDDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddd
+Badmove rejects Move      6      1
+dDDdddddDDdddddDddddddDdddddDDdddd
+TRYING MOVE CLASS      7 TO DAD      1
+dDDddddLllaAAAAA
+Failed ******
+addDdddd
+Badmove rejects Move     12      1
+dDDdddddDDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddd
+Badmove rejects Move      6      1
+dDDdddd
+Badmove rejects Move      7      1
+dDddddddDdddddDDdddd
+TRYING MOVE CLASS      5 TO DAD      3
+dDDddddLllAAAAAA
+Failed ******
+Cost dropped by    0.001%
+--------------------------------------------------------------------------------
+P3    10 classes,    7 leaves,  Pcost   314.5  Tcost   25575.9,  Cost   25890.5
+Sample  1 vm_Trial_Data
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 5 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........Aa.....Aa.aa........Aa......Aaaa......Aa
+Attempting class moves until 4 successive failures
+AAddDdddddDDdddddDDdddddDDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddddDdddddDDd
+ddddDDdddddDddddddDdddddDDdddd
+TRYING MOVE CLASS      6 TO DAD      1
+dDddddLLLaAAAAA
+Failed ******
+AddDdddddDDdddddDDdddddDDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddd
+Badmove rejects Move      6      1
+dDDdddddDDdddddDddddddDdddddDDdddd
+TRYING MOVE CLASS     12 TO DAD      1
+dDDddddLLLAaaAAA
+Failed ******
+AddDdddd
+Badmove rejects Move     12      1
+dDDdddddDDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddd
+Badmove rejects Move      6      1
+dDDdddddDDdddddDddddddDdddddDDdddd
+TRYING MOVE CLASS      7 TO DAD      1
+dDDddddLllaAAAAA
+Failed ******
+AddDdddd
+Badmove rejects Move     12      1
+dDDdddddDDdddddDDdddddDdddddDDdddddDdddddDDddddddDdddd
+Badmove rejects Move      6      1
+dDDdddd
+Badmove rejects Move      7      1
+dDddddddDdddddDDdddd
+TRYING MOVE CLASS      5 TO DAD      3
+dDDddddLLLAAAAAA
+Failed ******
+Cost dropped by    0.001%
+--------------------------------------------------------------------------------
+P3    10 classes,    7 leaves,  Pcost   314.4  Tcost   25575.8,  Cost   25890.2
+Sample  1 vm_Trial_Data
+--------------------------------------------------------------------------------
+Classification converged after 5 cycles
+
+S    1   DAD    Root Age 303  Sz 800.0  Use Fac Vv  0.93  +-0.286 Avv 0.035    3 sons
+Pcosts  S:    37.72  F:    61.96  D:   314.38  B:   314.38
+Tcosts  S: 28502.81  F: 27054.30  D: 25575.79  B: 25575.79
+Vcost     ---------  F:   999.58
+totals  S: 28540.53  F: 28115.84  D: 25890.17  B: 25890.17
+V  1  Cnt 800.0   In  Adj 0.300
+ N: Cost     3.0  Hx  -0.335  Hy   1.132+-   4.827
+ S: Cost  5156.5  Hx   0.095  Hy   0.156+-   0.050
+ F: Cost  5126.8  Hx  -0.150  Hy  -0.393  Ld  -1.145 +- 0.30
+ B:  Mean -0.287 rad  Kappa     1.18
+V  2  Cnt 800.0   In  Adj 0.330
+ N: Cost     3.1  Hx  -1.300  Hy  -0.150+-   4.932
+ S: Cost  8258.4  Hx  -0.875  Hy  -0.250+-   0.055
+ F: Cost  7735.7  Hx  -2.743  Hy  -0.473  Ld  -0.955 +- 0.05
+ B:  Mean  -96.6 deg  Kappa     1.31
+V  3  Cnt 800.0   In  Adj 0.330
+ N: Cost     3.0  Hx  -0.902  Hy   0.729+-   4.917
+ S: Cost  5035.2  Hx  -0.831  Hy   0.191+-   0.054
+ F: Cost  4606.3  Hx  -1.918  Hy   1.183  Ld  -1.087 +- 0.07
+ B:  Mean -0.891 rad  Kappa     1.16
+V  4  Cnt 800.0   In  Adj 0.300
+ N: Cost     3.1  Hx   0.665  Hy   1.126+-   5.048
+ S: Cost  5039.8  Hx   0.066  Hy   0.833+-   0.054
+ F: Cost  5031.0  Hx  -0.157  Hy   0.770  Ld   1.651 +- 0.25
+ B:  Mean  0.534 rad  Kappa     1.31
+V  5  Cnt 800.0   In  Adj 0.300
+ N: Cost     3.0  Hx   0.947  Hy  -0.301+-   4.847
+ S: Cost  5050.7  Hx   0.780  Hy   0.142+-   0.054
+ F: Cost  4611.1  Hx   2.190  Hy   0.490  Ld  -1.023 +- 0.06
+ B:  Mean  1.879 rad  Kappa     0.99
+
+S    2   DAD Dad    1  Age 298  Sz 198.8  Use Fac Vv  1.00  +-0.129 Avv-0.130    4 sons
+Pcosts  S:    35.38  F:    79.64  D:   178.05  B:   178.05
+Tcosts  S:  7378.93  F:  6264.14  D:  6098.82  B:  6098.82
+Vcost     ---------  F:   409.58
+totals  S:  7414.31  F:  6753.35  D:  6276.88  B:  6276.88
+V  1  Cnt 198.8   In  Adj 0.300
+ N: Cost     3.0  Hx  -1.998  Hy   3.758+-   6.660
+ S: Cost  1265.7  Hx  -0.048  Hy   0.712+-   0.106
+ F: Cost  1244.3  Hx  -0.077  Hy  -1.099  Ld  -2.295 +- 0.28
+ B:  Mean -0.489 rad  Kappa     4.26
+V  2  Cnt 198.8   In  Adj 0.300
+ N: Cost     3.8  Hx   2.277  Hy   2.312+-   8.892
+ S: Cost  2074.5  Hx   0.532  Hy   0.359+-   0.105
+ F: Cost  2051.8  Hx  -0.958  Hy  -0.452  Ld  -2.172 +- 0.27
+ B:  Mean   44.6 deg  Kappa     3.24
+V  3  Cnt 198.8   In  Adj 0.399
+ N: Cost     3.9  Hx   3.952  Hy   1.382+-   8.931
+ S: Cost  1267.1  Hx   0.636  Hy  -0.266+-   0.106
+ F: Cost   918.7  Hx  15.133  Hy  -9.452  Ld   0.856 +- 0.01
+ B:  Mean  1.234 rad  Kappa     4.19
+V  4  Cnt 198.8   In  Adj 0.363
+ N: Cost     4.1  Hx   3.484  Hy  -3.215+-   9.388
+ S: Cost  1267.0  Hx   0.158  Hy  -0.675+-   0.106
+ F: Cost   922.1  Hx   0.536  Hy -17.405  Ld   0.857 +- 0.01
+ B:  Mean  2.316 rad  Kappa     4.74
+V  5  Cnt 198.8   In  Adj 0.300
+ N: Cost     3.8  Hx  -2.072  Hy  -3.635+-   8.665
+ S: Cost  1263.4  Hx  -0.562  Hy  -0.499+-   0.107
+ F: Cost   925.6  Hx -13.788  Hy  -9.614  Ld   0.821 +- 0.01
+ B:  Mean -2.623 rad  Kappa     4.18
+
+S    5  LEAF Dad    2  Age 297  Sz  97.2  Use Fac Vv  1.01  +-0.177 Avv-0.036 
+Pcosts  S:    32.96  F:    75.40  D:     0.00  B:    75.40
+Tcosts  S:  3311.14  F:  2800.82  D:     0.00  B:  2971.96
+Vcost     ---------  F:   171.14
+totals  S:  3344.10  F:  3047.36  D:     0.00  B:  3047.36
+V  1  Cnt  97.2   In  Adj 0.531
+ S: Cost   553.8  Hx   2.701  Hy   1.156+-   0.242
+ F: Cost   474.4  Hx  11.627  Hy   5.705  Ld  -0.320 +- 0.01
+ B:  Mean  1.115 rad  Kappa    12.95
+V  2  Cnt  97.2   In  Adj 0.300
+ S: Cost   948.0  Hx   2.252  Hy  -1.865+-   0.241
+ F: Cost   835.6  Hx  19.197  Hy -14.365  Ld  -0.341 +- 0.00
+ B:  Mean  126.8 deg  Kappa    23.98
+V  3  Cnt  97.2   In  Adj 0.585
+ S: Cost   545.1  Hx  -0.170  Hy  -3.386+-   0.261
+ F: Cost   457.9  Hx  -0.092  Hy -18.105  Ld  -0.294 +- 0.00
+ B:  Mean -3.136 rad  Kappa    18.10
+V  4  Cnt  97.2   In  Adj 0.300
+ S: Cost   549.4  Hx  -2.730  Hy  -1.622+-   0.252
+ F: Cost   450.5  Hx -17.443  Hy -11.538  Ld  -0.314 +- 0.00
+ B:  Mean -2.155 rad  Kappa    20.91
+V  5  Cnt  97.2   In  Adj 0.585
+ S: Cost   542.5  Hx  -3.230  Hy   1.417+-   0.266
+ F: Cost   448.2  Hx -20.033  Hy   7.899  Ld  -0.291 +- 0.00
+ B:  Mean -1.195 rad  Kappa    21.53
+
+S   12  LEAF Dad    2  Age 277  Sz  39.6  Use Pln(Vv  0.83  +-0.501 Avv 0.020)
+Pcosts  S:    25.54  F:    70.17  D:     0.00  B:    25.54
+Tcosts  S:  1232.06  F:  1189.26  D:     0.00  B:  1232.06
+Vcost     ---------  F:    26.24
+totals  S:  1257.60  F:  1285.68  D:     0.00  B:  1257.60
+V  1  Cnt  39.6   In  Adj 0.300
+ S: Cost   201.7  Hx  -8.866  Hy  -0.981+-   0.664
+ F: Cost   200.5  Hx -12.708  Hy  -1.369  Ld  -0.114 +- 0.00
+ B:  Mean -1.681 rad  Kappa     8.92
+V  2  Cnt  39.6   In  Adj 0.778
+ S: Cost   363.0  Hx  -5.665  Hy   6.728+-   0.662
+ F: Cost   357.4  Hx  -9.878  Hy  11.823  Ld  -0.134 +- 0.00
+ B:  Mean  -40.1 deg  Kappa     8.80
+V  3  Cnt  39.6   In  Adj 0.531
+ S: Cost   185.3  Hx   4.654  Hy  17.602+-   0.948
+ F: Cost   188.9  Hx   5.593  Hy  21.007  Ld  -0.061 +- 0.00
+ B:  Mean  0.258 rad  Kappa    18.21
+V  4  Cnt  39.6   In  Adj 0.531
+ S: Cost   191.4  Hx  13.800  Hy   4.248+-   0.847
+ F: Cost   192.8  Hx  18.133  Hy   5.527  Ld  -0.079 +- 0.00
+ B:  Mean  1.272 rad  Kappa    14.44
+V  5  Cnt  39.6   In  Adj 0.707
+ S: Cost   197.3  Hx   8.549  Hy  -7.121+-   0.744
+ F: Cost   197.2  Hx  11.926  Hy  -9.967  Ld  -0.097 +- 0.00
+ B:  Mean  2.265 rad  Kappa    11.13
+
+S   14  LEAF Dad    2  Age 277  Sz  33.5  Use Pln(Vv  0.80  +-0.553 Avv 0.031)
+Pcosts  S:    23.22  F:    68.33  D:     0.00  B:    23.22
+Tcosts  S:  1035.85  F:  1007.60  D:     0.00  B:  1035.85
+Vcost     ---------  F:    18.88
+totals  S:  1059.07  F:  1094.81  D:     0.00  B:  1059.07
+V  1  Cnt  33.5   In  Adj 0.707
+ S: Cost   167.2  Hx  -9.496  Hy   5.028+-   0.789
+ F: Cost   168.5  Hx -12.825  Hy   6.892  Ld  -0.099 +- 0.00
+ B:  Mean -1.084 rad  Kappa    10.75
+V  2  Cnt  33.5   In  Adj 0.300
+ S: Cost   299.0  Hx  -0.498  Hy  13.582+-   0.891
+ F: Cost   299.7  Hx  -0.574  Hy  19.417  Ld  -0.092 +- 0.00
+ B:  Mean   -2.1 deg  Kappa    13.59
+V  3  Cnt  33.5   In  Adj 0.585
+ S: Cost   162.0  Hx  11.641  Hy   8.477+-   0.916
+ F: Cost   164.9  Hx  15.183  Hy  10.891  Ld  -0.079 +- 0.00
+ B:  Mean  0.941 rad  Kappa    14.40
+V  4  Cnt  33.5   In  Adj 0.531
+ S: Cost   157.1  Hx  17.300  Hy  -6.306+-   1.035
+ F: Cost   162.0  Hx  20.198  Hy  -7.455  Ld  -0.058 +- 0.00
+ B:  Mean  1.920 rad  Kappa    18.41
+V  5  Cnt  33.5   In  Adj 0.300
+ S: Cost   167.7  Hx   2.637  Hy -10.675+-   0.802
+ F: Cost   171.2  Hx   3.243  Hy -13.508  Ld  -0.085 +- 0.00
+ B:  Mean  2.899 rad  Kappa    11.00
+
+S   15  LEAF Dad    2  Age 277  Sz  28.5  Use Pln(Vv  0.78  +-0.625 Avv 0.027)
+Pcosts  S:    22.37  F:    67.57  D:     0.00  B:    22.37
+Tcosts  S:   877.14  F:   858.92  D:     0.00  B:   877.14
+Vcost     ---------  F:    13.36
+totals  S:   899.51  F:   939.84  D:     0.00  B:   899.51
+V  1  Cnt  28.5   In  Adj 0.300
+ S: Cost   142.6  Hx  -4.423  Hy  10.275+-   0.872
+ F: Cost   147.3  Hx  -5.236  Hy  12.331  Ld  -0.075 +- 0.00
+ B:  Mean -0.406 rad  Kappa    11.19
+V  2  Cnt  28.5   In  Adj 0.707
+ S: Cost   254.7  Hx   7.700  Hy  11.310+-   0.968
+ F: Cost   261.6  Hx   8.210  Hy  11.964  Ld  -0.045 +- 0.00
+ B:  Mean   34.2 deg  Kappa    13.68
+V  3  Cnt  28.5   In  Adj 0.531
+ S: Cost   136.9  Hx  15.632  Hy  -0.286+-   1.033
+ F: Cost   139.8  Hx  20.232  Hy  -0.480  Ld  -0.079 +- 0.00
+ B:  Mean  1.589 rad  Kappa    15.63
+V  4  Cnt  28.5   In  Adj 0.300
+ S: Cost   135.8  Hx  10.028  Hy -14.269+-   1.092
+ F: Cost   142.2  Hx  10.993  Hy -15.780  Ld  -0.047 +- 0.00
+ B:  Mean  2.529 rad  Kappa    17.44
+V  5  Cnt  28.5   In  Adj 0.300
+ S: Cost   134.8  Hx  -9.082  Hy -15.295+-   1.100
+ F: Cost   137.1  Hx -11.900  Hy -19.738  Ld  -0.076 +- 0.00
+ B:  Mean -2.606 rad  Kappa    17.79
+
+S    3   DAD Dad    1  Age 298  Sz 398.8  Use Fac Vv  0.91  +-0.388 Avv 0.016    2 sons
+Pcosts  S:    35.97  F:    70.96  D:    72.99  B:    72.99
+Tcosts  S: 12365.73  F: 11809.80  D: 11867.97  B: 11867.97
+Vcost     ---------  F:   375.45
+totals  S: 12401.71  F: 12256.21  D: 11940.96  B: 11940.96
+V  1  Cnt 398.8   In  Adj 0.531
+ N: Cost     2.7  Hx   0.054  Hy   2.389+-   7.834
+ S: Cost  2576.4  Hx   0.132  Hy   0.037+-   0.071
+ F: Cost  2138.1  Hx  -4.141  Hy  -0.621  Ld   1.291 +- 0.04
+ B:  Mean  0.023 rad  Kappa     2.39
+V  2  Cnt 398.8   In  Adj 0.643
+ N: Cost     5.5  Hx  -9.256  Hy  -3.098+-   2.339
+ S: Cost  3561.4  Hx -10.042  Hy  -3.392+-   0.230
+ F: Cost  3568.9  Hx -10.015  Hy  -3.382  Ld  -0.002 +- 0.01
+ B:  Mean -108.5 deg  Kappa     9.76
+V  3  Cnt 398.8   In  Adj 0.643
+ N: Cost     5.9  Hx  -8.808  Hy   2.717+-   1.991
+ S: Cost  1963.9  Hx  -9.376  Hy   2.858+-   0.221
+ F: Cost  1971.3  Hx  -9.349  Hy   2.850  Ld  -0.001 +- 0.01
+ B:  Mean -1.272 rad  Kappa     9.22
+V  4  Cnt 398.8   In  Adj 0.363
+ N: Cost     6.8  Hx   0.165  Hy   9.543+-   1.592
+ S: Cost  1961.9  Hx   0.142  Hy   9.900+-   0.222
+ F: Cost  1968.9  Hx   0.144  Hy   9.891  Ld  -0.008 +- 0.01
+ B:  Mean  0.017 rad  Kappa     9.54
+V  5  Cnt 398.8   In  Adj 0.585
+ N: Cost     3.6  Hx   7.214  Hy   2.116+-   3.704
+ S: Cost  2060.2  Hx   6.035  Hy   1.868+-   0.177
+ F: Cost  1950.7  Hx  10.186  Hy   3.205  Ld   0.141 +- 0.01
+ B:  Mean  1.285 rad  Kappa     7.52
+
+S    6  LEAF Dad    3  Age 297  Sz 199.4  Use Pln(Vv  0.53B +-0.514 Avv 0.138)
+Pcosts  S:    21.05  F:    62.70  D:     0.00  B:    21.05
+Tcosts  S:  5983.74  F:  6099.26  D:     0.00  B:  5983.74
+Vcost     ---------  F:    88.12
+totals  S:  6004.79  F:  6250.09  D:     0.00  B:  6004.79
+V  1  Cnt 199.4   In  Adj 0.330
+ S: Cost   982.5  Hx   1.779  Hy -10.008+-   0.319
+ F: Cost  1000.4  Hx   1.256  Hy  -8.951  Ld  -0.166 +- 0.00
+ B:  Mean  2.966 rad  Kappa    10.17
+V  2  Cnt 199.4   In  Adj 0.330
+ S: Cost  1789.6  Hx  -9.469  Hy  -3.188+-   0.311
+ F: Cost  1900.1  Hx  -4.011  Hy  -1.118  Ld  -0.360 +- 0.01
+ B:  Mean -108.6 deg  Kappa     9.99
+V  3  Cnt 199.4   In  Adj 0.330
+ S: Cost   988.9  Hx  -8.946  Hy   2.777+-   0.299
+ F: Cost   997.4  Hx  -9.043  Hy   2.779  Ld   0.011 +- 0.00
+ B:  Mean -1.270 rad  Kappa     9.37
+V  4  Cnt 199.4   In  Adj 0.300
+ S: Cost   983.3  Hx   0.254  Hy   9.777+-   0.301
+ F: Cost   991.0  Hx   0.297  Hy   9.776  Ld  -0.018 +- 0.00
+ B:  Mean  0.026 rad  Kappa     9.78
+V  5  Cnt 199.4   In  Adj 0.300
+ S: Cost   983.3  Hx   8.402  Hy   5.201+-   0.312
+ F: Cost   991.3  Hx   8.341  Hy   5.225  Ld   0.021 +- 0.00
+ B:  Mean  1.017 rad  Kappa     9.88
+
+S    7  LEAF Dad    3  Age 297  Sz 199.4  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    21.39  F:   521.39  D:     0.00  B:    21.39
+Tcosts  S:  5884.23  F:  7882.32  D:     0.00  B:  5884.23
+Vcost     ---------  F:     0.00
+totals  S:  5905.62  F:  8403.71  D:     0.00  B:  5905.62
+V  1  Cnt 199.4   In  Adj 0.363
+ S: Cost   919.7  Hx  -0.647  Hy  18.095+-   0.425
+ F: Cost  1019.7  Hx  -0.647  Hy  18.095  Ld   0.000 +- 0.07
+ B:  Mean -0.036 rad  Kappa    18.11
+V  2  Cnt 199.4   In  Adj 0.300
+ S: Cost  1771.7  Hx -10.835  Hy  -3.671+-   0.332
+ F: Cost  1871.7  Hx -10.835  Hy  -3.671  Ld   0.000 +- 0.07
+ B:  Mean -108.7 deg  Kappa    11.44
+V  3  Cnt 199.4   In  Adj 0.300
+ S: Cost   974.7  Hx  -9.968  Hy   2.984+-   0.315
+ F: Cost  1074.7  Hx  -9.968  Hy   2.984  Ld   0.000 +- 0.07
+ B:  Mean -1.280 rad  Kappa    10.40
+V  4  Cnt 199.4   In  Adj 0.300
+ S: Cost   977.5  Hx   0.026  Hy  10.146+-   0.307
+ F: Cost  1077.5  Hx   0.026  Hy  10.146  Ld   0.000 +- 0.07
+ B:  Mean  0.003 rad  Kappa    10.15
+V  5  Cnt 199.4   In  Adj 0.300
+ S: Cost   985.0  Hx   9.686  Hy   0.444+-   0.309
+ F: Cost  1085.0  Hx   9.686  Hy   0.444  Ld   0.000 +- 0.07
+ B:  Mean  1.525 rad  Kappa     9.70
+
+S    8  LEAF Dad    1  Age 284  Sz 202.5  Use Pln(Vv  0.00B +-1.000 Avv 0.000)
+Pcosts  S:    35.91  F:    49.22  D:     0.00  B:    35.91
+Tcosts  S:  7620.08  F:  7624.66  D:     0.00  B:  7620.08
+Vcost     ---------  F:     0.00
+totals  S:  7656.00  F:  7673.88  D:     0.00  B:  7656.00
+V  1  Cnt 202.5   In  Adj 0.399
+ S: Cost  1310.6  Hx   0.160  Hy  -0.115+-   0.100
+ F: Cost  1313.3  Hx   0.160  Hy  -0.115  Ld  -0.000 +- 1.00
+ B:  Mean  2.194 rad  Kappa     0.20
+V  2  Cnt 202.5   In  Adj 0.300
+ S: Cost  2131.8  Hx  -0.083  Hy  -0.030+-   0.099
+ F: Cost  2134.5  Hx  -0.083  Hy  -0.030  Ld   0.000 +- 1.00
+ B:  Mean -110.0 deg  Kappa     0.09
+V  3  Cnt 202.5   In  Adj 0.439
+ S: Cost  1311.4  Hx  -0.031  Hy  -0.152+-   0.100
+ F: Cost  1314.1  Hx  -0.031  Hy  -0.152  Ld  -0.000 +- 1.00
+ B:  Mean -2.939 rad  Kappa     0.15
+V  4  Cnt 202.5   In  Adj 0.330
+ S: Cost  1312.2  Hx   0.041  Hy  -0.082+-   0.099
+ F: Cost  1314.9  Hx   0.041  Hy  -0.082  Ld  -0.000 +- 1.00
+ B:  Mean  2.681 rad  Kappa     0.09
+V  5  Cnt 202.5   In  Adj 0.439
+ S: Cost  1311.8  Hx  -0.076  Hy  -0.094+-   0.100
+ F: Cost  1314.5  Hx  -0.076  Hy  -0.094  Ld  -0.000 +- 1.00
+ B:  Mean -2.461 rad  Kappa     0.12
+--------------------------------------------------------------------------------
+P3    10 classes,    7 leaves,  Pcost   314.4  Tcost   25575.8,  Cost   25890.2
+Sample  1 vm_Trial_Data
+--------------------------------------------------------------------------------
+CPU Time:          0.494 s
+Elapsed Time:      0.496 s

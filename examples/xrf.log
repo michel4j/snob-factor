@@ -1,410 +1,11 @@
+################################################################################
+Factor SNOB - Mixture Modelling by Minimum Message Length (MML) with Factors
+################################################################################
+Loading vset: ../examples/xrf.v
+Loading sample: ../examples/xrf.s
 Number of active cases = 59292
 Begin sort of 59292 cases
 Finished sort
-ll.la
-S    1  LEAF    Root Age   5  Sz59292.0  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:    10.34  F:   110.34  D:     0.00  B:    10.34
-Tcosts  S:601851.12  F:1194778.53  D:     0.00  B:601851.12
-Vcost     ---------  F:     0.00
-totals  S:601861.46  F:1194888.88  D:     0.00  B:601861.46
-
-Cycle 1
-Doing 50 steps of costing, assignment and adjustments.
-aa...
-Changing type of class    1  from Leaf to Dad
-AAAA.AA...
-Changing type of class    2  from Leaf to Dad
-Changing type of class    3  from Leaf to Dad
-AAAA.AA...
-Changing type of class    5  from Leaf to Dad
-Changing type of class    6  from Leaf to Dad
-A
-Changing type of class    6  from Dad to Leaf
-A
-Changing type of class    4  from Leaf to Dad
-Changing type of class    7  from Leaf to Dad
-AAAAA...
-Changing type of class    8  from Leaf to Dad
-Changing type of class    9  from Leaf to Dad
-AA
-Changing type of class   10  from Leaf to Dad
-Changing type of class   13  from Leaf to Dad
-AAAAA...
-Changing type of class   21  from Leaf to Dad
-A
-Changing type of class   20  from Leaf to Dad
-AAAAA
-Attempting class moves until 2 successive failures
-AAdDDddddddDdDdddddDddDDdddddDDdDdddddDDdDddddDDdDddddddDDdDddddDDDDdDddddddDDdD
-ddddddDDdDdddddDDDdDddddDDdDddddDddDddddDdDddddddDDDDDddddddDDddddddDDdddddddDdd
-ddddDDddddddDDdddddDDDddddDdDDddddDdDddddddDDdddddDDDdddddDDDdddddDDDddddddDDddd
-ddDdDdddddDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDddddd
-DddddDdddDddddDdDdDddddDdDdDDddddDdDdDddddddDdDddddDdDdDddddDdDdDddddDdDdDddddDd
-DddddDdDddddDdDddddddDddddddDDddddddDddddddDddddddDddddddDdddddDDDddddDdDdddddDd
-dddDDdDdddddDddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDDDdddddDDddddddDddddddD
-ddddddDddddddDddddDDdDdddddDDDddddddDddddddDdddddDDDDdddddDddddddDDdddddDDdddddd
-DddddddDdddddDdDdddddDDddddddDddddddDdddddDDdddddDDdddddDDDdddddDdddddDdDdddddDD
-dddddDDdddddDDddddDdDdddddDDddddDDDdddddDdDDdddddddDddddDDdDdddddddDddddDDdDdddd
-dDdDDDDddddDddDddddDddDdddddddDddddDdDdddddDdDddddDddddDdddddDdddddDddddddDddddd
-DdDdddddDdddddDddddddDDddddddDdddddDdDddddDdddddddddDdddddDddddddDdddddDdDdddddD
-dddddDdddddDDDdddddDDdddddDDdddddDddddDDdDdddddDDdddddDDdddddDdddddDdDdddddDDddd
-ddDDdddddDDDdddddDDdddddDdddddDddddDDdDdddddDDdddddDDdddddDdddddDdDdddddDDdddddD
-DdddddDddDdddddDdddddDdDdddddDdddddDdDdddddDdddddDdddddDdddddDdDdddddDdddddDdddd
-dDdddddDdddddDdDdddddDdDdddddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDddddddDDD
-ddddddDdddddDDDddddddDddddddDDddddDDDddddddDddddddDddddddDddddDDdddddDDDDddddddD
-dddddDDDddddddDddddddDDddddDDDddddddDddddddDddddddDdddddDdddddDDDdddddDdddddDdDD
-dddddDdddddDdDdddddDdddddDdddddDdddddDdddddDdddddDdddddDddDdddddDdddddDdDdddddDd
-ddddDdDdddddDDdddddDdddddDdddddDdddddDdddddDdddddDDDdddddDdddddDDDDdddddDdddddDd
-DddddDDDDdddddDdddddDdddddDddddDDDdddddDdddddDDDdddddDDdddddDDdddddDdddddDdDdddd
-dDdddddDdddddDdddddDddddDDdddddDdddd
-TRYING MOVE CLASS      7 TO DAD      8
-DdDdDddddLllaAAAAA
-Failed ******
-AdDDddddddDdDdddddDddDDdddddDDdDdddddDDdDddddDDdDddddddDDdDddddDDDDdDddddddDDdDd
-dddddDDdDdddddDDDdDddddDDdDddddDddDddddDdDddddddDDDDDddddddDDddddddDDdddddddDddd
-dddDDddddddDDdddddDDDddddDdDDddddDdDddddddDDdddddDDDdddddDDDdddddDDDdddddDDDdddd
-dDdDdddddDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddD
-ddddDdddDddddDdDdDddddDdDdDDddddDdDdDddddddDdDdddd
-Badmove rejects Move      7      8
-DdDdDddddDdDdDddddDdDddddDdDddddDdDddddddDddddddDDddddddDddddddDddddddDddddddDdd
-dddDDDddddDdDdddddDddddDDdddddDddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDDDddd
-ddDDddddddDddddddDdddd
-Badmove rejects Move      8      7
-ddDddddDDdDdddddDDddddddDddddddDdddddDDDDdddddDddddddDDdddddDDddddddDddddddDdddd
-dDdddddDDddddddDddddddDdddddDDdddddDDdddddDDDdddddDdddddDdDdddddDDdddddDDdddddDD
-ddddDdDdddddDDddddDDDdddddDdDDdddddddDddddDDdDdddddddDddddDDdDdddddDdDDDDddddDdd
-DddddDddDdddddddDddddDdDdddddDdDddddDddddDdddddDdddddDddddddDdddddDdDdddddDddddd
-DddddddDDddddddDdddddDdddddddddddddDdddddDddddddDdddddDdDdddddDdddddDdddddDDDddd
-ddDDdddddDDdddddDddddDDdddddDDdddddDDdddddDdddddDdDdddddDDdddddDDdddddDDDdddddDD
-dddddDdddddDddddDDdddddDDdddddDDdddddDdddddDdDdddddDDdddddDDdddddDdddddDdddddDdD
-dddddDdddddDdDdddddDdddddDdddddDdddddDdDdddddDdddddDdddddDdddddDdddddDdDdddddDdd
-dddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDddddddDDDddddddDdddddDDDddddddDdddd
-ddDDddddDDDddddddDddddddDddddddDddddDDdddddDDDDddddddDdddddDDDddddddDddddddDDddd
-dDDDddddddDddddddDddddddDdddddDdddddDDDdddddDdddddDdDDdddddDdddddDdDdddddDdddddD
-dddddDdddddDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDdDdddddDDdddddDdddddDddd
-ddDdddddDdddddDdddddDDDdddddDDdddddDDDDdddddDdddddDdDddddDDDDdddddDdddddDDdddddD
-DddddDDDddddDDDdddddDDDdddddDDdddddDDdddddDdddddDdDdddddDdddddDdddddDDdddddDDddd
-dDDdddddDdddd
-TRYING MOVE CLASS      7 TO DAD      5
-DdDdDddddLllaAAAAA
-Failed ******
-A
-Cost dropped by    0.000%
-
---------------------------------------------------------------------------------
-P1    25 classes,   13 leaves,  Pcost   272.4  Tcost  453886.2,  Cost  454158.6
-Sample  1 XRFTest
---------------------------------------------------------------------------------
-Cycle 2
-Doing 50 steps of costing, assignment and adjustments.
-AA........AA........aA........aA........aA......aAA
-Attempting class moves until 2 successive failures
-AAdDDddddddDdDdddddDddDDdddddDDdDdddddDDdDddddDDdDddddddDDdDddddDDDDdDddddddDDdD
-ddddddDDdDdddddDDDddddDDdDddddDdDDddddDdDddddddDDDDDddddddDDddddddDDdddddddDdddd
-ddDDddddddDDdddddDDDddddDdDDddddDdDddddddDDdddddDDDdddddDDDdddddDDDdddddDDDddddd
-DdDdddddDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDd
-dddDdddDddddDdDdDddddDdDdDDddddDdDdDddddddDdDddddDdDdDddddDdDdDddddDdDdDddddDdDd
-dddDdDddddDdDddddddDddddddDDddddddDddddddDddddddDddddddDdddddDDDddddDdDdddddDddd
-dDDdddddDddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDDDdddddDDddddDdDddddddDdddd
-DdDddddddDddddDDdDddddddDddddddDddddddDdddddDDDDdddddDddddddDDdddddDDddddddDdddd
-ddDdddddDdddddDDddddddDddddddDdddddDDdddddDDdddddDDDdddddDdddddDdDdddddDDdddddDD
-dddddDDddddDdDdddddDDddddDDDdddddDdDDdddddddDddddDDdDdddddddDddddDDdDdddddDdDDDD
-ddddDddDddddDddDddddDddDddddDdDdddddDddddDddddDdddddDdddddDddddddDdddddDdDdddddD
-dddddDddddddDDddddDdDdddddDddddDdddddddddDdddddDddddddDdddddDdDdddddDdddddDddddd
-DDDdddddDDdddddDDdddddDddddDDdddddDDdddddDDdddddDdddddDdDdddddDDdddddDDdddddDDDd
-ddddDDdddddDdddddDddddDDdddddDDdddddDDddddDDdddddDdDdddddDDdddddDDdddddDddDddddd
-DdddddDdddddDddddDDdDdddddDdddddDdddddDdddddDdDdddddDdddddDdddddDdddddDdddddDddd
-ddDdddddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDddddddDDDddddddDdddddDDDdddddd
-DddddddDDddddDDDddddddDddddddDddddddDddddDDdddddDDDDddddddDdddddDDDddddddDdddddd
-DDddddDDDddddddDddddddDddddddDdddddDdddddDDDdddddDdddddDdDDdddddDdddddDdDdddddDd
-ddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDdDdddddDdddddDddddd
-DdddddDdddddDdddddDdddddDDDdddddDDdddddDDDDdddddDdddddDdDddddDDDDdddddDdddddDDdd
-dddDDddddDDDddddDDDdddddDDDdddddDDdddddDDdddddDdddddDdDddddDDDdddddDdddddDDddddd
-DDddddDDdddddDdddd
-TRYING MOVE CLASS      7 TO DAD      5
-DdDdDddddLLL
-Changing type of class   20  from Dad to Leaf
-aAAAAA
-Failed ******
-AdDDddddddDdDdddddDddDDdddddDDdDdddddDDdDddddDDdDddddddDDdDddddDDDDdDddddddDDdDd
-dddddDDdDdddddDDDddddDDdDddddDdDDddddDdDddddddDDDDDddddddDDddddddDDdddddddDddddd
-dDDddddddDDdddddDDDddddDdDDddddDdDdddd
-Badmove rejects Move      5      7
-dDDDdddddDDDdddddDDDdddddDDDdddddDdDdddddDdddddDdDdddddDdDdddddDdDdddddDdDdddddD
-dDdddddDdDdddddDdDdddddDdDdddddDddddDdddDddddDdDdDddddDdDdDDdddd
-Badmove rejects Move      7      5
-ddDdDddddDdDdDddddDdDdDddddDdDdDddddDdDddddDdDddddDdDddddddDddddddDDddddddDddddd
-dDddddddDddddddDdddddDDDddddDdDdddddDddddDDdddddDddddDdddddDdddddDDdddddDdDddddd
-DdddddDdddddDDDdddddDDddddDdDddddddDddddDdDddddddDddddDDdDddddddDddddddDddddddDd
-ddddDDDDdddddDddddddDDdddddDDddddddDddddddDdddddDdddddDDddddddDddddddDdddddDDddd
-ddDDdddddDDDdddddDdddddDdDdddddDDdddddDDdddddDDddddDdDdddddDDddddDDDdddddDdDDddd
-ddddDddddDDdDdddddddDddddDDdDdddddDdDDDDddddDddDddddDddDddddDddDddddDdDdddddDddd
-dDddddDdddddDdddddDddddddDdddddDdDdddddDdddddDddddddDDddddDdDdddddDddddDdddddddd
-dDdddddDddddddDdddddDdDdddddDdddddDdddddDDDdddddDDdddddDdddddDddddDDdDdddddDDddd
-ddDDdddddDdddddDdDdddddDDdddddDDdddddDDDdddddDDdddddDdddddDddddDDdDdddddDDdddddD
-DddddDDdddddDdDdddddDDdddddDDdddddDddDdddddDdddddDdddddDddddDDdDdddddDdddddDdddd
-dDdddddDdDdddddDdddddDdddddDdddddDdddddDdddddDdDdddddDdDdddddDdddddDdddddDDddddd
-DdDdddddDdddddDddddddDDDddddddDdddddDDDddddddDddddddDDddddDDDddddddDddddddDddddd
-dDddddDDdddddDDDDddddddDdddddDDDddddddDddddddDDddddDDDddddddDddddddDddddddDddddd
-DdddddDDDdddddDdddddDdDDdddddDdddddDdDdddddDdddddDdddddDdddddDdddddDdddddDdddddD
-dddddDdddddDdDdddddDdddddDdDdddddDdddddDdddddDdddddDdddddDdddddDdddddDDDdddddDDd
-ddddDDDDdddddDdddddDdDddddDDDDdddddDdddddDDdddddDDddddDDDddddDDDdddddDDDdddddDDd
-ddddDDdddddDdddddDdDddddDDDdddddDdddddDDdddddDDddddDDdddddDdddd
-TRYING MOVE CLASS      7 TO DAD      8
-DdDdDddddLLL
-Changing type of class   20  from Dad to Leaf
-aAAAAA
-Failed ******
-A
-Cost dropped by   24.541%
-
---------------------------------------------------------------------------------
-P1    25 classes,   13 leaves,  Pcost   272.3  Tcost  453842.1,  Cost  454114.4
-Sample  1 XRFTest
---------------------------------------------------------------------------------
-Classification converged after 2 cycles
-
-S    1   DAD    Root Age 111  Sz59292.0  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
-Pcosts  S:    10.34  F:   110.34  D:   272.25  B:   272.25
-Tcosts  S:601851.12  F:1194778.53  D:453842.12  B:453842.12
-Vcost     ---------  F:     0.00
-totals  S:601861.46  F:1194888.88  D:454114.37  B:454114.37
-V  1  Cnt59292.0   In
- N: Cost     5.7  Mu   7.343+-   4.232  SD   0.897+-   1.140
- S: Cost601861.5  Mu  10.231  SD   6.196
- F: Cost601961.5  Mu  10.231  SD   6.196  Ld   0.000
-
-S    2   DAD Dad    1  Age 106  Sz43362.1  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
-Pcosts  S:    12.39  F:   112.39  D:   145.99  B:   145.99
-Tcosts  S:401854.08  F:835482.13  D:344777.03  B:344777.03
-Vcost     ---------  F:     0.00
-totals  S:401866.47  F:835594.52  D:344923.02  B:344923.02
-V  1  Cnt43362.1   In
- N: Cost     5.0  Mu  11.470+-   2.553  SD   0.292+-   0.293
- S: Cost388298.8  Mu  13.846  SD   1.821
- F: Cost388398.8  Mu  10.240  SD   6.199  Ld   0.000
-
-S    4   DAD Dad    2  Age  96  Sz38049.5  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
-Pcosts  S:    12.50  F:   112.50  D:    60.37  B:    60.37
-Tcosts  S:298014.68  F:678470.22  D:288766.74  B:288766.74
-Vcost     ---------  F:     0.00
-totals  S:298027.19  F:678582.72  D:288827.11  B:288827.11
-V  1  Cnt38044.8   In
- N: Cost     5.6  Mu  14.392+-   0.988  SD   0.159+-   0.125
- S: Cost281150.4  Mu  14.419  SD   0.396
- F: Cost281250.4  Mu  14.023  SD   1.456  Ld   0.000
-
-S   10   DAD Dad    4  Age  86  Sz28269.4  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
-Pcosts  S:    10.89  F:   110.89  D:    32.63  B:    32.63
-Tcosts  S:216865.90  F:499525.23  D:215793.46  B:215793.46
-Vcost     ---------  F:     0.00
-totals  S:216876.79  F:499636.13  D:215826.09  B:215826.09
-V  1  Cnt28265.2   In
- N: Cost     2.9  Mu  14.249+-   0.628  SD   0.210+-   0.137
- S: Cost195940.2  Mu  14.227  SD   0.244
- F: Cost196040.2  Mu  14.383  SD   0.425  Ld   0.000
-
-S   18  LEAF Dad   10  Age  76  Sz11158.6  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:     9.14  F:   109.14  D:     0.00  B:     9.14
-Tcosts  S: 99140.93  F:210309.95  D:     0.00  B: 99140.93
-Vcost     ---------  F:     0.00
-totals  S: 99150.07  F:210419.10  D:     0.00  B: 99150.07
-V  1  Cnt11116.2   In
- S: Cost 80582.9  Mu  14.188  SD   0.340
- F: Cost 80682.9  Mu  14.167  SD   0.226  Ld   0.000
-
-S   19  LEAF Dad   10  Age  76  Sz17110.8  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:    10.16  F:   110.16  D:     0.00  B:    10.16
-Tcosts  S:132336.38  F:303833.00  D:     0.00  B:132336.38
-Vcost     ---------  F:     0.00
-totals  S:132346.54  F:303943.17  D:     0.00  B:132346.54
-V  1  Cnt17149.0   In
- S: Cost111033.8  Mu  14.253  SD   0.157
- F: Cost111133.8  Mu  14.167  SD   0.222  Ld   0.000
-
-S   11  LEAF Dad    4  Age  86  Sz9780.1  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:    11.28  F:   111.28  D:     0.00  B:    11.28
-Tcosts  S: 74785.83  F:172588.39  D:     0.00  B: 74785.83
-Vcost     ---------  F:     0.00
-totals  S: 74797.11  F:172699.67  D:     0.00  B: 74797.11
-V  1  Cnt9779.6   In
- S: Cost 57173.1  Mu  14.972  SD   0.084
- F: Cost 57273.1  Mu  14.390  SD   0.430  Ld   0.000
-
-S    5   DAD Dad    2  Age  96  Sz5312.6  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
-Pcosts  S:    10.57  F:   110.57  D:    69.40  B:    69.40
-Tcosts  S: 62741.32  F:115919.98  D: 59226.40  B: 59226.40
-Vcost     ---------  F:     0.00
-totals  S: 62751.89  F:116030.55  D: 59295.80  B: 59295.80
-V  1  Cnt5317.2   In
- N: Cost     3.4  Mu  10.050+-   2.235  SD   0.267+-   0.276
- S: Cost 49925.0  Mu   9.743  SD   2.823
- F: Cost 50025.0  Mu  14.012  SD   1.479  Ld   0.000
-
-S    8   DAD Dad    5  Age  86  Sz1630.7  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
-Pcosts  S:     9.22  F:   109.22  D:    29.13  B:    29.13
-Tcosts  S: 17270.64  F: 33584.39  D: 16007.30  B: 16007.30
-Vcost     ---------  F:     0.00
-totals  S: 17279.87  F: 33693.61  D: 16036.43  B: 16036.43
-V  1  Cnt1630.8   In
- N: Cost     3.7  Mu   8.663+-   1.523  SD   0.089+-   0.067
- S: Cost 11419.9  Mu   8.204  SD   0.255
- F: Cost 11519.9  Mu   8.586  SD   1.673  Ld   0.000
-
-S   14  LEAF Dad    8  Age  76  Sz1199.5  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:     9.35  F:   109.35  D:     0.00  B:     9.35
-Tcosts  S: 11488.29  F: 23489.31  D:     0.00  B: 11488.29
-Vcost     ---------  F:     0.00
-totals  S: 11497.64  F: 23598.66  D:     0.00  B: 11497.64
-V  1  Cnt1199.6   In
- S: Cost  6818.7  Mu   8.052  SD   0.071
- F: Cost  6918.7  Mu   8.247  SD   0.325  Ld   0.000
-
-S   15  LEAF Dad    8  Age  76  Sz 431.2  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:     8.44  F:   108.44  D:     0.00  B:     8.44
-Tcosts  S:  4519.02  F:  8836.55  D:     0.00  B:  4519.02
-Vcost     ---------  F:     0.00
-totals  S:  4527.46  F:  8944.99  D:     0.00  B:  4527.46
-V  1  Cnt 431.3   In
- S: Cost  2404.4  Mu   8.630  SD   0.062
- F: Cost  2504.4  Mu   8.252  SD   0.332  Ld   0.000
-
-S    9   DAD Dad    5  Age  86  Sz3681.9  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
-Pcosts  S:    10.13  F:   110.13  D:    28.05  B:    28.05
-Tcosts  S: 45270.01  F: 82140.36  D: 43873.37  B: 43873.37
-Vcost     ---------  F:     0.00
-totals  S: 45280.14  F: 82250.48  D: 43901.42  B: 43901.42
-V  1  Cnt3686.4   In
- N: Cost     2.6  Mu  10.349+-   2.588  SD   0.731+-   0.716
- S: Cost 35035.4  Mu  10.423  SD   3.205
- F: Cost 35135.4  Mu   8.614  SD   1.741  Ld   0.000
-
-S   16  LEAF Dad    9  Age  76  Sz1758.3  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:     8.94  F:   108.94  D:     0.00  B:     8.94
-Tcosts  S: 20030.47  F: 37669.62  D:     0.00  B: 20030.47
-Vcost     ---------  F:     0.00
-totals  S: 20039.41  F: 37778.56  D:     0.00  B: 20039.41
-V  1  Cnt1763.3   In
- S: Cost 13835.7  Mu  13.352  SD   0.614
- F: Cost 13935.7  Mu   9.936  SD   3.320  Ld   0.000
-
-S   17  LEAF Dad    9  Age  76  Sz1923.6  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:     8.19  F:   108.19  D:     0.00  B:     8.19
-Tcosts  S: 24087.78  F: 43324.30  D:     0.00  B: 24087.78
-Vcost     ---------  F:     0.00
-totals  S: 24095.97  F: 43432.49  D:     0.00  B: 24095.97
-V  1  Cnt1923.1   In
- S: Cost 17503.2  Mu   7.748  SD   2.160
- F: Cost 17603.2  Mu   9.896  SD   3.295  Ld   0.000
-
-S    3   DAD Dad    1  Age 106  Sz15929.9  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
-Pcosts  S:    12.10  F:   112.10  D:   109.34  B:   109.34
-Tcosts  S:153328.41  F:312634.37  D:109280.89  B:109280.89
-Vcost     ---------  F:     0.00
-totals  S:153340.51  F:312746.47  D:109390.23  B:109390.23
-V  1  Cnt15929.9   In
- N: Cost     6.0  Mu   1.870+-   2.128  SD   0.122+-   0.146
- S: Cost132404.4  Mu   0.392  SD   1.009
- F: Cost132504.4  Mu  10.222  SD   6.193  Ld   0.000
-
-S    6  LEAF Dad    3  Age  96  Sz13566.3  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:    14.41  F:   114.41  D:     0.00  B:    14.41
-Tcosts  S: 85164.95  F:220834.91  D:     0.00  B: 85164.95
-Vcost     ---------  F:     0.00
-totals  S: 85179.37  F:220949.32  D:     0.00  B: 85179.37
-V  1  Cnt13566.3   In
- S: Cost 65170.4  Mu  -0.000  SD   0.030
- F: Cost 65270.4  Mu   0.670  SD   1.579  Ld   0.000
-
-S    7   DAD Dad    3  Age  96  Sz2363.6  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
-Pcosts  S:     9.64  F:   109.64  D:    78.77  B:    78.77
-Tcosts  S: 26658.38  F: 50300.11  D: 24121.26  B: 24121.26
-Vcost     ---------  F:     0.00
-totals  S: 26668.02  F: 50409.75  D: 24200.03  B: 24200.03
-V  1  Cnt2363.6   In
- N: Cost     3.8  Mu   2.356+-   1.209  SD   0.084+-   0.084
- S: Cost 19052.2  Mu   2.640  SD   0.789
- F: Cost 19152.2  Mu   0.714  SD   1.621  Ld   0.000
-
-S   12  LEAF Dad    7  Age  86  Sz 933.7  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:     9.97  F:   109.97  D:     0.00  B:     9.97
-Tcosts  S:  8613.61  F: 17957.86  D:     0.00  B:  8613.61
-Vcost     ---------  F:     0.00
-totals  S:  8623.58  F: 18067.83  D:     0.00  B:  8623.58
-V  1  Cnt 933.9   In
- S: Cost  4747.1  Mu   2.626  SD   0.039
- F: Cost  4847.1  Mu   2.948  SD   0.963  Ld   0.000
-
-S   13   DAD Dad    7  Age  86  Sz1429.9  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
-Pcosts  S:     9.98  F:   109.98  D:    57.04  B:    57.04
-Tcosts  S: 17202.89  F: 31505.45  D: 16063.93  B: 16063.93
-Vcost     ---------  F:     0.00
-totals  S: 17212.86  F: 31615.43  D: 16120.97  B: 16120.97
-V  1  Cnt1429.7   In
- N: Cost     3.6  Mu   2.244+-   1.011  SD   0.142+-   0.123
- S: Cost 11887.6  Mu   2.649  SD   1.014
- F: Cost 11987.6  Mu   2.936  SD   0.967  Ld   0.000
-
-S   20   DAD Dad   13  Age  76  Sz 310.1  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
-Pcosts  S:     7.32  F:   107.32  D:    19.81  B:    19.81
-Tcosts  S:  4087.20  F:  7212.31  D:  4015.16  B:  4015.16
-Vcost     ---------  F:     0.00
-totals  S:  4094.51  F:  7319.63  D:  4034.96  B:  4034.96
-V  1  Cnt 312.0   In
- N: Cost     2.8  Mu   1.464+-   0.869  SD   0.261+-   0.200
- S: Cost  2455.6  Mu   1.083  SD   0.563
- F: Cost  2555.6  Mu   2.478  SD   1.156  Ld   0.000
-
-S   24  LEAF Dad   20  Age  66  Sz 185.4  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:     6.18  F:   106.18  D:     0.00  B:     6.18
-Tcosts  S:  2322.75  F:  4180.50  D:     0.00  B:  2322.75
-Vcost     ---------  F:     0.00
-totals  S:  2328.93  F:  4286.68  D:     0.00  B:  2328.93
-V  1  Cnt 185.3   In
- S: Cost  1260.2  Mu   0.691  SD   0.209
- F: Cost  1360.2  Mu   0.860  SD   0.437  Ld   0.000
-
-S   25  LEAF Dad   20  Age  66  Sz 124.6  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:     4.89  F:   104.89  D:     0.00  B:     4.89
-Tcosts  S:  1756.97  F:  3028.42  D:     0.00  B:  1756.97
-Vcost     ---------  F:     0.00
-totals  S:  1761.86  F:  3133.31  D:     0.00  B:  1761.86
-V  1  Cnt 126.7   In
- S: Cost   980.9  Mu   1.663  SD   0.526
- F: Cost  1080.9  Mu   0.890  SD   0.415  Ld   0.000
-
-S   21   DAD Dad   13  Age  76  Sz1119.9  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
-Pcosts  S:     8.39  F:   108.39  D:    26.05  B:    26.05
-Tcosts  S: 12981.06  F: 24163.17  D: 12138.04  B: 12138.04
-Vcost     ---------  F:     0.00
-totals  S: 12989.45  F: 24271.57  D: 12164.09  B: 12164.09
-V  1  Cnt1117.7   In
- N: Cost     2.5  Mu   2.946+-   0.864  SD   0.114+-   0.098
- S: Cost  8553.0  Mu   3.082  SD   0.515
- F: Cost  8653.0  Mu   2.526  SD   1.139  Ld   0.000
-
-S   22  LEAF Dad   21  Age  66  Sz 698.5  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:     7.45  F:   107.45  D:     0.00  B:     7.45
-Tcosts  S:  7805.11  F: 14773.12  D:     0.00  B:  7805.11
-Vcost     ---------  F:     0.00
-totals  S:  7812.56  F: 14880.57  D:     0.00  B:  7812.56
-V  1  Cnt 696.3   In
- S: Cost  4719.9  Mu   2.713  SD   0.210
- F: Cost  4819.9  Mu   3.207  SD   0.601  Ld   0.000
-
-S   23  LEAF Dad   21  Age  66  Sz 421.4  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:     8.92  F:   108.92  D:     0.00  B:     8.92
-Tcosts  S:  4333.17  F:  8551.98  D:     0.00  B:  4333.17
-Vcost     ---------  F:     0.00
-totals  S:  4342.09  F:  8660.91  D:     0.00  B:  4342.09
-V  1  Cnt 421.4   In
- S: Cost  2257.7  Mu   3.696  SD   0.050
- F: Cost  2357.7  Mu   3.255  SD   0.578  Ld   0.000
-
---------------------------------------------------------------------------------
-P1    25 classes,   13 leaves,  Pcost   272.3  Tcost  453842.1,  Cost  454114.4
-Sample  1 XRFTest
---------------------------------------------------------------------------------
        id    energy 
    750000    -0.105 
    760000      -0.1 
@@ -419,5 +20,1595 @@ Sample  1 XRFTest
  31480000      15.3 
 [59292 items x 1 attributes]
 
-CPU Time:          3.450 s
-Elapsed Time:      3.466 s
+ll.la
+S    1  LEAF    Root Age   5  Sz59292.0  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    10.34  F:   110.34  D:     0.00  B:    10.34
+Tcosts  S:601851.12  F:1194778.53  D:     0.00  B:601851.12
+Vcost     ---------  F:     0.00
+totals  S:601861.46  F:1194888.88  D:     0.00  B:601861.46
+
+
+
+================================================================================
+Cycle 1 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa...
+Changing type of class    1  from Leaf to Dad
+AAAA.AA...
+Changing type of class    2  from Leaf to Dad
+Changing type of class    3  from Leaf to Dad
+AAAA.AA...
+Changing type of class    4  from Leaf to Dad
+A
+Changing type of class    4  from Dad to Leaf
+Changing type of class    5  from Leaf to Dad
+A
+Changing type of class    6  from Leaf to Dad
+Changing type of class    7  from Leaf to Dad
+AAAAA.....
+Changing type of class   10  from Leaf to Dad
+Changing type of class   13  from Leaf to Dad
+Changing type of class   14  from Leaf to Dad
+A
+Changing type of class   12  from Leaf to Dad
+AAAA...
+Changing type of class   16  from Leaf to Dad
+Changing type of class   22  from Leaf to Dad
+Changing type of class   19  from Leaf to Dad
+A
+Changing type of class   17  from Leaf to Dad
+AAAAA
+Attempting class moves until 4 successive failures
+AAdDdDddddddDdDddddddDDdDddddddDDdddddDDDdddddDDDdDddddddDDDdddddDDDDdddddDDdDdd
+ddddDdDDdddddDDDDDdddddDDdDDdddddDDdDdddddDDDdddddDdDdddddDdDdddddDDdddddDdDdddd
+dDdDdddddDdDdddddDdDdddddDdDdddddDdddddDdddddDdDdddddDdDddddDddddDdDddDddddDdDdd
+ddDdDdDddddDdDdDddddDdDddddddDdDddddddDdDddddDdDdDdddddDDDDddddddDdDddddddDdDddd
+dDdDddddddDdDdddddDDDDddddddDDDddddddDdDdddddDdDdddddddDdddddddDDDdddddddDdddddd
+dDDDDDDdddddDDDdddddddDddddddDDDDDDDDdddddddDDDDDDDDDdddddddDdddddddDDdddddDDDdd
+ddDDdDddddDddDddddDddDdddddDdDddddDddDddddDddDdddddDdDdddddddDddddDdDDdddddDDddd
+ddDDdddddDDdddddDDdddddDddddDdDdddddDdddddDdddddDDddddDDDdddddDDdddddDDdddddDDdd
+dddDDDDddddddDDdddddDDDddddddDDDdddddDdDddddddDDDDdddddDdddddDDDddddddDDDDdddddd
+DDDDdddddDDDdddddDDDDdddddDDDdddddDDdddddDDDddddddDDdddddDDDddddDddddddDDdddddDD
+DdddddDDDddddddDddddDdDDddddDdDddddDdDddddddDddddDdDddddddDddddDdDDddddDdDDddddd
+dDddddddDddddddDddddddDdddddDDDdddddDdddddDDdddddDdddddDdddddDdDdddddDdddddDdddd
+dDdddddDDDdddddDdddddDdddddDdddddDDDdddddDDddddddDdddddDDddddddDddddddDddddddDdd
+dddDDddddddDdddddDdDddddddDddddddDdddddDDDDdddddDDDddddddDddddDDDddddddDddddddDd
+dddddDdddddDDddddddDddddDDddddddDddddddDddddddDddddddDddddddDdDddddddDddddDddddd
+dddddDddddDdDddddddDddddddDddddddDddddddDdddddDDdDdddddDdddddDdDdddddDddddDDdddd
+dDdddddDdDdddddDdddddDdddddDDDdddddDdddddDdddddDdddddDDDDdddddDdddddDddddDDddddd
+DdddddDddddDDdddddDdddddDdddddDDdddddDdddddDddddDdddddDDDDddddDdDDdddddDDddddDdD
+DddddDDDDddddddDDddddddDDddddDdDDddddddDddddddDDddddddDDddddddDDdddddDDDdddddDdd
+ddddDdddddDddddDdDdddddDdddddDdDddddDdddddDdddddDDDdddddDdddddDdddddDdddddDDDddd
+ddDddddddDdddddDddddddDdddddDdddddDdDdddddDdddddDdddddDDDdddddDdddddDdddddDddddd
+DDDdddddDDdddddDDDdddddDDdddddDDdddddDddddDDdddddDdddddDdddddDDdddddDdddddDDdddd
+dDDdddddDDDdddddDDDdddddDDDddddDDDdddddDDdddddDddddDDDdddddDdddddDdddddDDddddDDD
+dddddDDdddddDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdDdddddDdddddDdddddDd
+ddddDDdddddDdddddDDdddddDDdddddDDDdddddDdddddDDdddddDdddddDdddddDdddddDdddddDddd
+ddDdddddDdddddDdddddDDdddddDddDdddddDdDdddddDdddddDdddddDdddddDdddddDdDdddddDddd
+ddDdddddDdddddDDdddddDdddddDdddddDDdDdddddDdDdddddDdDdddddDdddddDdddddDdddddDdDd
+ddddDdddddDdddddDdddddDDdddddDdddddDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdd
+dddDdddddDddddDDdddddDdddddDDdddddDdddddDdddddDDDdddddDdDdddddDdddddDddddDDDDddd
+ddDdddddDdDdddddDddddDDdddddDdddddDDdddddDDdddddDdddd
+TRYING MOVE CLASS      5 TO DAD     13
+DdDddddLLLaAAAAA
+Failed ******
+AdDdDddddddDdDddddddDDdDddddddDDdddddDDDdddddDDDdDddddddDDDdddddDDDDdddddDDdDddd
+dddDdDDdddddDDDDDdddddDDdDDdddddDDdDdddddDDDdddddDdDdddddDdDdddddDDdddddDdDddddd
+DdDdddddDdDdddddDdDdddddDdDdddddDdddddDdDdddddDdDdddddDdDddddDddddDdDddDddddDdDd
+dddDdDdDddddDdDdDdddd
+Badmove rejects Move      5     13
+ddDdDddddddDdDddddDdDdDdddddDDDDddddddDdDddddddDdDddddDdDddddddDdDdddddDDDDddddd
+dDDDddddddDdDdddddDdDdddddddDdddddddDDDddddDddDdddddddDDDDDDDdddddDDDdddddddDddd
+dddDDDDDDDDDDdddddddDDDDDDDDdddddddDdddddddDDdddddDDDddddDDdDddddDddDddddDddDddd
+ddDdDddddDddDddddDDdDdddddDdDdddddddDddddDddDdddddDDdddddDDdddddDDdddddDDdddddDd
+dddDdDdddddDdddddDdddddDDddddDDDdddddDDdddddDDdddddDDdddddDDDDddddddDDdddddDDDdd
+ddddDDDdddddDdDddddddDDDDdddddDdddddDDDddddddDDDDddddddDDDDdddddDDDdddddDDDDdddd
+dDDDdddddDDdddd
+Badmove rejects Move     13      5
+ddDDdddddDDDddddDddddddDDdddddDDDdddddDDDddddddDddddDdDDddddDdDddddDdDddddddDddd
+dDdDddddddDddddDdDDddddDdDDddddddDddddddDddddddDddddddDdddddDDDdddddDddddDDDdddd
+dDdddddDdddddDdDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDdddddDDDdddddDDdddddd
+DdddddDDddddddDddddddDddddddDdddddDDddddddDdddddDdDddddddDddddddDdddddDDDDdddddD
+DDddddddDddddDDDddddddDddddddDddddddDdddddDDddddddDddddDDddddddDddddddDddddddDdd
+ddddDddddddDdDddddddDddddDddddddddddDddddDdDddddddDddddddDddddddDddddddDdddddDDd
+DdddddDdddddDdDdddddDddddDDdddddDdddddDdDdddddDdddddDdddddDDdddddDddddDDdddddDdd
+dddDDDDdddddDdddddDddddDDdddddDdddddDddddDDdddddDdddddDdddddDDdddddDdddddDddddDd
+ddddDDDddddDdDDdddddDDddddDdDDddddDDDDddddddDDddddddDDddddDdDDddddddDddddddDDddd
+dddDDddddddDDdddddDDDdddddDddddddDdddddDddddDdDdddddDdddddDdDddddDdddddDdddddDDd
+ddddDdddddDdddddDdddddDDDdddddDddddddDdddddDddddddDdddddDdddddDdDdddddDdddddDddd
+ddDDdddddDdddddDdddddDdddddDDDdddddDDdddddDDdddddDDdddddDDdddddDddddDDdddddDdddd
+dDdddddDDdddddDdddddDDdddddDDdddddDDDdddddDDDdddddDDDddddDDDdddddDDdddddDddddDDD
+dddddDdddddDdddddDDddddDDDdddddDDdddddDDdddddDdddddDdDdddddDdddddDDdddddDdddddDd
+ddddDdDdddddDdddddDdddddDdddddDDdddddDdddddDDdddddDDdddddDDDdddddDdddddDDdddddDD
+dddddDdddddDdDdddddDdddddDdddddDdddddDDdddddDdddddDDdddddDddDdddddDdDdddddDddddd
+DdddddDdDdddddDdddddDdDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDDdDdddddDdDddd
+ddDdDdddddDdddddDdddddDdddddDdDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDDDDddd
+ddDdddddDdDdddddDdddddDDdddddDdddddDdddddDddddDDdddddDdddddDDdddddDdddddDdddddDD
+DdddddDdDdddddDdddddDddddDDDDdddddDdddddDdDdddddDddddDDdddddDdddddDDdddddDdddddD
+dddd
+TRYING MOVE CLASS      5 TO DAD      6
+DdDddddLLLaAAAAA
+Failed ******
+AdDdDddddddDdDddddddDDdDddddddDDdddddDDDdddddDDDdDddddddDDDdddddDDDDdddddDDdDddd
+dddDdDDdddddDDDDDdddddDDdDDdddddDDdDdddddDDDdddddDdDdddddDdDdddddDDdddddDdDddddd
+DdDdddddDdDdddddDdDdddddDdDdddddDdddddDdDdddddDdDdddddDdDddddDddddDdDddDdddd
+Badmove rejects Move      5      6
+DdDdDddddDdDdDdddd
+Badmove rejects Move      5     13
+ddDdDddddddDdDddddDdDdDdddddDDDDddddddDdDdddd
+Badmove rejects Move      6      5
+DdDddddddDdDdddddDDDDddddddDDDddddddDdDdddddDdDdddddddDdddddddDDDddddDddDddddddd
+DDDDDDDDDdddddDDDdddddddDddddddDDDDDDDDDdddddddDDDDDDDdddddddDdddddddDDdddddDDDd
+dddDDdDddddDddDddddDddDdddddDdDddddDddDddddDddDdddddDdDdddddddDddddDddDdddddDDdd
+dddDDDdddddDDdddddDDdddddDddddDdDdddddDdddddDdddddDDddddDDDdddddDDdddddDDdddddDD
+dddddDDDDddddddDDdddddDDDddddddDDDdddddDdDddddddDDDDdddddDdddddDDDddddddDDDDdddd
+ddDDDDdddddDDDdddddDDDDddddDDDDdddddDDdddd
+Badmove rejects Move     13      5
+ddDDdddddDDDddddDddddddDDdddddDDDdddddDDDddddddDddddDdDDddddDdDddddDdDddddddDddd
+dDdDddddddDddddDdDDddddDdDDddddddDddddddDddddddDddddddDdddddDDDdddddDddddDDDdddd
+dDdddddDdddddDdDdddddDdddddDddddDDdddddDDdddddDdddddDdddddDdddddDDDdddddDDdddddd
+DdddddDDddddddDddddddDddddddDdddddDDddddddDddddDDdDddddddDddddddDdddddDDDDdddddD
+DDddddddDddddDDDddddddDddddddDddddddDdddddDDddddddDddddDDddddddDddddddDddddddDdd
+ddDdDddddddDdDddddddDddddDddddddddddDddddDdDddddddDddddddDddddddDddddddDdddddDDd
+DdddddDdddddDdDdddddDddddDDdddddDdddddDdDdddddDdddddDdddddDDdddddDddddDDdddddDdd
+dddDDDDdddddDdddddDddddDDdddddDdddddDddddDDdddddDdddddDdddddDDdddddDdddddDddddDd
+ddddDDDddddDdDDdddddDDddddDdDDddddDDDDddddddDDddddddDDddddDdDDddddddDddddddDDddd
+dddDDddddddDDdddddDDDdddddDddddddDdddddDddddDdDddddDDdddddDdDddddDdddddDdddddDDd
+ddddDdddddDdddddDdddddDDDdddddDddddddDdddddDddddddDdddddDdddddDdDdddddDdddddDddd
+ddDDdddddDdddddDdddddDdddddDDDdddddDDdddddDDDddddDDDdddddDDdddddDddddDDdddddDddd
+ddDdddddDDdddddDdddddDDdddddDDdddddDDDdddddDDDdddddDDDddddDDDdddddDDdddddDddddDD
+DdddddDdddddDdddddDDddddDDDdddddDDdddddDDdddddDdddddDdDdddddDdddddDDdddddDdddddD
+dddddDdDdddddDdddddDdddddDdddddDDdddddDDdddddDDdddddDDdddddDDDdddddDdddddDDddddd
+DDdddddDddddDDdDdddddDdddddDdddddDdddddDDdddddDdddddDDdddddDddDdddddDdDdddddDddd
+ddDdddddDdDdddddDdddddDdDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDDdDdddddDdDd
+ddddDdDdddddDdddddDdddddDdddddDdDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDDDDd
+ddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDddddDDdddddDdddddDDdddddDdddddDddddd
+DDDdddddDdDdddddDdddddDddddDDDDdddddDdddddDdDdddddDddddDDdddddDdddddDDdddddDdddd
+dDdddd
+TRYING MOVE CLASS      5 TO DAD     19
+DdDdDddddLLLaAAAAA
+Failed ******
+AdDdDddddddDdDDddddddDDdDdddddDDDdddddDDDdddddDDDdDddddddDDDdddddDDDDdddddDDdDdd
+ddddDdDDdddddDDDDDdddddDDdDDdddddDDdDdddddDDDdddddDdDdddddDdDdddddDDdddddDdDdddd
+dDdDdddddDdDdddddDdDdddddDdDdddddDdddddDdDdddddDdDdddddDdDddddDddddDdDdddd
+Badmove rejects Move      5      6
+DdDdDddddDdDdDdddd
+Badmove rejects Move      5     13
+ddDdDddddddDdDdddd
+Badmove rejects Move      5     19
+dDDDDddddDdDdDdddd
+Badmove rejects Move      6      5
+DdDddddddDdDdddddDDDDddddddDDDddddddDdDdddddDdDdddddddDdddddddDDDddddDddDddddddd
+DDDDDDDDDdddddDDDdddddddDddddddDDDDDDDDdddddddDDDDDDddddddDDdddddddDDdddddDDDddd
+dDDdDddddDddDddddDddDdddddDdDddddDddDddddDDdDdddddDdDdddddddDddddDdDDdddddDDdddd
+dDDDdddddDDdddddDDdddddDddddDdDdddddDdddddDdddddDDddddDDDdddddDDdddddDDdddddDDdd
+dddDDDDddddddDDdddddDDDddddddDDDdddddDdDddddddDDDDddddDDdddddDDDddddddDDDDdddddd
+DDDDdddddDDDdddddDDDDddddDDDDdddddDDdddd
+Badmove rejects Move     13      5
+ddDDdddddDDDddddDddddddDDdddddDDDdddddDDDddddddDddddDdDDddddDdDddddDdDddddDdDddd
+dDdDddddddDddddDdDDddddDdDDddddddDddddddDddddddDddddddDdddddDDDdddddDddddDDDdddd
+dDdddddDdddddDdDdddddDdddddDddddDDdddddDDdddddDdddddDdddddDdddddDDDdddddDDdddddd
+DddddDDDddddddDddddddDddddddDdddddDDddddddDddddDDdDddddddDddddddDdddddDDDDddddDD
+DDddddddDddddDDDddddddDddddddDddddddDdddddDDddddddDddddDDddddddDddddddDddddddDdd
+ddDdDddddddDdDddddddDddddDddddddddddDddddDdDddddddDddddddDddddddDddddDdDdddddDDd
+DdddddDdddddDdDdddddDddddDDddddDDdddddDdDdddddDdddddDDdddddDDdddddDddddDDdddddDd
+ddddDDDDddddDDdddddDddddDDdddddDdddddDddddDDdddddDdddddDddddDDDddddDDDdddddDdddd
+DdddddDDDddddDdDDddddDDDdddd
+Badmove rejects Move     19      5
+DDDDddddddDDddddddDDddddDdDDddddddDddddddDDddddddDDddddddDDdddddDDDdddddDddddddD
+dddddDddddDdDddddDDdddddDdDddddDdddddDdddddDDdddddDdddddDdddddDdddddDDDdddddDddd
+dddDdddddDddddddDdddddDdddddDdDdddddDdddddDdddddDDdddddDdddddDdddddDdddddDDDdddd
+dDDdddddDDddddDDDdddddDDdddddDddddDDdddddDdddddDdddddDDdddddDdddddDDdddddDDddddd
+DDDdddddDDDdddddDDDddddDDDdddddDDdddddDddddDDDdddddDdddddDdddddDDddddDDDdddddDDd
+ddddDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdDdddddDdddddDdddddDdddddDDdd
+dddDdddddDDdddddDDdddddDDDdddddDdddddDDdddddDDdddddDddddDDdDdddddDdddddDdddddDdd
+dddDDdddddDdddddDDdddddDddDdddddDdDdddddDdddddDdddddDdDdddddDdddddDdDdddddDddddd
+DdddddDdddddDDdddddDdddddDdddddDDdDdddddDdDdddddDdDdddddDdddddDdddddDdddddDdDddd
+ddDdddddDdddddDdddddDDdddddDdddddDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdddd
+dDdddddDddddDDdddddDdddddDDdddddDdddddDdddddDDDdddddDdDdddddDdddddDddddDDDDddddd
+DdddddDdDddddDDddddDDdddddDdddddDDdddddDdddddDdddd
+TRYING MOVE CLASS      5 TO DAD      3
+DdDddddLLLaAAAAA
+Failed ******
+A
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P1    29 classes,   15 leaves,  Pcost   309.5  Tcost  453381.1,  Cost  453690.6
+Sample  1 XRFTest
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 2 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA...
+Changing type of class   31  from Leaf to Dad
+aA
+Changing type of class   29  from Leaf to Dad
+AAAAA...
+Changing type of class   35  from Leaf to Dad
+aAAA.aA........aa........aA...
+Changing type of class   26  from Leaf to Dad
+aaAAAA
+Attempting class moves until 4 successive failures
+aAdDdDDddddddDDDdDddddddDDddDddddddDDddDdddddDDDddDdddddDDDddDdddddDDDDdDdddddDD
+dDdDddddddDDdddddDDDDdDdddddDDDDdDdddddDDddddddDdDdDdddddDDdDDdddddDDdDdDdddddDD
+dDddddddDDDDdddddDDDdddddDddddDDddDdddddDdddddDdDdddddDdDDdddddDdddddDdDdddddDdD
+dddddDDdddddDddDdddddDdDdddddDddDdddddDdDdddddDdDdddddDdDdddddDdDddddDddDddddDdD
+ddDddddDdDddDddddDdDDDDddddDdDddDddddDdDDdDddddddDdDDddddddDDdDddddDdDddDddddddD
+DdDddddddDDdDddddddDDDDdddddDDDDddddDdDDddddddDDdDddddDdDddddddDDDDdddddDdDddDdd
+ddddDDDDDddddddDDDddddddDDDDDdddddDdDdddddddDdddddddDDDddddDDDDdDdddddddDDDDDDDD
+DdddddDDDdddddddDddddddDDDDDDDDdddddddDDDDDDDDdddddDdDddddddDDDdddddddDDDDdddddd
+DDddddddDDDDddddddDDdDdddddDDdDddddDDddddDdddDddddDddDDdddddDdDDddddDddDDddddDdd
+DdddddDdDDdddddDdDDddddddDdDdddddDDDDdddddDdDDdddddDDDDdddddDDdddddDDdDdddddDddd
+ddDDdddddDdDddddDdDDdddddDdddddDdddddDDddddDDDddddDDdDdddddDdDdddddDDdddddDDdddd
+dDDdddddDdDdddddDDdddddDDdDdddddDDdDdddddDDdDddddddDdDdddddDddDddddddDdDDdddddDd
+ddddDDdDddddddDDDDdddddDDdDDddddddDdDddddddDDDDdddddDDDDddddddDDDdddddDDDdDddddd
+DDDdDdddddDDDdDdddddDDDdDddddddDDdDdddddDDDdDddddDDdDDddddddDDdDdddddDDDdDdddddD
+dDdDddddddDDdDdddddDDDdDddddddDDdDDddddDdDDdDddddDdDddddDdDddddddDddddDdDddddddD
+ddddDdDddDddddDdDDddddddDddddddDddddddDddddddDddddddDddddddDddDddddddDddddddDddD
+dddddDDDdddddDddddDDDdddddDdddddDdddddDdddddDDdddddDdDddddDDDdddddDdddddDdDddddd
+DdddddDDdddddDdddddDdddddDdDdddddDdddddDDDdDdddddDDdDddddddDddddDDdDddddddDddddd
+dDddddddDddddddDDddddddDddddDDdDddddddDddddddDdddddDDddddddDddddddDddddddDdddddD
+dDDddddDDdDdddddddDddddDDDddddddDDdddddDdDDddddddDDDddddddDDdddddDDDddddDDdddddD
+dDddddddDDDdddddDDDdddddDdDdddddDDDdddddDdDDdddddddDDdddddDddDddddddDDdddddDddDd
+ddddDdDDddddddDDDdddddddDdddddDdDDddddddDDDdddddDdDDddddddDDDddddddDDDdddddDDDDd
+DddddddDDDdDdddddDDdDdddddDDdddddDDDdddddDDddddDDDdDdddddDDdddddDdddddDDDdddddDD
+dddddDDdddddDdDddddDdDdddddDDdddddDDdddddDDdddddDdDdddddDDdddddDDDdddddDdDdddddD
+dDddddDDdDdddddDdDdddddDdDddddDDdDdddddDdddddDdDdddddDdDddddDDdDdddddDdDddddDDdD
+dddddDdDdddddDdDdddddDdDdddddDDdddddDDdDdddddDDdDdddddDddDdddddDDdDdddddDddddddD
+dDdddddDDdDdddddDDdDddddddDdDDdddddDDdDdddddDDdDdddddDDdDddddddDdDddddddDdDddddd
+DDDdddddDddddddDdddddDddddDddddDDDdddddDddddDdddddDdDdddddDdddddDdDdddddDdddddDd
+ddddDdddddDdddddDdDdddddDdddddDDDdddddDddddddDdddddDdddddddddDDdddddDdddddDddddd
+DdddddDdddddDdDdddddDdDdddddDdddddDdddddDdddddDdDdddddDdddddDDDdddddDDdddddDdddd
+DDDdDdddddDDdddddDdDddddDDDdddddDdddddDdddddDddddDDdDdddddDdDdddddDdddddDDdddddD
+dddddDdDdddddDDdddddDDDdddddDDDdDdddddDDddddDDDdDdddddDDdddddDdDddddDDDDdddddDdd
+dddDdDdddddDddddDDDDdddddDdDdddddDDddddDDDdddddDDdddddDdDdddddDDdddddDdddddDdddd
+dDdddddDdddddDddDdddddDdDdddddDdDdddddDdddddDdDdddddDdddddDDdddddDdDdddddDDddddD
+DDdddddDdddddDdDdddddDdddddDDDdDdddddDDDDddddddDddddDDDDddddddDddddddDddddDDdDdd
+ddddDddddddDDddddddDddddDDDddddddDddddddDddddddDddddddDddddddDddddddDDddddddDDdd
+dddDDDddddddDdddddDDdDdddddDDddddddDdddddDddddddDDddddddDddddddDddddddDddddddDdd
+ddddDddddddDddddddDdddddDDDDdddddDdDdddddDDdDdddddDdddddDdDDdddddDdddddDdddddDDd
+ddddDdDdddddDdddddDdddddDdDdddddDDdddddDddddDDDdddddDdDdddddDdddddDDDDdddddDDddd
+ddDDdddddDDdddddDDdDdddddDdddddDdddddDddddDDDDdddddDDdddddDDdddddDdddddDdDdddddD
+DdddddDDddddDdDDdddddDDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDD
+dddddDdDdddddDdddddDDDDDdddddDdDDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDDDdddddD
+DdDdddddDdddddDDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDDdddddDDdddddDdDddd
+ddDdddddDdddddDdDdddddDdddddDDDdddddDDDDdddddDdddddDDDdddddDdddddDddddDDDdddddDd
+ddddDdDdddddDddddDDDddddDDDdddddDdDdddddDDdddddDdddddDdDdddddDdddddDdDdddddDdDdd
+dddDddDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDDdddd
+dDDdddddDdddddDdDdddddDdddddDDDdddddDdDdddddDddDdddddDdddddDdDDdddddDdddddDddddd
+DDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDdddddDdddddDdDdddddDdddddDDDDdddddDdd
+dddDDDdddddDdddddDDDDdddddDdddddDdddddDddddDDdddddDdddddDdddddDdDdddddDdDdddddDd
+DdddddDdddddDddddDDDddddddDDddddddDdddddDDddddddDdddddDDddddddDddddddDddddddDddd
+ddDDddddddDddddddDddddddDddddddDdddddDdDddddddDddddddDdddddDDDDdddddDdddddDdDddd
+ddDdddddDDdddddDdddddDdddddDdddddDDDdddddDdddddDdddddDdDdddddDdDdddddDDdddddDddd
+ddDddddDDDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdddddDDDdddddDdd
+dddDdddddDdDdddddDdDddddDDDdddddDdddddDddddDDDdddd
+TRYING MOVE CLASS      5 TO DAD     13
+DdDDdDddddLllaAAAAA
+Failed ******
+AdDdDDddddddDDDdDddddddDDddDddddddDDddDdddddDDDddDdddddDDDddDdddddDDDDdDdddddDDd
+DdDddddddDDdddddDDDDdDdddddDDDDdDdddddDDddddddDdDdDdddddDDdDDdddddDDdDdDdddddDDd
+DddddddDDDDdddddDDDdddddDddddDDddDdddddDdddddDdDdddddDdDDdddddDdddddDdDdddddDdDd
+ddddDDdddddDddDdddddDdDdddddDddDdddddDdDdddddDdDdddddDdDdddddDdDddddDddDddddDdDd
+dDddddDdDddDddddDdDDDDddddDdDddDdddd
+Badmove rejects Move      5     13
+ddDdDDddddddDDdDddddDdDddDddddddDDdDddddddDDdDddddddDDDDdddddDDDDddddDdDDddddddD
+DdDddddDdDddddddDDDDdddddDdDddDddddddDDDDDddddddDDDddddddDDDDDdddddDdDdddddddDdd
+dddddDDDddddDdDDdDdddddddDDDDDDDDDdddddDDDdddddddDddddddDDDDDDDDdddddddDDDDDDDDd
+ddddDdDddddddDDDdddddddDDDDddddddDDddddddDDDDddddddDDdDdddddDDdDddddDDddddDdddDd
+dddDddDDdddddDdDDddddDddDDddddDddDdddddDdDDdddddDdDDddddddDdDdddddDDDDdddddDdDDd
+ddddDDDDdddddDDdddddDDdDdddddDdddddDDdddddDddddDdDDdddddDdddddDdddddDDddddDDDddd
+dDDdDdddddDdDdddddDDdddddDDdddddDDdddddDdDdddddDDdddddDDdDdddddDDdDdddddDDdDdddd
+ddDdDdddddDddDddddddDdDDdddddDdddddDDdDddddddDDDDdddddDDdDDddddddDdDddddddDDDDdd
+dddDDDDddddddDDDdddddDDDdDdddddDDDdDdddddDDDdDdddd
+Badmove rejects Move     13      5
+ddDDdDdddddDDDdDddddDDdDDddddddDDdDdddddDDDdDdddddDdDdDddddddDDdDdddddDDDdDddddd
+dDDdDDddddDdDDdDddddDdDddddDdDddddddDddddDdDddddddDddddDdDddDddddDdDDddddddDdddd
+ddDddddddDddddddDddddddDddddddDddDddddddDddddddDddDdddddDDDdddddDddddDDDdddddDdd
+dddDdddddDdddddDDdddddDdDddddDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdDd
+ddddDdddddDDDdDdddddDDdDddddddDddddDDdDddddddDddddddDddddddDddddddDDddddddDddddD
+DdDddddddDddddddDdddddDDddddddDddddddDddddddDdddddDdDDddddDDdDdddddddDddddDDDddd
+dddDDdddddDdDDddddddDDDddddddDDdddddDDDddddDDdddddDDDddddddDDdddddDDDdddddDdDddd
+ddDDDdddddDdDDdddddddDDdddddDddDddddddDDdddddDddDdddddDdDDddddddDDDdddddddDddddd
+DdDDddddddDDDdddddDdDDddddddDDDddddddDDDdddddDDDDdDddddddDDDdDdddddDDdDdddddDDdd
+dddDDDdddddDDddddDDDdDdddddDDdddddDdddddDDDdddddDDdddddDDdddddDdDddddDdDdddddDDd
+ddddDDdddddDDdddddDdDdddddDDdddddDDDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDdddd
+DDdDdddddDdddddDdDdddddDdDddddDDdDdddddDdDddddDDdDdddddDdDdddddDdDdddddDdDdddddD
+DdddddDDdDdddddDDdDdddddDddDdddddDDdDdddddDddddddDdDdddddDDdDdddddDDdDddddddDdDD
+dddddDDdDdddddDDdDdddddDDdDddddddDdDddddddDdDdddddDDDdddddDddddddDdddddDddddDddd
+dDDDdddddDddddDdddddDdDdddddDdddddDdDdddddDdddddDdddddDdddddDdddddDdDdddddDddddd
+DDDdddddDddddddDdddddDdddddddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdDdddddDd
+ddddDdddddDdddddDdDdddddDdddddDDDdddddDDdddddDddddDDDdDdddddDDdddddDdDddddDDDddd
+ddDdddddDdddddDddddDDdDdddddDdDdddddDdddddDDdddddDdddddDdDdddddDDdddddDDDdddddDD
+DdDdddddDDddddDDDdDdddddDDdddddDdDddddDDDDdddddDdddddDdDdddddDddddDDDDdddddDdDdd
+dddDDddddDDDdddddDDdddddDdDdddddDDdddddDdddddDdddddDdddddDdddddDddDdddddDdDddddd
+DdDdddddDdddddDdDdddddDdddddDDdddddDdDdddddDDddddDDDdddddDdddddDdDdddddDdddddDDD
+dDdddddDDDDddddddDddddDDDDddddddDddddddDddddDDdDddddddDddddddDDddddddDddddDDDddd
+dddDddddddDddddddDddddddDddddddDdddddDDDddddddDDdddddDDDddddddDdddddDDdDdddddDDd
+dddddDdddddDddddddDDddddddDddddddDddddddDddddddDddddddDddddddDddddddDdddddDDDDdd
+dddDdDdddddDDdDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDddd
+ddDDdddddDddddDDDdddddDdDdddddDdddddDDDDdddddDDdddddDDdddddDDdddddDDdDdddddDdddd
+dDdddddDddddDDDDdddddDDdddddDDdddddDdddddDdDdddddDDdddddDDddddDdDDdddddDDdddddDd
+DdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDdddddDDDDDdddddD
+dDDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDDDdddddDDdDdddddDdddddDDDdddddDdddddDd
+ddddDdddddDdddddDdDdddddDdddddDDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDD
+DdddddDDDDdddddDdddddDDDdddddDdddddDddddDDDdddddDdddddDdDdddddDddddDDDddddDDDddd
+ddDdDdddddDDdddddDdddddDdDdddddDdddddDdDdddddDdDdddddDddDdddddDdddddDdDDdddddDdd
+dddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDDdddddDDdddddDdddddDdDdddddDdddddDD
+DdddddDdDdddddDddDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdD
+dddddDdddddDDdddddDdddddDdDdddddDdddddDDDDdddddDdddddDDDdddddDdddddDDDDdddddDddd
+ddDdddddDddddDDdddddDdddddDdddddDdddddDdDdddddDdDdddddDdddddDddddDDDddddddDDdddd
+ddDdddddDDddddddDdddddDDddddddDddddddDddddddDdddddDDddddddDddddddDddddddDddddddD
+dddddDdDddddddDddddddDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdddd
+dDDDdddddDdddddDdddddDdDdddddDdDdddddDDdddddDdddddDddddDDDdddddDDDDdddddDdddddDd
+DdddddDdddddDDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDdDdddddDdDddddDDDdddddD
+dddddDddddDDDdddd
+TRYING MOVE CLASS      5 TO DAD      6
+DdDddDddddLllaAAAAA
+Failed ******
+AdDdDDddddddDDDdDddddddDDddDddddddDDddDdddddDDDddDdddddDDDddDdddddDDDDdDdddddDDd
+DdDddddddDDdddddDDDDdDdddddDDDDdDdddddDDddddddDdDdDdddddDDdDDdddddDDdDdDdddddDDd
+DddddddDDDDdddddDDDdddddDddddDDddDdddddDdddddDdDdddddDdDDdddddDdddddDdDdddddDdDd
+ddddDDdddddDddDdddddDdDdddddDddDdddddDdDdddddDdDdddddDdDdddddDdDddddDddDddddDdDd
+dDdddd
+Badmove rejects Move      5      6
+DdDDDDddddDdDddDdddd
+Badmove rejects Move      5     13
+ddDdDDddddddDDdDddddDdDddDddddddDDdDddddddDDdDddddddDDDDdddddDDDDddddddDDdddd
+Badmove rejects Move      6      5
+DdDddddddDDDDdddddDdDddDddddddDDDDDddddddDDDddddddDDDDDdddddDdDdddddddDdddddddDD
+DddddDdDDdDdddddddDDDDDDDDDdddddDDDdddddddDddddddDDDDDDDDdddddddDDDDDDDDdddddDdD
+ddddddDDDdddddddDDDDddddddDDddddddDDDDddddddDDdDdddddDDdDddddDDddddDdddDddddDddD
+DdddddDdDDddddDddDDddddDddDdddddDdDDdddddDdDDddddddDdDdddddDDDDdddddDdDDdddddDDD
+DdddddDDdddddDDdDdddddDdddddDDdddddDddddDdDDdddddDdddddDdddddDDddddDDDddddDDdDdd
+dddDdDdddddDDdddddDDdddddDDdddddDdDdddddDDdddddDDdDdddddDDdDdddddDDdDddddddDdDdd
+dddDddDddddddDdDDdddddDdddddDDdDddddddDDDDdddddDDdDDddddddDdDddddddDDDDdddddDDDD
+ddddddDDDdddddDDDdDdddddDDDdDdddddDDDdDdddd
+Badmove rejects Move     13      5
+ddDDdDdddddDDDdDddddDDdDDddddddDDdDdddddDDDdDdddddDdDdDddddddDDdDdddddDDDdDddddd
+dDDdDDddddDdDDdDddddDdDddddDdDddddddDddddDdDddddddDddddDdDddDddddDdDDddddddDdddd
+ddDddddddDddddddDddddddDddddddDddDddddddDddddddDddDdddddDDDdddddDddddDDDdddddDdd
+dddDdddddDdddddDDdddddDdDddddDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdDd
+ddddDdddddDDDdDdddddDDdDddddddDddddDDdDddddddDddddddDddddddDddddddDDddddddDddddD
+DdDddddddDddddddDdddddDDddddddDddddddDddddddDdddddDdDDddddDDdDdddddddDddddDDDddd
+dddDDdddddDdDDddddddDDDddddddDDdddddDDDddddDDdddddDDDddddddDDdddddDDDdddddDdDddd
+ddDDDdddddDdDDdddddddDDdddddDddDddddddDDdddddDddDdddddDdDDddddddDDDddddddDDddddd
+DdDDddddddDDDdddddDdDDddddddDDDddddddDDDdddddDDDDdDddddddDDDdDdddddDDdDdddddDDdd
+dddDDDdddddDDddddDDDdDdddddDDdddddDdddddDDDdddddDDdddddDDdddddDdDddddDdDdddddDDd
+ddddDDdddddDDdddddDdDdddddDDdddddDDDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDdddd
+DDdDdddddDdddddDdDdddddDdDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDdddddDdDdddddD
+DdddddDDdDdddddDDdDdddddDddDdddddDDdDdddddDddddddDdDdddddDDdDdddddDDdDddddddDdDD
+dddddDDdDdddddDDdDdddddDDdDddddddDdDddddddDdDdddddDDDdddddDddddddDdddddDddddDddd
+dDDDdddddDddddDdddddDdDdddddDdddddDdDdddddDdddddDdddddDdddddDdddddDdDdddddDddddd
+DDDdddddDddddddDdddddDdddddddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdDdddddDd
+ddddDdddddDdddddDdDdddddDdddddDDDdddddDDdddddDddddDDDdDdddddDDdddddDdDddddDDDddd
+ddDdddddDdddddDddddDDdDdddddDdDdddddDdddddDDdddddDdddddDdDdddddDDdddddDDDdddddDD
+DdDdddddDDddddDDDdDdddddDDdddddDdDddddDDDDdddddDdddddDdDdddddDddddDDDDdddddDdDdd
+dddDDddddDDDdddddDDdddddDdDdddddDDdddddDdddddDdddddDdddddDdddddDddDdddddDdddddDd
+DdddddDdddddDdDdddddDdddddDDdddddDdDdddddDDddddDDDdddddDdddddDdDdddddDdddddDDDdD
+dddddDDDDddddddDddddDDDDddddddDddddddDddddDDdDddddddDddddddDDddddddDddddDDDddddd
+dDddddddDddddddDddddddDddddddDdddddDDDddddddDDdddddDDDddddddDdddddDDdDdddddDDddd
+dddDdddddDddddddDDddddddDddddddDddddddDddddddDddddddDddddddDddddddDdddddDDDDdddd
+dDdDdddddDDdDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDddddd
+DDdddddDddddDDDdddddDdDdddddDdddddDDDDdddddDDdddddDDdddddDDdddddDDdDdddddDdddddD
+dddddDddddDDDDdddddDDdddddDDdddddDdddddDdDdddddDDdddddDDddddDdDDdddddDDdddddDdDd
+ddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDdddddDDDDDdddddDdD
+DdddddDdDdddddDdDdddddDdDDdddddDdDdddddDDDdddddDDdDdddddDdddddDDDdddddDdddddDddd
+ddDdddddDdddddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDDdd
+dddDDDDdddddDdddddDDDdddddDdddddDddddDDDdddddDdddddDdDdddddDddddDDddddDDDdddddDd
+DdddddDdddddDdddddDdDdddddDdddddDdDdddddDdDdddddDddDdddddDdddddDdDDdddddDdddddDd
+ddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDdddddDdddddDdDdddddDdddddDDDddddd
+DdDdddddDddDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddD
+dddddDDdddddDdddddDdDdddddDdddddDDDDdddddDdddddDDDdddddDdddddDDDDdddddDdddddDddd
+ddDddddDDdddddDdddddDdddddDdddddDdDdddddDdDdddddDdddddDddddDDDddddddDDddddddDddd
+ddDDddddddDdddddDDddddddDddddddDddddddDdddddDDddddddDddddddDddddddDddddddDdddddD
+dDddddddDddddddDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdddddDDDdd
+dddDdddddDdddddDdddddDdDdddddDDdddddDdddddDddddDdDdddddDDDDdddddDdddddDdDdddddDd
+ddddDDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDdDdddddDdDddddDDDdddddDdddddDdd
+ddDDDdddd
+TRYING MOVE CLASS      5 TO DAD      3
+DdDddDddddLllaAAAAA
+Failed ******
+AdDdDDddddddDDDdDddddddDDddDddddddDDddDdddddDDDddDdddddDDDddDdddddDDDDdDdddddDDd
+DdDddddddDDdddddDDDDdDdddddDDDDdDdddddDDdddd
+Badmove rejects Move      3      5
+dDDdDDdddddDDdDdDdddddDDdDddddddDDDDdddddDDDdddddDddddDDddDdddddDdddddDdDdddddDd
+DDdddddDdddddDdDdddddDdDdddddDDdddddDddDdddddDdDdddddDddDdddddDdDdddddDdDdddddDd
+DdddddDdDddddDddDdddd
+Badmove rejects Move      5      3
+Badmove rejects Move      5      6
+DdDDDDddddDdDddDdddd
+Badmove rejects Move      5     13
+ddDdDDddddddDDdDddddDdDddDddddddDDdDddddddDDdDddddddDDDDdddddDDDDddddddDDdddd
+Badmove rejects Move      6      5
+DdDddddddDDDDdddddDdDddDddddddDDDDDddddddDDDddddddDDDDDdddddDdDdddddddDdddddddDD
+DddddDdDDdDdddddddDDDDDDDDDdddddDDDdddddddDddddddDDDDDDDDdddddddDDDDDDDDdddddDdD
+ddddddDDDdddddddDDDDddddddDDddddddDDDDddddddDDdDdddddDDdDddddDDddddDdddDddddDddD
+DdddddDdDDddddDddDDddddDddDdddddDdDDdddddDdDDddddddDdDdddddDDDDdddddDdDDdddddDDD
+DdddddDDdddddDDdDdddddDdddddDDdddddDddddDdDDdddddDdddddDdddddDDddddDDDddddDDdDdd
+dddDdDdddddDDdddddDDdddddDDdddddDdDdddddDDdddddDDdDdddddDDdDdddddDDdDddddddDdDdd
+dddDddDddddddDdDDdddddDdddddDDdDddddddDDDDdddddDDdDDddddddDdDddddddDDDDdddddDDDD
+ddddddDDDdddddDDDdDdddddDDDdDdddddDDDdDdddd
+Badmove rejects Move     13      5
+ddDDdDdddddDDDdDddddDDdDDddddddDDdDdddddDDDdDdddddDdDdDddddddDDdDdddddDDDdDddddd
+dDDdDDddddDdDDddddDdDddddDdDddddddDddddDdDddddddDddddDdDddDddddDdDDddddddDdddddd
+DddddddDddddddDddddddDddddddDddDddddddDddddddDddDdddddDDDdddddDddddDDDdddddDdddd
+dDdddddDdddddDDdddddDdDddddDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdDddd
+ddDdddddDDDdDdddddDDdDddddddDddddDDdDddddddDddddddDddddddDddddddDDddddddDddddDDd
+DddddddDddddddDdddddDDddddddDddddddDddddddDdddddDdDDddddDDdDdddddddDddddDDDddddd
+dDDdddddDdDDddddddDDDddddddDDdddddDDDddddDDdddddDDDddddddDDdddddDDDdddddDdDddddd
+DDDdddddDdDDdddddddDDdddddDddDddddddDDdddddDddDdddddDdDDddddddDDDddddddDDdddddDd
+DDddddddDDDdddddDdDDddddddDDDddddddDDDdddddDDDDdDddddddDDDdDdddddDDdDdddddDDdddd
+dDDDdddddDDddddDDDdDdddddDDdddddDdddddDDDdddddDDdddddDDdddddDdDddddDdDdddddDDddd
+ddDDdddddDDdddddDdDdddddDDdddddDDDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDddddDD
+dDdddddDdddddDdDdddddDdDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDdddddDdDdddddDDd
+ddddDDdDdddddDDdDdddddDddDdddddDDdDdddddDddddddDdDdddddDDdDdddddDDdDddddddDdDDdd
+dddDDdDdddddDDdDdddddDDdDddddddDdDddddddDdDdddddDDDdddddDddddddDdddddDddddDddddD
+DDdddddDddddDdddddDdDdddddDdddddDdDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDD
+DdddddDddddddDdddddDdddddddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdDdddddDddd
+ddDdddddDdddddDdDdddddDdddddDDDdddddDDdddddDddddDDDdDdddddDDdddddDdDddddDDDddddd
+DdddddDdddddDddddDDdDdddddDdDdddddDdddddDDdddddDdddddDdDdddddDDdddddDDDdddddDDDd
+DdddddDDddddDDDdDdddddDDdddddDdDddddDDDDdddddDdddddDdDdddddDddddDDDDdddddDdDdddd
+dDDddddDDDdddddDDdddddDdDdddddDDdddddDdddddDdddddDdddddDdddddDddDdddddDdddddDdDd
+ddddDdddddDdDdddddDdddddDDdddddDdDdddddDDddddDDDdddddDdddddDdDdddddDdddddDDDdDdd
+dddDDDDddddddDddddDDDDddddddDddddddDddddDDdDddddddDddddddDDddddddDddddDDDddddddD
+ddddddDddddddDddddddDddddddDdddddDDDddddddDDdddddDDDddddddDdddddDDdDdddddDDddddd
+dDdddddDddddddDDddddddDddddddDddddddDddddddDddddddDdddddDDddddddDdddddDDDDdddddD
+dDdddddDDdDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDD
+dddddDddddDDDdddddDdDdddddDdddddDDDDdddddDDdddddDDdddddDDdddddDDdDdddddDdddddDdd
+dddDddddDDDDdddddDDdddddDDdddddDdddddDdDdddddDDdddddDDddddDdDDdddddDDdddddDdDddd
+ddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDdddddDDDDDdddddDdDDd
+ddddDdDdddddDdDdddddDdDDdddddDdDdddddDDDdddddDDdDdddddDdddddDDDdddddDdddddDddddd
+DdddddDdddddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDDdddd
+dDDDDdddddDdddddDDDdddddDdddddDddddDDDdddddDdddddDdDdddddDddddDDddddDDDdddddDdDd
+ddddDdddddDdddddDdDdddddDdddddDdddddDdDdddddDddDdddddDdddddDdDDdddddDdddddDddddd
+DDdddddDdDdddddDdddddDdddddDdDdddddDDdddddDDdddddDdddddDdDdddddDdddddDDDdddddDdD
+dddddDddDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDddd
+ddDDdddddDdddddDdDdddddDdddddDDDDdddddDdddddDDDdddddDdddddDDDDdddddDdddddDdddddD
+ddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDddddDDDddddddDDddddddDdddddDDd
+dddddDdddddDDddddddDddddddDddddddDdddddDDddddddDddddddDddddddDddddddDdddddDdDddd
+dddDddddddDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdddddDDDdddddDd
+ddddDdddddDdddddDdDdddddDDdddddDdddddDddddDdDdddddDDDDdddddDdddddDdDdddddDdddddD
+DdddddDdddddDdddddDdddddDDdddddDdddddDdddddDdddddDdDddddDDDdddddDdddddDddddDDDdd
+dd
+TRYING MOVE CLASS      5 TO DAD      1
+DddDddddLllaAAAAA
+Failed ******
+A
+Cost dropped by   24.619%
+--------------------------------------------------------------------------------
+P1    37 classes,   19 leaves,  Pcost   368.2  Tcost  452931.9,  Cost  453300.2
+Sample  1 XRFTest
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 3 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........aa........aa........aa........a
+Attempting class moves until 4 successive failures
+AAdDdDDddddddDDDdDddddddDDDdDddddddDDddDdddddDDDddDdddddDDDddDddddddDDDdDdddddDD
+dDdDddddddDDdddddDDDDdDdddddDDDDdDdddddDDddddddDdDdDdddddDDdDDdddddDDdDdDdddddDD
+dDddddddDDDDdddddDDDdddddDddddDDddDdddddDdddddDdDdddddDdDDdddddDdddddDdDdddddDdD
+dddddDDdddddDddDdddddDdDdddddDddDdddddDdDdddddDdDdddddDdDdddddDdDddddDddDddddDdD
+ddDddddDdDddddDdDDDDddddDdDddDddddDdDDdDddddddDdDDddddddDDdDddddDdDddDddddddDDdD
+ddddddDDdDddddddDDDDdddddDDDDddddDdDDddddddDDdDddddDdDddddddDDDDdddddDdDddDddddd
+dDDDDDddddddDDDddddddDDDDDdddddDdDdddddddDdddddddDDDddddDdDDdDdddddddDDDDDDDDDdd
+dddDDDdDdddddddDdddddddDDDDDDDdddddddDDDDDDDDdddddDdDddddddDDDdddddddDDDDddddddD
+DddddddDDDDddddddDDdDdddddDDdDddddDDddddDdddDddddDddDDdddddDdDDddddDddDDddddDddD
+dddddDdDDdddddddDDddddddDdDddddddDDDdddddDdDDdddddDDDDdddddDDdddddDDdDdddddDdddd
+dDDdddddDdDddddDdDDdddddDdddddDdddddDDddddDDDddddDDdDdddddDdDdddddDDdddddDDddddd
+DDdddddDdDdddddDDdddddDDdDddddddDdDdddddDDdDddddddDdDdddddDddDddddddDdDdddddDddd
+ddDDdDddddddDDDdddddDDdDddddddDdDddddddDDDDdddddDDDddddddDDDdddddDDDdDdddddDDDdD
+dddddDDDdDdddddDDDdDddddddDDdDdddddDDDdDddddDdddDddddddDDdDdddddDDDdDdddddDdDdDd
+dddddDDdDddddddDDdDddddddDDdDDddddDdDDdDddddDdDddddDddddddDddddDdDddddddDddddDdD
+ddDddddDdDDddddddDddddddDddddddDddddddDddddddDddddddDddDddddddDddddddDddDdddddDD
+DdddddDddddDDDdddddDdddddDdddddDdddddDDdddddDdDddddDDDdddddDdddddDdDdddddDdddddD
+DdddddDdddddDdddddDdDdddddDdddddDDDdDdddddDDdDddddddDddddDDdDddddddDddddddDddddd
+dDddddddDDddddddDddddDDdDddddddDddddddDdddddDDddddddDddddddDddddddDdddddDdDDdddd
+DDdDdddddddDddddDDDddddddDDDdddddDdDDddddddDDDddddddDDdddddDDDddddDDdddddDdDdddd
+ddDDDdddddDDDdddddDdDdddddDDDdddddDddDdddddDdDDdddddDddDddddddDDdddddDddDdddddDd
+DDddddddDDDdddddDDDdddddDDDDddddddDDDdddddDdDDddddddDdDddddddDDDdddddDDDDddddddD
+DDdDdddddDDdDdddddDDdddddDDDdddddDDddddDDDdddddDDdddddDdddddDDDddddDDDdddddDDddd
+ddDdDddddDdDdddddDDdddddDDdddddDDdddddDdDdddddDDdddddDDDdddddDdDdddddDdDddddDDdD
+dddddDdDdddddDdDddddDDdDdddddDdddddDdDdddddDdDdddddDdDdddddDdDddddDDdDdddddDdDdd
+dddDdDdddddDdDdddddDDdddddDDdDdddddDDdDdddddDddDdddddDDdDdddddDddddddDdDdddddDDd
+DdddddDDdDddddddDdDDdddddDDdDdddddDDdDdddddDDdDddddddDdDdddddDDdDdddddDDDdddddDd
+dddddDdddddDddddDddddDDDdddddDddddDdddddDdDdddddDdddddDdDddddDDdddddDdddddDddddd
+DdddddDdDdddddDdddddDDDdddddDddddddDdddddDdddddddddDDdddddDdddddDdddddDdddddDddd
+ddDdDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDDDdddddDDdddddDddddDDDdDdddddDD
+dddddDdDddddDDDdddddDdddddDdddddDddddDDdDdddddDdDdddddDdddddDDdddddDDdddddDdDddd
+ddDDdddddDDDdddddDDDdDdddddDddddDDDdDdddddDDdddddDdDddddDDDDdddddDdddddDdDdddddD
+ddddDDDDdddddDdDdddddDDddddDDDdddddDDdddddDdDdddddDDdddddDdddddDdddddDdddddDdddd
+dDddDdddddDdDdddddDdDdddddDdddddDdDdddddDdddddDDdddddDdDdddddDDddddDDDdddddDdddd
+dDdDdddddDdddddDDDdDdddddDDDDddddddDddddDDDDddddddDddddddDddddDDdDddddddDddddddD
+DddddddDddddDDDddddddDddddddDddddddDddddddDddddddDdddddDDDddddddDDdddddDDDdddddd
+DdddddDDdDdddddDddddddDdddddDDddddddDDddddddDddddddDddddddDddddddDddddddDdddddDD
+ddddddDdddddDDDDdddddDdDdddddDDdDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDddddd
+DdddddDdddddDdDdddddDDdddddDddddDDDdddddDdDdddddDdddddDDDDdddddDDdddddDDdddddDDd
+ddddDDdDdddddDdddddDdddddDddddDDDDdddddDDdddddDDdddddDdddddDdDdddddDDdddddDDdddd
+DdDDdddddDDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDDdddddDdDdddd
+dDdddddDDDDDdddddDdDDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDDDdddddDDdDdddddDddd
+ddDDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddd
+dDdDdddddDdddddDDDdddddDDDDdddddDdddddDDDdddddDddDdddddDddddDDDdddddDdddddDdDddd
+ddDddddDDddddDDDdddddDdDdddddDDdddddDdddddDdDdddddDdddddDdddddDdDdddddDddDdddddD
+dddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDdddddDddddd
+DdDdddddDdddddDDDdddddDdDdddddDddDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddd
+dDdddddDdddddDdDdddddDdddddDDdddddDdddddDdDdddddDdddddDDDDdddddDdddddDDDdddddDdd
+dddDDDDdddddDdddddDdddddDddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDddddD
+DDdddddDDDddddddDdddddDDddddddDdddddDDddddddDddddddDdddddDDdddddDDddddddDddddddD
+ddddddDddddddDdddddDdDddddddDddddddDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdd
+dddDdddddDdddddDDDdddddDdddddDdddddDdddddDdDdddddDDdddddDdddddDddddDDDdddddDDDDd
+ddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDdDdddddDdDd
+dddDDDdddddDdddddDddddDDDdddd
+TRYING MOVE CLASS      5 TO DAD     13
+DdDDdDddddLllaAAAAA
+Failed ******
+AdDdDDddddddDDDdDddddddDDDdDddddddDDddDdddddDDDddDdddddDDDddDddddddDDDdDdddddDDd
+DdDddddddDDdddddDDDDdDdddddDDDDdDdddddDDddddddDdDdDdddddDDdDDdddddDDdDdDdddddDDd
+DddddddDDDDdddddDDDdddddDddddDDddDdddddDdddddDdDdddddDdDDdddddDdddddDdDdddddDdDd
+ddddDDdddddDddDdddddDdDdddddDddDdddddDdDdddddDdDdddddDdDdddddDdDddddDddDddddDdDd
+dDddddDdDddddDdDDDDddddDdDddDdddd
+Badmove rejects Move      5     13
+ddDdDDddddddDDdDddddDdDddDddddddDDdDddddddDDdDddddddDDDDdddddDDDDddddDdDDddddddD
+DdDddddDdDddddddDDDDdddddDdDddDddddddDDDDDddddddDDDddddddDDDDDdddddDdDdddddddDdd
+dddddDDDddddDdDDdDdddddddDDDDDDDDDdddddDDDdDdddddddDdddddddDDDDDDDdddddddDDDDDDD
+DdddddDdDddddddDDDdddddddDDDDddddddDDddddddDDDDddddddDDdDdddddDDdDddddDDddddDddd
+DddddDddDDdddddDdDDddddDddDDddddDddDdddddDdDDdddddddDDddddddDdDddddddDDDdddddDdD
+DdddddDDDDdddddDDdddddDDdDdddddDdddddDDdddddDddddDdDDdddddDdddddDdddddDDddddDDDd
+dddDDdDdddddDdDdddddDDdddddDDdddddDDdddddDdDdddddDDdddddDDdDddddddDdDdddddDDdDdd
+ddddDdDdddddDddDddddddDdDdddddDdddddDDdDddddddDDDdddddDDdDddddddDdDddddddDDDDddd
+ddDDDddddddDDDdddddDDDdDdddddDDDdDdddddDDDdDdddd
+Badmove rejects Move     13      5
+ddDDdDdddddDDDdDddddDdddDddddddDDdDdddddDDDdDdddddDDDdDddddddDDdDddddddDDdDddddd
+dDDdDDddddDdDDdDddddDdDddddDddddddDddddDdDddddddDddddDdDddDddddDdDDddddddDdddddd
+DddddddDddddddDddddddDddddddDddDddddddDddddddDddDdddddDDDdddddDddddDDDdddddDdddd
+dDdddddDdddddDDdddddDdDddddDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdDddd
+ddDdddddDDDdDdddddDDdDddddddDddddDDdDddddddDddddddDddddddDddddddDDddddddDddddDDd
+DddddddDddddddDdddddDDddddddDddddddDddddddDdddddDdDDddddDDdDdddddddDddddDDDddddd
+dDDDdddddDdDDddddddDDDddddddDDdddddDDDddddDDdddddDdDddddddDDDdddddDDDdddddDdDddd
+ddDDDdddddDddDdddddDdDDdddddDddDddddddDDdddddDddDdddddDdDDddddddDDDdddddDDDddddd
+DDDDddddddDDDdddddDdDDddddddDdDddddddDDDdddddDDDDddddddDDDdDdddddDDdDdddddDDdddd
+dDDDdddddDDddddDDDdddddDDdddddDdddddDDDddddDDDdddddDDdddddDdDddddDdDdddddDDddddd
+DDdddddDDdddddDdDdddddDDdddddDDDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDddddDDdD
+dddddDdddddDdDdddddDdDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDdddddDdDdddddDDddd
+ddDDdDdddddDDdDdddddDddDdddddDDdDdddddDddddddDdDdddddDDdDdddddDDdDddddddDdDDdddd
+dDDdDdddddDDdDdddddDDdDddddddDdDdddddDDdDdddddDDDdddddDddddddDdddddDddddDddddDDD
+dddddDddddDdddddDdDdddddDdddddDdDddddDDdddddDdddddDdddddDdddddDdDdddddDdddddDDDd
+ddddDddddddDdddddDdddddddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDdddddDd
+ddddDdddddDdDdddddDdddddDDDdddddDDdddddDddddDDDdDdddddDDdddddDdDddddDDDdddddDddd
+ddDdddddDddddDDdDdddddDdDdddddDdddddDDdddddDDdddddDdDdddddDDdddddDDDdddddDDDdDdd
+dddDddddDDDdDdddddDDdddddDdDddddDDDDdddddDdddddDdDdddddDddddDDDDdddddDdDdddddDDd
+dddDDDdddddDDdddddDdDdddddDDdddddDdddddDdddddDdddddDdddddDddDdddddDdDdddddDdDddd
+ddDdddddDdDdddddDdddddDDdddddDdDdddddDDddddDDDdddddDdddddDdDdddddDdddddDDDdDdddd
+dDDDDddddddDddddDDDDddddddDddddddDddddDDdDddddddDddddddDDddddddDddddDDDddddddDdd
+ddddDddddddDddddddDddddddDdddddDDDddddddDDdddddDDDddddddDdddddDDdDdddddDddddddDd
+ddddDDddddddDDddddddDddddddDddddddDddddddDddddddDdddddDDddddddDdddddDDDDdddddDdD
+dddddDDdDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDDdd
+dddDddddDDDdddddDdDdddddDdddddDDDDdddddDDdddddDDdddddDDdddddDDdDdddddDdddddDdddd
+dDddddDDDDdddddDDdddddDDdddddDdddddDdDdddddDDdddddDDddddDdDDdddddDDdddddDdDddddd
+DdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDdddddDDDDDdddddDdDDddd
+ddDdDdddddDdDdddddDdDDdddddDdDdddddDDDdddddDDdDdddddDdddddDDDdddddDdddddDdddddDd
+ddddDdddddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDDdddddD
+DDDdddddDdddddDDDdddddDddDdddddDddddDDDdddddDdddddDdDdddddDddddDDddddDDDdddddDdD
+dddddDDdddddDdddddDdDdddddDdddddDdddddDdDdddddDddDdddddDdddddDdDDdddddDdddddDddd
+ddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDdddddDdddddDdDdddddDdddddDDDdddddDd
+DdddddDddDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdd
+dddDDdddddDdddddDdDdddddDdddddDDDDdddddDdddddDDDdddddDdddddDDDDdddddDdddddDddddd
+DddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDddddDDDddddddDDddddddDdddddDD
+ddddddDdddddDDddddddDddddddDddddddDdddddDDddddddDddddddDddddddDddddddDdddddDdDdd
+ddddDddddddDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdddddDDDdddddD
+dddddDdddddDdddddDdDdddddDDdddddDdddddDddddDDDdddddDDDDdddddDdddddDdDdddddDddddd
+DDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDdddddDdDddddDDDdddddDdddddDddddDDDd
+ddd
+TRYING MOVE CLASS      5 TO DAD      6
+DdDddddLllaAAAAA
+Failed ******
+AdDdDDddddddDDDdDddddddDDDdDddddddDDddDdddddDDDddDdddddDDDddDddddddDDDdDdddddDDd
+DdDddddddDDdddddDDDDdDdddddDDDDdDdddddDDddddddDdDdDdddddDDdDDdddddDDdDdDdddddDDd
+DddddddDDDDdddddDDDdddddDddddDDddDdddddDdddddDdDdddddDdDDdddddDdddddDdDdddddDdDd
+ddddDDdddddDddDdddddDdDdddddDddDdddddDdDdddddDdDdddddDdDdddddDdDddddDddDddddDdDd
+dDdddd
+Badmove rejects Move      5      6
+DdDDDDddddDdDddDdddd
+Badmove rejects Move      5     13
+ddDdDDddddddDDdDddddDdDddDddddddDDdDddddddDDdDddddddDDDDdddddDDDDddddDdDDDdddd
+Badmove rejects Move      6      5
+DdDddddddDDDDdddddDdDddDddddddDDDDDddddddDDDddddddDDDDDdddddDdDdddddddDdddddddDD
+DddddDdDDdDdddddddDDDDDDDDDdddddDDDdDdddddddDddddddDDDDDDDDdddddddDDDDDDDDdddddD
+dDddddddDDDdddddddDDDDddddddDDddddddDDDDddddddDDdDdddddDDdDddddDDddddDdddDddddDd
+dDDdddddDdDDddddDddDDddddDddDdddddDdDDdddddddDDddddddDdDddddddDDDdddddDdDDdddddD
+DDDdddddDDdddddDDdDdddddDdddddDDdddddDddddDdDDdddddDdddddDdddddDDddddDDDddddDDdD
+dddddDdDdddddDDdddddDDdddddDDdddddDdDdddddDDdddddDDdDddddddDdDdddddDDdDddddddDdD
+dddddDddDddddddDdDdddddDdddddDDdDddddddDDDdddddDDdDddddddDdDddddddDDDDdddddDDDdd
+ddddDDDdddddDDDdDdddddDDDdDdddddDDDdDdddd
+Badmove rejects Move     13      5
+ddDDdDdddddDDDdDddddDdddDddddddDDdDdddddDDDdDdddddDDDdDddddddDDdDddddddDDdDddddd
+dDDdDDddddDdDDdDddddDdDddddDddddddDddddDdDddddddDddddDdDddDddddDdDDddddddDdddddd
+DddddddDddddddDddddddDddddddDddDddddddDddddddDddDdddddDDDdddddDddddDDDdddddDdddd
+dDdddddDdddddDDdddddDdDddddDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdDddd
+ddDdddddDDDdDdddddDDdDddddddDddddDDdDddddddDddddddDddddddDddddddDDddddddDddddDDd
+DddddddDddddddDdddddDDddddddDddddddDddddddDdddddDdDDddddDDdDdddddddDddddDDDddddd
+dDDDdddddDdDDddddddDDDddddddDDdddddDDDddddDDdddddDdDddddddDDDdddddDDDdddddDdDddd
+ddDDDdddddDddDdddddDdDDdddddDddDddddddDDdddddDddDdddddDdDDddddddDDDdddddDDDddddd
+DDDDddddddDDDdddddDdDDddddddDdDddddddDDDdddddDDDDddddddDDDdDdddddDDdDdddddDDdddd
+dDDDdddddDDddddDDDdddddDDdddddDdddddDDDddddDDDdddddDDdddddDdDddddDdDdddddDDddddd
+DDdddddDDdddddDdDdddddDDdddddDDDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDddddDDdD
+dddddDdddddDdDdddddDdDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDdddddDdDdddddDDddd
+ddDDdDdddddDDdDdddddDddDdddddDDdDdddddDddddddDdDdddddDDdDdddddDDdDddddddDdDDdddd
+dDDdDdddddDDdDdddddDDdDddddddDdDdddddDDdDdddddDDDdddddDddddddDdddddDddddDddddDDD
+dddddDddddDdddddDdDdddddDdddddDdDddddDDdddddDdddddDdddddDdddddDdDdddddDdddddDDDd
+ddddDddddddDdddddDdddddddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDdddddDd
+ddddDdddddDdDdddddDdddddDDDdddddDDdddddDddddDDDdDdddddDDdddddDdDddddDDDdddddDddd
+ddDdddddDddddDDdDdddddDdDdddddDdddddDDdddddDDdddddDdDdddddDDdddddDDDdddddDDDdDdd
+dddDddddDDDdDdddddDDdddddDdDddddDDDDdddddDdddddDdDdddddDddddDDDDdddddDdDdddddDDd
+dddDDDdddddDDdddddDdDdddddDDdddddDdddddDdddddDdddddDdddddDddDdddddDdddddDdDddddd
+DdddddDdDdddddDdddddDDdddddDdDdddddDDddddDDDdddddDdddddDdDdddddDdddddDDDdDdddddD
+DDDddddddDddddDDDDddddddDddddddDddddDDdDddddddDddddddDDddddddDddddDDDddddddDdddd
+ddDddddddDddddddDddddddDdddddDDDddddddDDdddddDDDddddddDdddddDDdDdddddDddddddDddd
+ddDDddddddDDddddddDddddddDddddddDddddddDddddddDdddddDDddddddDdddddDDDDdddddDdDdd
+dddDDdDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDDdddd
+dDddddDDDdddddDdDdddddDdddddDDDDdddddDDdddddDDdddddDDdddddDDdDdddddDdddddDdddddD
+ddddDDDDdddddDDdddddDDdddddDdddddDdDdddddDDdddddDDddddDdDDdddddDDdddddDdDdddddDd
+DdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDdddddDDDDDdddddDdDDddddd
+DdDdddddDdDdddddDdDDdddddDdDdddddDDDdddddDDdDdddddDdddddDDDdddddDdddddDdddddDddd
+ddDdddddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDDdddddDDD
+DdddddDdddddDDDdddddDddDdddddDddddDDDdddddDdddddDdDdddddDddddDDddddDDDdddddDdDdd
+dddDDdddddDdddddDdDdddddDdddddDdddddDdDdddddDddDdddddDdddddDdDDdddddDdddddDddddd
+DDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDdddddDdddddDdDdddddDdddddDDDdddddDdDd
+ddddDddDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddd
+dDDdddddDdddddDdDdddddDdddddDDDDdddddDdddddDDDdddddDdddddDDDDdddddDdddddDdddddDd
+dddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDddddDDDdddddDDDddddddDdddddDDdd
+ddddDdddddDDddddddDddddddDddddddDdddddDDddddddDddddddDddddddDddddddDdddddDdDdddd
+ddDddddddDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdddddDDDdddddDdd
+dddDdddddDdddddDdDdddddDDdddddDdddddDddddDdDdddddDDDDdddddDdddddDdDdddddDdddddDD
+dddddDdddddDdddddDdddddDDdddddDdddddDdddddDdddddDdDddddDDDdddddDdddddDddddDDDddd
+d
+TRYING MOVE CLASS      5 TO DAD      3
+DdDddDddddLllaAAAAA
+Failed ******
+AdDdDDddddddDDDdDddddddDDDdDddddddDDddDdddddDDDddDdddddDDDddDddddddDDDdDdddddDDd
+DdDddddddDDdddddDDDDdDdddddDDDDdDdddddDDdddd
+Badmove rejects Move      3      5
+dDDdDDdddddDDdDdDdddddDDdDddddddDDDDdddddDDDdddddDddddDDddDdddddDdddddDdDdddddDd
+DDdddddDdddddDdDdddddDdDdddddDDdddddDddDdddddDdDdddddDddDdddddDdDdddddDdDdddddDd
+DdddddDdDddddDddDdddd
+Badmove rejects Move      5      3
+Badmove rejects Move      5      6
+DdDDDDddddDdDddDdddd
+Badmove rejects Move      5     13
+ddDdDDddddddDDdDddddDdDddDddddddDDdDddddddDDdDddddddDDDDdddddDDDDddddddDDDdddd
+Badmove rejects Move      6      5
+DdDddddddDDDDdddddDdDddDddddddDDDDDddddddDDDddddddDDDDDdddddDdDdddddddDdddddddDD
+DddddDdDDdDdddddddDDDDDDDDDdddddDDDdDdddddddDddddddDDDDDDDDdddddddDDDDDDDDdddddD
+dDddddddDDDdddddddDDDDddddddDDddddddDDDDddddddDDdDdddddDDdDddddDDddddDdddDddddDd
+dDDdddddDdDDddddDddDDddddDddDdddddDdDDdddddddDDddddddDdDddddddDDDdddddDdDDdddddD
+DDDdddddDDdddddDDdDdddddDdddddDDdddddDddddDdDDdddddDdddddDdddddDDddddDDDddddDDdD
+dddddDdDdddddDDdddddDDdddddDDdddddDdDdddddDDdddddDDdDddddddDdDdddddDDdDddddddDdD
+dddddDddDddddddDdDdddddDdddddDDdDddddddDDDdddddDDdDddddddDdDddddddDDDDdddddDDDdd
+ddddDDDdddddDDDdDdddddDDDdDdddddDDDdDdddd
+Badmove rejects Move     13      5
+ddDDdDdddddDDDdDddddDdddDddddddDDdDdddddDDDdDdddddDDDdDddddddDDdDddddddDDdDddddd
+dDDdDDddddDdDDdDddddDdDddddDddddddDddddDdDddddddDddddDdDddDddddDdDDddddddDdddddd
+DddddddDddddddDddddddDddddddDddDddddddDddddddDddDdddddDDDdddddDddddDDDdddddDdddd
+dDdddddDdddddDDdddddDdDddddDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdDddd
+ddDdddddDDDdDdddddDDdDddddddDddddDDdDddddddDddddddDddddddDddddddDDddddddDddddDDd
+DddddddDddddddDdddddDDddddddDddddddDddddddDdddddDdDDddddDDdDdddddddDddddDDDddddd
+dDDDdddddDdDDddddddDDDddddddDDdddddDDDddddDDdddddDdDddddddDDdddddDDDdddddDdDdddd
+dDDDdddddDddDddddddDDDdddddDddDddddddDDdddddDddDdddddDdDDddddddDDDddddddDDdddddD
+DDDddddddDDDdddddDdDDddddddDdDddddddDDDdddddDDDDddddddDDDdDdddddDDdDdddddDDddddd
+DDDdddddDDddddDDDdDdddddDDdddddDdddddDDDddddDDDdddddDDdddddDdDddddDdDdddddDDdddd
+dDDdddddDDdddddDdDdddddDDdddddDDDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDddddDDd
+DdddddDdddddDdDdddddDdDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDdddddDdDdddddDDdd
+dddDDdDdddddDDdDdddddDddDdddddDDdDdddddDddddddDdDdddddDDdDdddddDDdDddddddDdDDddd
+ddDDdDdddddDDdDdddddDDdDddddddDdDdddddDDdDdddddDDDdddddDddddddDdddddDddddDddddDD
+DdddddDddddDdddddDdDdddddDdddddDdDddddDDdddddDdddddDdddddDdddddDdDdddddDdddddDDD
+dddddDddddddDdddddDdddddddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDdddddD
+dddddDdddddDdDdddddDdddddDDDdddddDDdddddDddddDDDdDdddddDDdddddDdDddddDDDdddddDdd
+dddDdddddDddddDDdDdddddDdDdddddDdddddDDdddddDDdddddDdDdddddDDdddddDDDdddddDDDdDd
+ddddDddddDDDdDdddddDDdddddDdDddddDDDDdddddDdddddDdDdddddDddddDDDDdddddDdDdddddDD
+ddddDDDdddddDDdddddDdDdddddDDdddddDdddddDdddddDdddddDdddddDddDdddddDdDdddddDdDdd
+dddDdddddDdDdddddDdddddDDdddddDdDdddddDDddddDDDdddddDdddddDdDdddddDdddddDDDdDddd
+ddDDDDddddddDddddDDDDddddddDddddddDddddDDdDddddddDddddddDDddddddDddddDDDddddddDd
+dddddDddddddDddddddDddddddDdddddDDDddddddDDdddddDDDddddddDdddddDDdDdddddDddddddD
+dddddDDddddddDDddddddDddddddDddddddDddddddDddddddDdddddDDddddddDdddddDDDDdddddDd
+DdddddDDdDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDDd
+ddddDddddDDDdddddDdDdddddDdddddDDDDdddddDDdddddDDdddddDDdddddDDdDdddddDdddddDddd
+ddDddddDDDDdddddDDdddddDDdddddDdddddDdDdddddDDdddddDDddddDdDDdddddDDdddddDdDdddd
+dDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDdddddDDDDDdddddDdDDdd
+dddDdDdddddDdDdddddDdDDdddddDdDdddddDDDdddddDDdDdddddDdddddDDDdddddDdddddDdddddD
+dddddDdddddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDDddddd
+DDDDdddddDdddddDDDdddddDddDdddddDddddDDDdddddDdddddDdDdddddDddddDDddddDDDdddddDd
+DdddddDDdddddDdddddDdDdddddDdddddDdddddDdDdddddDddDdddddDdddddDdDDdddddDdddddDdd
+dddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDdddddDdddddDdDdddddDdddddDDDdddddD
+dDdddddDddDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDd
+ddddDDdddddDdddddDdDdddddDdddddDDDDdddddDdddddDDDdddddDdddddDDDDdddddDdddddDdddd
+dDddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDddddDDDddddddDDddddddDdddddD
+DddddddDdddddDDddddddDddddddDddddddDdddddDDddddddDddddddDddddddDddddddDdddddDdDd
+dddddDddddddDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdddddDDDddddd
+DdddddDdddddDdddddDdDdddddDDdddddDdddddDddddDDDdddddDDDDdddddDdddddDdDdddddDdddd
+dDDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDdddddDdDddddDDDdddddDdddddDddddDDD
+dddd
+TRYING MOVE CLASS      5 TO DAD      1
+DddDddddLllaAAAAA
+Failed ******
+Cost dropped by    0.086%
+--------------------------------------------------------------------------------
+P1    37 classes,   19 leaves,  Pcost   369.5  Tcost  452931.6,  Cost  453301.1
+Sample  1 XRFTest
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 4 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........aa........aa........aa........a
+Attempting class moves until 4 successive failures
+AAdDdDDddddddDDDdDddddddDDDdDddddddDDddDdddddDDDddDdddddDDDddDddddddDDDdDdddddDD
+dDdDddddddDDdddddDDDDdDdddddDDDDdDdddddDDddddddDdDdDdddddDDdDDdddddDDdDdDdddddDD
+dDddddddDDDDdddddDDDdddddDddddDDddDdddddDdddddDdDdddddDdDDdddddDdddddDdDdddddDdD
+dddddDDdddddDddDdddddDdDdddddDddDdddddDdDdddddDdDdddddDdDdddddDdDddddDddDddddDdD
+ddDddddDdDddddDdDDDDddddDdDddDddddDdDDdDddddddDdDDddddDdDDdDddddDdDddDddddddDDdD
+ddddddDDdDddddddDDDDdddddDDDDddddDdDDDddddddDDdDddddDdDddddddDDDDdddddDdDddDdddd
+ddDDDDDddddddDDDddddddDDDDDdddddDdDdddddddDdddddddDDDddddDdDDdDdddddddDDDDDDDDDd
+ddddDDDdDdddddddDdddddddDDDDDDDdddddddDDDDDDDDdddddDdDddddddDDDdddddddDDDDdddddd
+DDddddddDDDDddddddDDdDdddddDDdDddddDDddddDdddDddddDddDDdddddDdDDddddDddDDddddDdd
+DdddddDdDDdddddddDDddddddDdDddddddDDDdddddDdDDdddddDDDDdddddDDdddddDDdDdddddDddd
+ddDDdddddDdDddddDdDDdddddDdddddDdddddDDddddDDDddddDDdDdddddDdDdddddDDdddddDDdddd
+dDDdddddDdDdddddDDdddddDDdDddddddDdDdddddDDdDddddddDdDdddddDddDddddddDdDdddddDDd
+ddddDDdDddddddDDDddddddDdDddddddDdDddddddDDDDdddddDDDddddddDDDdddddDDDdDdddddDDD
+dDdddddDDDdDdddddDDDdDddddddDDdDdddddDDDdDddddDdddDddddddDDdDdddddDDDdDdddddDdDd
+DddddddDDdDddddddDDdDddddddDDdDDddddDdDDdDddddDdDddddDddddddDddDddddDdDddddddDdd
+ddDdDddDddddDdDDddddddDddddddDddddddDddddddDddddddDddddddDddDddddddDddddddDddDdd
+dddDDDdddddDddddDDDdddddDdddddDdddddDdddddDDdddddDdDddddDDDdddddDdddddDdDdddddDd
+ddddDDdddddDdddddDdddddDdDdddddDdddddDDDdDdddddDDdDddddddDddddDDdDddddddDddddddD
+ddddddDddddddDDddddddDddddDDdDddddddDddddddDdddddDDddddddDddddddDddddddDdddddDdD
+DddddDDdDdddddddDddddDDDddddddDDDdddddDdDDddddddDDDddddddDDdddddDDDddddDDdddddDd
+DddddddDDDdddddDDDdddddDdDdddddDDDdddddDddDdddddDDDDdddddDddDddddddDDdddddDdDDdd
+dddDdDDddddddDDDdddddDDDdddddDdDDddddddDDDdddddDdDDddddddDdDddddddDDDdddddDDDDdD
+ddddddDDDdDdddddDDdDdddddDDdddddDDDdddddDDddddDDDdddddDDdddddDdddddDDDddddDDDddd
+ddDDdddddDdDddddDdDdddddDDdddddDDdddddDDdddddDdDdddddDDdddddDDDdddddDdDdddddDdDd
+dddDDdDdddddDdDdddddDdDddddDDdDdddddDdddddDdDdddddDdDdddddDdDdddddDdDddddDDdDddd
+ddDdDdddddDdDdddddDdDdddddDDdddddDDdDdddddDDdDdddddDddDdddddDDdDdddddDddddddDdDd
+ddddDDdDdddddDDdDddddddDdDDdddddDDdDdddddDDdDdddddDDdDddddddDdDdddddDDdDdddddDDD
+dddddDddddddDdddddDddddDddddDDDdddddDddddDdddddDdDdddddDdddddDdDddddDDdddddDdddd
+dDdddddDdddddDdDdddddDdddddDDDdddddDddddddDdddddDdddddddddDDdddddDdddddDdddddDdd
+dddDdddddDdDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDDDdddddDDdddddDddddDDDdD
+dddddDDdddddDdDddddDDDdddddDdddddDdddddDddddDDdDdddddDdDdddddDdddddDDdddddDDdddd
+dDdDdddddDDdddddDDDdddddDDDdDdddddDddddDDDdDdddddDDdddddDdDddddDDDDdddddDdddddDd
+DdddddDddddDDDDdddddDdDdddddDDddddDDDdddddDDdddddDdDdddddDDdddddDdddddDdddddDddd
+DdddddDdddddDddDdddddDdDdddddDdDdddddDdddddDdDdddddDdddddDDdddddDdDdddddDDddddDD
+DdddddDdddddDdDdddddDdddddDDDdDdddddDDDDddddddDddddDDDDddddddDdDddddddDddddDDdDd
+dddddDddddddDDddddddDddddDDDddddddDddddddDddddddDddddddDddddddDdddddDDDDddddddDD
+dddddDDDddddddDdddddDDdDdddddDddddddDdddddDDddddddDDddddddDddddddDddddddDddddddD
+ddddddDdddddDDddddddDdddddDDDDdddddDdDdddddDDdDdddddDdddddDdDDdddddDdddddDdddddD
+DdddddDdDdddddDdddddDdddddDdDdddddDDdddddDddddDDDdddddDdDdddddDdddddDDDDdddddDDd
+ddddDDdddddDDdddddDDdDdddddDdddddDdddddDddddDDDDdddddDDdddddDDdddddDdddddDdddddD
+DdddddDDddddDdDDdddddDDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDD
+dddddDdDdddddDdddddDDDDDdddddDdDDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDDDdddddD
+DdDdddddDdddddDDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDdddddDDdddddDdDdddd
+dDdddddDdddddDdDdddddDdddddDDDdddddDDDDdddddDdddddDDDdddddDddDdddddDddddDDDddddd
+DdddddDdDdddddDddddDDddddDDDdddddDdDdddddDDdddddDdddddDdDdddddDdddddDdddddDdDddd
+ddDddDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddD
+DdddddDdddddDdDdddddDdddddDDDdddddDdDdddddDddDdddddDdddddDdDDdddddDdddddDdddddDD
+dddddDdDdddddDdddddDdddddDdDdddddDdddddDDdddddDdddddDdDdddddDdddddDDDDdddddDdddd
+dDDDdddddDdddddDdDDdddddDdddddDdddddDddddDDdddddDdddddDdddddDdddddDdddddDdDddddd
+DdddddDddddDDDdddddDDDddddddDdddddDDddddddDdddddDDddddddDddddddDdddddDDdddddDDdd
+ddddDddddddDddddddDddddddDdddddDdDddddddDddddddDdddddDDDDdddddDdddddDdDdddddDddd
+ddDDdddddDdddddDdddddDdddddDDDdddddDdddddDdddddDdDdddddDdDdddddDDdddddDdddddDddd
+dDDDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdddddDDdddddDdddddDddd
+ddDdDdddddDdDddddDDDdddddDdddddDddddDDDdddd
+TRYING MOVE CLASS      5 TO DAD     13
+DdDDdDddddLllaAAAAA
+Failed ******
+AdDdDDddddddDDDdDddddddDDDdDddddddDDddDdddddDDDddDdddddDDDddDddddddDDDdDdddddDDd
+DdDddddddDDdddddDDDDdDdddddDDDDdDdddddDDddddddDdDdDdddddDDdDDdddddDDdDdDdddddDDd
+DddddddDDDDdddddDDDdddddDddddDDddDdddddDdddddDdDdddddDdDDdddddDdddddDdDdddddDdDd
+ddddDDdddddDddDdddddDdDdddddDddDdddddDdDdddddDdDdddddDdDdddddDdDddddDddDddddDdDd
+dDddddDdDddddDdDDDDddddDdDddDdddd
+Badmove rejects Move      5     13
+ddDdDDddddDdDDdDddddDdDddDddddddDDdDddddddDDdDddddddDDDDdddddDDDDddddDdDDDdddddd
+DDdDddddDdDddddddDDDDdddddDdDddDddddddDDDDDddddddDDDddddddDDDDDdddddDdDdddddddDd
+ddddddDDDddddDdDDdDdddddddDDDDDDDDDdddddDDDdDdddddddDdddddddDDDDDDDdddddddDDDDDD
+DDdddddDdDddddddDDDdddddddDDDDddddddDDddddddDDDDddddddDDdDdddddDDdDddddDDddddDdd
+dDddddDddDDdddddDdDDddddDddDDddddDddDdddddDdDDdddddddDDddddddDdDddddddDDDdddddDd
+DDdddddDDDDdddddDDdddddDDdDdddddDdddddDDdddddDddddDdDDdddddDdddddDdddddDDddddDDD
+ddddDDdDdddddDdDdddddDDdddddDDdddddDDdddddDdDdddddDDdddddDDdDddddddDdDdddddDDdDd
+dddddDdDdddddDddDddddddDdDdddddDDdddddDDdDddddddDDDddddddDdDddddddDdDddddddDDDDd
+ddddDDDddddddDDDdddddDDDdDdddddDDDdDdddddDDDdDdddd
+Badmove rejects Move     13      5
+ddDDdDdddddDDDdDddddDdddDddddddDDdDdddddDDDdDdddddDDDdDddddddDDdDddddddDDdDddddd
+dDDdDDddddDdDDdDddddDdDddddDddddddDddDddddDdDddddddDddddDdDddDddddDdDDddddddDddd
+dddDddddddDddddddDddddddDddddddDddDddddddDddddddDddDdddddDDDdddddDddddDDDdddddDd
+ddddDdddddDdddddDDdddddDdDddddDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdD
+dddddDdddddDDDdDdddddDDdDddddddDddddDDdDddddddDddddddDddddddDddddddDDddddddDdddd
+DDdDddddddDddddddDdddddDDddddddDddddddDddddddDdddddDdDDddddDDdDdddddddDddddDDDdd
+ddddDDDdddddDdDDddddddDDDddddddDDdddddDDDddddDDdddddDdDddddddDDDdddddDDDdddddDdD
+dddddDDDdddddDddDdddddDDDDdddddDddDddddddDDdddddDdDDdddddDdDDddddddDDDdddddDDDdd
+dddDDDDddddddDDDdddddDdDDddddddDdDddddddDDDdddddDDDDddddddDDDdDdddddDDdDdddddDDd
+ddddDDDdddddDDddddDDDdddddDDdddddDdddddDDDddddDDDdddddDDdddddDdDddddDdDdddddDDdd
+dddDDdddddDDdddddDdDdddddDDdddddDDDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDddddD
+DdDdddddDdddddDdDdddddDdDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDdddddDdDdddddDD
+dddddDDdDdddddDDdDdddddDddDdddddDDdDdddddDddddddDdDdddddDDdDdddddDDdDddddddDdDDd
+ddddDDdDdddddDDdDdddddDDdDddddddDdDdddddDDdDdddddDDDdddddDddddddDdddddDddddDdddd
+DDDdddddDddddDdddddDdDdddddDdddddDdDddddDDdddddDdddddDdddddDdddddDdDdddddDdddddD
+DDdddddDddddddDdddddDdddddddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDdddd
+dDdddddDdddddDdDdddddDdddddDDDdddddDDdddddDddddDDDdDdddddDDdddddDdDddddDDDdddddD
+dddddDdddddDddddDDdDdddddDdDdddddDdddddDDdddddDDdddddDdDdddddDDdddddDDDdddddDDDd
+DdddddDddddDDDdDdddddDDdddddDdDddddDDDDdddddDdddddDdDdddddDddddDDDDdddddDdDddddd
+DDddddDDDdddddDDdddddDdDdddddDDdddddDdddddDdddddDdddDdddddDdddddDddDdddddDdDdddd
+dDdDdddddDdddddDdDdddddDdddddDDdddddDdDdddddDDddddDDDdddddDdddddDdDdddddDdddddDD
+DdDdddddDDDDddddddDddddDDDDddddddDdDddddddDddddDDdDddddddDddddddDDddddddDddddDDD
+ddddddDddddddDddddddDddddddDddddddDdddddDDDddddddDDdddddDDDddddddDdddddDDdDddddd
+DddddddDdddddDDddddddDDddddddDddddddDddddddDddddddDddddddDdddddDDddddddDdddddDDD
+DdddddDdDdddddDDdDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdD
+dddddDDdddddDddddDDDdddddDdDdddddDdddddDDDDdddddDDdddddDDdddddDDdddddDDdDdddddDd
+ddddDdddddDddddDDDDdddddDDdddddDDdddddDdddddDdddddDDdddddDDddddDdDDdddddDDdddddD
+dDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDdddddDDDDDddddd
+DdDDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDDDdddddDDdDdddddDdddddDDDdddddDdddddD
+dddddDdddddDdddddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDD
+DdddddDDDDdddddDdddddDDDdddddDddDdddddDddddDDDdddddDdddddDdDdddddDddddDDddddDDDd
+ddddDdDdddddDDdddddDdddddDdDdddddDdddddDdddddDdDdddddDddDdddddDdddddDdDDdddddDdd
+dddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDdddddDdddddDdDdddddDdddddDDD
+dddddDdDdddddDddDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDd
+ddddDdddddDDdddddDdddddDdDdddddDdddddDDDDdddddDdddddDDDdddddDdddddDDDDdddddDdddd
+dDdddddDddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDddddDDDddddddDDddddddD
+dddddDDddddddDdddddDDddddddDddddddDddddddDdddddDDddddddDddddddDddddddDddddddDddd
+ddDdDddddddDddddddDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdddddDD
+DdddddDdddddDdddddDdddddDdDdddddDDdddddDdddddDddddDDDdddddDDDDdddddDdddddDdDdddd
+dDdddddDDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDdDdddddDdDddddDDDdddddDddddd
+DddddDDDdddd
+TRYING MOVE CLASS      5 TO DAD      6
+DdDddddLllaAAAAA
+Failed ******
+AdDdDDddddddDDDdDddddddDDDdDddddddDDddDdddddDDDddDdddddDDDddDddddddDDDdDdddddDDd
+DdDddddddDDdddddDDDDdDdddddDDDDdDdddddDDddddddDdDdDdddddDDdDDdddddDDdDdDdddddDDd
+DddddddDDDDdddddDDDdddddDddddDDddDdddddDdddddDdDdddddDdDDdddddDdddddDdDdddddDdDd
+ddddDDdddddDddDdddddDdDdddddDddDdddddDdDdddddDdDdddddDdDdddddDdDddddDddDddddDdDd
+dDdddd
+Badmove rejects Move      5      6
+DdDDDDddddDdDddDdddd
+Badmove rejects Move      5     13
+ddDdDDddddDdDDdDddddDdDddDddddddDDdDddddddDDdDddddddDDDDdddddDDDDddddDdDDDdddd
+Badmove rejects Move      6      5
+DdDddddddDDDDdddddDdDddDddddddDDDDDddddddDDDddddddDDDDDdddddDdDdddddddDdddddddDD
+DddddDdDDdDdddddddDDDDDDDDDdddddDDDdDdddddddDddddddDDDDDDDDdddddddDDDDDDDDdddddD
+dDddddddDDDdddddddDDDDddddddDDddddddDDDDddddddDDdDdddddDDdDddddDDddddDdddDddddDd
+dDDdddddDdDDddddDddDDddddDddDdddddDdDDdddddddDDddddddDdDddddddDDDdddddDdDDdddddD
+DDDdddddDDdddddDDdDdddddDdddddDDdddddDddddDdDDdddddDdddddDdddddDDddddDDDddddDDdD
+dddddDdDdddddDDdddddDDdddddDDdddddDdDdddddDDdddddDDdDddddddDdDdddddDDdDddddddDdD
+dddddDddDddddddDdDdddddDDdddddDDdDddddddDDDddddddDdDddddddDdDddddddDDDDdddddDDDd
+dddddDDDdddddDDDdDdddddDDDdDdddddDDDdDdddd
+Badmove rejects Move     13      5
+ddDDdDdddddDDDdDddddDdddDddddddDDdDdddddDDDdDdddddDDDdDddddddDDdDddddddDDdDddddd
+dDDdDDddddDdDDdDddddDdDddddDddddddDddddDdDddddddDddddDdDddDddddDdDDddddddDdddddd
+DddddddDddddddDddddddDddddddDddDddddddDddddddDddDdddddDDDdddddDddddDDDdddddDdddd
+dDdddddDdddddDDdddddDdDddddDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdDddd
+ddDdddddDDDdDdddddDDdDddddddDddddDDdDddddddDddddddDddddddDddddddDDddddddDddddDDd
+DddddddDddddddDdddddDDddddddDddddddDddddddDdddddDdDDddddDDdDdddddddDddddDDDddddd
+dDDDdddddDdDDddddddDDDddddddDDdddddDDDddddDDdddddDdDddddddDDDdddddDDDdddddDdDddd
+ddDDDdddddDddDdddddDDDDdddddDddDddddddDDdddddDddDdddddDdDDddddddDDDdddddDDDddddd
+DDDDddddddDDDdddddDdDDddddddDdDddddddDDDdddddDDDDddddddDDDdDdddddDDdDdddddDDdddd
+dDDDdddddDDddddDDDdddddDDdddddDdddddDDDddddDDDdddddDDdddddDdDddddDdDdddddDDddddd
+DDdddddDDdddddDdDdddddDDdddddDDDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDddddDDdD
+dddddDdddddDdDdddddDdDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDdddddDdDdddddDDddd
+ddDDdDdddddDDdDdddddDddDdddddDDdDdddddDddddddDdDdddddDDdDdddddDDdDddddddDdDDdddd
+dDDdDdddddDDdDdddddDDdDddddddDdDdddddDDdDdddddDDDdddddDddddddDdddddDddddDddddDDD
+dddddDddddDdddddDdDdddddDdddddDdDddddDDdddddDdddddDdddddDdddddDdDdddddDdddddDDDd
+ddddDddddddDdddddDdddddddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDdddddDd
+ddddDdddddDdDdddddDdddddDDDdddddDDdddddDddddDDDdDdddddDDdddddDdDddddDDDdddddDddd
+ddDdddddDddddDDdDdddddDdDdddddDdddddDDdddddDDdddddDdDdddddDDdddddDDDdddddDDDdDdd
+dddDddddDDDdDdddddDDdddddDdDddddDDDDdddddDdddddDdDdddddDddddDDDDdddddDdDdddddDDd
+dddDDDdddddDDdddddDdDdddddDDdddddDdddddDdddddDdddDdddddDdddddDddDdddddDdDdddddDd
+DdddddDdddddDdDdddddDdddddDDdddddDdDdddddDDddddDDDdddddDdddddDdDdddddDdddddDDDdD
+dddddDDDDddddddDddddDDDDddddddDddddddDddddDDdDddddddDddddddDDddddddDddddDDDddddd
+dDddddddDddddddDddddddDddddddDdddddDDDDddddddDDdddddDDDddddddDdddddDDdDdddddDddd
+dddDdddddDDddddddDDddddddDddddddDddddddDddddddDddddddDdddddDDddddddDdddddDDDDddd
+ddDdDdddddDDdDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddd
+dDDdddddDddddDDDdddddDdDdddddDdddddDDDDdddddDDdddddDDdddddDDdddddDDdDdddddDddddd
+DdddddDddddDDDDdddddDDdddddDDdddddDdddddDdddddDDdddddDDddddDdDDdddddDDdddddDdDdd
+dddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDdddddDDDDDdddddDdDD
+dddddDdDdddddDdDdddddDdDDdddddDdDdddddDDDdddddDDdDdddddDdddddDDDdddddDdddddDdddd
+dDdddddDdddddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDDddd
+ddDDDDdddddDdddddDDDdddddDddDdddddDddddDDDdddddDdddddDdDdddddDddddDDddddDDDddddd
+DdDdddddDDdddddDdddddDdDdddddDdddddDdddddDdDdddddDddDdddddDdddddDdDDdddddDdddddD
+dddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDdddddDdddddDdDdddddDdddddDDDdddd
+dDdDdddddDddDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDddddd
+DdddddDDdddddDdddddDdDdddddDdddddDDDDdddddDdddddDDDdddddDdddddDDDDdddddDdddddDdd
+dddDddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDddddDDDdddddDDDddddddDdddd
+dDDddddddDdddddDDddddddDddddddDdddddDDdddddDDddddddDddddddDddddddDddddddDdddddDd
+DddddddDddddddDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdddddDDDddd
+ddDdddddDdddddDdddddDdDdddddDDdddddDdddddDddddDdDdddddDDDDdddddDdddddDdDdddddDdd
+dddDDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDdddddDdDddddDDDdddddDdddddDddddD
+DDdddd
+TRYING MOVE CLASS      5 TO DAD      3
+DdDddDddddLllaAAAAA
+Failed ******
+AdDdDDddddddDDDdDddddddDDDdDddddddDDddDdddddDDDddDdddddDDDddDddddddDDDdDdddddDDd
+DdDddddddDDdddddDDDDdDdddddDDDDdDdddddDDdddd
+Badmove rejects Move      3      5
+dDDdDDdddddDDdDdDdddddDDdDddddddDDDDdddddDDDdddddDddddDDddDdddddDdddddDdDdddddDd
+DDdddddDdddddDdDdddddDdDdddddDDdddddDddDdddddDdDdddddDddDdddddDdDdddddDdDdddddDd
+DdddddDdDddddDddDdddd
+Badmove rejects Move      5      3
+Badmove rejects Move      5      6
+DdDDDDddddDdDddDdddd
+Badmove rejects Move      5     13
+ddDdDDddddDdDDdDddddDdDddDddddddDDdDddddddDDdDddddddDDDDdddddDDDDddddDdDDDdddd
+Badmove rejects Move      6      5
+DdDddddddDDDDdddddDdDddDddddddDDDDDddddddDDDddddddDDDDDdddddDdDdddddddDdddddddDD
+DddddDdDDdDdddddddDDDDDDDDDdddddDDDdDdddddddDddddddDDDDDDDDdddddddDDDDDDDDdddddD
+dDddddddDDDdddddddDDDDddddddDDddddddDDDDddddddDDdDdddddDDdDddddDDddddDdddDddddDd
+dDDdddddDdDDddddDddDDddddDddDdddddDdDDdddddddDDddddddDdDddddddDDDdddddDdDDdddddD
+DDDdddddDDdddddDDdDdddddDdddddDDdddddDddddDdDDdddddDdddddDdddddDDddddDDDddddDDdD
+dddddDdDdddddDDdddddDDdddddDDdddddDdDdddddDDdddddDDdDddddddDdDdddddDDdDddddddDdD
+dddddDddDddddddDdDdddddDDdddddDDdDddddddDDDdddddDDdDddddddDdDddddddDDDDdddddDDDd
+dddddDDDdddddDDDdDdddddDDDdDdddddDDDdDdddd
+Badmove rejects Move     13      5
+ddDDdDdddddDDDdDddddDdddDddddddDDdDdddddDDDdDdddddDDDdDddddddDDdDddddddDDdDddddd
+dDDdDDddddDdDDdDddddDdDddddDddddddDddddDdDddddddDddddDdDddDddddDdDDddddddDdddddd
+DddddddDddddddDddddddDddddddDddDddddddDddddddDddDdddddDDDdddddDddddDDDdddddDdddd
+dDdddddDdddddDDdddddDdDddddDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdDddd
+ddDdddddDDDdDdddddDDdDddddddDddddDDdDddddddDddddddDddddddDddddddDDddddddDddddDDd
+DddddddDddddddDdddddDDddddddDddddddDddddddDdddddDdDDddddDDdDdddddddDddddDDDddddd
+dDDDdddddDdDDddddddDDDddddddDDdddddDDDddddDDdddddDdDddddddDDDdddddDDDdddddDdDddd
+ddDDDdddddDddDddddddDDDdddddDddDddddddDDdddddDddDdddddDdDDddddddDDDddddddDDddddd
+DDDDddddddDDDdddddDdDDddddddDdDddddddDDDdddddDDDDddddddDDDdDdddddDDdDdddddDDdddd
+dDDDdddddDDddddDDDdddddDDdddddDdddddDDDddddDDDdddddDDdddddDdDddddDdDdddddDDddddd
+DDdddddDDdddddDdDdddddDDdddddDDDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDddddDDdD
+dddddDdddddDdDdddddDdDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDdddddDdDdddddDDddd
+ddDDdDdddddDDdDdddddDddDdddddDDdDdddddDddddddDdDdddddDDdDdddddDDdDddddddDdDDdddd
+dDDdDdddddDDdDdddddDDdDddddddDdDdddddDDdDdddddDDDdddddDddddddDdddddDddddDddddDDD
+dddddDddddDdddddDdDdddddDdddddDdDddddDDdddddDdddddDdddddDdddddDdDdddddDdddddDDDd
+ddddDddddddDdddddDdddddddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDdddddDd
+ddddDdddddDdDdddddDdddddDDDdddddDDdddddDddddDDDdDdddddDDdddddDdDddddDDDdddddDddd
+ddDdddddDddddDDdDdddddDdDdddddDdddddDDdddddDDdddddDdDdddddDDdddddDDDdddddDDDdDdd
+dddDddddDDDdDdddddDDdddddDdDddddDDDDdddddDdddddDdDdddddDddddDDDDdddddDdDdddddDDd
+dddDDDdddddDDdddddDdDdddddDDdddddDdddddDdddddDdddDdddddDdddddDddDdddddDdDdddddDd
+DdddddDdddddDdDdddddDdddddDDdddddDdDdddddDDddddDDDdddddDdddddDdDdddddDdddddDDDdD
+dddddDDDDddddddDddddDDDDddddddDddddddDddddDDdDddddddDddddddDDddddddDddddDDDddddd
+dDddddddDddddddDddddddDddddddDdddddDDDddddddDDdddddDDDddddddDdddddDDdDdddddDdddd
+ddDdddddDDddddddDDddddddDddddddDddddddDddddddDddddddDdddddDDddddddDdddddDDDDdddd
+dDdDdddddDDdDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDddddd
+DDdddddDddddDDDdddddDdDdddddDdddddDDDDdddddDDdddddDDdddddDDdddddDDdDdddddDdddddD
+dddddDddddDDDDdddddDDdddddDDdddddDdddddDdddddDDdddddDDddddDdDDdddddDDdddddDdDddd
+ddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDdddddDDDDDdddddDdDDd
+ddddDdDdddddDdDdddddDdDDdddddDdDdddddDDDdddddDDdDdddddDdddddDDDdddddDdddddDddddd
+DdddddDdddddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDDdddd
+dDDDDdddddDdddddDDDdddddDddDdddddDddddDDDdddddDdddddDdDdddddDddddDDddddDDDdddddD
+dDdddddDDdddddDdddddDdDdddddDdddddDdddddDdDdddddDddDdddddDdddddDdDDdddddDdddddDd
+ddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDdddddDdddddDdDdddddDdddddDDDddddd
+DdDdddddDddDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddD
+dddddDDdddddDdddddDdDdddddDdddddDDDDdddddDdddddDDDdddddDdddddDDDDdddddDdddddDddd
+ddDddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDddddDDDddddddDDddddddDddddd
+DDddddddDdddddDDddddddDddddddDddddddDdddddDDddddddDddddddDddddddDddddddDdddddDdD
+ddddddDddddddDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdddddDDDdddd
+dDdddddDdddddDdddddDdDdddddDDdddddDdddddDddddDDDdddddDDDDdddddDdddddDdDdddddDddd
+ddDDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDdddddDdDddddDDDdddddDdddddDddddDD
+Ddddd
+TRYING MOVE CLASS      5 TO DAD      1
+DddDddddLllaAAAAA
+Failed ******
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P1    37 classes,   19 leaves,  Pcost   369.9  Tcost  452930.4,  Cost  453300.3
+Sample  1 XRFTest
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 5 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........aa........aa........aa........a
+Attempting class moves until 4 successive failures
+AAdDdDDddddddDDDdDddddddDDDdDddddddDDddDdddddDDDddDdddddDDDddDddddddDDDdDdddddDD
+dDdDddddddDDdddddDDDDdDdddddDDDDdDdddddDDddddddDdDdDdddddDDdDDdddddDDdDdDdddddDD
+dDddddddDDDDdddddDDDdddddDddddDDddDdddddDdddddDdDdddddDdDDdddddDdddddDdDdddddDdD
+dddddDDdddddDddDdddddDdDdddddDddDdddddDdDdddddDdDdddddDdDdddddDdDddddDddDddddDdD
+ddDddddDdDddddDdDDDDddddDdDddDddddDdDDdDddddddDdDDddddDdDDdDddddDdDddDddddddDDdD
+ddddddDDdDddddddDDDDdddddDDDDddddDdDDDddddddDDdDddddDdDddddddDDDDdddddDdDddDdddd
+ddDDDDDddddddDDDddddddDDDDDdddddDdDdddddddDdddddddDDDddddDdDDdDdddddddDDDDDDDDDd
+ddddDDDdDdddddddDdddddddDDDDDDDdddddddDDDDDDDDdddddDdDddddddDDDdddddddDDDDdddddd
+DDddddddDDDDddddddDDdDdddddDDdDddddDDddddDdddDddddDddDDdddddDdDDddddDddDDddddDdd
+DdddddDdDDdddddddDDddddddDdDddddddDDDdddddDdDDdddddDDDDdddddDDdddddDDdDdddddDddd
+ddDDdddddDdDddddDdDDdddddDdddddDdddddDDddddDDDddddDDdDdddddDdDdddddDDdddddDDdddd
+dDDdddddDdDdddddDDdddddDDdDddddddDdDdddddDDdDddddddDdDdddddDddDddddddDdDdddddDDd
+ddddDDdDddddddDDDddddddDdDddddddDdDddddddDDDDdddddDDDddddddDDDdddddDDDdDdddddDDD
+dDdddddDDDdDdddddDDDdDddddddDDdDdddddDDDdDddddDdddDddddddDDdDdddddDDDdDdddddDdDd
+DddddddDDdDddddddDDdDddddddDDdDDddddDdDDdDddddDdDddddDddddddDddDddddDdDddddddDdd
+DddddDdDddDddddDdDDddddddDddDddddddDddDddddddDddddddDddddddDddDddddddDddDddddddD
+ddDddddddDddDdddddDDDdddddDddddDDDdddddDdddddDddDdddddDdddddDDdddddDdDddddDDDddd
+ddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdDdddddDdddddDDDdDdddddDDdDddddddDdddd
+DDdDddddddDddddddDddddddDddddddDDddddddDddddDDdDddddddDddddddDdddddDDddddddDdddd
+ddDddddddDdddddDdDDddddDDdDdddddddDddddDDDddddddDDDdddddDdDDddddddDDDddddddDDddd
+ddDDDddddDDdddddDdDddddddDDDdddddDDDdddddDdDDdddddDDDdddddDddDdddddDDDDdddddDddD
+ddddddDDdddddDdDDdddddDdDDddddddDDDdddddDDDdddddDdDDddddddDDDdddddDdDDddddddDdDd
+dddddDDDdddddDDDDdDddddddDDDdDdddddDDdDdddddDDdddddDDDdddddDDddddDDDdddddDDddddd
+DdddddDDDddddDDDdddddDDdddddDdDddddDdDdddddDDdddddDDdddddDDdddddDdDdddddDDdddddD
+DDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDddddDDdDdddddDdddddDdDdddddDdDdddddDdD
+dddddDdDddddDDdDdddddDdDdddddDdDdddddDdDdddddDDdddddDDdDdddddDDdDdddddDddDdddddD
+DdDdddddDddddddDdDdddddDDdDdddddDDdDddddddDdDDdddddDDdDdddddDDdDdddddDDdDddddddD
+dDdddddDDdDdddddDDDdddddDddddddDdddddDddddDddddDDDdddddDddddDdddddDdDdddddDddddd
+DdDddddDDdddddDdddddDdddddDdddddDdDdddddDdddddDDDdddddDddddddDdddddDdddddddddDDd
+ddddDdddddddddDdddddDdddddDdDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDDDddddd
+DDdddddDddddDDDdDdddddDDdddddDdDddddDDDdddddDdddddDdddddDddddDDdDdddddDdDdddddDd
+ddddDDdddddDDdddddDdDdddddDDdddddDDDdddddDDDdDdddddDddddDDDdDdddddDDdddddDdDdddd
+DDDDdddddDdddddDdDdddddDddddDDDDdddddDdDdddddDDddddDDDdddddDDdddddDdDdddddDDdddd
+dDdddddDdddddDdddDdddddDdddddDddDdddddDdDdddddDdDdddddDdddddDdDdddddDdddddDDdddd
+dDdDdddddDDddddDDDdddddDdddddDdDdddddDdddddDDDdDdddddDDDDddddddDddddDDDDddddddDd
+DddddddDddddDDdDddddddDddddddDDddddddDddddDDDddddddDddddddDddddddDddddddDddddddD
+dddddDDDDddddddDDdddddDDDddddddDdddddDDdDdddddDddddddDdddddDDddddddDDddddddDdddd
+ddDddddddDddddddDddddddDdddddDDddddddDdddddDDDDdddddDdDdddddDDdDdddddDdddddDdDDd
+ddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDDdddddDddddDDDdddddDdDdddddD
+dddddDDDDdddddDDdddddDDdddddDDdddddDDdDdddddDdddddDdddddDddddDDDDdddddDDdddddDDd
+ddddDdddddDdddddDDdddddDDddddDdDDdddddDDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdD
+dddddDdDdddddDdDDdddddDdDdddddDdddddDDDDDdddddDdDDdddddDdDdddddDdDdddddDdDDddddd
+DdDdddddDDDdddddDDdDdddddDdddddDDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDdd
+dddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDDdddddDDDDdddddDdddddDDDdddddDddDd
+ddddDddddDDDdddddDdddddDdDdddddDddddDDddddDDDdddddDdDdddddDDdddddDdddddDdDdddddD
+dddddDdddddDdDdddddDddDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDddd
+ddDdDdddddDdddddDDdddddDdddddDdDdddddDdddddDDDdddddDdDdddddDddDdddddDdddddDdDDdd
+dddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDdddddDdddddDdDdddddDdd
+dddDDDDdddddDdddddDDDdddddDdddddDdDDdddddDdddddDdddddDddddDDdddddDdddddDdddddDdd
+dddDdddddDdDdddddDdddddDddddDDDdddddDDDddddddDdddddDDddddddDdddddDDddddddDdddddd
+DdddddDDdddddDDddddddDddddddDddddddDddddddDdddddDdDddddddDddddddDdddddDDDDdddddD
+dddddDdDdddddDdddddDDdddddDdddddDdddddDdddddDDDdddddDdddddDdddddDdDdddddDdDddddd
+DDdddddDdddddDddddDDDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDddddd
+DDdddddDdddddDdddddDdDdddddDdDddddDDDdddddDdddddDddddDDDdddd
+TRYING MOVE CLASS      5 TO DAD     13
+DdDDdDddddLllaAAAAA
+Failed ******
+AdDdDDddddddDDDdDddddddDDDdDddddddDDddDdddddDDDddDdddddDDDddDddddddDDDdDdddddDDd
+DdDddddddDDdddddDDDDdDdddddDDDDdDdddddDDddddddDdDdDdddddDDdDDdddddDDdDdDdddddDDd
+DddddddDDDDdddddDDDdddddDddddDDddDdddddDdddddDdDdddddDdDDdddddDdddddDdDdddddDdDd
+ddddDDdddddDddDdddddDdDdddddDddDdddddDdDdddddDdDdddddDdDdddddDdDddddDddDddddDdDd
+dDddddDdDddddDdDDDDddddDdDddDdddd
+Badmove rejects Move      5     13
+ddDdDDddddDdDDdDddddDdDddDddddddDDdDddddddDDdDddddddDDDDdddddDDDDddddDdDDDdddddd
+DDdDddddDdDddddddDDDDdddddDdDddDddddddDDDDDddddddDDDddddddDDDDDdddddDdDdddddddDd
+ddddddDDDddddDdDDdDdddddddDDDDDDDDDdddddDDDdDdddddddDdddddddDDDDDDDdddddddDDDDDD
+DDdddddDdDddddddDDDdddddddDDDDddddddDDddddddDDDDddddddDDdDdddddDDdDddddDDddddDdd
+dDddddDddDDdddddDdDDddddDddDDddddDddDdddddDdDDdddddddDDddddddDdDddddddDDDdddddDd
+DDdddddDDDDdddddDDdddddDDdDdddddDdddddDDdddddDddddDdDDdddddDdddddDdddddDDddddDDD
+ddddDDdDdddddDdDdddddDDdddddDDdddddDDdddddDdDdddddDDdddddDDdDddddddDdDdddddDDdDd
+dddddDdDdddddDddDddddddDdDdddddDDdddddDDdDddddddDDDddddddDdDddddddDdDddddddDDDDd
+ddddDDDddddddDDDdddddDDDdDdddddDDDdDdddddDDDdDdddd
+Badmove rejects Move     13      5
+ddDDdDdddddDDDdDddddDdddDddddddDDdDdddddDDDdDdddddDDDdDddddddDDdDddddddDDdDddddd
+dDDdDDddddDdDDdDddddDdDddddDddddddDddDddddDdDddddddDddddDdDddDddddDdDDddddddDddd
+dddDddddddDddddddDddddddDddddddDddDddddddDddddddDddDdddddDDDdddddDddddDDDdddddDd
+ddddDdddddDdddddDDdddddDdDddddDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdD
+dddddDdddddDDDdDdddddDDdDddddddDddddDDdDddddddDddddddDddddddDddddddDDddddddDdddd
+DDdDddddddDddddddDdddddDDddddddDddddddDddddddDdddddDdDDddddDDdDdddddddDddddDDDdd
+ddddDDDdddddDdDDddddddDDDddddddDDdddddDDDddddDDdddddDdDddddddDDDdddddDDDdddddDdD
+dddddDDDdddddDddDdddddDDDDdddddDddDddddddDDdddddDdDDdddddDdDDddddddDDDdddddDDDdd
+dddDDDDddddddDDDdddddDdDDddddddDdDddddddDDDdddddDDDDddddddDDDdDdddddDDdDdddddDDd
+ddddDDDdddddDDddddDDDdddddDDdddddDdddddDDDddddDDDdddddDDdddddDdDddddDdDdddddDDdd
+dddDDdddddDDdddddDdDdddddDDdddddDDDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDddddD
+DdDdddddDdddddDdDdddddDdDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDdddddDdDdddddDD
+dddddDDdDdddddDDdDdddddDddDdddddDDdDdddddDddddddDdDdddddDDdDdddddDDdDddddddDdDDd
+ddddDDdDdddddDDdDdddddDDdDddddddDdDdddddDDdDdddddDDDdddddDddddddDdddddDddddDdddd
+DDDdddddDddddDdddddDdDdddddDdddddDdDddddDDdddddDdddddDdddddDdddddDdDdddddDdddddD
+DDdddddDddddddDdddddDdddddddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDdddd
+dDdddddDdddddDdDdddddDdddddDDDdddddDDdddddDddddDDDdDdddddDDdddddDdDddddDDDdddddD
+dddddDdddddDddddDDdDdddddDdDdddddDdddddDDdddddDDdddddDdDdddddDDdddddDDDdddddDDDd
+DdddddDddddDDDdDdddddDDdddddDdDddddDDDDdddddDdddddDdDdddddDddddDDDDdddddDdDddddd
+DDddddDDDdddddDDdddddDdDdddddDDdddddDdddddDdddddDdddDdddddDdddddDddDdddddDdDdddd
+dDdDdddddDdddddDdDdddddDdddddDDdddddDdDdddddDDddddDDDdddddDdddddDdDdddddDdddddDD
+DdDdddddDDDDddddddDddddDDDDddddddDdDddddddDddddDDdDddddddDddddddDDddddddDddddDDD
+ddddddDddddddDddddddDddddddDddddddDdddddDDDddddddDDdddddDDDddddddDdddddDDdDddddd
+DddddddDdddddDDddddddDDddddddDddddddDddddddDddddddDddddddDdddddDDddddddDdddddDDD
+DdddddDdDdddddDDdDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdD
+dddddDDdddddDddddDDDdddddDdDdddddDdddddDDDDdddddDDdddddDDdddddDDdddddDDdDdddddDd
+ddddDdddddDddddDDDDdddddDDdddddDDdddddDdddddDdddddDDdddddDDddddDdDDdddddDDdddddD
+dDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDdddddDDDDDddddd
+DdDDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDDDdddddDDdDdddddDdddddDDDdddddDdddddD
+dddddDdddddDdddddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDD
+DdddddDDDDdddddDdddddDDDdddddDddDdddddDddddDDDdddddDdddddDdDdddddDddddDDddddDDDd
+ddddDdDdddddDDdddddDdddddDdDdddddDdddddDdddddDdDdddddDddDdddddDdddddDdDDdddddDdd
+dddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDdddddDdddddDdDdddddDdddddDDD
+dddddDdDdddddDddDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDd
+ddddDdddddDDdddddDdddddDdDdddddDdddddDDDDdddddDdddddDDDdddddDdddddDDDDdddddDdddd
+dDdddddDddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDddddDDDddddddDDddddddD
+dddddDDddddddDdddddDDddddddDddddddDddddddDdddddDDddddddDddddddDddddddDddddddDddd
+ddDdDddddddDddddddDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdddddDD
+DdddddDdddddDdddddDdddddDdDdddddDDdddddDdddddDddddDDDdddddDDDDdddddDdddddDdDdddd
+dDdddddDDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDdDdddddDdDddddDDDdddddDddddd
+DddddDDDdddd
+TRYING MOVE CLASS      5 TO DAD      6
+DdDddddLllaAAAAA
+Failed ******
+AdDdDDddddddDDDdDddddddDDDdDddddddDDddDdddddDDDddDdddddDDDddDddddddDDDdDdddddDDd
+DdDddddddDDdddddDDDDdDdddddDDDDdDdddddDDddddddDdDdDdddddDDdDDdddddDDdDdDdddddDDd
+DddddddDDDDdddddDDDdddddDddddDDddDdddddDdddddDdDdddddDdDDdddddDdddddDdDdddddDdDd
+ddddDDdddddDddDdddddDdDdddddDddDdddddDdDdddddDdDdddddDdDdddddDdDddddDddDddddDdDd
+dDdddd
+Badmove rejects Move      5      6
+DdDDDDddddDdDddDdddd
+Badmove rejects Move      5     13
+ddDdDDddddDdDDdDddddDdDddDddddddDDdDddddddDDdDddddddDDDDdddddDDDDddddDdDDDdddd
+Badmove rejects Move      6      5
+DdDddddddDDDDdddddDdDddDddddddDDDDDddddddDDDddddddDDDDDdddddDdDdddddddDdddddddDD
+DddddDdDDdDdddddddDDDDDDDDDdddddDDDdDdddddddDddddddDDDDDDDDdddddddDDDDDDDDdddddD
+dDddddddDDDdddddddDDDDddddddDDddddddDDDDddddddDDdDdddddDDdDddddDDddddDdddDddddDd
+dDDdddddDdDDddddDddDDddddDddDdddddDdDDdddddddDDddddddDdDddddddDDDdddddDdDDdddddD
+DDDdddddDDdddddDDdDdddddDdddddDDdddddDddddDdDDdddddDdddddDdddddDDddddDDDddddDDdD
+dddddDdDdddddDDdddddDDdddddDDdddddDdDdddddDDdddddDDdDddddddDdDdddddDDdDddddddDdD
+dddddDddDddddddDdDdddddDDdddddDDdDddddddDDDddddddDdDddddddDdDddddddDDDDdddddDDDd
+dddddDDDdddddDDDdDdddddDDDdDdddddDDDdDdddd
+Badmove rejects Move     13      5
+ddDDdDdddddDDDdDddddDdddDddddddDDdDdddddDDDdDdddddDDDdDddddddDDdDddddddDDdDddddd
+dDDdDDddddDdDDdDddddDdDddddDddddddDddDddddDdDddddddDddddDdDddDddddDdDDddddddDddd
+dddDddddddDddddddDddddddDddddddDddDddddddDddddddDddDdddddDDDdddddDddddDDDdddddDd
+ddddDdddddDdddddDDdddddDdDddddDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdD
+dddddDdddddDDDdDdddddDDdDddddddDddddDDdDddddddDddddddDddddddDddddddDDddddddDdddd
+DDdDddddddDddddddDdddddDDddddddDddddddDddddddDdddddDdDDddddDDdDdddddddDddddDDDdd
+ddddDDDdddddDdDDddddddDDDddddddDDdddddDDDddddDDdddddDdDddddddDDDdddddDDDdddddDdD
+dddddDDDdddddDddDdddddDDDDdddddDddDddddddDDdddddDdDDdddddDdDDddddddDDDdddddDDDdd
+dddDDDDddddddDDDdddddDdDDddddddDdDddddddDDDdddddDDDDddddddDDDdDdddddDDdDdddddDDd
+ddddDDDdddddDDddddDDDdddddDDdddddDdddddDDDddddDDDdddddDDdddddDdDddddDdDdddddDDdd
+dddDDdddddDDdddddDdDdddddDDdddddDDDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDddddD
+DdDdddddDdddddDdDdddddDdDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDdddddDdDdddddDD
+dddddDDdDdddddDDdDdddddDddDdddddDDdDdddddDddddddDdDdddddDDdDdddddDDdDddddddDdDDd
+ddddDDdDdddddDDdDdddddDDdDddddddDdDdddddDDdDdddddDDDdddddDddddddDdddddDddddDdddd
+DDDdddddDddddDdddddDdDdddddDdddddDdDddddDDdddddDdddddDdddddDdddddDdDdddddDdddddD
+DDdddddDddddddDdddddDdddddddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDdddd
+dDdddddDdddddDdDdddddDdddddDDDdddddDDdddddDddddDDDdDdddddDDdddddDdDddddDDDdddddD
+dddddDdddddDddddDDdDdddddDdDdddddDdddddDDdddddDDdddddDdDdddddDDdddddDDDdddddDDDd
+DdddddDddddDDDdDdddddDDdddddDdDddddDDDDdddddDdddddDdDdddddDddddDDDDdddddDdDddddd
+DDddddDDDdddddDDdddddDdDdddddDDdddddDdddddDdddddDdddDdddddDdddddDddDdddddDdDdddd
+dDdDdddddDdddddDdDdddddDdddddDDdddddDdDdddddDDddddDDDdddddDdddddDdDdddddDdddddDD
+DdDdddddDDDDddddddDddddDDDDddddddDdDddddddDddddDDdDddddddDddddddDDddddddDddddDDD
+ddddddDddddddDddddddDddddddDddddddDdddddDDDDddddddDDdddddDDDddddddDdddddDDdDdddd
+dDddddddDdddddDDddddddDDddddddDddddddDddddddDddddddDddddddDdddddDDddddddDdddddDD
+DDdddddDdDdddddDDdDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDd
+DdddddDDdddddDddddDDDdddddDdDdddddDdddddDDDDdddddDDdddddDDdddddDDdddddDDdDdddddD
+dddddDdddddDddddDDDDdddddDDdddddDDdddddDdddddDdddddDDdddddDDddddDdDDdddddDDddddd
+DdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDdddddDDDDDdddd
+dDdDDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDDDdddddDDdDdddddDdddddDDDdddddDddddd
+DdddddDdddddDdddddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddD
+DDdddddDDDDdddddDdddddDDDdddddDddDdddddDddddDDDdddddDdddddDdDdddddDddddDDddddDDD
+dddddDdDdddddDDdddddDdddddDdDdddddDdddddDdddddDdDdddddDddDdddddDdddddDdDDdddddDd
+ddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDdddddDdddddDdDdddddDdddddDD
+DdddddDdDdddddDddDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdD
+dddddDdddddDDdddddDdddddDdDdddddDdddddDDDDdddddDdddddDDDdddddDdddddDDDDdddddDddd
+ddDdddddDddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDddddDDDdddddDDDdddddd
+DdddddDDddddddDdddddDDddddddDddddddDdddddDDdddddDDddddddDddddddDddddddDddddddDdd
+dddDdDddddddDddddddDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdddddD
+DDdddddDdddddDdddddDdddddDdDdddddDDdddddDdddddDddddDdDdddddDDDDdddddDdddddDdDddd
+ddDdddddDDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDdDdddddDdDddddDDDdddddDdddd
+dDddddDDDdddd
+TRYING MOVE CLASS      5 TO DAD      3
+DdDddDddddLllaAAAAA
+Failed ******
+AdDdDDddddddDDDdDddddddDDDdDddddddDDddDdddddDDDddDdddddDDDddDddddddDDDdDdddddDDd
+DdDddddddDDdddddDDDDdDdddddDDDDdDdddddDDdddd
+Badmove rejects Move      3      5
+dDDdDDdddddDDdDdDdddddDDdDddddddDDDDdddddDDDdddddDddddDDddDdddddDdddddDdDdddddDd
+DDdddddDdddddDdDdddddDdDdddddDDdddddDddDdddddDdDdddddDddDdddddDdDdddddDdDdddddDd
+DdddddDdDddddDddDdddd
+Badmove rejects Move      5      3
+Badmove rejects Move      5      6
+DdDDDDddddDdDddDdddd
+Badmove rejects Move      5     13
+ddDdDDddddDdDDdDddddDdDddDddddddDDdDddddddDDdDddddddDDDDdddddDDDDddddDdDDDdddd
+Badmove rejects Move      6      5
+DdDddddddDDDDdddddDdDddDddddddDDDDDddddddDDDddddddDDDDDdddddDdDdddddddDdddddddDD
+DddddDdDDdDdddddddDDDDDDDDDdddddDDDdDdddddddDddddddDDDDDDDDdddddddDDDDDDDDdddddD
+dDddddddDDDdddddddDDDDddddddDDddddddDDDDddddddDDdDdddddDDdDddddDDddddDdddDddddDd
+dDDdddddDdDDddddDddDDddddDddDdddddDdDDdddddddDDddddddDdDddddddDDDdddddDdDDdddddD
+DDDdddddDDdddddDDdDdddddDdddddDDdddddDddddDdDDdddddDdddddDdddddDDddddDDDddddDDdD
+dddddDdDdddddDDdddddDDdddddDDdddddDdDdddddDDdddddDDdDddddddDdDdddddDDdDddddddDdD
+dddddDddDddddddDdDdddddDDdddddDDdDddddddDDDddddddDdDddddddDdDddddddDDDDdddddDDDd
+dddddDDDdddddDDDdDdddddDDDdDdddddDDDdDdddd
+Badmove rejects Move     13      5
+ddDDdDdddddDDDdDddddDdddDddddddDDdDdddddDDDdDdddddDDDdDddddddDDdDddddddDDdDddddd
+dDDdDDddddDdDDdDddddDdDddddDddddddDddddDdDddddddDddddDdDddDddddDdDDddddddDdddddd
+DddddddDddddddDddddddDddddddDddDddddddDddddddDddDdddddDDDdddddDddddDDDdddddDdddd
+dDdddddDdddddDDdddddDdDddddDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdDddd
+ddDdddddDDDdDdddddDDdDddddddDddddDDdDddddddDddddddDddddddDddddddDDddddddDddddDDd
+DddddddDddddddDdddddDDddddddDddddddDddddddDdddddDdDDddddDDdDdddddddDddddDDDddddd
+dDDDdddddDdDDddddddDDDddddddDDdddddDDDddddDDdddddDdDddddddDDDdddddDDDdddddDdDddd
+ddDDDdddddDddDdddddDDDDdddddDddDddddddDDdddddDddDdddddDdDDddddddDDDdddddDDDddddd
+DDDDddddddDDDdddddDdDDddddddDdDddddddDDDdddddDDDDddddddDDDdDdddddDDdDdddddDDdddd
+dDDDdddddDDddddDDDdddddDDdddddDdddddDDDddddDDDdddddDDdddddDdDddddDdDdddddDDddddd
+DDdddddDDdddddDdDdddddDDdddddDDDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDddddDDdD
+dddddDdddddDdDdddddDdDdddddDdDdddddDdDddddDDdDdddddDdDdddddDdDdddddDdDdddddDDddd
+ddDDdDdddddDDdDdddddDddDdddddDDdDdddddDddddddDdDdddddDDdDdddddDDdDddddddDdDDdddd
+dDDdDdddddDDdDdddddDDdDddddddDdDdddddDDdDdddddDDDdddddDddddddDdddddDddddDddddDDD
+dddddDddddDdddddDdDdddddDdddddDdDddddDDdddddDdddddDdddddDdddddDdDdddddDdddddDDDd
+ddddDddddddDdddddDdddddddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDdddddDd
+ddddDdddddDdDdddddDdddddDDDdddddDDdddddDddddDDDdDdddddDDdddddDdDddddDDDdddddDddd
+ddDdddddDddddDDdDdddddDdDdddddDdddddDDdddddDDdddddDdDdddddDDdddddDDDdddddDDDdDdd
+dddDddddDDDdDdddddDDdddddDdDddddDDDDdddddDdddddDdDdddddDddddDDDDdddddDdDdddddDDd
+dddDDDdddddDDdddddDdDdddddDDdddddDdddddDdddddDdddDdddddDdddddDddDdddddDdDdddddDd
+DdddddDdddddDdDdddddDdddddDDdddddDdDdddddDDddddDDDdddddDdddddDdDdddddDdddddDDDdD
+dddddDDDDddddddDddddDDDDddddddDddddddDddddDDdDddddddDddddddDDddddddDddddDDDddddd
+dDddddddDddddddDddddddDddddddDdddddDDDddddddDDdddddDDDddddddDdddddDDdDdddddDdddd
+ddDdddddDDddddddDDddddddDddddddDddddddDddddddDddddddDdddddDDddddddDdddddDDDDdddd
+dDdDdddddDDdDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDddddd
+DDdddddDddddDDDdddddDdDdddddDdddddDDDDdddddDDdddddDDdddddDDdddddDDdDdddddDdddddD
+dddddDddddDDDDdddddDDdddddDDdddddDdddddDdddddDDdddddDDddddDdDDdddddDDdddddDdDddd
+ddDdDdddddDdDdddddDdDdddddDdDdddddDdDdddddDdDDdddddDdDdddddDdddddDDDDDdddddDdDDd
+ddddDdDdddddDdDdddddDdDDdddddDdDdddddDDDdddddDDdDdddddDdddddDDDdddddDdddddDddddd
+DdddddDdddddDdDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDDdddd
+dDDDDdddddDdddddDDDdddddDddDdddddDddddDDDdddddDdddddDdDdddddDddddDDddddDDDdddddD
+dDdddddDDdddddDdddddDdDdddddDdddddDdddddDdDdddddDddDdddddDdddddDdDDdddddDdddddDd
+ddddDDdddddDdDdddddDdddddDdddddDdDdddddDdddddDDdddddDdddddDdDdddddDdddddDDDddddd
+DdDdddddDddDdddddDdddddDdDDdddddDdddddDdddddDDdddddDdDdddddDdddddDdddddDdDdddddD
+dddddDDdddddDdddddDdDdddddDdddddDDDDdddddDdddddDDDdddddDdddddDDDDdddddDdddddDddd
+ddDddddDDdddddDdddddDdddddDdddddDdddddDdDdddddDdddddDddddDDDddddddDDddddddDddddd
+DDddddddDdddddDDddddddDddddddDddddddDdddddDDddddddDddddddDddddddDddddddDdddddDdD
+ddddddDddddddDdddddDDDDdddddDdddddDdDdddddDdddddDDdddddDdddddDdddddDdddddDDDdddd
+dDdddddDdddddDdddddDdDdddddDDdddddDdddddDddddDDDdddddDDDDdddddDdddddDdDdddddDddd
+ddDDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDdddddDdDddddDDDdddddDdddddDddddDD
+Ddddd
+TRYING MOVE CLASS      5 TO DAD      1
+DddDddddLllaAAAAA
+Failed ******
+A
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P1    37 classes,   19 leaves,  Pcost   370.1  Tcost  452928.8,  Cost  453298.8
+Sample  1 XRFTest
+--------------------------------------------------------------------------------
+Classification converged after 5 cycles
+
+S    1   DAD    Root Age 253  Sz59292.0  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    10.34  F:   110.34  D:   370.07  B:   370.07
+Tcosts  S:601851.12  F:1194778.53  D:452928.77  B:452928.77
+Vcost     ---------  F:     0.00
+totals  S:601861.46  F:1194888.88  D:453298.84  B:453298.84
+V  1  Cnt59292.0   In
+ N: Cost     6.0  Mu   7.803+-   4.276  SD   0.716+-   0.866
+ S: Cost601861.5  Mu  10.231  SD   6.196
+ F: Cost601961.5  Mu  10.231  SD   6.196  Ld   0.000
+
+S    2   DAD Dad    1  Age 248  Sz16551.4  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    11.89  F:   111.89  D:   128.49  B:   128.49
+Tcosts  S:165475.08  F:330999.46  D:117451.42  B:117451.42
+Vcost     ---------  F:     0.00
+totals  S:165486.97  F:331111.35  D:117579.92  B:117579.92
+V  1  Cnt16551.8   In
+ N: Cost     5.2  Mu   2.417+-   2.596  SD   0.133+-   0.167
+ S: Cost144367.0  Mu   0.603  SD   1.455
+ F: Cost144467.0  Mu  10.222  SD   6.199  Ld   0.000
+
+S    4  LEAF Dad    2  Age 238  Sz13566.2  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    14.73  F:   114.73  D:     0.00  B:    14.73
+Tcosts  S: 85161.05  F:220829.50  D:     0.00  B: 85161.05
+Vcost     ---------  F:     0.00
+totals  S: 85175.78  F:220944.23  D:     0.00  B: 85175.78
+V  1  Cnt13566.2   In
+ S: Cost 65166.9  Mu  -0.000  SD   0.030
+ F: Cost 65266.9  Mu   0.689  SD   1.596  Ld   0.000
+
+S    5   DAD Dad    2  Age 238  Sz2985.2  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    10.08  F:   110.08  D:    98.43  B:    98.43
+Tcosts  S: 35444.02  F: 65305.76  D: 32298.00  B: 32298.00
+Vcost     ---------  F:     0.00
+totals  S: 35454.10  F: 65415.84  D: 32396.43  B: 32396.43
+V  1  Cnt2985.6   In
+ N: Cost     3.4  Mu   2.849+-   1.664  SD   0.098+-   0.115
+ S: Cost 26531.1  Mu   3.342  SD   1.702
+ F: Cost 26631.1  Mu   0.696  SD   1.606  Ld   0.000
+
+S   10   DAD Dad    5  Age 228  Sz2051.7  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    10.28  F:   110.28  D:    76.33  B:    76.33
+Tcosts  S: 25432.05  F: 45955.97  D: 24247.98  B: 24247.98
+Vcost     ---------  F:     0.00
+totals  S: 25442.33  F: 46066.24  D: 24324.31  B: 24324.31
+V  1  Cnt2051.8   In
+ N: Cost     3.5  Mu   3.248+-   1.470  SD   0.189+-   0.212
+ S: Cost 18540.4  Mu   3.667  SD   1.959
+ F: Cost 18640.4  Mu   2.923  SD   0.952  Ld   0.000
+
+S   16   DAD Dad   10  Age 218  Sz1107.2  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:     7.95  F:   107.95  D:    26.50  B:    26.50
+Tcosts  S: 12843.85  F: 23898.36  D: 11999.16  B: 11999.16
+Vcost     ---------  F:     0.00
+totals  S: 12851.80  F: 24006.30  D: 12025.66  B: 12025.66
+V  1  Cnt1104.9   In
+ N: Cost     2.5  Mu   3.214+-   1.100  SD   0.122+-   0.124
+ S: Cost  8453.5  Mu   3.086  SD   0.508
+ F: Cost  8553.5  Mu   2.900  SD   1.383  Ld   0.000
+
+S   24  LEAF Dad   16  Age 208  Sz 419.4  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     8.98  F:   108.98  D:     0.00  B:     8.98
+Tcosts  S:  4312.25  F:  8510.84  D:     0.00  B:  4312.25
+Vcost     ---------  F:     0.00
+totals  S:  4321.23  F:  8619.82  D:     0.00  B:  4321.23
+V  1  Cnt 419.4   In
+ S: Cost  2244.9  Mu   3.696  SD   0.050
+ F: Cost  2344.9  Mu   3.396  SD   0.472  Ld   0.000
+
+S   25  LEAF Dad   16  Age 208  Sz 687.7  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     7.81  F:   107.81  D:     0.00  B:     7.81
+Tcosts  S:  7687.11  F: 14547.72  D:     0.00  B:  7687.11
+Vcost     ---------  F:     0.00
+totals  S:  7694.91  F: 14655.53  D:     0.00  B:  7694.91
+V  1  Cnt 685.5   In
+ S: Cost  4639.5  Mu   2.714  SD   0.208
+ F: Cost  4739.5  Mu   3.391  SD   0.479  Ld   0.000
+
+S   17   DAD Dad   10  Age 218  Sz 944.5  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:     8.73  F:   108.73  D:    38.58  B:    38.58
+Tcosts  S: 12772.35  F: 22246.80  D: 12513.11  B: 12513.11
+Vcost     ---------  F:     0.00
+totals  S: 12781.08  F: 22355.52  D: 12551.69  B: 12551.69
+V  1  Cnt 946.9   In
+ N: Cost     3.2  Mu   3.595+-   1.738  SD   0.534+-   0.564
+ S: Cost  8861.3  Mu   4.344  SD   2.682
+ F: Cost  8961.3  Mu   2.897  SD   1.408  Ld   0.000
+
+S   30  LEAF Dad   17  Age 208  Sz 638.9  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     7.39  F:   107.39  D:     0.00  B:     7.39
+Tcosts  S:  8637.54  F: 15038.63  D:     0.00  B:  8637.54
+Vcost     ---------  F:     0.00
+totals  S:  8644.94  F: 15146.02  D:     0.00  B:  8644.94
+V  1  Cnt 639.6   In
+ S: Cost  5747.1  Mu   5.909  SD   1.905
+ F: Cost  5847.1  Mu   2.940  SD   1.720  Ld   0.000
+
+S   31   DAD Dad   17  Age 208  Sz 305.6  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:     7.30  F:   107.30  D:    20.88  B:    20.88
+Tcosts  S:  4030.49  F:  7108.43  D:  3958.64  B:  3958.64
+Vcost     ---------  F:     0.00
+totals  S:  4037.79  F:  7215.74  D:  3979.53  B:  3979.53
+V  1  Cnt 307.3   In
+ N: Cost     3.1  Mu   1.766+-   1.392  SD   0.377+-   0.323
+ S: Cost  2419.1  Mu   1.080  SD   0.649
+ F: Cost  2519.1  Mu   2.911  SD   1.741  Ld   0.000
+
+S   32  LEAF Dad   31  Age 193  Sz 184.5  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     6.85  F:   106.85  D:     0.00  B:     6.85
+Tcosts  S:  2312.41  F:  4160.95  D:     0.00  B:  2312.41
+Vcost     ---------  F:     0.00
+totals  S:  2319.26  F:  4267.80  D:     0.00  B:  2319.26
+V  1  Cnt 184.4   In
+ S: Cost  1254.8  Mu   0.691  SD   0.210
+ F: Cost  1354.8  Mu   1.245  SD   0.762  Ld   0.000
+
+S   33  LEAF Dad   31  Age 193  Sz 121.2  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     5.06  F:   105.06  D:     0.00  B:     5.06
+Tcosts  S:  1710.39  F:  2943.87  D:     0.00  B:  1710.39
+Vcost     ---------  F:     0.00
+totals  S:  1715.45  F:  3048.93  D:     0.00  B:  1715.45
+V  1  Cnt 122.9   In
+ S: Cost   954.4  Mu   1.671  SD   0.539
+ F: Cost  1054.4  Mu   1.310  SD   0.809  Ld   0.000
+
+S   11  LEAF Dad    5  Age 228  Sz 933.5  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    10.44  F:   110.44  D:     0.00  B:    10.44
+Tcosts  S:  8612.54  F: 17955.52  D:     0.00  B:  8612.54
+Vcost     ---------  F:     0.00
+totals  S:  8622.98  F: 18065.96  D:     0.00  B:  8622.98
+V  1  Cnt 933.8   In
+ S: Cost  4747.0  Mu   2.626  SD   0.039
+ F: Cost  4847.0  Mu   2.924  SD   0.928  Ld   0.000
+
+S    3   DAD Dad    1  Age 248  Sz42740.6  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    12.41  F:   112.41  D:   224.31  B:   224.31
+Tcosts  S:390325.84  F:817735.48  D:335953.42  B:335953.42
+Vcost     ---------  F:     0.00
+totals  S:390338.24  F:817847.89  D:336177.72  B:336177.72
+V  1  Cnt42740.2   In
+ N: Cost     6.7  Mu  12.033+-   2.270  SD   0.165+-   0.092
+ S: Cost376348.1  Mu  13.960  SD   1.578
+ F: Cost376448.1  Mu  10.240  SD   6.193  Ld   0.000
+
+S    6   DAD Dad    3  Age 238  Sz5815.0  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    19.52  F:   119.52  D:   150.27  B:   150.27
+Tcosts  S: 67837.11  F:126140.18  D: 60330.69  B: 60330.69
+Vcost     ---------  F:     0.00
+totals  S: 67856.64  F:126259.70  D: 60480.96  B: 60480.96
+V  1  Cnt5829.7   In
+ N: Cost     3.6  Mu  10.900+-   2.047  SD   0.134+-   0.065
+ S: Cost 54320.3  Mu  10.867  SD   2.608
+ F: Cost 54420.3  Mu  14.014  SD   1.467  Ld   0.000
+
+S   12   DAD Dad    6  Age 228  Sz3079.6  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    13.78  F:   113.78  D:    57.87  B:    57.87
+Tcosts  S: 33578.79  F: 64530.08  D: 32387.44  B: 32387.44
+Vcost     ---------  F:     0.00
+totals  S: 33592.57  F: 64643.86  D: 32445.30  B: 32445.30
+V  1  Cnt3094.5   In
+ N: Cost     4.1  Mu  12.750+-   1.379  SD   0.184+-   0.074
+ S: Cost 24440.1  Mu  13.292  SD   0.646
+ F: Cost 24540.1  Mu   8.636  SD   1.761  Ld   0.000
+
+S   22   DAD Dad   12  Age 218  Sz1459.8  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    12.33  F:   112.33  D:    37.39  B:    37.39
+Tcosts  S: 17114.33  F: 31755.69  D: 16749.20  B: 16749.20
+Vcost     ---------  F:     0.00
+totals  S: 17126.65  F: 31868.02  D: 16786.59  B: 16786.59
+V  1  Cnt1463.6   In
+ N: Cost     3.4  Mu  12.662+-   1.130  SD   0.259+-   0.091
+ S: Cost 11705.4  Mu  12.863  SD   0.732
+ F: Cost 11805.4  Mu  11.717  SD   2.357  Ld   0.000
+
+S   26   DAD Dad   22  Age 208  Sz 530.1  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:     8.99  F:   108.99  D:    19.73  B:    19.73
+Tcosts  S:  6750.18  F: 12063.88  D:  6712.27  B:  6712.27
+Vcost     ---------  F:     0.00
+totals  S:  6759.17  F: 12172.87  D:  6732.00  B:  6732.00
+V  1  Cnt 530.9   In
+ N: Cost     2.6  Mu  12.003+-   1.026  SD   0.338+-   0.115
+ S: Cost  4255.1  Mu  12.164  SD   0.689
+ F: Cost  4355.1  Mu  12.962  SD   1.048  Ld   0.000
+
+S   38  LEAF Dad   26  Age 193  Sz 429.1  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     5.79  F:   105.79  D:     0.00  B:     5.79
+Tcosts  S:  5408.64  F:  9722.94  D:     0.00  B:  5408.64
+Vcost     ---------  F:     0.00
+totals  S:  5414.42  F:  9828.73  D:     0.00  B:  5414.42
+V  1  Cnt 430.9   In
+ S: Cost  3290.4  Mu  12.430  SD   0.489
+ F: Cost  3390.4  Mu  12.139  SD   0.868  Ld   0.000
+
+S   39  LEAF Dad   26  Age 193  Sz 101.0  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     4.69  F:   104.69  D:     0.00  B:     4.69
+Tcosts  S:  1349.25  F:  2352.77  D:     0.00  B:  1349.25
+Vcost     ---------  F:     0.00
+totals  S:  1353.94  F:  2457.46  D:     0.00  B:  1353.94
+V  1  Cnt  99.9   In
+ S: Cost   717.2  Mu  11.033  SD   0.302
+ F: Cost   817.2  Mu  12.099  SD   0.875  Ld   0.000
+
+S   27  LEAF Dad   22  Age 208  Sz 929.7  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     6.77  F:   106.77  D:     0.00  B:     6.77
+Tcosts  S: 10392.85  F: 19725.34  D:     0.00  B: 10392.85
+Vcost     ---------  F:     0.00
+totals  S: 10399.62  F: 19832.11  D:     0.00  B: 10399.62
+V  1  Cnt 932.7   In
+ S: Cost  6523.8  Mu  13.261  SD   0.260
+ F: Cost  6623.8  Mu  13.029  SD   1.067  Ld   0.000
+
+S   23  LEAF Dad   12  Age 218  Sz1619.8  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     8.25  F:   108.25  D:     0.00  B:     8.25
+Tcosts  S: 16506.57  F: 32821.74  D:     0.00  B: 16506.57
+Vcost     ---------  F:     0.00
+totals  S: 16514.82  F: 32929.98  D:     0.00  B: 16514.82
+V  1  Cnt1631.0   In
+ S: Cost 10643.1  Mu  13.679  SD   0.164
+ F: Cost 10743.1  Mu  11.727  SD   2.305  Ld   0.000
+
+S   13   DAD Dad    6  Age 228  Sz2735.4  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    15.59  F:   115.59  D:    80.04  B:    80.04
+Tcosts  S: 30758.11  F: 58115.45  D: 27943.39  B: 27943.39
+Vcost     ---------  F:     0.00
+totals  S: 30773.70  F: 58231.03  D: 28023.43  B: 28023.43
+V  1  Cnt2735.1   In
+ N: Cost     4.7  Mu   8.128+-   1.447  SD   0.083+-   0.034
+ S: Cost 22360.1  Mu   8.135  SD   0.847
+ F: Cost 22460.1  Mu   8.615  SD   1.748  Ld   0.000
+
+S   18  LEAF Dad   13  Age 218  Sz 398.9  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     8.86  F:   108.86  D:     0.00  B:     8.86
+Tcosts  S:  4170.48  F:  8164.05  D:     0.00  B:  4170.48
+Vcost     ---------  F:     0.00
+totals  S:  4179.34  F:  8272.91  D:     0.00  B:  4179.34
+V  1  Cnt 398.9   In
+ S: Cost  2184.7  Mu   6.397  SD   0.057
+ F: Cost  2284.7  Mu   7.929  SD   0.918  Ld   0.000
+
+S   19   DAD Dad   13  Age 218  Sz2336.6  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    17.21  F:   117.21  D:    58.05  B:    58.05
+Tcosts  S: 25387.52  F: 48756.12  D: 23772.91  B: 23772.91
+Vcost     ---------  F:     0.00
+totals  S: 25404.72  F: 48873.32  D: 23830.97  B: 23830.97
+V  1  Cnt2336.3   In
+ N: Cost     3.8  Mu   8.474+-   0.799  SD   0.087+-   0.031
+ S: Cost 17849.5  Mu   8.432  SD   0.508
+ F: Cost 17949.5  Mu   8.001  SD   0.913  Ld   0.000
+
+S   28  LEAF Dad   19  Age 208  Sz1324.6  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     8.01  F:   108.01  D:     0.00  B:     8.01
+Tcosts  S: 12688.41  F: 25939.50  D:     0.00  B: 12688.41
+Vcost     ---------  F:     0.00
+totals  S: 12696.42  F: 26047.51  D:     0.00  B: 12696.42
+V  1  Cnt1324.6   In
+ S: Cost  7661.2  Mu   8.054  SD   0.078
+ F: Cost  7761.2  Mu   8.358  SD   0.554  Ld   0.000
+
+S   29   DAD Dad   19  Age 208  Sz1011.9  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    13.69  F:   113.69  D:    38.30  B:    38.30
+Tcosts  S: 11534.75  F: 21657.36  D: 11084.90  B: 11084.90
+Vcost     ---------  F:     0.00
+totals  S: 11548.44  F: 21771.04  D: 11123.21  B: 11123.21
+V  1  Cnt1011.7   In
+ N: Cost     3.6  Mu   8.999+-   0.519  SD   0.101+-   0.036
+ S: Cost  7430.1  Mu   8.927  SD   0.343
+ F: Cost  7530.1  Mu   8.409  SD   0.553  Ld   0.000
+
+S   34  LEAF Dad   29  Age 193  Sz 334.8  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     6.45  F:   106.45  D:     0.00  B:     6.45
+Tcosts  S:  3905.81  F:  7257.38  D:     0.00  B:  3905.81
+Vcost     ---------  F:     0.00
+totals  S:  3912.26  F:  7363.83  D:     0.00  B:  3912.26
+V  1  Cnt 334.7   In
+ S: Cost  2179.9  Mu   9.407  SD   0.159
+ F: Cost  2279.9  Mu   8.858  SD   0.433  Ld   0.000
+
+S   35   DAD Dad   29  Age 193  Sz 677.1  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:     6.73  F:   106.73  D:    21.10  B:    21.10
+Tcosts  S:  7314.10  F: 14089.77  D:  7196.89  B:  7196.89
+Vcost     ---------  F:     0.00
+totals  S:  7320.82  F: 14196.49  D:  7218.00  B:  7218.00
+V  1  Cnt 677.0   In
+ N: Cost     3.2  Mu   8.813+-   0.375  SD   0.075+-   0.019
+ S: Cost  4292.6  Mu   8.690  SD   0.136
+ F: Cost  4392.6  Mu   8.844  SD   0.427  Ld   0.000
+
+S   36  LEAF Dad   35  Age 183  Sz 520.4  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     6.11  F:   106.11  D:     0.00  B:     6.11
+Tcosts  S:  5416.60  F: 10624.65  D:     0.00  B:  5416.60
+Vcost     ---------  F:     0.00
+totals  S:  5422.70  F: 10730.76  D:     0.00  B:  5422.70
+V  1  Cnt 520.3   In
+ S: Cost  2958.4  Mu   8.626  SD   0.070
+ F: Cost  3058.4  Mu   8.677  SD   0.150  Ld   0.000
+
+S   37  LEAF Dad   35  Age 183  Sz 156.7  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     4.94  F:   104.94  D:     0.00  B:     4.94
+Tcosts  S:  1815.23  F:  3387.16  D:     0.00  B:  1815.23
+Vcost     ---------  F:     0.00
+totals  S:  1820.16  F:  3492.10  D:     0.00  B:  1820.16
+V  1  Cnt 156.7   In
+ S: Cost   890.0  Mu   8.902  SD   0.068
+ F: Cost   990.0  Mu   8.678  SD   0.164  Ld   0.000
+
+S    7   DAD Dad    3  Age 238  Sz36925.6  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    12.71  F:   112.71  D:    56.14  B:    56.14
+Tcosts  S:287750.35  F:656863.12  D:277407.52  B:277407.52
+Vcost     ---------  F:     0.00
+totals  S:287763.06  F:656975.83  D:277463.66  B:277463.66
+V  1  Cnt36910.6   In
+ N: Cost     5.4  Mu  14.357+-   0.876  SD   0.149+-   0.064
+ S: Cost270282.8  Mu  14.447  SD   0.368
+ F: Cost270382.8  Mu  14.022  SD   1.467  Ld   0.000
+
+S   14   DAD Dad    7  Age 228  Sz10378.5  Use Tny(Vv  0.00  +-1.000 Avv 0.000)   2 sons
+Pcosts  S:    10.87  F:   110.87  D:    29.61  B:    29.61
+Tcosts  S: 79814.07  F:183649.47  D: 79705.06  B: 79705.06
+Vcost     ---------  F:     0.00
+totals  S: 79824.94  F:183760.34  D: 79734.67  B: 79734.67
+V  1  Cnt10382.9   In
+ N: Cost     3.2  Mu  14.816+-   0.576  SD   0.108+-   0.037
+ S: Cost 61730.3  Mu  14.965  SD   0.092
+ F: Cost 61830.3  Mu  14.390  SD   0.424  Ld   0.000
+
+S   20  LEAF Dad   14  Age 218  Sz 829.7  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     6.66  F:   106.66  D:     0.00  B:     6.66
+Tcosts  S:  8656.81  F: 16960.63  D:     0.00  B:  8656.81
+Vcost     ---------  F:     0.00
+totals  S:  8663.47  F: 17067.30  D:     0.00  B:  8663.47
+V  1  Cnt 829.9   In
+ S: Cost  5121.1  Mu  14.856  SD   0.114
+ F: Cost  5221.1  Mu  14.766  SD   0.297  Ld   0.000
+
+S   21  LEAF Dad   14  Age 218  Sz9548.8  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:     9.70  F:   109.70  D:     0.00  B:     9.70
+Tcosts  S: 73280.34  F:168817.16  D:     0.00  B: 73280.34
+Vcost     ---------  F:     0.00
+totals  S: 73290.04  F:168926.85  D:     0.00  B: 73290.04
+V  1  Cnt9553.0   In
+ S: Cost 55845.3  Mu  14.975  SD   0.084
+ F: Cost 55945.3  Mu  14.769  SD   0.296  Ld   0.000
+
+S   15  LEAF Dad    7  Age 228  Sz26547.1  Use Tny(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    10.40  F:   110.40  D:     0.00  B:    10.40
+Tcosts  S:198535.30  F:463819.04  D:     0.00  B:198535.30
+Vcost     ---------  F:     0.00
+totals  S:198545.70  F:463929.44  D:     0.00  B:198545.70
+V  1  Cnt26527.7   In
+ S: Cost177228.7  Mu  14.244  SD   0.193
+ F: Cost177328.7  Mu  14.386  SD   0.427  Ld   0.000
+--------------------------------------------------------------------------------
+P1    37 classes,   19 leaves,  Pcost   370.1  Tcost  452928.8,  Cost  453298.8
+Sample  1 XRFTest
+--------------------------------------------------------------------------------
+CPU Time:         15.848 s
+Elapsed Time:     15.894 s

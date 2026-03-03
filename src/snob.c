@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     cpu_start = clock();
     timespec_get(&wall_start, TIME_UTC);
 
-    initialize(0, 1, 0);
+    initialize(0, 0, 0);
 
     log_msg(1, "################################################################################");
     log_msg(1, "Factor SNOB - Mixture Modelling by Minimum Message Length (MML) with Factors");

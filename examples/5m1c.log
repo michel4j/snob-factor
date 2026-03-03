@@ -1,207 +1,11 @@
+################################################################################
+Factor SNOB - Mixture Modelling by Minimum Message Length (MML) with Factors
+################################################################################
+Loading vset: ../examples/5m1c.v
+Loading sample: ../examples/5m1c.s
 Number of active cases = 1000
 Begin sort of 1000 cases
 Finished sort
-Ll.la
-S    1  LEAF    Root Age   5  Sz1000.0  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:    15.66  F:   515.66  D:     0.00  B:    15.66
-Tcosts  S:  3465.99  F: 13471.36  D:     0.00  B:  3465.99
-Vcost     ---------  F:     0.00
-totals  S:  3481.65  F: 13987.02  D:     0.00  B:  3481.65
-
-Cycle 1
-Doing 50 steps of costing, assignment and adjustments.
-aa...
-Changing type of class    1  from Leaf to Dad
-AAAA.AA.....
-Changing type of class    3  from Leaf to Dad
-AAAAA........AA........AA......AAA
-Attempting class moves until 2 successive failures
-AAdDDdddddDDdddddDdddd
-TRYING MOVE CLASS      2 TO DAD      3
-dDDddddlllAAAAAA
-Failed ******
-A
-Badmove rejects Move      2      3
-dDDdddddDdddd
-TRYING MOVE CLASS      4 TO DAD      1
-dDDddddLllaAAAAA
-Failed ******
-A
-Cost dropped by    0.000%
-
---------------------------------------------------------------------------------
-P1     5 classes,    3 leaves,  Pcost    52.3  Tcost    2900.0,  Cost    2952.3
-Sample  1 Spec_s5m1c__000000912300
---------------------------------------------------------------------------------
-Cycle 2
-Doing 50 steps of costing, assignment and adjustments.
-AA........AA........AA........AA........AA......AAA
-Attempting class moves until 2 successive failures
-aAdDDdddddDDdddddDdddd
-TRYING MOVE CLASS      2 TO DAD      3
-dDDddddlllAaaAAA
-Failed ******
-A
-Badmove rejects Move      2      3
-dDDdddddDdddd
-TRYING MOVE CLASS      4 TO DAD      1
-dDDddddLll
-Changing type of class    1  from Dad to Leaf
-AaaaaA
-Failed ******
-A
-Cost dropped by   15.204%
-
---------------------------------------------------------------------------------
-P1     5 classes,    3 leaves,  Pcost    51.8  Tcost    2892.6,  Cost    2944.4
-Sample  1 Spec_s5m1c__000000912300
---------------------------------------------------------------------------------
-Classification converged after 2 cycles
-
-S    1   DAD    Root Age 111  Sz1000.0  Use Fac Vv  0.92  +-0.587 Avv 0.003    2 sons
-Pcosts  S:    15.66  F:    31.21  D:    51.81  B:    51.81
-Tcosts  S:  3465.99  F:  2307.02  D:  2892.58  B:  2892.58
-Vcost     ---------  F:   634.36
-totals  S:  3481.65  F:  2972.59  D:  2944.38  B:  2944.38
-V  1  Cnt1000.0   In  Adj    1.30
- NR:   0.543  0.457 +-  1.349
- PR:   0.515  0.485
- FR:   0.521  0.479
- BP:  -0.726  0.726 +-  0.047
-V  2  Cnt1000.0   In  Adj    1.30
- NR:   0.549  0.451 +-  1.296
- PR:   0.503  0.497
- FR:   0.504  0.496
- BP:  -0.771  0.771 +-  0.048
-V  3  Cnt1000.0   In  Adj    1.30
- NR:   0.552  0.448 +-  1.271
- PR:   0.471  0.529
- FR:   0.459  0.541
- BP:  -0.767  0.767 +-  0.048
-V  4  Cnt1000.0   In  Adj    1.30
- NR:   0.545  0.455 +-  1.289
- PR:   0.494  0.506
- FR:   0.492  0.508
- BP:  -0.753  0.753 +-  0.048
-V  5  Cnt1000.0   In  Adj    1.30
- NR:   0.553  0.447 +-  1.305
- PR:   0.497  0.503
- FR:   0.496  0.504
- BP:  -0.781  0.781 +-  0.049
-
-S    2  LEAF Dad    1  Age 106  Sz 390.6  Use Pln(Vv  0.04  +-1.000 Avv 0.012)
-Pcosts  S:    14.81  F:    15.72  D:     0.00  B:    14.81
-Tcosts  S:  1124.63  F:  1131.38  D:     0.00  B:  1124.63
-Vcost     ---------  F:     0.30
-totals  S:  1139.44  F:  1147.39  D:     0.00  B:  1139.44
-V  1  Cnt 390.5   In  Adj    0.33
- PR:   0.859  0.141
- FR:   0.847  0.153
- BP:  -0.013  0.013 +-  0.874
-V  2  Cnt 390.5   In  Adj    0.33
- PR:   0.869  0.131
- FR:   0.865  0.135
- BP:  -0.004  0.004 +-  0.885
-V  3  Cnt 390.5   In  Adj    0.33
- PR:   0.877  0.123
- FR:   0.860  0.140
- BP:  -0.013  0.013 +-  0.882
-V  4  Cnt 390.5   In  Adj    0.33
- PR:   0.856  0.144
- FR:   0.850  0.150
- BP:  -0.007  0.007 +-  0.877
-V  5  Cnt 390.5   In  Adj    0.33
- PR:   0.885  0.115
- FR:   0.873  0.127
- BP:  -0.013  0.013 +-  0.890
-
-S    3   DAD Dad    1  Age 106  Sz 609.4  Use Pln(Vv  0.04  +-1.000 Avv-0.010)   2 sons
-Pcosts  S:    16.25  F:    17.61  D:    31.08  B:    31.08
-Tcosts  S:  2034.17  F:  2084.24  D:  1968.77  B:  1968.77
-Vcost     ---------  F:     0.40
-totals  S:  2050.42  F:  2102.25  D:  1999.85  B:  1999.85
-V  1  Cnt 609.5   In  Adj    0.33
- NR:   0.376  0.624 +-  1.733
- PR:   0.294  0.706
- FR:   0.231  0.769
- BP:  -0.009  0.009 +-  0.801
-V  2  Cnt 609.5   In  Adj    0.33
- NR:   0.386  0.614 +-  1.533
- PR:   0.268  0.732
- FR:   0.192  0.808
- BP:  -0.010  0.010 +-  0.820
-V  3  Cnt 609.5   In  Adj    0.33
- NR:   0.386  0.614 +-  1.425
- PR:   0.211  0.789
- FR:   0.149  0.851
- BP:  -0.017  0.017 +-  0.845
-V  4  Cnt 609.5   In  Adj    0.33
- NR:   0.384  0.616 +-  1.557
- PR:   0.262  0.738
- FR:   0.190  0.810
- BP:  -0.011  0.011 +-  0.821
-V  5  Cnt 609.5   In  Adj    0.33
- NR:   0.386  0.614 +-  1.497
- PR:   0.248  0.752
- FR:   0.176  0.824
- BP:  -0.013  0.013 +-  0.829
-
-S    4  LEAF Dad    3  Age  96  Sz 236.0  Use Pln(Vv  0.08  +-1.000 Avv 0.000)
-Pcosts  S:    13.43  F:    14.23  D:     0.00  B:    13.43
-Tcosts  S:   543.08  F:   563.01  D:     0.00  B:   543.08
-Vcost     ---------  F:     0.68
-totals  S:   556.51  F:   577.91  D:     0.00  B:   556.51
-V  1  Cnt 235.9   In  Adj    0.33
- PR:   0.014  0.986
- FR:   0.052  0.948
- BP:  -0.000  0.000 +-  0.888
-V  2  Cnt 235.9   In  Adj    0.33
- PR:   0.038  0.962
- FR:   0.073  0.927
- BP:   0.000 -0.000 +-  0.855
-V  3  Cnt 235.9   In  Adj    0.33
- PR:   0.079  0.921
- FR:   0.100  0.900
- BP:  -0.000  0.000 +-  0.820
-V  4  Cnt 235.9   In  Adj    0.33
- PR:   0.035  0.965
- FR:   0.078  0.922
- BP:   0.000 -0.000 +-  0.848
-V  5  Cnt 235.9   In  Adj    0.33
- PR:   0.048  0.952
- FR:   0.088  0.912
- BP:  -0.000  0.000 +-  0.835
-
-S    5  LEAF Dad    3  Age  96  Sz 373.4  Use Pln(Vv  0.05  +-0.999 Avv-0.021)
-Pcosts  S:    15.25  F:    16.29  D:     0.00  B:    15.25
-Tcosts  S:  1608.55  F:  1658.57  D:     0.00  B:  1608.55
-Vcost     ---------  F:     0.50
-totals  S:  1623.80  F:  1675.35  D:     0.00  B:  1623.80
-V  1  Cnt 373.6   In  Adj    0.33
- PR:   0.472  0.528
- FR:   0.528  0.472
- BP:  -0.000  0.000 +-  0.710
-V  2  Cnt 373.6   In  Adj    0.33
- PR:   0.414  0.586
- FR:   0.296  0.704
- BP:  -0.017  0.017 +-  0.741
-V  3  Cnt 373.6   In  Adj    0.33
- PR:   0.293  0.707
- FR:   0.189  0.811
- BP:  -0.027  0.027 +-  0.790
-V  4  Cnt 373.6   In  Adj    0.33
- PR:   0.405  0.595
- FR:   0.321  0.679
- BP:  -0.017  0.017 +-  0.733
-V  5  Cnt 373.6   In  Adj    0.33
- PR:   0.375  0.625
- FR:   0.260  0.740
- BP:  -0.019  0.019 +-  0.755
-
---------------------------------------------------------------------------------
-P1     5 classes,    3 leaves,  Pcost    51.8  Tcost    2892.6,  Cost    2944.4
-Sample  1 Spec_s5m1c__000000912300
---------------------------------------------------------------------------------
        id        V1        V2        V2        V4        V5 
      1001         2         1         2         1         1 
      1002         2         2         1         2         1 
@@ -216,5 +20,484 @@ Sample  1 Spec_s5m1c__000000912300
      2000         1         1         2         1         2 
 [1000 items x 5 attributes]
 
-CPU Time:          0.351 s
-Elapsed Time:      0.352 s
+Ll.la
+S    1  LEAF    Root Age   5  Sz1000.0  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    15.66  F:   515.66  D:     0.00  B:    15.66
+Tcosts  S:  3465.99  F: 13471.36  D:     0.00  B:  3465.99
+Vcost     ---------  F:     0.00
+totals  S:  3481.65  F: 13987.02  D:     0.00  B:  3481.65
+
+
+
+================================================================================
+Cycle 1 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa...
+Changing type of class    1  from Leaf to Dad
+AAAA.AA...
+Changing type of class    2  from Leaf to Dad
+Changing type of class    3  from Leaf to Dad
+aAAA.AA........AA........AA......AAA
+Attempting class moves until 4 successive failures
+aAdDDdddddDDdddddDDdddddDDdddddDDdddddDdddddDDddddddDdddddDDdddddDDdddd
+TRYING MOVE CLASS      3 TO DAD      2
+dDDddddLLLAaAAAA
+ACCEPTED !!!
+Popln  3 on sample  1,   6 classes,  1000 things  Cost    2963.84
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    1000 RelAb 1.000  Size  1000.0
+       3  Dad       Scan     523 RelAb 0.485  Size   485.2
+          6 Leaf       Scan     485 RelAb 0.172  Size   170.4
+          7 Leaf       Scan     447 RelAb 0.313  Size   314.8
+       4 Leaf       Scan     470 RelAb 0.297  Size   299.5
+       5 Leaf       Scan     515 RelAb 0.218  Size   215.3
+aaddddddDddddddddddDdddd
+TRYING MOVE CLASS      5 TO DAD      3
+ddDddddLLLAaaaaA
+ACCEPTED !!!
+Popln  1 on sample  1,   6 classes,  1000 things  Cost    2963.49
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    1000 RelAb 1.000  Size  1000.0
+       3  Dad   Fac Scan     523 RelAb 0.684  Size   681.9
+          5 Leaf       Scan     515 RelAb 0.199  Size   196.8
+          6 Leaf       Scan     485 RelAb 0.162  Size   160.6
+          7 Leaf       Scan     447 RelAb 0.323  Size   324.5
+       4 Leaf       Scan     470 RelAb 0.316  Size   318.1
+aaddDdddddDdddddDDdddddDDdddd
+TRYING MOVE CLASS      5 TO DAD      1
+dDDddddLLLAaaa
+Changing type of class    1  from Dad to Leaf
+aA
+ACCEPTED !!!
+Popln  3 on sample  1,   1 classes,  1000 things  Cost    2958.73
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1 Leaf   Fac Scan    1000 RelAb 1.000  Size  1000.0
+aa
+Model has only 1 class
+No possible class move
+A
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    31.3  Tcost    2926.0,  Cost    2957.3
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 2 | 50 steps of costing, assignment and adjustments
+================================================================================
+aA........AA........AA........AA........AA......AAA
+Attempting class moves until 4 successive failures
+aA
+Model has only 1 class
+No possible class move
+A
+Cost dropped by   15.060%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    32.0  Tcost    2898.6,  Cost    2930.6
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 3 | 50 steps of costing, assignment and adjustments
+================================================================================
+aA........AA........AA........AA........AA......AAA
+Attempting class moves until 4 successive failures
+aA
+Model has only 1 class
+No possible class move
+A
+Cost dropped by    0.904%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    32.4  Tcost    2893.6,  Cost    2926.0
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 4 | 50 steps of costing, assignment and adjustments
+================================================================================
+aA........AA........AA........AA........AA......AAA
+Attempting class moves until 4 successive failures
+aA
+Model has only 1 class
+No possible class move
+A
+Cost dropped by    0.157%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    32.7  Tcost    2892.1,  Cost    2924.7
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 5 | 50 steps of costing, assignment and adjustments
+================================================================================
+aA........AA........Aa........Aa........Aa......Aaa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.043%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    32.8  Tcost    2891.5,  Cost    2924.3
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 6 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........Aa........Aa........Aa........Aa......Aaa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.015%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    32.9  Tcost    2891.2,  Cost    2924.1
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 7 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........Aa........Aa........Aa........Aa......Aaa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.006%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.0  Tcost    2891.1,  Cost    2924.0
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 8 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........Aa........aa........Aa......aaa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.003%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.0  Tcost    2891.0,  Cost    2924.0
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 9 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........Aa........aa......aaa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.001%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.0  Tcost    2891.0,  Cost    2924.0
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 10 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.001%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.0  Tcost    2891.0,  Cost    2924.0
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 11 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.0  Tcost    2890.9,  Cost    2924.0
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 12 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.0  Tcost    2890.9,  Cost    2924.0
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 13 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.0  Tcost    2890.9,  Cost    2924.0
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 14 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.1  Tcost    2890.9,  Cost    2924.0
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 15 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.1  Tcost    2890.9,  Cost    2924.0
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 16 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.1  Tcost    2890.9,  Cost    2924.0
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 17 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.1  Tcost    2890.9,  Cost    2923.9
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 18 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.1  Tcost    2890.9,  Cost    2923.9
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 19 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.1  Tcost    2890.9,  Cost    2923.9
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 20 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.1  Tcost    2890.9,  Cost    2923.9
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 21 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.1  Tcost    2890.8,  Cost    2923.9
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 22 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.1  Tcost    2890.8,  Cost    2923.9
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 23 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.1  Tcost    2890.8,  Cost    2923.9
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 24 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.1  Tcost    2890.8,  Cost    2923.9
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 25 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 1 class
+No possible class move
+a
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.1  Tcost    2890.8,  Cost    2923.9
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+WARNING: Classification did not converge after 25 cycles
+
+S    1  LEAF    Root Age1019  Sz1000.0  Use Fac Vv  0.86  +-0.482 Avv 0.001 
+Pcosts  S:    15.66  F:    33.11  D:     0.00  B:    33.11
+Tcosts  S:  3465.99  F:  2154.00  D:     0.00  B:  2890.83
+Vcost     ---------  F:   736.82
+totals  S:  3481.65  F:  2923.93  D:     0.00  B:  2923.93
+V  1  Cnt1000.0   In  Adj    0.33
+ PR:   0.515  0.485
+ FR:   0.522  0.478
+ BP:  -1.061  1.061 +-  0.064
+V  2  Cnt1000.0   In  Adj    0.33
+ PR:   0.503  0.497
+ FR:   0.502  0.498
+ BP:  -1.273  1.273 +-  0.076
+V  3  Cnt1000.0   In  Adj    0.30
+ PR:   0.471  0.529
+ FR:   0.445  0.555
+ BP:  -1.257  1.257 +-  0.074
+V  4  Cnt1000.0   In  Adj    0.30
+ PR:   0.494  0.506
+ FR:   0.487  0.513
+ BP:  -1.172  1.172 +-  0.070
+V  5  Cnt1000.0   In  Adj    0.30
+ PR:   0.497  0.503
+ FR:   0.491  0.509
+ BP:  -1.345  1.345 +-  0.080
+--------------------------------------------------------------------------------
+P3     1 classes,    1 leaves,  Pcost    33.1  Tcost    2890.8,  Cost    2923.9
+Sample  1 Spec_s5m1c__000000912300
+--------------------------------------------------------------------------------
+CPU Time:          1.105 s
+Elapsed Time:      1.110 s

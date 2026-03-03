@@ -1,82 +1,11 @@
+################################################################################
+Factor SNOB - Mixture Modelling by Minimum Message Length (MML) with Factors
+################################################################################
+Loading vset: ../examples/6r1b.v
+Loading sample: ../examples/6r1b.s
 Number of active cases = 1000
 Begin sort of 1000 cases
 Finished sort
-ll.la
-S    1  LEAF    Root Age   5  Sz1000.0  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:    40.70  F:   740.70  D:     0.00  B:    40.70
-Tcosts  S: 43967.08  F: 53972.45  D:     0.00  B: 43967.08
-Vcost     ---------  F:     0.00
-totals  S: 44007.78  F: 54713.15  D:     0.00  B: 44007.78
-
-Cycle 1
-Doing 50 steps of costing, assignment and adjustments.
-aa...
-Changing type of class    1  from Leaf to Dad
-AAAA.AA...
-Changing type of class    2  from Leaf to Dad
-Changing type of class    3  from Leaf to Dad
-aAAA.AA
-Changing type of class    1  from Dad to Leaf
-AAAA....AA........AA......AAA
-Attempting class moves until 2 successive failures
-AA
-Model has only 1 class
-No possible class move
-A
-Cost dropped by    0.000%
-
---------------------------------------------------------------------------------
-P1     1 classes,    1 leaves,  Pcost   104.3  Tcost   39054.8,  Cost   39159.1
-Sample  1 Trial_Data
---------------------------------------------------------------------------------
-Cycle 2
-Doing 50 steps of costing, assignment and adjustments.
-AA........AA........AA........AA........AA......AAA
-Attempting class moves until 2 successive failures
-AA
-Model has only 1 class
-No possible class move
-A
-Cost dropped by   11.018%
-
---------------------------------------------------------------------------------
-P1     1 classes,    1 leaves,  Pcost   108.6  Tcost   39019.1,  Cost   39127.7
-Sample  1 Trial_Data
---------------------------------------------------------------------------------
-Classification converged after 2 cycles
-
-S    1  LEAF    Root Age 109  Sz1000.0  Use Fac Vv  1.16  +-0.126 Avv 0.000 
-Pcosts  S:    40.71  F:   108.61  D:     0.00  B:   108.61
-Tcosts  S: 43967.07  F: 36758.74  D:     0.00  B: 39019.12
-Vcost     ---------  F:  2260.38
-totals  S: 44007.78  F: 39127.73  D:     0.00  B: 39127.73
-V  1  Cnt1000.0   In  Adj    0.30
- S: AP -0.022
- F: AP -0.027
- F: BP  0.420 +-  0.035
-V  2  Cnt1000.0   In
- S: Cost  6371.2  Mu  -0.020  SD   1.405
- F: Cost  6027.3  Mu  -0.020  SD   0.992  Ld  -0.847
-V  3  Cnt1000.0   In
- S: Cost  6836.4  Mu  -0.072  SD   2.238
- F: Cost  6005.4  Mu  -0.072  SD   0.970  Ld  -1.715
-V  4  Cnt1000.0   In
- S: Cost  7177.7  Mu  -0.108  SD   3.148
- F: Cost  6039.1  Mu  -0.108  SD   1.002  Ld  -2.538
-V  5  Cnt1000.0   In
- S: Cost  7435.3  Mu  -0.112  SD   4.073
- F: Cost  6057.9  Mu  -0.112  SD   1.021  Ld  -3.354
-V  6  Cnt1000.0   In
- S: Cost  7656.7  Mu  -0.144  SD   5.082
- F: Cost  6009.1  Mu  -0.144  SD   0.972  Ld  -4.243
-V  7  Cnt1000.0   In
- S: Cost  7833.9  Mu   0.169  SD   6.067
- F: Cost  6114.3  Mu   0.169  SD   1.080  Ld   5.078
-
---------------------------------------------------------------------------------
-P1     1 classes,    1 leaves,  Pcost   108.6  Tcost   39019.1,  Cost   39127.7
-Sample  1 Trial_Data
---------------------------------------------------------------------------------
        id        VB        V1        V2        V3        V4        V5        V6 
      1001         1     -0.27      0.36     -0.38     -1.01      2.11     -0.39 
      1002         1         1     -1.18      1.92      2.43      3.95     -3.24 
@@ -91,5 +20,316 @@ Sample  1 Trial_Data
      2000         2     -3.48     -6.11     -7.69     -9.97     -10.8        12 
 [1000 items x 7 attributes]
 
-CPU Time:          0.039 s
-Elapsed Time:      0.039 s
+ll.la
+S    1  LEAF    Root Age   5  Sz1000.0  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    40.70  F:   740.70  D:     0.00  B:    40.70
+Tcosts  S: 43967.08  F: 53972.45  D:     0.00  B: 43967.08
+Vcost     ---------  F:     0.00
+totals  S: 44007.78  F: 54713.15  D:     0.00  B: 44007.78
+
+
+
+================================================================================
+Cycle 1 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa...
+Changing type of class    1  from Leaf to Dad
+AAAA.AA...
+Changing type of class    2  from Leaf to Dad
+Changing type of class    3  from Leaf to Dad
+aAAA.AA..
+Changing type of class    2  from Dad to Leaf
+A
+Changing type of class    6  from Leaf to Dad
+Changing type of class    7  from Leaf to Dad
+AAAA.AA
+Changing type of class    3  from Dad to Leaf
+AaAA....AA......AAA
+Attempting class moves until 4 successive failures
+AA
+Model has only 3 class
+No possible class move
+A
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   180.0  Tcost   39092.8,  Cost   39272.8
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 2 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........Aa........Aa........Aa........Aa......aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 3 class
+No possible class move
+Cost dropped by   10.759%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   186.0  Tcost   39067.2,  Cost   39253.2
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 3 | 50 steps of costing, assignment and adjustments
+================================================================================
+Aa........Aa........aa........aa........aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 3 class
+No possible class move
+Cost dropped by    0.050%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   188.8  Tcost   39067.5,  Cost   39256.2
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 4 | 50 steps of costing, assignment and adjustments
+================================================================================
+Aa........Aa........aa........Aa........Aa......Aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 3 class
+No possible class move
+Cost dropped by    0.008%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   191.2  Tcost   39063.5,  Cost   39254.7
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 5 | 50 steps of costing, assignment and adjustments
+================================================================================
+Aa........Aa........Aa........Aa........Aa......Aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 3 class
+No possible class move
+Cost dropped by    0.004%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   193.2  Tcost   39053.8,  Cost   39247.0
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 6 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........Aa........Aa........Aa........Aa......Aa
+Attempting class moves until 4 successive failures
+aA
+Model has only 3 class
+No possible class move
+Cost dropped by    0.020%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   194.8  Tcost   39042.1,  Cost   39236.9
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 7 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........Aa........Aa........Aa........Aa......Aa
+Attempting class moves until 4 successive failures
+aA
+Model has only 3 class
+No possible class move
+Cost dropped by    0.026%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   196.0  Tcost   39031.0,  Cost   39227.0
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 8 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........Aa........Aa........Aa........Aa......Aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 3 class
+No possible class move
+Cost dropped by    0.025%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   197.0  Tcost   39021.9,  Cost   39218.9
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 9 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........Aa........Aa........Aa........Aa......Aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 3 class
+No possible class move
+Cost dropped by    0.021%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   197.7  Tcost   39015.0,  Cost   39212.8
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 10 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........Aa........Aa........Aa........Aa......Aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 3 class
+No possible class move
+Cost dropped by    0.016%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   198.3  Tcost   39010.1,  Cost   39208.4
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 11 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........Aa........Aa........Aa........Aa......Aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 3 class
+No possible class move
+Cost dropped by    0.011%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   198.7  Tcost   39006.6,  Cost   39205.3
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 12 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........Aa........Aa........Aa........Aa......Aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 3 class
+No possible class move
+Cost dropped by    0.008%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   198.9  Tcost   39004.3,  Cost   39203.2
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 13 | 50 steps of costing, assignment and adjustments
+================================================================================
+Aa........Aa........Aa........Aa........Aa......Aa
+Attempting class moves until 4 successive failures
+aa
+Model has only 3 class
+No possible class move
+Cost dropped by    0.005%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   199.2  Tcost   39002.8,  Cost   39201.9
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+Classification converged after 13 cycles
+
+S    1   DAD    Root Age 673  Sz1000.0  Use Pln(Vv  3.29  +-0.893 Avv-1.918)   2 sons
+Pcosts  S:    40.71  F: 38250.90  D:   199.15  B:   199.15
+Tcosts  S: 43967.07  F: 55049.86  D: 39002.77  B: 39002.77
+Vcost     ---------  F:  5464.90
+totals  S: 44007.78  F: 98765.67  D: 39201.92  B: 39201.92
+V  1  Cnt1000.0   In  Adj    0.33
+ N: AP -0.009 +-  0.756
+ S: AP -0.022
+ F: AP -736.358
+ F: BP 411.344 +-  0.857
+V  2  Cnt1000.0   In
+ N: Cost     3.0  Mu  -0.016+-   1.103  SD   1.047+-   0.670
+ S: Cost  6371.2  Mu  -0.020  SD   1.405
+ F: Cost  6395.3  Mu   0.078  SD   1.412  Ld   0.127
+V  3  Cnt1000.0   In
+ N: Cost     3.0  Mu  -0.063+-   1.904  SD   1.119+-   0.747
+ S: Cost  6836.4  Mu  -0.072  SD   2.237
+ F: Cost  6870.8  Mu   0.111  SD   2.254  Ld   0.233
+V  4  Cnt1000.0   In
+ N: Cost     3.0  Mu  -0.094+-   2.833  SD   1.247+-   0.878
+ S: Cost  7177.7  Mu  -0.108  SD   3.147
+ F: Cost  7203.8  Mu   0.154  SD   3.161  Ld   0.341
+V  5  Cnt1000.0   In
+ N: Cost     3.1  Mu  -0.094+-   3.617  SD   1.362+-   0.990
+ S: Cost  7435.3  Mu  -0.112  SD   4.071
+ F: Cost  7464.5  Mu   0.235  SD   4.093  Ld   0.449
+V  6  Cnt1000.0   In
+ N: Cost     3.2  Mu  -0.120+-   4.588  SD   1.422+-   1.096
+ S: Cost  7656.7  Mu  -0.144  SD   5.080
+ F: Cost  7684.6  Mu   0.293  SD   5.106  Ld   0.568
+V  7  Cnt1000.0   In
+ N: Cost     3.2  Mu   0.141+-   5.455  SD   1.636+-   1.281
+ S: Cost  7833.9  Mu   0.169  SD   6.065
+ F: Cost  7861.2  Mu  -0.354  SD   6.093  Ld  -0.680
+
+S    2  LEAF Dad    1  Age 668  Sz 494.8  Use Fac Vv  1.03  +-0.144 Avv-0.006 
+Pcosts  S:    38.82  F:    87.12  D:     0.00  B:    87.12
+Tcosts  S: 21440.01  F: 18515.24  D:     0.00  B: 19494.81
+Vcost     ---------  F:   979.57
+totals  S: 21478.83  F: 19581.93  D:     0.00  B: 19581.93
+V  1  Cnt 494.8   In  Adj    0.30
+ S: AP -0.334
+ F: AP -0.367
+ F: BP -0.296 +-  0.051
+V  2  Cnt 494.8   In
+ S: Cost  3101.1  Mu   0.553  SD   1.259
+ F: Cost  2974.0  Mu   0.558  SD   0.967  Ld   0.773
+V  3  Cnt 494.8   In
+ S: Cost  3298.2  Mu   1.141  SD   1.877
+ F: Cost  2955.7  Mu   1.153  SD   0.931  Ld   1.558
+V  4  Cnt 494.8   In
+ S: Cost  3430.5  Mu   1.926  SD   2.460
+ F: Cost  3024.3  Mu   1.943  SD   1.069  Ld   2.107
+V  5  Cnt 494.8   In
+ S: Cost  3565.7  Mu   2.417  SD   3.245
+ F: Cost  2997.7  Mu   2.439  SD   1.012  Ld   2.920
+V  6  Cnt 494.8   In
+ S: Cost  3662.6  Mu   3.171  SD   3.962
+ F: Cost  2973.5  Mu   3.199  SD   0.963  Ld   3.624
+V  7  Cnt 494.8   In
+ S: Cost  3752.9  Mu  -3.742  SD   4.764
+ F: Cost  3019.4  Mu  -3.775  SD   1.057  Ld  -4.372
+
+S    3  LEAF Dad    1  Age 668  Sz 505.2  Use Fac Vv  1.03  +-0.149 Avv-0.007 
+Pcosts  S:    39.01  F:    85.73  D:     0.00  B:    85.73
+Tcosts  S: 21886.83  F: 18923.93  D:     0.00  B: 19907.00
+Vcost     ---------  F:   983.07
+totals  S: 21925.84  F: 19992.73  D:     0.00  B: 19992.73
+V  1  Cnt 505.2   In  Adj    0.30
+ S: AP  0.279
+ F: AP  0.322
+ F: BP  0.376 +-  0.053
+V  2  Cnt 505.2   In
+ S: Cost  3185.9  Mu  -0.581  SD   1.308
+ F: Cost  3056.3  Mu  -0.587  SD   1.005  Ld  -0.805
+V  3  Cnt 505.2   In
+ S: Cost  3374.1  Mu  -1.259  SD   1.891
+ F: Cost  3047.5  Mu  -1.272  SD   0.987  Ld  -1.556
+V  4  Cnt 505.2   In
+ S: Cost  3489.6  Mu  -2.101  SD   2.383
+ F: Cost  3012.5  Mu  -2.119  SD   0.920  Ld  -2.111
+V  5  Cnt 505.2   In
+ S: Cost  3639.0  Mu  -2.589  SD   3.190
+ F: Cost  3068.6  Mu  -2.613  SD   1.027  Ld  -2.911
+V  6  Cnt 505.2   In
+ S: Cost  3731.3  Mu  -3.390  SD   3.833
+ F: Cost  3047.8  Mu  -3.420  SD   0.985  Ld  -3.565
+V  7  Cnt 505.2   In
+ S: Cost  3826.8  Mu   3.999  SD   4.661
+ F: Cost  3118.6  Mu   4.035  SD   1.133  Ld   4.319
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   199.2  Tcost   39002.8,  Cost   39201.9
+Sample  1 Trial_Data
+--------------------------------------------------------------------------------
+CPU Time:          0.556 s
+Elapsed Time:      0.559 s

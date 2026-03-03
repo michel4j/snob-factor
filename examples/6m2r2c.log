@@ -1,326 +1,11 @@
+################################################################################
+Factor SNOB - Mixture Modelling by Minimum Message Length (MML) with Factors
+################################################################################
+Loading vset: ../examples/6m2r2c.v
+Loading sample: ../examples/6m2r2c.s
 Number of active cases = 3000
 Begin sort of 3000 cases
 Finished sort
-ll.la
-S    1  LEAF    Root Age   5  Sz3000.0  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
-Pcosts  S:    46.52  F:   846.52  D:     0.00  B:    46.52
-Tcosts  S: 61277.32  F: 91283.24  D:     0.00  B: 61277.32
-Vcost     ---------  F:     0.00
-totals  S: 61323.84  F: 92129.76  D:     0.00  B: 61323.84
-
-Cycle 1
-Doing 50 steps of costing, assignment and adjustments.
-aa...
-Changing type of class    1  from Leaf to Dad
-AAAA.AA...
-Changing type of class    2  from Leaf to Dad
-Changing type of class    3  from Leaf to Dad
-aAAA.AA...
-Changing type of class    4  from Leaf to Dad
-Changing type of class    5  from Leaf to Dad
-Changing type of class    6  from Leaf to Dad
-Changing type of class    7  from Leaf to Dad
-aAAA.AA...
-Changing type of class    8  from Leaf to Dad
-Changing type of class   11  from Leaf to Dad
-Changing type of class   13  from Leaf to Dad
-Changing type of class   15  from Leaf to Dad
-aAAA.AA....
-Changing type of class   17  from Leaf to Dad
-A
-Changing type of class   20  from Leaf to Dad
-aAAA
-Attempting class moves until 2 successive failures
-aAdDddddddDDDDddddddDDDDdddddDdDDdddddDDDDdddddDDDDdddddDddddddDDDDddddddDDDDddd
-ddDdDDdddddDDDDdddddDDDDdddddDddddddDdDdddddDddddddDdDDddddddDDDDddddddddddDdDdd
-ddddDdDddddddDdDdddddDdDddddddDDdddddDddddddDDDDddddddDDDDdddddDdDddddddDDdddddd
-DDdddddddDddddddDDdddddDddddddDdDddddddDdDDddddddDDDDdddddDddddddDDDddddddDDDddd
-ddDddDddddddDDDdddddDdDddddddDDddddddDDDDdddddddDDDdddddDddddddDDddddddDDdddddDd
-DddddddDDdddddDdDdddddDddDdddddDddddddDDDdddddDddddddDDDDdddddDdDDDdddddDdDddddd
-DDDdddddDDDdddddDDDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDd
-ddddDdddddDdddddDDdDdddddDDdddddDdddddDDdddddDdddddDdddddDdddddDDdddddDdddddDDdd
-dddDDdddddDDdddddDddDdddddDddddddDdddddDddddddDddddddDdddddDDddddddDddddddDddddd
-DDdDddddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddddddDddddd
-DdddddDddddddDDDdddddDdddddDDDDDdddddDdDDDdddddDddDdddddDDDdddddDDDDdddddDdDdDdd
-dddDDDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddddddDdddddDdddd
-dDddDddddddDdddddDddddddDdDddddddDdDdddddDddDddddddDdDddddddDdDdddddDddddddDdDdd
-dddDDdDdddddDDdddddDDdddddDdddddDDdddddDDdddddDDdddddDdddddDDdddddDdddddDDdddddD
-DdddddDDdddddDdddddDddddddDdddddDdddddDddddddDddddddDddddddDddddddDddddddDdddddd
-DdddddDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDdddddDdddddDDdddddDdddddDDdddd
-dDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDdddddDdddddDDdddddDdddddDDdddddDddd
-dddDdddddDddddddDddddddDdddddDdddddDddddddDddddddDdddddDDddddddDdddddDdddddDdddd
-dDdddddDdddddDdddddDdddddDdddddDdddddDdddddddddDdddddDdddddDdddddDdddddDdddddDdd
-dddDdddddDdddddddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddD
-dddddddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDddd
-ddDDdddddDdddddDdddddDDdddddDDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDdddddDD
-dddddDdddddDdddddDDdddddDDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddD
-dddddddddddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddD
-dddddDdddd
-TRYING MOVE CLASS      6 TO DAD     15
-dDddDddddLLlAAaAAA
-ACCEPTED !!!
-Popln  3 on sample  1,  26 classes,  3000 things  Cost   47975.69
-
-  Assign mode Partial    --- Adjust: Params Scores Tree
-    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
-       2  Dad   Fac Scan    1500 RelAb 0.500  Size  1500.0
-          4  Dad   Fac Scan     944 RelAb 0.259  Size   776.2
-             8  Dad   Fac Scan     480 RelAb 0.118  Size   357.3
-               16 Leaf       Scan     445 RelAb 0.082  Size   246.7
-               17  Dad       Scan     180 RelAb 0.036  Size   110.6
-                  24 Leaf       Scan     119 RelAb 0.007  Size    21.0
-                  25 Leaf       Scan     164 RelAb 0.029  Size    89.6
-             9 Leaf       Scan     760 RelAb 0.140  Size   419.0
-          5  Dad   Fac Scan     884 RelAb 0.241  Size   723.8
-            10 Leaf       Scan     672 RelAb 0.118  Size   352.1
-            11  Dad       Scan     498 RelAb 0.124  Size   371.7
-               18 Leaf       Scan     182 RelAb 0.023  Size    69.8
-               19 Leaf       Scan     470 RelAb 0.100  Size   301.9
-       3  Dad   Fac Scan    1500 RelAb 0.500  Size  1500.0
-         14 Leaf       Scan     683 RelAb 0.136  Size   407.3
-         15  Dad       Scan     465 RelAb 0.364  Size  1092.7
-             6  Dad       Scan     990 RelAb 0.248  Size   743.8
-               12 Leaf       Scan     766 RelAb 0.121  Size   361.4
-               13  Dad       Scan     528 RelAb 0.127  Size   382.4
-                  20  Dad       Scan     260 RelAb 0.046  Size   139.0
-                     26 Leaf       Scan     246 RelAb 0.039  Size   117.5
-                     27 Leaf       Scan      96 RelAb 0.007  Size    21.5
-                  21 Leaf       Scan     474 RelAb 0.081  Size   243.4
-            22 Leaf       Scan     425 RelAb 0.088  Size   265.4
-            23 Leaf       Scan     218 RelAb 0.028  Size    83.5
-aadDddddddDDDDdddddDDDDDdddddDDDDDddddddDDDDdddddDddDdddddDddddddddddDdDDddddddD
-dDDddddddDdDddddddDdDddddddDDDDDdddddDddDdddddDdddddDdddddDdDdddddDdDdDdddddDDDD
-DdddddDDDdddddDDDdddddDDDDDDdddddDDdddddDDdddddDDdddddDDdddddDDdddddDDdddddDDddD
-dddddDDdddddDdddddDDdddddDDdDdddddDdddddDdddddDdddddDdddddDDdddddDDddDddddddDddd
-dddDddddddDddddddDdDdddddDdddddDdddddDDdddddDDdddddDdddddDdddddDdddDdddddDdddddD
-dddddDDdddddDDdDdddddDdddddDdddddDdddddDDdddddDdddddDdddddDdddDdddddDdddddDddddd
-DDdddddDddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddDdddddDdddddDdddddDddddd
-DddDdddddDdDdddddDdddddDdDdddddDdDddddddDDdDddddddDDDDddddddDDddddddDDddddddDDDD
-DdddddDDdDdddddDDdddddDDdddddDdddddDDdddddDDdddddDdddDdddddDdddddDdddddDDdddddDD
-dDdddddDdddddDdddddDdddddDDdDdddddDDdDDdddddDDddDddddddDddddddDddddddDddddddDdDd
-ddddDdddddDdddddDdddddDdddddDdddddDDdddddDdddDdddddDdddddDdddddDDdddddDddDdddddD
-dddddDDdddddDdddddDdddddDdddddDDdddddDdddDdddddDdddddDdddddDDdddddDddDdddddDdddd
-ddDdddddDDDddddddDDDddddddDDdddddDDDdddddDdDddddddDdDddddddDdDDddddddDDDddddddDD
-DddddddDDDDddddddDDDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddD
-dddddDdddddDdddddddddddDDdddddddDDDdddddddDddddddDDdddddddDDDddddddDDDdddddddddD
-dddddDddddddDddddddDddddddDddddddDddddddDddddddDdddddDdddddDdddddDdddddDdddddDdd
-dddDdddddDdddddDdddddDdddddDdddddDdddddDdddddddddDdddddDdddDdddddDdddddDdddddDdd
-dddDdddddDdddddDdddddDddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDd
-ddddDdddddDddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddD
-dddddDdddddDdddddDdddddDdddDdddddDDDDDdddddDDDDDdddddDDDDDdddddDDDDDdddddDDDDDdd
-dddDDDDDdddddDddDdddddDdddddDddDdddddDddDdddddDddDdddddDddDdddddDddDdddddDddDddd
-ddDddDdddddDddDdddddDdddddDddDdddddDdddddDddDdddddDddDdddddDddDdddddDddDdddddDdd
-DdddddDdddddDddDdddddDddDdddddDdddd
-TRYING MOVE CLASS     10 TO DAD      2
-dDDddddlLlAaaaaA
-ACCEPTED !!!
-Popln  1 on sample  1,  25 classes,  3000 things  Cost   47965.10
-
-  Assign mode Partial    --- Adjust: Params Scores Tree
-    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
-       2  Dad   Fac Scan    1500 RelAb 0.500  Size  1500.0
-          4  Dad   Fac Scan     944 RelAb 0.260  Size   781.1
-             8  Dad   Fac Scan     480 RelAb 0.123  Size   371.5
-               16 Leaf       Scan     445 RelAb 0.084  Size   251.9
-               17  Dad       Scan     180 RelAb 0.040  Size   119.5
-                  24 Leaf       Scan     119 RelAb 0.007  Size    21.9
-                  25 Leaf       Scan     164 RelAb 0.032  Size    97.6
-             9 Leaf       Scan     760 RelAb 0.137  Size   409.7
-          5  Dad       Scan     884 RelAb 0.124  Size   372.3
-            18 Leaf       Scan     182 RelAb 0.023  Size    69.9
-            19 Leaf       Scan     470 RelAb 0.101  Size   302.4
-         10 Leaf       Scan     672 RelAb 0.116  Size   346.5
-       3  Dad   Fac Scan    1500 RelAb 0.500  Size  1500.0
-         14 Leaf       Scan     683 RelAb 0.135  Size   405.4
-         15  Dad   Fac Scan     465 RelAb 0.365  Size  1094.6
-             6  Dad       Scan     990 RelAb 0.245  Size   735.0
-               12 Leaf       Scan     766 RelAb 0.118  Size   354.6
-               13  Dad       Scan     528 RelAb 0.127  Size   380.3
-                  20  Dad       Scan     260 RelAb 0.047  Size   140.2
-                     26 Leaf       Scan     246 RelAb 0.039  Size   118.6
-                     27 Leaf       Scan      96 RelAb 0.007  Size    21.6
-                  21 Leaf       Scan     474 RelAb 0.080  Size   240.2
-            22 Leaf       Scan     425 RelAb 0.090  Size   271.6
-            23 Leaf       Scan     218 RelAb 0.029  Size    88.1
-aadDddDddddddDDDDddddddDDDDddddddDDDDddddddDDDDdddddDddddddddddDdDDddddddDDDDDdd
-ddddDdDDddddddDdDddddddDdDdddddDdddddDdddddDdDdddddddDdDddddddDDDDDddddddDDDDddd
-ddDDDdddddDDDdddddDDdddddDDdddddDDdddddDDdddddDDdddddDDddDdddddDDdDdddddDDdddddD
-dddddDDdddddDdddddDdddddDdddddDDdddddDDddDddddddDdDddddddDddddddDddddddDdddddDdd
-dddDdddddDdddddDDdddddDdddddDdddDdddddDDdDdddddDdddddDdddddDdddddDdddddDdddddDdd
-dddDDdddddDdddddDdddDdddddDddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdd
-dddDdddDdddddDddDdddddDdddddDdddddDdddddDddDdddddDddDdddddDDddddddDdDddddddDddDd
-dddddDdDddddddDdDddddddDdDddddddDdDdddddDddDdddddDdddddDdddddDddDdddddddddDdddDd
-ddddDddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdDdddddDdDDdddddDdddDdddddDddD
-dddddDddDdddddDddDdddddDDdDdddddDddDdddddDdddddDdddddDdddddDdddddDdddDdddddDddDd
-ddddDddDdddddDddDdddddDDdDddddddddddDddddddDDddddddDDDddddddDdddddDdddddDdddddDd
-ddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddDdddddDDDDDdddddDDDDDdddddDDDD
-DdddddDDDDDdddddDDDDDdddddDddDddddddDDDDddddddDdDDddddddDDDddddddDDDddddddDDDDdd
-dddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddddddddDDddd
-ddddDDDdddddddDddddddDDdddddddDDDdddddddddDdddddDddddddDddddddDddddddDddddddDddd
-dddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddd
-dddddDdddDdddddDdddddDdddddDdddddDdddddDdddddDddDdddddDdddddDdddddDdddddDdddddDd
-ddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDddDdddddDdddddDddDdddddDddD
-dddddDddDdddddDddDdddddDddDdddddDddDdddddDddDdddddDdddddDddDdddddDdddddDddDddddd
-DddDdddddDddDdddddDddDdddddDdddddDddDdddddDddDdddddDdddd
-TRYING MOVE CLASS     14 TO DAD      6
-dDddddlllAA
-Changing type of class    2  from Dad to Leaf
-Aa
-Changing type of class    3  from Dad to Leaf
-Aa
-ACCEPTED !!!
-Popln  3 on sample  1,   3 classes,  3000 things  Cost   47815.82
-
-  Assign mode Partial    --- Adjust: Params Scores Tree
-    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
-       2 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
-       3 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
-aA
-Model has only 3 class
-No possible class move
-A
-Cost dropped by    0.000%
-
---------------------------------------------------------------------------------
-P3     3 classes,    2 leaves,  Pcost   200.2  Tcost   47579.3,  Cost   47779.5
-Sample  1 Spec_s6m2r2c__000000002222
---------------------------------------------------------------------------------
-Cycle 2
-Doing 50 steps of costing, assignment and adjustments.
-AA........AA........AA........AA........AA......AAA
-Attempting class moves until 2 successive failures
-AA
-Model has only 3 class
-No possible class move
-A
-Cost dropped by   22.087%
-
---------------------------------------------------------------------------------
-P3     3 classes,    2 leaves,  Pcost   210.4  Tcost   47258.1,  Cost   47468.5
-Sample  1 Spec_s6m2r2c__000000002222
---------------------------------------------------------------------------------
-Classification converged after 2 cycles
-
-S    1   DAD    Root Age 127  Sz3000.0  Use Fac Vv  1.00  +-0.205 Avv-0.002    2 sons
-Pcosts  S:    46.52  F:   101.20  D:   210.41  B:   210.41
-Tcosts  S: 61277.32  F: 52775.49  D: 47258.13  B: 47258.13
-Vcost     ---------  F:  4817.95
-totals  S: 61323.84  F: 57694.64  D: 47468.54  B: 47468.54
-V  1  Cnt3000.0   In  Adj    0.30
- NR:   0.414  0.292  0.294 +-  1.042
- PR:   0.582  0.185  0.233
- FR:   0.635  0.164  0.202
- BP:  -0.625  0.244  0.380 +-  0.028
-V  2  Cnt3000.0   In  Adj    0.30
- NR:   0.330  0.345  0.325 +-  0.690
- PR:   0.311  0.380  0.309
- FR:   0.310  0.382  0.307
- BP:  -0.088  0.306 -0.218 +-  0.025
-V  3  Cnt3000.0   In  Adj    1.30
- NR:   0.291  0.322  0.387 +-  1.032
- PR:   0.222  0.228  0.550
- FR:   0.192  0.193  0.615
- BP:   0.314  0.427 -0.740 +-  0.028
-V  4  Cnt3000.0   In  Adj    1.30
- NR:   0.468  0.532 +-  0.842
- PR:   0.412  0.588
- FR:   0.407  0.593
- BP:   0.259 -0.259 +-  0.019
-V  5  Cnt3000.0   In  Adj    1.30
- NR:   0.502  0.498 +-  0.653
- PR:   0.500  0.500
- FR:   0.500  0.500
- BP:  -0.058  0.058 +-  0.018
-V  6  Cnt3000.0   In  Adj    0.30
- NR:   0.460  0.540 +-  0.860
- PR:   0.430  0.570
- FR:   0.428  0.572
- BP:  -0.144  0.144 +-  0.019
-V  7  Cnt3000.0   In
- N: Cost     3.6  Mu   5.000+-   5.310  SD   0.841+-   0.894
- S: Cost 22950.5  Mu   5.001  SD   5.070
- F: Cost 19375.6  Mu   4.993  SD   1.534  Ld  -4.727
-V  8  Cnt3000.0   In
- N: Cost     3.7  Mu   4.998+-   5.388  SD   0.845+-   0.908
- S: Cost 22992.9  Mu   4.996  SD   5.142
- F: Cost 18995.4  Mu   4.988  SD   1.358  Ld  -4.852
-
-S    2  LEAF Dad    1  Age 122  Sz1500.0  Use Fac Vv  1.08  +-0.219 Avv 0.000 
-Pcosts  S:    44.96  F:    93.96  D:     0.00  B:    93.96
-Tcosts  S: 27121.59  F: 21240.53  D:     0.00  B: 23676.22
-Vcost     ---------  F:  2435.69
-totals  S: 27166.54  F: 23770.18  D:     0.00  B: 23770.18
-V  1  Cnt1500.0   In  Adj    1.30
- PR:   0.365  0.267  0.368
- FR:   0.370  0.257  0.373
- BP:   0.831 -0.042 -0.788 +-  0.046
-V  2  Cnt1500.0   In  Adj    1.30
- PR:   0.273  0.488  0.238
- FR:   0.289  0.471  0.240
- BP:   0.954 -0.018 -0.936 +-  0.049
-V  3  Cnt1500.0   In  Adj    1.30
- PR:   0.333  0.361  0.307
- FR:   0.402  0.240  0.358
- BP:   1.609  0.070 -1.679 +-  0.072
-V  4  Cnt1500.0   In  Adj    1.30
- PR:   0.532  0.468
- FR:   0.548  0.452
- BP:   0.855 -0.855 +-  0.045
-V  5  Cnt1500.0   In  Adj    1.30
- PR:   0.481  0.519
- FR:   0.466  0.534
- BP:  -1.393  1.393 +-  0.070
-V  6  Cnt1500.0   In  Adj    1.30
- PR:   0.355  0.645
- FR:   0.289  0.711
- BP:   0.777 -0.777 +-  0.040
-V  7  Cnt1500.0   In
- S: Cost  9099.1  Mu   0.040  SD   1.021
- F: Cost  7292.5  Mu   0.040  SD   0.310  Ld   0.896
-V  8  Cnt1500.0   In
- S: Cost  9098.8  Mu  -0.037  SD   1.045
- F: Cost  7290.9  Mu  -0.037  SD   0.309  Ld  -0.896
-
-S    3  LEAF Dad    1  Age 122  Sz1500.0  Use Fac Vv  1.06  +-0.211 Avv-0.004 
-Pcosts  S:    45.30  F:    94.44  D:     0.00  B:    94.44
-Tcosts  S: 25825.60  F: 21134.36  D:     0.00  B: 23593.07
-Vcost     ---------  F:  2458.70
-totals  S: 25870.90  F: 23687.50  D:     0.00  B: 23687.50
-V  1  Cnt1500.0   In  Adj    0.64
- PR:   0.799  0.102  0.099
- FR:   0.800  0.102  0.099
- BP:  -0.055  0.029  0.026 +-  0.047
-V  2  Cnt1500.0   In  Adj    1.30
- PR:   0.349  0.272  0.380
- FR:   0.353  0.262  0.385
- BP:  -0.537  1.076 -0.539 +-  0.048
-V  3  Cnt1500.0   In  Adj    0.33
- PR:   0.112  0.096  0.792
- FR:   0.112  0.095  0.793
- BP:   0.010 -0.012  0.002 +-  0.046
-V  4  Cnt1500.0   In  Adj    0.30
- PR:   0.293  0.707
- FR:   0.292  0.708
- BP:   0.050 -0.050 +-  0.027
-V  5  Cnt1500.0   In  Adj    1.30
- PR:   0.519  0.481
- FR:   0.545  0.455
- BP:   1.417 -1.417 +-  0.072
-V  6  Cnt1500.0   In  Adj    0.30
- PR:   0.505  0.495
- FR:   0.504  0.496
- BP:  -0.022  0.022 +-  0.024
-V  7  Cnt1500.0   In
- S: Cost  9117.5  Mu   9.962  SD   1.084
- F: Cost  7239.1  Mu   9.958  SD   0.299  Ld  -0.927
-V  8  Cnt1500.0   In
- S: Cost  9122.2  Mu  10.030  SD   1.014
- F: Cost  7175.6  Mu  10.034  SD   0.287  Ld   0.933
-
---------------------------------------------------------------------------------
-P3     3 classes,    2 leaves,  Pcost   210.4  Tcost   47258.1,  Cost   47468.5
-Sample  1 Spec_s6m2r2c__000000002222
---------------------------------------------------------------------------------
        id        v1        v2        v3        v4        v5        v6        v7        v8 
      1001         1         1         1         1         2         1      3.59     -3.59 
      1002         2         1         1         1         2         1      3.21     -3.39 
@@ -335,5 +20,774 @@ Sample  1 Spec_s6m2r2c__000000002222
      3500         1         3         3         2         2         1        13      7.33 
 [3000 items x 8 attributes]
 
-CPU Time:          2.432 s
-Elapsed Time:      2.437 s
+ll.la
+S    1  LEAF    Root Age   5  Sz3000.0  Use Pln(Vv  0.00  +-1.000 Avv 0.000)
+Pcosts  S:    46.52  F:   846.52  D:     0.00  B:    46.52
+Tcosts  S: 61277.32  F: 91283.24  D:     0.00  B: 61277.32
+Vcost     ---------  F:     0.00
+totals  S: 61323.84  F: 92129.76  D:     0.00  B: 61323.84
+
+
+
+================================================================================
+Cycle 1 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa...
+Changing type of class    1  from Leaf to Dad
+AAAA.AA...
+Changing type of class    2  from Leaf to Dad
+Changing type of class    3  from Leaf to Dad
+aAAA.AA...
+Changing type of class    4  from Leaf to Dad
+Changing type of class    5  from Leaf to Dad
+Changing type of class    6  from Leaf to Dad
+Changing type of class    7  from Leaf to Dad
+aAAA.AA...
+Changing type of class    9  from Leaf to Dad
+Changing type of class   10  from Leaf to Dad
+Changing type of class   13  from Leaf to Dad
+Changing type of class   15  from Leaf to Dad
+aAAA.AA......
+Changing type of class   19  from Leaf to Dad
+aAA
+Attempting class moves until 4 successive failures
+aAdDdDddddddDDDDddddddDDDDdddddDDDDdddddDDDDdddddDddddddDDDddddddDDDdddddDDDDddd
+ddDdDDdddddDDdDdddddDdDddddddDDDdddddDddddddDDDDddddddDDDDdddddDdDddddddDDdddddd
+DDdddddDdDdddddDddddddDdDdddddDddddddDDDDDddddddDDDDdddddDddDddddddDDDddddddDDDd
+ddddDddddddDDddddddDDDDddddddDDDDdddddDddddddDDddddddDDdddddddDddddddDDdddddDddd
+dddDDddddddDDDDddddddDDDDdddddDddddddDDddddddDDdddddddDddddddDDdddddDdddddDddddd
+DdddddDdddddDdddddDdddddddddDdddddDdddddDdddddDdddddDdddddDddddddDdDdddddDddDddd
+dddDdDddddddDdDdddddDddddddDdDddddddDdDdddddDDdDdddddDdddddDddddddDDDdddddDddDdd
+dddDdDDDdddddDdDDDdddddDdDdDddddddDDDDdddddDDDDdddddDdddddDdddddDdddddDdddddDddd
+ddDdddddddddDdddddDdddddDdddddddddDDdddddDdddddDDdddddDdddddDdddddDDdddddDDddddd
+DdddddDDdddddDDdddddDDdddddDddDddddddDdddddDddddddDddddddDdddddDddddddDddddddDdd
+dddDDddddddDdddddDDdddddDdddddDDdddddDdddddDDdddddDDdddddDDdddddDdddddDDdddddDDd
+ddddDDdddddDddDddddddDdddddDddddddDddddddDdddddDddddddDddddddDdddddDDddddddDdddd
+dDdddddDdddddDdddddddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdd
+dddddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddD
+dddddDdddddddddDdddddDdddddDdddddDdddddDddddddDdddddDdddddDddddddDddddddDdddddDD
+ddddddDddddddDdddddDdddddDdddddDdddddDdddddDdddddDDdddddDdddddDDdddddDdddddDdddd
+dDDdddddDdddddDdddddDdddddDdddddDdddddDDdddddDdddddDDdddddDdddddDdddddDDdddddDdd
+dddDdddddDdddddDdddddDdddddDdddddDDdddddDDdddddDdddddDdddddDDdddddDdddddDdddddDd
+ddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDddd
+ddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDdddddDddddd
+ddddddddDdddddDdddd
+TRYING MOVE CLASS      5 TO DAD      9
+dDddDddddLLlAAAA
+Changing type of class    3  from Dad to Leaf
+Aa
+ACCEPTED !!!
+Popln  3 on sample  1,  14 classes,  3000 things  Cost   47936.15
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
+       2  Dad       Scan    1500 RelAb 0.500  Size  1500.0
+          8 Leaf       Scan     725 RelAb 0.136  Size   407.8
+          9  Dad   Fac Scan     513 RelAb 0.364  Size  1092.2
+             5  Dad       Scan     900 RelAb 0.234  Size   703.7
+               10  Dad       Scan     438 RelAb 0.113  Size   341.0
+                  18 Leaf       Scan     384 RelAb 0.070  Size   211.9
+                  19  Dad       Scan     255 RelAb 0.043  Size   129.0
+                     24 Leaf       Scan     249 RelAb 0.007  Size    21.1
+                     25 Leaf       Scan     240 RelAb 0.036  Size   107.9
+               11 Leaf       Scan     721 RelAb 0.121  Size   362.8
+            16 Leaf       Scan     235 RelAb 0.037  Size   111.0
+            17 Leaf       Scan     470 RelAb 0.093  Size   277.4
+       3 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
+aAdDdDdddddDdddddDdddddDdddddDdddddddddDDDDdddddDdDdddddDddDdddddDddDdddddDddddd
+DDDDdddddDdDDdddddDddDdddddDddDdddddDddddddDDDddddddDDdddddddddddDdddddDdDdddddD
+ddDdddddDddDdddddDdDdddddDddddddddddDdddddDdDdddddDDdddddDDdddddDdDDdddddDddDddd
+ddDdDdddddDdddddDdddddDdDDdddddDdDdddddddDdddddDdddddddddDDDddddDDDddddDdDDddddD
+dDddddddddDDdDDdddddDdDDdddddDddDDdddddDdDdDdddddDdDDdddd
+TRYING MOVE CLASS      8 TO DAD      5
+dDddddLLLAAAAAA
+ACCEPTED !!!
+Popln  1 on sample  1,  13 classes,  3000 things  Cost   47805.13
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
+       2  Dad   Fac Scan    1500 RelAb 0.500  Size  1500.0
+          5  Dad       Scan     900 RelAb 0.369  Size  1107.9
+             8 Leaf       Scan     725 RelAb 0.134  Size   401.3
+            10  Dad       Scan     438 RelAb 0.117  Size   350.8
+               18 Leaf       Scan     384 RelAb 0.072  Size   217.6
+               19  Dad       Scan     255 RelAb 0.044  Size   133.2
+                  24 Leaf       Scan     249 RelAb 0.007  Size    21.3
+                  25 Leaf       Scan     240 RelAb 0.037  Size   111.8
+            11 Leaf       Scan     721 RelAb 0.119  Size   355.9
+         16 Leaf       Scan     235 RelAb 0.038  Size   114.9
+         17 Leaf       Scan     470 RelAb 0.092  Size   277.2
+       3 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
+aAdDdDdddddddDdddddDdDddddddddddDDdddddDdDddddddDDdddddDdddddDdDdddddDdddddDdddd
+ddDdddddddddDDdddddDdddddDdDdddddDdddddDdddddDdDdddddDdddddDdddddddddDdDdddddddd
+dddddddddDDDDdddddDddDdddddDddDdddddDdddddDdDDdddddDddDdddddDddDdddddDddDdddddDd
+DdddddDddDdddddDddDdddddDDDdddd
+TRYING MOVE CLASS     18 TO DAD      5
+dDddddLLLAAAAAA
+ACCEPTED !!!
+Popln  3 on sample  1,  12 classes,  3000 things  Cost   47765.13
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
+       2  Dad   Fac Scan    1500 RelAb 0.500  Size  1500.0
+          5  Dad       Scan     900 RelAb 0.369  Size  1106.2
+             8 Leaf       Scan     725 RelAb 0.132  Size   397.5
+            10  Dad       Scan     438 RelAb 0.045  Size   135.1
+               24 Leaf       Scan     249 RelAb 0.007  Size    21.3
+               25 Leaf       Scan     240 RelAb 0.038  Size   113.7
+            11 Leaf       Scan     721 RelAb 0.117  Size   351.0
+            18 Leaf       Scan     384 RelAb 0.074  Size   222.6
+         16 Leaf       Scan     235 RelAb 0.039  Size   117.1
+         17 Leaf       Scan     470 RelAb 0.092  Size   276.7
+       3 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
+aAdDDdddddDDDddddDdDddddddddddDDddddDdDdddddDdDddddDddDddddDdddddddDdddddddddddd
+dddDdddddddddddddDDDddddDddDdddddddddDDDdddddDdDdddddDdddddDDDddddDdddddddDddddd
+DdddddDdDdddddDDdddd
+TRYING MOVE CLASS      3 TO DAD      2
+dDddddLLLAAAAAA
+ACCEPTED !!!
+Popln  1 on sample  1,  11 classes,  3000 things  Cost   47743.70
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
+       3 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
+       5  Dad       Scan     900 RelAb 0.368  Size  1105.5
+          8 Leaf       Scan     725 RelAb 0.132  Size   395.3
+         10  Dad       Scan     438 RelAb 0.045  Size   136.0
+            24 Leaf       Scan     249 RelAb 0.007  Size    21.4
+            25 Leaf       Scan     240 RelAb 0.038  Size   114.7
+         11 Leaf       Scan     721 RelAb 0.116  Size   349.5
+         18 Leaf       Scan     384 RelAb 0.075  Size   224.6
+      16 Leaf       Scan     235 RelAb 0.040  Size   118.2
+      17 Leaf       Scan     470 RelAb 0.092  Size   276.3
+aADddddDddddDdDddddddddddddddddddddDddddDddddDddddDdddddDdDdddddDddddDddddDddddd
+DdDdddddDdddd
+TRYING MOVE CLASS     17 TO DAD      5
+DddddLLLAAAAAA
+ACCEPTED !!!
+Popln  3 on sample  1,  11 classes,  3000 things  Cost   47730.88
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
+       3 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
+       5  Dad       Scan     900 RelAb 0.460  Size  1378.6
+          8 Leaf       Scan     725 RelAb 0.131  Size   394.0
+         10  Dad       Scan     438 RelAb 0.046  Size   136.5
+            24 Leaf       Scan     249 RelAb 0.007  Size    21.4
+            25 Leaf       Scan     240 RelAb 0.038  Size   115.2
+         11 Leaf       Scan     721 RelAb 0.116  Size   348.5
+         17 Leaf       Scan     470 RelAb 0.091  Size   273.5
+         18 Leaf       Scan     384 RelAb 0.075  Size   226.1
+      16 Leaf       Scan     235 RelAb 0.041  Size   121.4
+aAdDdDdddddDddddDDddddDddddDddddddddDddddddddddddDDddddDddddDddddDddddDDdDddddDD
+ddddDDDddddDdddd
+TRYING MOVE CLASS     16 TO DAD      5
+DDdDddddLLLaaaAAA
+ACCEPTED !!!
+Popln  1 on sample  1,  11 classes,  3000 things  Cost   47721.76
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
+       3 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
+       5  Dad       Scan     900 RelAb 0.500  Size  1500.0
+          8 Leaf       Scan     725 RelAb 0.131  Size   392.4
+         10  Dad       Scan     438 RelAb 0.046  Size   136.8
+            24 Leaf       Scan     249 RelAb 0.007  Size    21.5
+            25 Leaf       Scan     240 RelAb 0.038  Size   115.4
+         11 Leaf       Scan     721 RelAb 0.116  Size   348.8
+         16 Leaf       Scan     235 RelAb 0.040  Size   120.8
+         17 Leaf       Scan     470 RelAb 0.092  Size   275.0
+         18 Leaf       Scan     384 RelAb 0.075  Size   226.2
+aAdDDdddddDddddDDddddDddddDddddddddDddddddddddddDDddddDddddDDDddddDddddDDddddDdd
+dddDDddddDDdddd
+TRYING MOVE CLASS     16 TO DAD      1
+dDDddddLLLaAAAAA
+ACCEPTED !!!
+Popln  3 on sample  1,  11 classes,  3000 things  Cost   47713.30
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
+       3 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
+       5  Dad       Scan     900 RelAb 0.459  Size  1377.4
+          8 Leaf       Scan     725 RelAb 0.131  Size   392.0
+         10  Dad       Scan     438 RelAb 0.046  Size   136.9
+            24 Leaf       Scan     249 RelAb 0.007  Size    21.4
+            25 Leaf       Scan     240 RelAb 0.038  Size   115.5
+         11 Leaf       Scan     721 RelAb 0.116  Size   348.0
+         17 Leaf       Scan     470 RelAb 0.091  Size   273.7
+         18 Leaf       Scan     384 RelAb 0.076  Size   226.7
+      16 Leaf       Scan     235 RelAb 0.041  Size   122.6
+aadDdDdddddDddddDDddddDddddDddddddddDddddddddddddDDddddDddddDDdDddddDDddddDDDddd
+dDddddDddddDdddd
+TRYING MOVE CLASS     16 TO DAD      5
+DDdDddddLLLaaaaaA
+ACCEPTED !!!
+Popln  1 on sample  1,  11 classes,  3000 things  Cost   47709.52
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
+       3 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
+       5  Dad       Scan     900 RelAb 0.500  Size  1500.0
+          8 Leaf       Scan     725 RelAb 0.130  Size   391.5
+         10  Dad       Scan     438 RelAb 0.046  Size   137.0
+            24 Leaf       Scan     249 RelAb 0.007  Size    21.5
+            25 Leaf       Scan     240 RelAb 0.038  Size   115.5
+         11 Leaf       Scan     721 RelAb 0.116  Size   348.3
+         16 Leaf       Scan     235 RelAb 0.041  Size   121.5
+         17 Leaf       Scan     470 RelAb 0.092  Size   275.1
+         18 Leaf       Scan     384 RelAb 0.076  Size   226.5
+aAdDDdddddDddddDDddddDddddDddddddddDddddddddddddDDddddDddddDDDddddDddddDDddddDdd
+dddDDddddDDdddd
+TRYING MOVE CLASS     16 TO DAD      1
+dDDddddLLLaaAAAA
+ACCEPTED !!!
+Popln  3 on sample  1,  11 classes,  3000 things  Cost   47704.43
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
+       3 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
+       5  Dad       Scan     900 RelAb 0.459  Size  1377.0
+          8 Leaf       Scan     725 RelAb 0.130  Size   391.6
+         10  Dad       Scan     438 RelAb 0.046  Size   137.0
+            24 Leaf       Scan     249 RelAb 0.007  Size    21.4
+            25 Leaf       Scan     240 RelAb 0.038  Size   115.6
+         11 Leaf       Scan     721 RelAb 0.116  Size   347.8
+         17 Leaf       Scan     470 RelAb 0.091  Size   273.8
+         18 Leaf       Scan     384 RelAb 0.076  Size   226.8
+      16 Leaf       Scan     235 RelAb 0.041  Size   123.0
+aadDdDdddddDddddDDddddDddddDddddddddDddddddddddddDDddddDddddDDdDddddDDddddDDDddd
+dDddddDddddDdddd
+TRYING MOVE CLASS     16 TO DAD      5
+DDdDddddLLLaaaaaA
+ACCEPTED !!!
+Popln  1 on sample  1,  11 classes,  3000 things  Cost   47702.98
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
+       3 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
+       5  Dad       Scan     900 RelAb 0.500  Size  1500.0
+          8 Leaf       Scan     725 RelAb 0.130  Size   391.3
+         10  Dad       Scan     438 RelAb 0.046  Size   137.1
+            24 Leaf       Scan     249 RelAb 0.007  Size    21.5
+            25 Leaf       Scan     240 RelAb 0.038  Size   115.6
+         11 Leaf       Scan     721 RelAb 0.116  Size   348.2
+         16 Leaf       Scan     235 RelAb 0.041  Size   121.8
+         17 Leaf       Scan     470 RelAb 0.092  Size   275.1
+         18 Leaf       Scan     384 RelAb 0.076  Size   226.6
+aAdDDdddddDddddDDddddDddddDddddddddDddddddddddddDDddddDddddDDDddddDddddDDddddDdd
+dddDDddddDDdddd
+TRYING MOVE CLASS     16 TO DAD      1
+dDDddddLLLaaAAAA
+ACCEPTED !!!
+Popln  3 on sample  1,  11 classes,  3000 things  Cost   47699.50
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
+       3 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
+       5  Dad       Scan     900 RelAb 0.459  Size  1376.8
+          8 Leaf       Scan     725 RelAb 0.130  Size   391.5
+         10  Dad       Scan     438 RelAb 0.046  Size   137.0
+            24 Leaf       Scan     249 RelAb 0.007  Size    21.4
+            25 Leaf       Scan     240 RelAb 0.038  Size   115.6
+         11 Leaf       Scan     721 RelAb 0.116  Size   347.7
+         17 Leaf       Scan     470 RelAb 0.091  Size   273.8
+         18 Leaf       Scan     384 RelAb 0.076  Size   226.8
+      16 Leaf       Scan     235 RelAb 0.041  Size   123.2
+aadDdDdddddDddddDDddddDddddDddddddddDddddddddddddDDddddDddddDDdDddddDDddddDDDddd
+dDddddDddddDdddd
+TRYING MOVE CLASS     16 TO DAD      5
+DDdDddddLLlaaaaaa
+ACCEPTED !!!
+Popln  1 on sample  1,  11 classes,  3000 things  Cost   47699.23
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
+       3 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
+       5  Dad   Fac Scan     900 RelAb 0.500  Size  1500.0
+          8 Leaf       Scan     725 RelAb 0.130  Size   391.2
+         10  Dad       Scan     438 RelAb 0.046  Size   137.1
+            24 Leaf       Scan     249 RelAb 0.007  Size    21.5
+            25 Leaf       Scan     240 RelAb 0.038  Size   115.6
+         11 Leaf       Scan     721 RelAb 0.116  Size   348.2
+         16 Leaf       Scan     235 RelAb 0.041  Size   121.8
+         17 Leaf       Scan     470 RelAb 0.092  Size   275.1
+         18 Leaf       Scan     384 RelAb 0.076  Size   226.6
+aAdDDdddddDddddDDddddDddddDddddddddDddddddddddddDDddddDddddDDDddddDddddDDddddDdd
+dddDDddddDDdddd
+TRYING MOVE CLASS     16 TO DAD      1
+dDDddddLlLaaAAAA
+ACCEPTED !!!
+Popln  3 on sample  1,  11 classes,  3000 things  Cost   47696.64
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
+       3 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
+       5  Dad   Fac Scan     900 RelAb 0.459  Size  1376.8
+          8 Leaf       Scan     725 RelAb 0.130  Size   391.5
+         10  Dad       Scan     438 RelAb 0.046  Size   137.0
+            24 Leaf       Scan     249 RelAb 0.007  Size    21.4
+            25 Leaf       Scan     240 RelAb 0.038  Size   115.6
+         11 Leaf       Scan     721 RelAb 0.116  Size   347.7
+         17 Leaf       Scan     470 RelAb 0.091  Size   273.8
+         18 Leaf       Scan     384 RelAb 0.076  Size   226.8
+      16 Leaf       Scan     235 RelAb 0.041  Size   123.2
+aadDdDdddddDddddDDddddDddddDddddddddDddddddddddddDDddddDddddDDdDddddDDddddDDDddd
+dDddddDddddDdddd
+TRYING MOVE CLASS     16 TO DAD      5
+DDdDddddLLlaaaaaa
+Failed ******
+AdDdDdddddDddddDDddddDddddDddddddddDddddddddddddDDddddDdddd
+Badmove rejects Move     16      5
+DDddddDDDddddDddddDddddDdddd
+TRYING MOVE CLASS     16 TO DAD     10
+DDddddLLlAaaaaa
+Failed ******
+AdDdDdddddDddddDDddddDddddDddddddddDddddddddddddDDddddDdddd
+Badmove rejects Move     16      5
+Badmove rejects Move     16     10
+DDDddddDddddDddddDdddd
+TRYING MOVE CLASS     17 TO DAD      1
+DDDddddLLLaaAAAA
+ACCEPTED !!!
+Popln  1 on sample  1,  11 classes,  3000 things  Cost   47693.54
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
+       3 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
+       5  Dad   Fac Scan     900 RelAb 0.367  Size  1102.0
+          8 Leaf       Scan     725 RelAb 0.130  Size   390.8
+         10  Dad       Scan     438 RelAb 0.046  Size   137.1
+            24 Leaf       Scan     249 RelAb 0.007  Size    21.4
+            25 Leaf       Scan     240 RelAb 0.039  Size   115.7
+         11 Leaf       Scan     721 RelAb 0.116  Size   347.4
+         18 Leaf       Scan     384 RelAb 0.076  Size   226.8
+      16 Leaf       Scan     235 RelAb 0.041  Size   121.6
+      17 Leaf       Scan     470 RelAb 0.092  Size   276.4
+aadDdDdddddDddddDddddDddddDdDddddddddddddddddddddDddddDddddDddddDddddDddddDddddD
+DdDdddddDdddd
+TRYING MOVE CLASS     17 TO DAD      5
+DddddLLLaaaaaA
+Failed ******
+AdDdDdddddDddddDddddDddddDdDddddddddddddddddddddDddddDdddd
+Badmove rejects Move     17      5
+DddddDddddDddddDDdDdddddDdddd
+TRYING MOVE CLASS     16 TO DAD      5
+DDdDddddLLlaaaaaa
+Failed ******
+AdDdDdddddDddddDddddDddddDdDddddddddddddddddddddDddddDdddd
+Badmove rejects Move     17      5
+DddddDddddDdddd
+Badmove rejects Move     16      5
+dDdddd
+TRYING MOVE CLASS      8 TO DAD      1
+DddddLLLaAaaAA
+ACCEPTED !!!
+Popln  3 on sample  1,  11 classes,  3000 things  Cost   47693.29
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
+       3 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
+       5  Dad       Scan     900 RelAb 0.237  Size   710.8
+         10  Dad       Scan     438 RelAb 0.046  Size   136.9
+            24 Leaf       Scan     249 RelAb 0.007  Size    21.4
+            25 Leaf       Scan     240 RelAb 0.038  Size   115.5
+         11 Leaf       Scan     721 RelAb 0.116  Size   347.8
+         18 Leaf       Scan     384 RelAb 0.075  Size   226.0
+       8 Leaf       Scan     725 RelAb 0.131  Size   392.7
+      16 Leaf       Scan     235 RelAb 0.040  Size   120.7
+      17 Leaf       Scan     470 RelAb 0.092  Size   275.8
+aAdDdDdddddDddddDDddddDddddDdDddddDddddddddddddddddDddDddddDddddDddDddddDdddddDd
+DdddddDddddDddddDdddd
+TRYING MOVE CLASS      8 TO DAD      5
+DDddddLLLaaaAAA
+ACCEPTED !!!
+Popln  1 on sample  1,  11 classes,  3000 things  Cost   47691.91
+
+  Assign mode Partial    --- Adjust: Params Scores Tree
+    1  Dad   Fac Scan    3000 RelAb 1.000  Size  3000.0
+       3 Leaf   Fac Scan    1500 RelAb 0.500  Size  1500.0
+       5  Dad   Fac Scan     900 RelAb 0.368  Size  1103.0
+          8 Leaf       Scan     725 RelAb 0.131  Size   391.9
+         10  Dad       Scan     438 RelAb 0.046  Size   136.9
+            24 Leaf       Scan     249 RelAb 0.007  Size    21.4
+            25 Leaf       Scan     240 RelAb 0.038  Size   115.5
+         11 Leaf       Scan     721 RelAb 0.116  Size   348.1
+         18 Leaf       Scan     384 RelAb 0.075  Size   226.1
+      16 Leaf       Scan     235 RelAb 0.040  Size   120.4
+      17 Leaf       Scan     470 RelAb 0.092  Size   276.6
+aadDdDdddddDddddDdDddddddddddddddddddddDddddDddddDddddDddddDddddDddddDDdDdddddDd
+dddDddddDdddd
+TRYING MOVE CLASS     17 TO DAD      5
+DddddLLLaaaaaA
+Failed ******
+AdDdDdddddDddddDdDddddddddddddddddddddDddddDddddDddddDddddDddddDddddDDdDdddddDdd
+dd
+Badmove rejects Move     17      5
+Ddddd
+TRYING MOVE CLASS     16 TO DAD      5
+DDdDddddLLlaaaaaa
+Failed ******
+AdDdDdddddDddddDdDddddddddddddddddddddDddddDddddDddddDddddDddddDdddd
+Badmove rejects Move     16      5
+dDdddd
+Badmove rejects Move     17      5
+Ddddd
+TRYING MOVE CLASS      8 TO DAD      1
+DddddLLlaAaaaa
+Failed ******
+AdDdDdddddDddddDdDddddddddddddddddddddDddddDddddDddddDdddd
+Badmove rejects Move      8      1
+Ddddd
+Badmove rejects Move     16      5
+dDdddd
+Badmove rejects Move     17      5
+Ddddd
+TRYING MOVE CLASS     17 TO DAD     10
+DddddLLLAaaaaA
+Failed ******
+A
+Cost dropped by    0.000%
+--------------------------------------------------------------------------------
+P1    11 classes,    8 leaves,  Pcost   410.3  Tcost   47281.3,  Cost   47691.6
+Sample  1 Spec_s6m2r2c__000000002222
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 2 | 50 steps of costing, assignment and adjustments
+================================================================================
+aA........A
+Changing type of class    5  from Dad to Leaf
+Aaaa.....aa........aa
+Attempting class moves until 4 successive failures
+aa
+No possible class move
+Cost dropped by   22.230%
+--------------------------------------------------------------------------------
+P1     5 classes,    4 leaves,  Pcost   291.5  Tcost   47359.9,  Cost   47651.5
+Sample  1 Spec_s6m2r2c__000000002222
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 3 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........a
+Attempting class moves until 4 successive failures
+aa
+No possible class move
+Cost dropped by    0.084%
+--------------------------------------------------------------------------------
+P1     5 classes,    4 leaves,  Pcost   289.4  Tcost   47385.2,  Cost   47674.7
+Sample  1 Spec_s6m2r2c__000000002222
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 4 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aa........aa........a
+Attempting class moves until 4 successive failures
+AA
+No possible class move
+Cost dropped by    0.049%
+--------------------------------------------------------------------------------
+P1     5 classes,    4 leaves,  Pcost   285.5  Tcost   47407.4,  Cost   47692.9
+Sample  1 Spec_s6m2r2c__000000002222
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 5 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........AA........AA........AA........AA.AA...AAa
+Attempting class moves until 4 successive failures
+AA
+No possible class move
+a
+Cost dropped by    0.038%
+--------------------------------------------------------------------------------
+P1     5 classes,    4 leaves,  Pcost   281.8  Tcost   47360.1,  Cost   47641.9
+Sample  1 Spec_s6m2r2c__000000002222
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 6 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........AA...AA...AA.......AAAA......AAA....Aaaa
+Attempting class moves until 4 successive failures
+Aa
+No possible class move
+Cost dropped by    0.107%
+--------------------------------------------------------------------------------
+P1     5 classes,    4 leaves,  Pcost   276.0  Tcost   47336.2,  Cost   47612.3
+Sample  1 Spec_s6m2r2c__000000002222
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 7 | 50 steps of costing, assignment and adjustments
+================================================================================
+aa........aaaaAa....aa..aA....AA.Aa.....AA......AAa
+Attempting class moves until 4 successive failures
+AA
+Model has only 3 class
+No possible class move
+a
+Cost dropped by    0.062%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   213.2  Tcost   47318.1,  Cost   47531.2
+Sample  1 Spec_s6m2r2c__000000002222
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 8 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........AA........AA........AA........AA......AAA
+Attempting class moves until 4 successive failures
+AA
+Model has only 3 class
+No possible class move
+A
+Cost dropped by    0.170%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   214.3  Tcost   47268.6,  Cost   47483.0
+Sample  1 Spec_s6m2r2c__000000002222
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 9 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........AA........AA........AA........AA......AAA
+Attempting class moves until 4 successive failures
+AA
+Model has only 3 class
+No possible class move
+A
+Cost dropped by    0.102%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   214.9  Tcost   47245.5,  Cost   47460.4
+Sample  1 Spec_s6m2r2c__000000002222
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 10 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........AA........AA........AA........AA......AAa
+Attempting class moves until 4 successive failures
+AA
+Model has only 3 class
+No possible class move
+a
+Cost dropped by    0.047%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   215.4  Tcost   47226.5,  Cost   47441.9
+Sample  1 Spec_s6m2r2c__000000002222
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 11 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........AA........AA........AA........AA......AAA
+Attempting class moves until 4 successive failures
+AA
+Model has only 3 class
+No possible class move
+A
+Cost dropped by    0.039%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   215.7  Tcost   47218.5,  Cost   47434.2
+Sample  1 Spec_s6m2r2c__000000002222
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 12 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........AA........AA........AA........AA......AAa
+Attempting class moves until 4 successive failures
+AA
+Model has only 3 class
+No possible class move
+a
+Cost dropped by    0.016%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   216.0  Tcost   47212.9,  Cost   47428.9
+Sample  1 Spec_s6m2r2c__000000002222
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 13 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........AA........AA........AA........AA......AAa
+Attempting class moves until 4 successive failures
+AA
+Model has only 3 class
+No possible class move
+a
+Cost dropped by    0.011%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   216.1  Tcost   47210.9,  Cost   47427.0
+Sample  1 Spec_s6m2r2c__000000002222
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 14 | 50 steps of costing, assignment and adjustments
+================================================================================
+AA........AA........AA........AA........AA......Aaa
+Attempting class moves until 4 successive failures
+AA
+Model has only 3 class
+No possible class move
+a
+Cost dropped by    0.004%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   216.1  Tcost   47210.0,  Cost   47426.1
+Sample  1 Spec_s6m2r2c__000000002222
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Cycle 15 | 50 steps of costing, assignment and adjustments
+================================================================================
+aA........Aa........AA........Aa........Aa......Aaa
+Attempting class moves until 4 successive failures
+aa
+Model has only 3 class
+No possible class move
+a
+Cost dropped by    0.002%
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   216.2  Tcost   47209.5,  Cost   47425.7
+Sample  1 Spec_s6m2r2c__000000002222
+--------------------------------------------------------------------------------
+Classification converged after 15 cycles
+
+S    1   DAD    Root Age 832  Sz3000.0  Use Fac Vv  0.99  +-0.152 Avv-0.001    2 sons
+Pcosts  S:    46.52  F:   111.81  D:   216.19  B:   216.19
+Tcosts  S: 61277.32  F: 51891.42  D: 47209.49  B: 47209.49
+Vcost     ---------  F:  5677.79
+totals  S: 61323.84  F: 57681.02  D: 47425.68  B: 47425.68
+V  1  Cnt3000.0   In  Adj    0.30
+ NR:   0.414  0.293  0.294 +-  1.042
+ PR:   0.582  0.185  0.233
+ FR:   0.628  0.166  0.207
+ BP:  -0.582  0.255  0.327 +-  0.028
+V  2  Cnt3000.0   In  Adj    0.33
+ NR:   0.331  0.344  0.325 +-  0.697
+ PR:   0.311  0.380  0.309
+ FR:   0.311  0.382  0.308
+ BP:  -0.035  0.264 -0.230 +-  0.025
+V  3  Cnt3000.0   In  Adj    0.36
+ NR:   0.290  0.324  0.386 +-  1.035
+ PR:   0.222  0.228  0.550
+ FR:   0.185  0.189  0.626
+ BP:   0.393  0.405 -0.798 +-  0.029
+V  4  Cnt3000.0   In  Adj    0.44
+ NR:   0.468  0.532 +-  0.842
+ PR:   0.412  0.588
+ FR:   0.405  0.595
+ BP:   0.293 -0.293 +-  0.019
+V  5  Cnt3000.0   In  Adj    0.48
+ NR:   0.506  0.494 +-  0.668
+ PR:   0.500  0.500
+ FR:   0.500  0.500
+ BP:  -0.139  0.139 +-  0.019
+V  6  Cnt3000.0   In  Adj    0.33
+ NR:   0.458  0.542 +-  0.869
+ PR:   0.430  0.570
+ FR:   0.429  0.571
+ BP:  -0.113  0.113 +-  0.019
+V  7  Cnt3000.0   In
+ N: Cost     3.6  Mu   4.999+-   5.310  SD   0.843+-   0.894
+ S: Cost 22950.5  Mu   5.001  SD   5.069
+ F: Cost 19921.9  Mu   4.996  SD   1.844  Ld  -4.695
+V  8  Cnt3000.0   In
+ N: Cost     3.7  Mu   4.999+-   5.389  SD   0.844+-   0.909
+ S: Cost 22992.9  Mu   4.996  SD   5.141
+ F: Cost 17585.8  Mu   4.991  SD   0.846  Ld  -5.042
+
+S    3  LEAF Dad    1  Age 872  Sz1500.0  Use Fac Vv  0.99  +-0.200 Avv-0.001 
+Pcosts  S:    45.01  F:    97.27  D:     0.00  B:    97.27
+Tcosts  S: 27121.54  F: 21220.52  D:     0.00  B: 23650.33
+Vcost     ---------  F:  2429.81
+totals  S: 27166.55  F: 23747.60  D:     0.00  B: 23747.60
+V  1  Cnt1500.0   In  Adj    0.33
+ PR:   0.365  0.267  0.368
+ FR:   0.377  0.246  0.377
+ BP:  -0.911  0.046  0.865 +-  0.050
+V  2  Cnt1500.0   In  Adj    0.30
+ PR:   0.273  0.488  0.238
+ FR:   0.301  0.450  0.249
+ BP:  -1.054  0.019  1.035 +-  0.054
+V  3  Cnt1500.0   In  Adj    0.30
+ PR:   0.333  0.361  0.307
+ FR:   0.426  0.183  0.390
+ BP:  -1.824 -0.082  1.907 +-  0.082
+V  4  Cnt1500.0   In  Adj    0.30
+ PR:   0.532  0.468
+ FR:   0.549  0.451
+ BP:  -0.970  0.970 +-  0.051
+V  5  Cnt1500.0   In  Adj    0.36
+ PR:   0.481  0.519
+ FR:   0.462  0.538
+ BP:   1.933 -1.933 +-  0.101
+V  6  Cnt1500.0   In  Adj    0.33
+ PR:   0.355  0.645
+ FR:   0.284  0.716
+ BP:  -0.880  0.880 +-  0.045
+V  7  Cnt1500.0   In
+ S: Cost  9099.0  Mu   0.040  SD   1.025
+ F: Cost  7292.2  Mu   0.040  SD   0.310  Ld  -0.976
+V  8  Cnt1500.0   In
+ S: Cost  9098.9  Mu  -0.037  SD   1.048
+ F: Cost  7302.8  Mu  -0.037  SD   0.312  Ld   0.975
+
+S    5  LEAF Dad    1  Age 817  Sz1500.0  Use Fac Vv  0.99  +-0.196 Avv 0.007 
+Pcosts  S:    45.39  F:    97.03  D:     0.00  B:    97.03
+Tcosts  S: 25822.32  F: 21109.27  D:     0.00  B: 23570.30
+Vcost     ---------  F:  2461.03
+totals  S: 25867.71  F: 23667.34  D:     0.00  B: 23667.34
+V  1  Cnt1500.0   In  Adj    0.30
+ PR:   0.799  0.102  0.099
+ FR:   0.800  0.102  0.098
+ BP:   0.060 -0.031 -0.029 +-  0.050
+V  2  Cnt1500.0   In  Adj    0.33
+ PR:   0.349  0.272  0.380
+ FR:   0.347  0.275  0.378
+ BP:   0.587 -1.176  0.589 +-  0.052
+V  3  Cnt1500.0   In  Adj    0.33
+ PR:   0.112  0.096  0.792
+ FR:   0.112  0.095  0.793
+ BP:  -0.012  0.014 -0.002 +-  0.050
+V  4  Cnt1500.0   In  Adj    0.33
+ PR:   0.293  0.707
+ FR:   0.292  0.708
+ BP:  -0.055  0.055 +-  0.029
+V  5  Cnt1500.0   In  Adj    0.33
+ PR:   0.519  0.481
+ FR:   0.565  0.435
+ BP:  -2.017  2.017 +-  0.107
+V  6  Cnt1500.0   In  Adj    0.30
+ PR:   0.505  0.495
+ FR:   0.505  0.495
+ BP:   0.024 -0.024 +-  0.026
+V  7  Cnt1500.0   In
+ S: Cost  9116.0  Mu   9.962  SD   1.059
+ F: Cost  7277.1  Mu   9.955  SD   0.306  Ld   0.991
+V  8  Cnt1500.0   In
+ S: Cost  9120.5  Mu  10.030  SD   1.064
+ F: Cost  7144.9  Mu  10.037  SD   0.281  Ld  -1.002
+--------------------------------------------------------------------------------
+P1     3 classes,    2 leaves,  Pcost   216.2  Tcost   47209.5,  Cost   47425.7
+Sample  1 Spec_s6m2r2c__000000002222
+--------------------------------------------------------------------------------
+CPU Time:         10.229 s
+Elapsed Time:     10.254 s
