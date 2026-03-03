@@ -280,32 +280,25 @@ Result classify(const int max_cycles, const int do_steps, const int move_steps, 
     print_class(CurCtx.popln->root, 0);
 
     root = CurCtx.popln->classes[CurCtx.popln->root];
-    double cost = root->best_cost, delta = 999.0;
+    double cost = root->best_cost, delta = 0.0;
     do {
-        log_msg(1, "================================================================================");
         log_msg(1, "Cycle %d", 1 + cycle);
-        log_msg(1, "================================================================================");
         log_msg(1, "Doing %d steps of costing, assignment and adjustments.", do_steps);
         do_all(do_steps, 1);
-        do_good(do_steps, 0.0);
         cleanup_population();
 
         log_msg(1, "Attempting class moves until %d successive failures", move_steps);
         try_moves(move_steps);
         cleanup_population();
 
-        log_msg(1, "--------------------------------------------------------------------------------");
         log_msg(1, "Cost dropped by %8.3f%%", delta);
-        log_msg(1, "--------------------------------------------------------------------------------");
         show_population();
         root = CurCtx.popln->classes[CurCtx.popln->root];
-        delta = fabs(100.0 * (cost - root->best_cost) / cost);
+        delta = 100.0 * (cost - root->best_cost) / cost;
         if ((CurCtx.popln->num_classes > 1)) {
             // test convergence if we are not at the beginning
             if ((prev_classes == CurCtx.popln->num_classes) && (prev_leaves == CurCtx.popln->num_leaves) && (delta < tol)) {
                 no_change_count++;
-            } else {
-                no_change_count = 0;
             }
         }
         prev_classes = CurCtx.popln->num_classes;
@@ -347,25 +340,10 @@ int save_model(char *filename) {
     return save_population(best, 0, filename);
 }
 
-Result load_model(char *filename) {
-    int pop;
-    Result result;
-    Class *root;
-
-    pop = load_population(filename);
-    set_work_population(pop);
-
-    //  Prepare return structure
-    root = CurCtx.popln->classes[CurCtx.popln->root];
-    result.num_classes = CurCtx.popln->num_classes;
-    result.num_leaves = CurCtx.popln->num_leaves;
-    result.model_length = root->best_par_cost;
-    result.data_length = root->best_case_cost;
-    result.message_length = root->best_cost;
-    result.num_attrs = CurCtx.vset->length;
-    result.num_cases = CurCtx.sample->num_cases;
-
-    return result;
+int load_model(char *filename) {
+    int result;
+    result = load_population(filename);
+    return set_work_population(result);
 }
 
 void save_context() { memcpy(&BkpCtx, &CurCtx, sizeof(Context)); }

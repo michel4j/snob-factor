@@ -24,7 +24,7 @@ int serial_to_id(int ss) {
 
 /*	---------------------  set_class_score --------------------------   */
 void set_class_score(Class *cls, int item) { 
-    lcs[cls->id].case_score = Scores.CaseFacInt = cls->factor_scores[item]; 
+    cls->case_score = Scores.CaseFacInt = cls->factor_scores[item]; 
 }
 
 /*	---------------------   makeclass  -------------------------   */
@@ -375,16 +375,14 @@ void score_all_vars(Class *cls, int item) {
         if (!igbit) {
             oldicvv -= Scores.CaseFacInt;
             oldicvv = (oldicvv < 0) ? -oldicvv : oldicvv;
-            if (oldicvv > SigScoreChange) {
-                #pragma omp atomic
+            if (oldicvv > SigScoreChange)
                 cls->score_change_count++;
-            }
         }
-        lcs[cls->id].case_fac_score = Scores.CaseFacScore = Scores.CaseFacInt * ScoreRScale;
-        lcs[cls->id].case_fac_score_sq = Scores.CaseFacScoreSq = Scores.CaseFacScore * Scores.CaseFacScore;
-        lcs[cls->id].cvvsprd = Scores.cvvsprd;
+        cls->case_fac_score = Scores.CaseFacScore = Scores.CaseFacInt * ScoreRScale;
+        cls->case_fac_score_sq = Scores.CaseFacScoreSq = Scores.CaseFacScore * Scores.CaseFacScore;
+        cls->cvvsprd = Scores.cvvsprd;
     }
-    cls->factor_scores[item] = lcs[cls->id].case_score = Scores.CaseFacInt;
+    cls->factor_scores[item] = cls->case_score = Scores.CaseFacInt;
 }
 
 /*	----------------------  costvarall  --------------------------  */
@@ -412,11 +410,11 @@ void cost_all_vars(Class *cls, int item) {
         }
     }
 
-    lcs[cls->id].total_case_cost = lcs[cls->id].nofac_case_cost = Scores.CaseNoFacCost;
-    lcs[cls->id].fac_case_cost = Scores.CaseNoFacCost + 10.0;
+    cls->total_case_cost = cls->nofac_case_cost = Scores.CaseNoFacCost;
+    cls->fac_case_cost = Scores.CaseNoFacCost + 10.0;
     if (cls->num_sons < 2)
-        lcs[cls->id].dad_case_cost = 0.0;
-    lcs[cls->id].coding_case_cost = 0.0;
+        cls->dad_case_cost = 0.0;
+    cls->coding_case_cost = 0.0;
     if (fac) {
         // Now we add the cost of coding the score, and its roundoff
         // The simple form for costing a score is :
@@ -424,16 +422,16 @@ void cost_all_vars(Class *cls, int item) {
         // However, we appeal to the large number of score parameters, which gives a
         // more negative 'lattice' ((log 12)/2 for one parameter) approaching -(1/2)
         // log (2 Pi e) which results in the reduced cost :
-        lcs[cls->id].clvsprd = log(Scores.cvvsprd);
-        tmp = 0.5 * (Scores.CaseFacScoreSq + Scores.cvvsprd - lcs[cls->id].clvsprd - 1.0);
+        cls->clvsprd = log(Scores.cvvsprd);
+        tmp = 0.5 * (Scores.CaseFacScoreSq + Scores.cvvsprd - cls->clvsprd - 1.0);
         // Over all scores for the class, the lattice effect will add approx
         //         ( log (2 Pi cnt)) / 2  + 1
         // to the class cost. This is added later, once cnt is known.
         Scores.CaseFacCost += tmp;
-        lcs[cls->id].fac_case_cost = Scores.CaseFacCost;
-        lcs[cls->id].coding_case_cost = tmp;
+        cls->fac_case_cost = Scores.CaseFacCost;
+        cls->coding_case_cost = tmp;
         if (cls->use == Fac)
-            lcs[cls->id].total_case_cost = Scores.CaseFacCost;
+            cls->total_case_cost = Scores.CaseFacCost;
     }
 }
 
@@ -443,7 +441,7 @@ void deriv_all_vars(Class *cls, int item) {
     int fac;
     VSetVar *vset_var;
     VarType *vtype;
-    const double case_weight = lcs[cls->id].case_weight;
+    const double case_weight = cls->case_weight;
 
     set_class_score(cls, item);
     cls->newcnt += case_weight;
@@ -451,11 +449,11 @@ void deriv_all_vars(Class *cls, int item) {
         fac = 0;
     else {
         fac = 1;
-        Scores.CaseFacScore = lcs[cls->id].case_fac_score;
-        Scores.CaseFacScoreSq = lcs[cls->id].case_fac_score_sq;
-        Scores.cvvsprd = lcs[cls->id].cvvsprd;
+        Scores.CaseFacScore = cls->case_fac_score;
+        Scores.CaseFacScoreSq = cls->case_fac_score_sq;
+        Scores.cvvsprd = cls->cvvsprd;
         cls->newvsq += case_weight * Scores.CaseFacScoreSq;
-        cls->vav += case_weight * lcs[cls->id].clvsprd;
+        cls->vav += case_weight * cls->clvsprd;
         cls->totvv += Scores.CaseFacScore * case_weight;
     }
     for (int iv = 0; iv < CurCtx.vset->length; iv++) {
@@ -467,10 +465,10 @@ void deriv_all_vars(Class *cls, int item) {
     }
 
     /*	Collect case item costs   */
-    cls->cstcost += case_weight * lcs[cls->id].nofac_case_cost;
-    cls->cftcost += case_weight * lcs[cls->id].fac_case_cost;
-    cls->cntcost += case_weight * lcs[cls->id].dad_case_cost;
-    cls->cfvcost += case_weight * lcs[cls->id].coding_case_cost;
+    cls->cstcost += case_weight * cls->nofac_case_cost;
+    cls->cftcost += case_weight * cls->fac_case_cost;
+    cls->cntcost += case_weight * cls->dad_case_cost;
+    cls->cfvcost += case_weight * cls->coding_case_cost;
 }
 
 /*	--------------------  adjustclass  -----------------------   */

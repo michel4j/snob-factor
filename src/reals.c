@@ -97,7 +97,7 @@ when installing a new type of variable. It is also necessary to change the
 "Ntypes" constant, and to decide on a type id (an integer) for the new type.
     */
 
-void reals_define(int typindx)
+void reals_define(typindx) int typindx;
 /*	typindx is the index in types[] of this type   */
 {
     VarType *vtype;
@@ -272,7 +272,7 @@ void score_var(int iv, Class *cls) {
     double del, md2;
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-    Saux *saux = (Saux *)(SAUX(smpl_var));
+    Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
 
@@ -295,7 +295,7 @@ void score_var(int iv, Class *cls) {
 void cost_var(int iv, int fac, Class *cls) {
     double del, var, cost;
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-    Saux *saux = (Saux *)(SAUX(smpl_var));
+    Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
 
@@ -333,11 +333,11 @@ facdone:
 params and accumulates in paramd1, paramd2.
 Factor derivs done only if fac.  */
 void deriv_var(int iv, int fac, Class *cls) {
-    const double case_weight = lcs[cls->id].case_weight;
+    const double case_weight = cls->case_weight;
     double del, var, frsds;
 
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-    Saux *saux = (Saux *)(SAUX(smpl_var));
+    Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
 
@@ -383,7 +383,7 @@ void adjust(int iv, int fac, Class *cls) {
     double dadmu = 0.0, dadsdl = 0.0, dmusprd = 0.0, dsdlsprd = 0.0;
     double av, var, del, sdld1;
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-    Saux *saux = (Saux *)(SAUX(smpl_var));
+    Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
     Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;

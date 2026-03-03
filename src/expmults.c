@@ -143,7 +143,7 @@ when installing a new type of variable. It is also necessary to change the
 "Ntypes" constant, and to decide on a type id (an integer) for the new type.
     */
 
-void expmults_define(int typindx)
+void expmults_define(typindx) int typindx;
 /*	typindx is the index in types[] of this type   */
 {
     int ig;
@@ -467,7 +467,7 @@ void score_var(int iv, Class *cls) {
     double t1d1, t2d1, t3d1;
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-    Saux *saux = (Saux *)(SAUX(smpl_var));
+    Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
     Vaux *vaux = (Vaux *)vset_var->vaux;
@@ -502,7 +502,7 @@ void cost_var(int iv, int fac, Class *cls) {
     double cost;
 
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-    Saux *saux = (Saux *)(SAUX(smpl_var));
+    Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
@@ -547,10 +547,10 @@ void cost_var(int iv, int fac, Class *cls) {
 params and accumulates in paramd1, paramd2  */
 void deriv_var(int iv, int fac, Class *cls) {
     double cons1, cons2, inc;
-    const double case_weight = lcs[cls->id].case_weight;
+    const double case_weight = cls->case_weight;
     int k;
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-    Saux *saux = (Saux *)(SAUX(smpl_var));
+    Saux *saux = (Saux *)(smpl_var->saux);
     Stats *exp_var = (Stats *)cls->stats[iv];
     Basic *cls_var = (Basic *)cls->basics[iv];
     VSetVar *vset_var = &CurCtx.vset->variables[iv];

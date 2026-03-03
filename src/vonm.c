@@ -231,8 +231,8 @@ int set_datum(char *loc, int iv, void *value) {
     double epsfac;
     Datum xn;
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-    unit = ((Saux *)(SAUX(smpl_var)))->unit;
-    epsfac = ((Saux *)(SAUX(smpl_var)))->epsfac; /*	Get quantization effect from Saux  */
+    unit = ((Saux *)(smpl_var->saux))->unit;
+    epsfac = ((Saux *)(smpl_var->saux))->epsfac; /*	Get quantization effect from Saux  */
 
     xn.xx = *(double *)(value);
     int active = (isnan(xn.xx)) ? -1 : 1;
@@ -347,7 +347,7 @@ void score_var(int iv, Class *cls) {
     double dwdt, dwdv, r2, dr2dw;
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-    Saux *saux = (Saux *)(SAUX(smpl_var));
+    Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
 
     set_var(iv, cls);
@@ -410,7 +410,7 @@ void cost_var(int iv, int fac, Class *cls) {
     double del, cost, tt, tsprd, cosw, sinw, r2;
 
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-    Saux *saux = (Saux *)(SAUX(smpl_var));
+    Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
 
@@ -462,10 +462,10 @@ Factor derivs done only if fac.  */
 void deriv_var(int iv, int fac, Class *cls) {
     double tt, tsprd, r2, cosw, sinw, wtr2, wd1, dwdt, dr2dw;
     double coser, siner;
-    const double case_weight = lcs[cls->id].case_weight;
+    const double case_weight = cls->case_weight;
 
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-    Saux *saux = (Saux *)(SAUX(smpl_var));
+    Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
 
@@ -538,7 +538,7 @@ void adjust(int iv, int fac, Class *cls) {
     double hxd1, hyd1, hkd1, hkd2;
 
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-    Saux *saux = (Saux *)(SAUX(smpl_var));
+    Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
     Class *dad = (cls->dad_id >= 0) ? CurCtx.popln->classes[cls->dad_id] : 0;
@@ -745,7 +745,7 @@ void adjust(int iv, int fac, Class *cls) {
 void show(Class *cls, int iv) {
     double mu, kappa;
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-    Saux *saux = (Saux *)(SAUX(smpl_var));
+    Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
 
@@ -772,7 +772,7 @@ void show(Class *cls, int iv) {
 void details(Class *cls, int iv, MemBuffer *buffer) {
     double mu, kappa;
     SampleVar *smpl_var = &CurCtx.sample->variables[iv];
-    Saux *saux = (Saux *)(SAUX(smpl_var));
+    Saux *saux = (Saux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
     VSetVar *vset_var = &CurCtx.vset->variables[iv];
