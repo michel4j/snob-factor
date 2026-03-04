@@ -577,7 +577,7 @@ void adjust_class(SnobContext *ctx, Class *cls, int dod) {
   cls->nofac_cost = cls->nofac_par_cost + cls->cstcost;
   /*	The 'lattice' effect on the cost of coding scores is approx
       (log (2 Pi cnt))/2 + 1,  which adds to cftcost  */
-  cls->cftcost += 0.5 * log(cls->newcnt + 1.0) + ctx->half_log_2pi + 1.0;
+  cls->cftcost += 0.5 * log(cls->newcnt + 1.0) + SNOB_HALF_LOG_2PI + 1.0;
   cls->fac_cost = cls->fac_par_cost + cls->cftcost;
   if (npars)
     cls->dad_cost = cls->dad_par_cost + cls->cntcost;
@@ -686,7 +686,7 @@ void parent_cost_all_vars(SnobContext *ctx, Class *cls, int valid) {
   of the dad can be reduced by log (nson !)  */
   abcost -= ctx->fac_log[nson];
   /*	The cost of saying 'dad' and number of sons is set at nson bits. */
-  abcost += nson * ctx->bit;
+  abcost += nson * SNOB_BIT;
   /*	Now add cost of specifying the relabs of the sons.  */
   /*	Their relabs are absolute, but we specify them as fractions of this
   dad's relab. The cost includes -0.5 * Sum_sons { log (sonab / dadab) }
@@ -697,7 +697,7 @@ void parent_cost_all_vars(SnobContext *ctx, Class *cls, int valid) {
     abcost -= 0.5 * log(son->relab * rrelab);
   }
   /*	Add other terms from Fisher  */
-  abcost += (nson - 1) * (log(cls->weights_sum) + ctx->lattice);
+  abcost += (nson - 1) * (log(cls->weights_sum) + SNOB_LATTICE);
   /*	And from prior:  */
   abcost -= ctx->fac_log[nson - 1];
   /*	The sons will have been processed by 'adjustclass' already, and

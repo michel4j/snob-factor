@@ -19,9 +19,20 @@ typedef struct SnobContextStruct SnobContext;
 #define MAX_SAMPLES 5 /* Max number of samples */
 #define MAX_VSETS 3
 #define MAX_POPULATIONS 5 /* Max number of popln models */
-#define MAX_CLASSES 500
-#define MAX_ZERO 100          /*  Length of the Zero vector  */
-#define INPUT_BUFFER_SIZE 450 /*    Length of input line buffer */
+#define MAX_CLASSES 999
+#define BUFFER_SIZE 64000
+#define MAX_ZERO 100 /*  Length of the Zero vector  */
+
+/* Mathematical Constants */
+#define SNOB_PI 3.14159265358979323846       /* 4.0 * atan(1.0) */
+#define SNOB_HALF_PI 1.5707963267948966      /* 0.5 * SNOB_PI */
+#define SNOB_TWO_ON_PI 0.6366197723675814    /* 2.0 / SNOB_PI */
+#define SNOB_HALF_LOG_2PI 0.9189385332046727 /* 0.5 * log(2.0 * SNOB_PI) */
+#define SNOB_HALF_LOG_2 0.34657359027997264  /* 0.5 * log(2.0) */
+#define SNOB_LATTICE -1.2424533248940002     /* -0.5 * log(12.0) */
+#define SNOB_BIT 0.6931471805599453          /* log(2.0) */
+#define SNOB_TWOBIT 1.3862943611198906       /* 2.0 * SNOB_BIT */
+#define INPUT_BUFFER_SIZE 450                /* Length of input line buffer */
 
 /*	-----------------  ctx->control  ------------------------------   */
 #define AdjSc 1

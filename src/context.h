@@ -5,8 +5,6 @@ typedef struct SnobContextStruct {
 #endif
 
       /*	mathematical constants   */
-      EXT double ctx->half_log_2pi,
-      ctx->half_log_2, ctx->lattice, ctx->pi, ctx->bit, ctx->twobit, ctx->two_on_pi, ctx->half_pi;
   double ctx->zero_vec[MAX_ZERO];
   double ctx->fac_log[MAX_CLASSES + 1];
   volatile sig_atomic_t ctx->stop;
@@ -55,14 +53,6 @@ typedef struct SnobContextStruct {
 } SnobContext;
 
 #ifdef USE_SNOB_CONTEXT_MACROS
-#define ctx->half_log_2pi (ctx->half_log_2pi)
-#define ctx->half_log_2 (ctx->half_log_2)
-#define ctx->lattice (ctx->lattice)
-#define ctx->pi (ctx->pi)
-#define ctx->bit (ctx->bit)
-#define ctx->twobit (ctx->twobit)
-#define ctx->two_on_pi (ctx->two_on_pi)
-#define ctx->half_pi (ctx->half_pi)
 #define ctx->zero_vec (ctx->zero_vec)
 #define ctx->fac_log (ctx->fac_log)
 #define ctx->stop (ctx->stop)

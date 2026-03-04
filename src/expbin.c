@@ -483,7 +483,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
   is a variance with squared spread cls_var->dapsprd, Normal form */
   spcost = 0.5 * vara / cls_var->dapsprd; /* The squared deviations term */
   spcost += 0.5 * log(cls_var->dapsprd);  /* log sigma */
-  spcost += ctx->half_log_2pi + ctx->lattice;
+  spcost += SNOB_HALF_LOG_2PI + SNOB_LATTICE;
   /*	This completes the prior density terms  */
   /*	The vol of uncertainty is sqrt (sapsprd)  */
   spcost -= 0.5 * log(cls_var->sapsprd);
@@ -497,13 +497,13 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
     vara = del * del + cls_var->fapsprd;
     fpcost = 0.5 * vara / cls_var->dapsprd; /* The squared deviations term */
     fpcost += 0.5 * log(cls_var->dapsprd);  /* log sigma */
-    fpcost += (ctx->half_log_2pi + ctx->lattice);
+    fpcost += (SNOB_HALF_LOG_2PI + SNOB_LATTICE);
     fpcost -= 0.5 * log(cls_var->fapsprd);
 
     /*	And for fbp[]:  (N(0,1) prior)  */
     vara = cls_var->fbp * cls_var->fbp + cls_var->bpsprd;
     fpcost += 0.5 * vara; /* The squared deviations term */
-    fpcost += ctx->half_log_2pi + ctx->lattice - 0.5 * log(cls_var->bpsprd);
+    fpcost += SNOB_HALF_LOG_2PI + SNOB_LATTICE - 0.5 * log(cls_var->bpsprd);
   }
 
   /*	Store param costs  */
@@ -704,10 +704,10 @@ adjloop:
   del = cls_var->nap - cls_var->dadnap;
   pcost = del * del;
   pcost = 0.5 * (pcost + apsprd / nson) / cls_var->dapsprd +
-          (ctx->half_log_2pi + 0.5 * log(cls_var->dapsprd));
+          (SNOB_HALF_LOG_2PI + 0.5 * log(cls_var->dapsprd));
   /*      Add hlog Fisher, lattice  */
   pcost += 0.5 * log(0.5 * nson + nints) + 0.5 * log((double)nson) -
-           1.5 * log(apsprd) + 2.0 * ctx->lattice;
+           1.5 * log(apsprd) + 2.0 * SNOB_LATTICE;
   /*	Add roundoff for params  */
   pcost += 1.0;
   exp_var->npcost = pcost;

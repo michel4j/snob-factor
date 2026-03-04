@@ -415,8 +415,8 @@ void close_buffer(SnobContext *ctx) {
 CommsBuffer line. Otherwise, get a new line  */
 void revert(SnobContext *ctx, int flag) {
   if (ctx->current_source->cfile)
-    printf("Command file %s\n terminated at line %d\n", ctx->current_source->cname,
-           ctx->current_source->line);
+    printf("Command file %s\n terminated at line %d\n",
+           ctx->current_source->cname, ctx->current_source->line);
   close_buffer(ctx);
   ctx->current_source = &CommsBuffer;
   ctx->state.buffer = ctx->current_source;

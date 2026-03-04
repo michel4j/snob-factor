@@ -735,7 +735,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
   is a variance in (states-1) space with sum-sq spread dapsprd, Normal form */
   spcost = 0.5 * vara / dapsprd;          /* The squared deviations term */
   spcost += 0.5 * statesm * log(dapsprd); /* statesm * log sigma */
-  spcost += statesm * (ctx->half_log_2pi + ctx->lattice);
+  spcost += statesm * (SNOB_HALF_LOG_2PI + SNOB_LATTICE);
   /*	This completes the prior density terms  */
   /*	The vol of uncertainty is (sapsprd/statesm)^(statesm/2)  */
   spcost -= 0.5 * statesm * log(cls_var->sapsprd / statesm);
@@ -752,7 +752,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
     is a variance in (states-1) space with sum-sq spread dapsprd, Normal form */
     fpcost = 0.5 * vara / dapsprd;          /* The squared deviations term */
     fpcost += 0.5 * statesm * log(dapsprd); /* statesm * log sigma */
-    fpcost += statesm * (ctx->half_log_2pi + ctx->lattice);
+    fpcost += statesm * (SNOB_HALF_LOG_2PI + SNOB_LATTICE);
     /*	The vol of uncertainty is (fapsprd/statesm)^(statesm/2)  */
     fpcost -= 0.5 * statesm * log(cls_var->fapsprd / statesm);
 
@@ -762,7 +762,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
       vara += fbp[k] * fbp[k];
     vara += cls_var->bpsprd; /* Additional variance from roundoff */
     fpcost += 0.5 * vara;    /* The squared deviations term */
-    fpcost += statesm * (ctx->half_log_2pi + ctx->lattice);
+    fpcost += statesm * (SNOB_HALF_LOG_2PI + SNOB_LATTICE);
     /*	The vol of uncertainty is (bpsprd/statesm)^(statesm/2)  */
     fpcost -= 0.5 * statesm * log(cls_var->bpsprd / statesm);
   } else {
@@ -1137,11 +1137,11 @@ void cost_var_nonleaf(SnobContext *ctx, int iv, int vald, Class *cls) {
     pcost += del * del;
   }
   pcost = 0.5 * (pcost + statesm * apsprd / nson) / dapsprd +
-          statesm * (ctx->half_log_2pi + 0.5 * log(dapsprd));
+          statesm * (SNOB_HALF_LOG_2PI + 0.5 * log(dapsprd));
   /*      Add hlog Fisher, lattice  */
   pcost += 0.5 * log(0.5 * nson * statesm + nints) +
            0.5 * statesm * log((double)nson) -
-           0.5 * (statesm + 2.0) * log(apsprd) + states * ctx->lattice;
+           0.5 * (statesm + 2.0) * log(apsprd) + states * SNOB_LATTICE;
   /*	Add roundoff for states params  */
   pcost += 0.5 * states;
   exp_var->npcost = pcost;

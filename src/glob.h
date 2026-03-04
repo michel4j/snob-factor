@@ -53,4 +53,3 @@ typedef struct SnobContextStruct {
   /* re Badmoves */
   int bad_key[BadSize];
 } SnobContext;
-

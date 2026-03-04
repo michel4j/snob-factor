@@ -310,7 +310,7 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
   /*	Do no-fac cost first  */
   del = cls_var->smu - saux->xn;
   var = del * del + cls_var->smusprd + saux->epssq;
-  cost = 0.5 * var * exp_var->srsds + cls_var->ssdlsprd + ctx->half_log_2pi +
+  cost = 0.5 * var * exp_var->srsds + cls_var->ssdlsprd + SNOB_HALF_LOG_2PI +
          cls_var->ssdl - saux->leps;
   exp_var->parkstcost = cost;
   ctx->scores.CaseNoFacCost += cost;
@@ -323,7 +323,7 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
         ctx->scores.CaseFacScoreSq * cls_var->ldsprd +
         ctx->scores.cvvsprd * exp_var->ldsq;
   exp_var->var = var;
-  cost = ctx->half_log_2pi + 0.5 * exp_var->frsds * var + cls_var->fsdl +
+  cost = SNOB_HALF_LOG_2PI + 0.5 * exp_var->frsds * var + cls_var->fsdl +
          cls_var->fsdlsprd * 2.0 - saux->leps;
 
 facdone:
@@ -446,7 +446,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
     }
     /*	Make a stab at class tcost  */
     cls->cstcost +=
-        cnt * (ctx->half_log_2pi + cls_var->ssdl - saux->leps + 0.5 + cls->mlogab) +
+        cnt * (SNOB_HALF_LOG_2PI + cls_var->ssdl - saux->leps + 0.5 + cls->mlogab) +
         1.0;
     cls->cftcost = cls->cstcost + 100.0 * cnt;
   }
@@ -458,13 +458,13 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
 
   /*	Compute parameter costs as they are  */
   del1 = dadmu - cls_var->smu;
-  spcost = ctx->half_log_2pi +
+  spcost = SNOB_HALF_LOG_2PI +
            0.5 * (log(dmusprd) + temp1 * (del1 * del1 + cls_var->smusprd));
   del2 = dadsdl - cls_var->ssdl;
-  spcost += ctx->half_log_2pi +
+  spcost += SNOB_HALF_LOG_2PI +
             0.5 * (log(dsdlsprd) + temp2 * (del2 * del2 + cls_var->ssdlsprd));
   spcost -= 0.5 * log(cls_var->smusprd * cls_var->ssdlsprd);
-  spcost += 2.0 * ctx->lattice;
+  spcost += 2.0 * SNOB_LATTICE;
 
   if (!fac) {
     fpcost = spcost + 100.0;
@@ -472,16 +472,16 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
     goto facdone1;
   }
   del3 = cls_var->fmu - dadmu;
-  fpcost = ctx->half_log_2pi +
+  fpcost = SNOB_HALF_LOG_2PI +
            0.5 * (log(dmusprd) + temp1 * (del3 * del3 + cls_var->fmusprd));
   del4 = cls_var->fsdl - dadsdl;
-  fpcost += ctx->half_log_2pi +
+  fpcost += SNOB_HALF_LOG_2PI +
             0.5 * (log(dsdlsprd) + temp2 * (del4 * del4 + cls_var->fsdlsprd));
   /*    The prior for load ld id N (0, sigsq)  */
-  fpcost += ctx->half_log_2pi + 0.5 * (exp_var->ldsq + cls_var->ldsprd) * frsds +
+  fpcost += SNOB_HALF_LOG_2PI + 0.5 * (exp_var->ldsq + cls_var->ldsprd) * frsds +
             cls_var->fsdl;
   fpcost -= 0.5 * log(cls_var->fmusprd * cls_var->fsdlsprd * cls_var->ldsprd);
-  fpcost += 3.0 * ctx->lattice;
+  fpcost += 3.0 * SNOB_LATTICE;
 
 facdone1:
 
@@ -848,11 +848,11 @@ void cost_var_nonleaf(SnobContext *ctx, int iv, int vald, Class *cls) {
 
   adjdone: /*	Calc cost  */
     del = pp - dadpp;
-    pcost += ctx->half_log_2pi + 1.5 * log(dppsprd) +
+    pcost += SNOB_HALF_LOG_2PI + 1.5 * log(dppsprd) +
              0.5 * (del * del + ppsprd / nson) / dppsprd + ppsprd / dppsprd;
     /*	Add hlog Fisher, lattice  */
     pcost += 0.5 * log(nson * (0.5 * nson + nints)) - 1.5 * log(ppsprd) +
-             2.0 * ctx->lattice;
+             2.0 * SNOB_LATTICE;
 
     /*	Add roundoff for 2 params  (pp, ppsprd)  */
     pcost += 1.0;

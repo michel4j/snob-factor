@@ -203,7 +203,7 @@ int set_smpl_aux(SnobContext *ctx, void *saux, int unit, double prec) {
   sax->unit = unit;
   sax->eps = prec;
   if (sax->unit)
-    sax->eps *= (ctx->pi / 180.0);
+    sax->eps *= (SNOB_PI / 180.0);
   if (sax->eps > 0.01)
     sax->epsfac = 2.0 * sin(0.5 * sax->eps) / sax->eps;
   else
@@ -237,7 +237,7 @@ int set_datum(SnobContext *ctx, char *loc, int iv, void *value) {
   xn.xx = *(double *)(value);
   int active = (isnan(xn.xx)) ? -1 : 1;
   if (unit) {
-    xn.xx *= (ctx->pi / 180.0);
+    xn.xx *= (SNOB_PI / 180.0);
   }
   xn.sinxx = epsfac * sin(xn.xx);
   xn.cosxx = epsfac * cos(xn.xx);
@@ -589,7 +589,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
     cls_var->ld = 0.0;
     cls_var->sfh = cls_var->ffh = -1.0;
     /*	Make a stab at class tcost  */
-    cls->cstcost += cnt * (2.0 * ctx->half_log_2pi - saux->leps + cls->mlogab) + 1.0;
+    cls->cstcost += cnt * (2.0 * SNOB_HALF_LOG_2PI - saux->leps + cls->mlogab) + 1.0;
     cls->cftcost = cls->cstcost + 100.0 * cnt;
   }
 
@@ -598,9 +598,9 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
   /*	Compute parameter costs as they are  */
   del1 = (dadhx - cls_var->shx) * (dadhx - cls_var->shx) +
          (dadhy - cls_var->shy) * (dadhy - cls_var->shy);
-  spcost = 2.0 * ctx->half_log_2pi + log(dhsprd) +
+  spcost = 2.0 * SNOB_HALF_LOG_2PI + log(dhsprd) +
            0.5 * temp1 * (del1 + 2.0 * cls_var->shsprd) - log(cls_var->shsprd) +
-           2.0 * ctx->lattice;
+           2.0 * SNOB_LATTICE;
 
   if (!fac) {
     fpcost = spcost + 100.0;
@@ -608,12 +608,12 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
   } else {
     del2 = (dadhx - cls_var->fhx) * (dadhx - cls_var->fhx) +
            (dadhy - cls_var->fhy) * (dadhy - cls_var->fhy);
-    fpcost = 2.0 * ctx->half_log_2pi + log(dhsprd) +
+    fpcost = 2.0 * SNOB_HALF_LOG_2PI + log(dhsprd) +
              0.5 * temp1 * (del2 + 2.0 * cls_var->fhsprd) -
-             log(cls_var->fhsprd) + 2.0 * ctx->lattice;
+             log(cls_var->fhsprd) + 2.0 * SNOB_LATTICE;
     /*    The prior for load ld is N (0, 1)  */
-    fpcost += ctx->half_log_2pi + 0.5 * (cls_var->ldsq + cls_var->ldsprd);
-    fpcost -= 0.5 * log(cls_var->ldsprd) + ctx->lattice;
+    fpcost += SNOB_HALF_LOG_2PI + 0.5 * (cls_var->ldsq + cls_var->ldsprd);
+    fpcost -= 0.5 * log(cls_var->ldsprd) + SNOB_LATTICE;
   }
 
   /*	Store param costs for this variable  */
@@ -786,7 +786,7 @@ void show(SnobContext *ctx, Class *cls, int iv) {
   mu = atan2(cls_var->bhx, cls_var->bhy);
   printf(" B:  Mean ");
   if (saux->unit)
-    printf("%6.1f deg", (180.0 / ctx->pi) * mu);
+    printf("%6.1f deg", (180.0 / SNOB_PI) * mu);
   else
     printf("%6.3f rad", mu);
   printf("  Kappa %8.2f\n", kappa);
@@ -814,7 +814,7 @@ void details(SnobContext *ctx, Class *cls, int iv, MemBuffer *buffer) {
   mu = atan2(cls_var->bhx, cls_var->bhy);
   if (saux->unit)
     print_buffer(ctx, buffer, "\"mean\": %0.4f, \"units\": \"deg\", ",
-                 (180.0 / ctx->pi) * mu);
+                 (180.0 / SNOB_PI) * mu);
   else
     print_buffer(ctx, buffer, "\"mean\": %0.4f, \"units\": \"rad\", ", mu);
   print_buffer(ctx, buffer, "\"kappa\": %0.3f}", kappa);
@@ -1024,11 +1024,11 @@ void cost_var_nonleaf(SnobContext *ctx, int iv, int vald, Class *cls) {
 
   /*	Calc cost  */
   del = (nhx - dadhx) * (nhx - dadhx) + (nhy - dadhy) * (nhy - dadhy);
-  pcost = 2.0 * ctx->half_log_2pi + 2.0 * log(dadhsprd) +
+  pcost = 2.0 * SNOB_HALF_LOG_2PI + 2.0 * log(dadhsprd) +
           (0.5 * del + nhsprd / nson) / dadhsprd + nhsprd / dadhsprd;
   /*	Add hlog Fisher, lattice  */
   pcost += 0.5 * log(nson * nson * (nson + nints)) -
-           2.0 * log(nhsprd + 1.0e-8) + 3.0 * ctx->lattice;
+           2.0 * log(nhsprd + 1.0e-8) + 3.0 * SNOB_LATTICE;
 
   /*	Add roundoff for 3 params (nhx, nhy, nhsprd)  */
   pcost += 1.5;

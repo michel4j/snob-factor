@@ -13,30 +13,18 @@ void expbinary_define(SnobContext *ctx, int typindx);
 void vonm_define(SnobContext *ctx, int typindx);
 
 void do_types(SnobContext *ctx) {
-    int i;
+  ctx->num_types = 4;
 
-    /*	Set the number of attribute types  */
-    ctx->num_types = 4;
+  for (int i = 0; i < MAX_ZERO; i++) {
+    ctx->zero_vec[i] = 0.0;
+  }
 
-    /*	Set constants  */
-    ctx->pi = 4.0 * atan(1.0);
-    ctx->half_log_2pi = 0.5 * log(2.0 * ctx->pi);
-    ctx->two_on_pi = 2.0 / ctx->pi;
-    ctx->half_pi = 0.5 * ctx->pi;
-    ctx->bit = log(2.0);
-    ctx->twobit = 2.0 * ctx->bit;
-    ctx->half_log_2 = 0.5 * log(2.0);
-    ctx->lattice = -0.5 * log(12.0);
-    for (i = 0; i < MAX_ZERO; i++)
-        ctx->zero_vec[i] = 0.0;
+  ctx->types = (VarType *)malloc(ctx->num_types * sizeof(VarType));
 
-    /*	Make the 'types' vector  */
-    ctx->types = (VarType *)malloc(ctx->num_types * sizeof(VarType));
+  reals_define(ctx, 0);
+  expmults_define(ctx, 1);
+  expbinary_define(ctx, 2);
+  vonm_define(ctx, 3);
 
-    reals_define(ctx, 0);
-    expmults_define(ctx, 1);
-    expbinary_define(ctx, 2);
-    vonm_define(ctx, 3);
-
-    return;
+  return;
 }
