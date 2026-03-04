@@ -48,49 +48,50 @@ int new_line(SnobContext *ctx) {
   buf = ctx->state.buffer;
   if (buf->cfile == 0) { /* Input via comms */
     j = 0;               /* To count tries at opening comms */
-  retry:
-    if (ctx->use_stdin)
-      goto usestd;
-    i = hark(ctx, buf->inl);
-    /*	i = 0 means comms OK but no input yet. 1 means input present
-        -1 means no comms file or bad format  */
-    if (i == 1) {
-      ctx->heard = buf->nch = 0;
-      return (0);
-    }
-    if (i < 0) {
-      j++;
-      if (j > 3) {
-        ctx->use_stdin = 1;
-        printf(
-            "There being no comms file, input will be taken from StdInput\n");
-        goto retry;
+    while (!ctx->use_stdin) {
+      i = hark(ctx, buf->inl);
+      /*	i = 0 means comms OK but no input yet. 1 means input present
+          -1 means no comms file or bad format  */
+      if (i == 1) {
+        ctx->heard = buf->nch = 0;
+        return (0);
+      }
+      if (i < 0) {
+        j++;
+        if (j > 3) {
+          ctx->use_stdin = 1;
+          printf(
+              "There being no comms file, input will be taken from StdInput\n");
+          break;
+        }
+      } else {
+        sleep(1);
       }
     }
-    sleep(1);
-    goto retry;
 
-  usestd: /* Take input from standard input */
+    /* Take input from standard input */
     i = 0;
     buf->nch = -1;
-    j = getchar();
-    if (j == '\n')
-      goto usestd;
+    do {
+      j = getchar();
+    } while (j == '\n');
+
     if (j == EOF) {
       printf("EOF in StdInput\n");
       exit(0);
     }
     buf->inl[0] = j;
-  nextchar:
-    i++;
-    if (i >= INPUT_BUFFER_SIZE) {
-      printf("Line too long\n");
-      return (-1);
+    while (1) {
+      i++;
+      if (i >= INPUT_BUFFER_SIZE) {
+        printf("Line too long\n");
+        return (-1);
+      }
+      j = getchar();
+      buf->inl[i] = j;
+      if (j == '\n')
+        break;
     }
-    j = getchar();
-    buf->inl[i] = j;
-    if (j != '\n')
-      goto nextchar;
     buf->inl[i + 1] = 0;
     ctx->heard = buf->nch = 0;
     return (0);
@@ -99,39 +100,44 @@ int new_line(SnobContext *ctx) {
   /*	Input from control file  */
   i = 0;
   buf->nch = -1;
-firstch:
-  j = fgetc(buf->cfile);
-  if (j == '\n') {
-    buf->line++;
-    goto firstch;
+  while (1) {
+    j = fgetc(buf->cfile);
+    if (j == '\n') {
+      buf->line++;
+      continue;
+    }
+    if ((j == ' ') || (j == '\t')) {
+      continue;
+    }
+    break;
   }
+
   if (j == EOF) {
     printf("Unexpected end of file after line %d\n", buf->line);
     return (-2);
   }
-  if ((j == ' ') || (j == '\t'))
-    goto firstch;
+
   buf->inl[i] = j;
   buf->line++;
 
-nextch:
-  i++;
-  if (i >= INPUT_BUFFER_SIZE) {
-    printf("Line %5d too long\n", buf->line);
-    return (-1);
+  while (1) {
+    i++;
+    if (i >= INPUT_BUFFER_SIZE) {
+      printf("Line %5d too long\n", buf->line);
+      return (-1);
+    }
+    j = fgetc(buf->cfile);
+    if ((j == EOF) || (j == '\n')) {
+      buf->inl[i] = '\n';
+      buf->inl[i + 1] = 0;
+      buf->nch = 0;
+      /*	Copy out line of control file  */
+      if (buf == &CFileBuffer)
+        printf("=== %s\n", buf->inl);
+      return (0);
+    }
+    buf->inl[i] = j;
   }
-  j = fgetc(buf->cfile);
-  if ((j == EOF) || (j == '\n')) {
-    buf->inl[i] = '\n';
-    buf->inl[i + 1] = 0;
-    buf->nch = 0;
-    /*	Copy out line of control file  */
-    if (buf == &CFileBuffer)
-      printf("=== %s\n", buf->inl);
-    return (0);
-  }
-  buf->inl[i] = j;
-  goto nextch;
 }
 
 /*	-------------------------  reperror (ctx) ---------------------    */
@@ -150,10 +156,9 @@ void reperror(SnobContext *ctx) {
   for (j = 0; j < 70; j++) {
     k = ctx->state.buffer->inl[i + j];
     if (k == '\n')
-      goto done;
+      break;
     printf("%c", k);
   }
-done:
   printf("\n");
   for (j = 0; j < (ctx->state.buffer->nch - i); j++)
     printf("%c", '-');
@@ -173,54 +178,61 @@ int read_int(SnobContext *ctx, int *x, int cnl) {
   buf = ctx->state.buffer;
   v = sign = Terminator = 0;
 
-skip:
-  i = buf->inl[buf->nch++];
-  switch (i) {
-  case '\n':
-    if (!cnl) {
-      buf->nch--;
-      return (2);
+  while (1) {
+    i = buf->inl[buf->nch++];
+    if (i == '\n') {
+      if (!cnl) {
+        buf->nch--;
+        return (2);
+      }
+      if (new_line(ctx))
+        return (-1);
+      continue;
     }
-    if (new_line(ctx))
-      return (-1);
-  case ' ':
-  case '\t':
-    goto skip;
-  case '=':
-    goto miss;
-  case '-':
-    sign = -1;
-  case '+':
-    goto begun;
+    if (i == ' ' || i == '\t')
+      continue;
+    break;
   }
+
+  if (i == '=') {
+    while (1) {
+      i = buf->inl[buf->nch++];
+      if (i != '=')
+        break;
+    }
+    buf->nch--;
+    *x = 0;
+    return (1);
+  }
+
+  if (i == '-') {
+    sign = -1;
+    i = buf->inl[buf->nch++];
+  } else if (i == '+') {
+    i = buf->inl[buf->nch++];
+  }
+
   if ((i >= '0') && (i <= '9')) {
     v = i - '0';
-    goto begun;
+    while (1) {
+      i = buf->inl[buf->nch++];
+      if ((i >= '0') && (i <= '9')) {
+        v = 10 * v + i - '0';
+      } else {
+        break;
+      }
+    }
+  } else {
+    reperror(ctx);
+    return (-1);
   }
-  reperror(ctx);
-  return (-1);
 
-begun:
-  i = buf->inl[buf->nch++];
-  if ((i >= '0') && (i <= '9')) {
-    v = 10 * v + i - '0';
-    goto begun;
-  }
   if (sign)
     v = -v;
   *x = v;
   Terminator = i;
   buf->nch--;
   return (0);
-
-miss: /* An '=' signifies missing value  */
-  /*	Consume all = chars  */
-  i = buf->inl[buf->nch++];
-  if (i == '=')
-    goto miss;
-  buf->nch--;
-  *x = 0;
-  return (1);
 }
 
 /*	--------------------  readdf ()  --------------------------- */
@@ -234,68 +246,72 @@ int read_double(SnobContext *ctx, double *x, int cnl) {
   v = 0.0;
   pow = 1.0;
 
-skip:
-  i = buf->inl[buf->nch++];
-  switch (i) {
-  case '\n':
-    if (!cnl) {
-      buf->nch--;
-      return (2);
+  while (1) {
+    i = buf->inl[buf->nch++];
+    if (i == '\n') {
+      if (!cnl) {
+        buf->nch--;
+        return (2);
+      }
+      if (new_line(ctx))
+        return (-1);
+      continue;
     }
-    if (new_line(ctx))
-      return (-1);
-  case ' ':
-  case '\t':
-    goto skip;
-  case '=':
-    goto miss;
-  case '-':
-    sign = -1;
-  case '+':
-    goto begun;
+    if (i == ' ' || i == '\t')
+      continue;
+    break;
   }
+
+  if (i == '=') {
+    while (1) {
+      i = buf->inl[buf->nch++];
+      if (i != '=')
+        break;
+    }
+    *x = 0;
+    buf->nch--;
+    return (1);
+  }
+
+  if (i == '-') {
+    sign = -1;
+    i = buf->inl[buf->nch++];
+  } else if (i == '+') {
+    i = buf->inl[buf->nch++];
+  }
+
   if ((i >= '0') && (i <= '9')) {
     v = i - '0';
-    goto begun;
-  }
-  if (i == '.')
-    goto part;
-  reperror(ctx);
-  return (-1);
-
-begun:
-  i = buf->inl[buf->nch++];
-  if ((i >= '0') && (i <= '9')) {
-    v = 10 * v + i - '0';
-    goto begun;
-  }
-  if (i == '.')
-    goto part;
-  goto endnum;
-
-part:
-  i = buf->inl[buf->nch++];
-  if ((i >= '0') && (i <= '9')) {
-    v = 10.0 * v + i - '0';
-    pow *= 0.1;
-    goto part;
+    while (1) {
+      i = buf->inl[buf->nch++];
+      if ((i >= '0') && (i <= '9')) {
+        v = 10.0 * v + i - '0';
+      } else {
+        break;
+      }
+    }
+  } else if (i != '.') {
+    reperror(ctx);
+    return (-1);
   }
 
-endnum:
+  if (i == '.') {
+    while (1) {
+      i = buf->inl[buf->nch++];
+      if ((i >= '0') && (i <= '9')) {
+        v = 10.0 * v + i - '0';
+        pow *= 0.1;
+      } else {
+        break;
+      }
+    }
+  }
+
   if (sign)
     v = -v;
   *x = v * pow;
   buf->nch--;
   return (0);
-
-miss: /* An '=' signifies missing value  */
-  /*	Consume all = chars  */
-  i = buf->inl[buf->nch++];
-  if (i == '=')
-    goto miss;
-  *x = 0;
-  buf->nch--;
-  return (1);
 }
 
 /*	--------------------  readalf () ------------------------   */
@@ -306,55 +322,51 @@ int read_str(SnobContext *ctx, char *str, int cnl) {
 
   buf = ctx->state.buffer;
   n = 0;
-skip:
-  i = buf->inl[buf->nch++];
-  switch (i) {
-  case '\n':
-    if (!cnl) {
-      buf->nch--;
-      return (2);
+
+  while (1) {
+    i = buf->inl[buf->nch++];
+    if (i == '\n') {
+      if (!cnl) {
+        buf->nch--;
+        return (2);
+      }
+      if (new_line(ctx))
+        return (-1);
+      continue;
     }
-    if (new_line(ctx))
-      return (-1);
-  case ' ':
-  case '\t':
-    goto skip;
-  case '=':
-    goto miss;
+    if (i == ' ' || i == '\t')
+      continue;
+    break;
   }
 
-begun:
-  str[n] = i;
-  n++;
-  if (n >= 80)
-    goto err; /* Too long */
-  i = buf->inl[buf->nch++];
-  switch (i) {
-  case ' ':
-  case '\t':
-  case '\n':
-    goto done;
+  if (i == '=') {
+    while (1) {
+      i = buf->inl[buf->nch++];
+      if (i != '=')
+        break;
+    }
+    *str = 0;
+    buf->nch--;
+    return (1);
   }
-  goto begun;
 
-done:
+  while (1) {
+    str[n] = i;
+    n++;
+    if (n >= 80) {
+      *str = 0;
+      reperror(ctx);
+      return (-1); /* Too long */
+    }
+    i = buf->inl[buf->nch++];
+    if (i == ' ' || i == '\t' || i == '\n') {
+      break;
+    }
+  }
+
   str[n] = 0;
   buf->nch--;
   return (0);
-
-miss: /* An '=' signifies missing value  */
-  /*	Consume all = chars  */
-  i = buf->inl[buf->nch++];
-  if (i == '=')
-    goto miss;
-  *str = 0;
-  buf->nch--;
-  return (1);
-
-err:
-  *str = 0;
-  reperror(ctx);
-  return (-1);
 }
 
 /*	---------------------- readch () -----------------------  */
@@ -364,18 +376,19 @@ int read_char(SnobContext *ctx, int cnl) {
   int i;
 
   buf = ctx->state.buffer;
-skip:
-  i = buf->inl[buf->nch++];
-  if (i == '\n') {
-    if (!cnl) {
-      buf->nch--;
-      return (2);
+  while (1) {
+    i = buf->inl[buf->nch++];
+    if (i == '\n') {
+      if (!cnl) {
+        buf->nch--;
+        return (2);
+      }
+      if (new_line(ctx))
+        return (-1);
+      continue;
     }
-    if (new_line(ctx))
-      return (-1);
-    goto skip;
+    return (i);
   }
-  return (i);
 }
 
 /*	--------------------------  swallow (ctx)	--------------------- */
@@ -385,16 +398,13 @@ void swallow(SnobContext *ctx) {
   int i;
 
   buf = ctx->state.buffer;
-gulp:
-  i = buf->inl[buf->nch];
-  switch (i) {
-  case ' ':
-  case '\t':
-  case '\n':
-    return;
+  while (1) {
+    i = buf->inl[buf->nch];
+    if (i == ' ' || i == '\t' || i == '\n') {
+      return;
+    }
+    buf->nch++;
   }
-  buf->nch++;
-  goto gulp;
 }
 
 /*	--------------------------  bufclose () ------------------  */
