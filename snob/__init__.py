@@ -210,7 +210,7 @@ class SNOBClassifier:
             tol: float = 5e-3,
             name: str = 'mml',
             seed: int = 0,
-            log_level: int = 1,
+            verbose: bool = False,
             from_file: str | Path | None = None,
     ):
         """
@@ -221,11 +221,11 @@ class SNOBClassifier:
         :param tol:  Convergence tolerance. Stops trying if percentage drop in message costs is less than this
         :param name: Internal Name of classifier, default "mml"
         :param seed:  Random number seed, 0 implies no seed.
-        :param log_level: Log level, default 1
+        :param verbose: Whether to print log messages, default False
         :param from_file: File name of saved model to load
         """
 
-        self.ctx = lib.initialize(0, log_level, seed)
+        self.ctx = lib.initialize(0, 0 if verbose else 1, seed)
         self.has_fit = False
         self.file_pending = False
         self.from_file: Path | None = Path(from_file) if from_file is not None else None
@@ -538,7 +538,7 @@ def classify(
         ctx = initialize(log_level=1)
         lib.load_vset(ctx, str(vset_file).encode('utf-8'))
         lib.load_sample(ctx, str(sample_file).encode('utf-8'))
-        lib.peek_data()
+        lib.peek_data(ctx)
         result = lib.classify(ctx, cycles, steps, moves, tol)
         buffer_size = (result.classes + result.leaves) * (result.attrs + 1) * 80 * 4
         buffer = ct.create_string_buffer(buffer_size)
