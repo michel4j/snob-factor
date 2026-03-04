@@ -54,10 +54,8 @@ lib.classify.restype = Classification
 lib.print_class.argtypes = [SnobContextPtr, ct.c_int, ct.c_int]
 lib.item_list.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.get_assignments.restype = ct.c_int
-lib.get_assignments.argtypes = [SnobContextPtr, ct.c_char_p]
-lib.create_vset.argtypes = [SnobContextPtr, ct.c_int]
-lib.create_vset.restype = ct.c_int
-lib.get_class_details.argtypes = [SnobContextPtr, ct.c_int]
+lib.get_assignments.argtypes = [SnobContextPtr, ct.POINTER(ct.c_int), ct.POINTER(ct.c_int), ct.POINTER(ct.c_double), ct.POINTER(ct.c_int), ct.POINTER(ct.c_double)]
+lib.get_class_details.argtypes = [SnobContextPtr, ct.c_char_p, ct.c_size_t]
 lib.get_class_details.restype = ct.c_int
 lib.save_model.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.save_model.restype = ct.c_int
@@ -66,15 +64,15 @@ lib.load_model.restype = Classification
 lib.set_control_flags.argtypes = [SnobContextPtr, ct.c_int]
 lib.set_control_flags.restype = ct.c_int
 # create_vset
-lib.create_vset.argtypes = [SnobContextPtr, ct.c_int]
+lib.create_vset.argtypes = [SnobContextPtr, ct.c_char_p, ct.c_int]
 lib.create_vset.restype = ct.c_int
 
 # set_attribute
-lib.add_attribute.argtypes = [SnobContextPtr, ct.c_int]
+lib.add_attribute.argtypes = [SnobContextPtr, ct.c_int, ct.c_char_p, ct.c_int, ct.c_int]
 lib.add_attribute.restype = ct.c_int
 
 # create_sample
-lib.create_sample.argtypes = [SnobContextPtr, ct.c_int]
+lib.create_sample.argtypes = [SnobContextPtr, ct.c_char_p, ct.c_int, ct.POINTER(ct.c_int), ct.POINTER(ct.c_double)]
 lib.create_sample.restype = ct.c_int
 
 # add_record
@@ -82,11 +80,11 @@ lib.add_record.argtypes = [SnobContextPtr, ct.c_int]
 lib.add_record.restype = ct.c_int
 
 # select_sample
-lib.select_sample.argtypes = [SnobContextPtr, ct.c_int]
-lib.select_population.argtypes = [SnobContextPtr, ct.c_int]
+lib.select_sample.argtypes = [SnobContextPtr, ct.c_char_p]
+lib.select_population.argtypes = [SnobContextPtr, ct.c_char_p]
 
 # print_data
-lib.print_var_datum.argtypes = [SnobContextPtr, ct.c_int]
+lib.print_var_datum.argtypes = [SnobContextPtr, ct.c_int, ct.c_int]
 
 DataType = Literal['real', 'multi-state', 'binary', 'degrees', 'radians']
 
@@ -329,10 +327,10 @@ class SNOBClassifier:
             lib.add_record(self.ctx, i, bytestring)
 
         # sort the samples
-        lib.sort_current_sample()
-        lib.show_smpl_names()
+        lib.sort_current_sample(self.ctx)
+        lib.show_smpl_names(self.ctx)
         lib.report_space(self.ctx, 1)
-        lib.peek_data()
+        lib.peek_data(self.ctx)
         return size
 
     def fit(self, data: pd.DataFrame | NDArray, y: None = None) -> SNOBClassifier:
