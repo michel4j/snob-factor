@@ -44,7 +44,7 @@ void flatten(SnobContext *ctx) {
   do_dads(ctx, 3);
   do_all(ctx, 3, 0);
   if (ctx->interactive & ctx->heard) {
-    log_msg(ctx, 0, "Flatten ends prematurely");
+    log_msg(ctx, 0, "Tree flattening ended prematurely");
   }
   if (ctx->no_subs > 0) {
     ctx->no_subs--;
@@ -184,7 +184,7 @@ int best_insert_dad(SnobContext *ctx, int force) {
   origcost = root->best_cost;
   hiid = ctx->state.popln->hi_class;
   if (ctx->state.popln->num_classes < 4) {
-    log_msg(ctx, 0, "Model has only%2d class", ctx->state.popln->num_classes);
+    log_msg(ctx, 0, "Model has only %2d class", ctx->state.popln->num_classes);
     succ = -1;
     goto alldone;
   }
@@ -280,7 +280,7 @@ alldone:
   newser = 0;
   memcpy(&ctx->state, &oldctx, sizeof(State));
 
-  log_msg(ctx, 0, "Failed ******");
+  log_msg(ctx, 0, "Attempted Move Unsuccessful ******");
   goto finish;
 
 popfails:
@@ -421,7 +421,7 @@ i1done:
   do_all(ctx, 1, 1);
   ctx->control = AdjAll;
   if (ctx->heard) {
-    log_msg(ctx, 0, "BestDelDad ends prematurely");
+    log_msg(ctx, 0, "Parent removals ended prematurely");
     return (0);
   }
   if (root->best_cost < origcost)
@@ -430,11 +430,11 @@ i1done:
   bser = 0;
   memcpy(&ctx->state, &oldctx, sizeof(State));
 
-  log_msg(ctx, 0, "Failed ******");
+  log_msg(ctx, 0, "Attempted Move Unsuccessful ******");
   goto finish;
 
 popfails:
-  log_msg(ctx, 0, "BestDelDad cannot make TrialPop");
+  log_msg(ctx, 0, "Cannot make trial population during parent removal");
   bser = -1;
   goto finish;
 
@@ -499,7 +499,7 @@ kicked:
   nn = find_population(ctx, "work");
   ctx->state.popln = ctx->populations[nn];
 
-  log_msg(ctx, 0, "BinHier ends prematurely");
+  log_msg(ctx, 0, "Binary hierarchy ended prematurely");
   goto finish;
 }
 
@@ -637,7 +637,7 @@ double move_class(SnobContext *ctx, int ser1, int ser2) {
   goto done;
 
 kicked:
-  log_msg(ctx, 0, "Moveclass interrupted prematurely");
+  log_msg(ctx, 0, "Class moves ended prematurely");
 
 nullit:
   drop = -1.0e20;
@@ -767,7 +767,7 @@ alldone:
   do_all(ctx, 1, 1);
   ctx->control = AdjAll;
   if (ctx->heard)
-    log_msg(ctx, 0, "BestMoveClass ends prematurely");
+    log_msg(ctx, 0, "Class moves ended prematurely");
   /*	Setting dogood's target to origcost-1 allows early exit  */
   /*	See if the trial model has improved over original  */
   succ = 1;
@@ -779,12 +779,12 @@ alldone:
   set_bad_move(ctx, 3, bser1, bser2);
   memcpy(&ctx->state, &oldctx, sizeof(State));
 
-  log_msg(ctx, 0, "Failed ******");
+  log_msg(ctx, 0, "Attempted Move Unsuccessful ******");
   goto finish;
 
 popfails:
   succ = -1;
-  log_msg(ctx, 0, "Cannot make TrialPop");
+  log_msg(ctx, 0, "Cannot make trial population during class move");
   goto finish;
 
 winner:
@@ -823,7 +823,7 @@ void try_moves(SnobContext *ctx, int ntry) {
     if (succ)
       nfail = 0;
     if ((ctx->heard) || (ctx->stop)) {
-      log_msg(ctx, 0, "Trymoves ends prematurely");
+      log_msg(ctx, 0, "Move attempts ended prematurely");
       break;
     }
   }
