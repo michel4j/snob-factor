@@ -109,124 +109,136 @@ int load_vset(SnobContext *ctx, const char *filename) {
   VarType *vtype;
   VSetVar *vset_var, *vset_var_list;
   int num_vars;
+  int out = 0;
 
   buf = &bufst;
-  for (i = 0; i < MAX_VSETS; i++)
-    if (!ctx->var_sets[i])
-      goto gotit;
-nospce:
-  printf("No space for VariableSet\n");
-  i = -10;
-  goto error;
+  indx = -1;
+  for (i = 0; i < MAX_VSETS; i++) {
+    if (!ctx->var_sets[i]) {
+      indx = i;
+      break;
+    }
+  }
 
-gotit:
-  indx = i;
-  ctx->state.vset = ctx->var_sets[i] = (VarSet *)malloc(sizeof(VarSet));
-  if (!ctx->state.vset)
-    goto nospce;
+  if (indx < 0) {
+    printf("No space for VariableSet\n");
+    return -10;
+  }
+
+  ctx->state.vset = ctx->var_sets[indx] = (VarSet *)malloc(sizeof(VarSet));
+  if (!ctx->state.vset) {
+    printf("No space for VariableSet\n");
+    return -10;
+  }
+
   ctx->state.vset->id = indx;
   ctx->state.vset->variables = 0;
   ctx->state.vset->blocks = 0;
   strcpy(ctx->state.vset->filename, filename);
   strcpy(buf->cname, ctx->state.vset->filename);
   ctx->state.buffer = buf;
-  if (open_buffser(ctx)) {
-    printf("Cant open variable-set file %s\n", ctx->state.vset->filename);
-    i = -2;
-    goto error;
-  }
 
-  /*	Begin to read variable-set file. First entry is its name   */
-  new_line(ctx);
-  kread = read_str(ctx, ctx->state.vset->name, 1);
-  if (kread < 0) {
-    printf("Error in name of variable-set\n");
-    i = -9;
-    goto error;
-  }
-  /*	Num of variables   */
-  new_line(ctx);
-  kread = read_int(ctx, &num_vars, 1);
-  if (kread) {
-    printf("Cant read number of variables\n");
-    i = -4;
-    goto error;
-  }
-  ctx->state.vset->length = num_vars;
-  ctx->state.vset->num_active = ctx->state.vset->length;
+  do {
+    if (open_buffser(ctx)) {
+      printf("Cant open variable-set file %s\n", ctx->state.vset->filename);
+      out = -2;
+      break;
+    }
 
-  /*	Make a vec of nv VSetVar blocks  */
-  vset_var_list = (VSetVar *)alloc_blocks(ctx, 3, num_vars * sizeof(VSetVar));
-  if (!vset_var_list) {
-    printf("Cannot allocate memory for variables blocks\n");
-    i = -3;
-    goto error;
-  }
-  ctx->state.vset->variables = vset_var_list;
-
-  /*	Read in the info for each variable into vlist   */
-  for (i = 0; i < ctx->state.vset->length; i++) {
-    ctx->state.vset->variables[i].id = -1;
-    ctx->state.vset->variables[i].vaux = 0;
-  }
-  for (i = 0; i < ctx->state.vset->length; i++) {
-    vset_var = &ctx->state.vset->variables[i];
-    vset_var->id = i;
-
-    /*	Read name  */
+    /*	Begin to read variable-set file. First entry is its name   */
     new_line(ctx);
-    kread = read_str(ctx, vset_var->name, 1);
+    kread = read_str(ctx, ctx->state.vset->name, 1);
     if (kread < 0) {
-      printf("Error in name of variable %d\n", i + 1);
-      i = -10;
-      goto error;
+      printf("Error in name of variable-set\n");
+      out = -9;
+      break;
     }
-
-    /*	Read type code. Negative means idle.   */
-    kread = read_int(ctx, &itype, 1);
+    /*	Num of variables   */
+    new_line(ctx);
+    kread = read_int(ctx, &num_vars, 1);
     if (kread) {
-      printf("Cant read type code for var %d\n", i + 1);
-      i = -5;
-      goto error;
+      printf("Cant read number of variables\n");
+      out = -4;
+      break;
     }
-    vset_var->inactive = 0;
-    if (itype < 0) {
-      vset_var->inactive = 1;
-      itype = -itype;
-    }
-    if ((itype < 1) || (itype > ctx->num_types)) {
-      printf("Bad type code %d for var %d\n", itype, i + 1);
-      i = -5;
-      goto error;
-    }
-    itype = itype - 1; /*  Convert types to start at 0  */
-    vtype = vset_var->vtype = &ctx->types[itype];
-    vset_var->type = itype;
+    ctx->state.vset->length = num_vars;
+    ctx->state.vset->num_active = ctx->state.vset->length;
 
-    /*	Make the vaux block  */
-    vaux = (char *)alloc_blocks(ctx, 3, vtype->attr_aux_size);
-    if (!vaux) {
-      printf("Cant make auxilliary var block\n");
-      i = -6;
-      goto error;
+    /*	Make a vec of nv VSetVar blocks  */
+    vset_var_list = (VSetVar *)alloc_blocks(ctx, 3, num_vars * sizeof(VSetVar));
+    if (!vset_var_list) {
+      printf("Cannot allocate memory for variables blocks\n");
+      out = -3;
+      break;
     }
-    vset_var->vaux = vaux;
+    ctx->state.vset->variables = vset_var_list;
 
-    /*	Read auxilliary information   */
-    if ((*vtype->read_aux_attr)(ctx, vaux)) {
-      printf("Error in reading auxilliary info var %d\n", i + 1);
-      i = -7;
-      goto error;
+    /*	Read in the info for each variable into vlist   */
+    for (i = 0; i < ctx->state.vset->length; i++) {
+      ctx->state.vset->variables[i].id = -1;
+      ctx->state.vset->variables[i].vaux = 0;
     }
-    /*	Set sizes of stats and basic blocks for var in classes */
-    (*vtype->set_sizes)(ctx, i);
-  } /* End of variables loop */
-  i = indx;
+    for (i = 0; i < ctx->state.vset->length; i++) {
+      vset_var = &ctx->state.vset->variables[i];
+      vset_var->id = i;
 
-error:
+      /*	Read name  */
+      new_line(ctx);
+      kread = read_str(ctx, vset_var->name, 1);
+      if (kread < 0) {
+        printf("Error in name of variable %d\n", i + 1);
+        out = -10;
+        break; /* Break the for loop */
+      }
+
+      /*	Read type code. Negative means idle.   */
+      kread = read_int(ctx, &itype, 1);
+      if (kread) {
+        printf("Cant read type code for var %d\n", i + 1);
+        out = -5;
+        break; /* Break the for loop */
+      }
+      vset_var->inactive = 0;
+      if (itype < 0) {
+        vset_var->inactive = 1;
+        itype = -itype;
+      }
+      if ((itype < 1) || (itype > ctx->num_types)) {
+        printf("Bad type code %d for var %d\n", itype, i + 1);
+        out = -5;
+        break; /* Break the for loop */
+      }
+      itype = itype - 1; /*  Convert types to start at 0  */
+      vtype = vset_var->vtype = &ctx->types[itype];
+      vset_var->type = itype;
+
+      /*	Make the vaux block  */
+      vaux = (char *)alloc_blocks(ctx, 3, vtype->attr_aux_size);
+      if (!vaux) {
+        printf("Cant make auxilliary var block\n");
+        out = -6;
+        break; /* Break the for loop */
+      }
+      vset_var->vaux = vaux;
+
+      /*	Read auxilliary information   */
+      if ((*vtype->read_aux_attr)(ctx, vaux)) {
+        printf("Error in reading auxilliary info var %d\n", i + 1);
+        out = -7;
+        break; /* Break the for loop */
+      }
+      /*	Set sizes of stats and basic blocks for var in classes */
+      (*vtype->set_sizes)(ctx, i);
+    } /* End of variables loop */
+
+    if (out < 0)
+      break; /* Break the do-while loop if inner loop errored */
+    out = indx;
+  } while (0);
+
   close_buffer(ctx);
   ctx->state.buffer = ctx->current_source;
-  return (i);
+  return out;
 }
 
 /// @brief Create an empty VSet and set it as the active one ready for adding
@@ -290,7 +302,8 @@ int add_attribute(SnobContext *ctx, int index, const char *name, int itype,
   VarType *vtype;
   VSetVar *vset_var;
 
-  if ((index < ctx->state.vset->length) && (itype > 0) && (itype <= ctx->num_types)) {
+  if ((index < ctx->state.vset->length) && (itype > 0) &&
+      (itype <= ctx->num_types)) {
     vset_var = &ctx->state.vset->variables[index];
     vset_var->id = index;
     strcpy(vset_var->name, name);
@@ -334,189 +347,204 @@ int load_sample(SnobContext *ctx, const char *fname) {
   SampleVar *smpl_var, *smpl_var_list;
   int num_cases, record_length;
   char *field;
+  int out = 0;
+  int indx = -1;
 
   memcpy(&oldctx, &ctx->state, sizeof(State));
   buf = &bufst;
   strcpy(buf->cname, fname);
   ctx->state.buffer = buf;
-  if (open_buffser(ctx)) {
-    printf("Cannot open sample file %s\n", buf->cname);
-    i = -2;
-    goto error;
-  }
 
-  /*	Begin to read sample file. First entry is its name   */
-  new_line(ctx);
-  kread = read_str(ctx, sampname, 1);
-  if (kread < 0) {
-    printf("Error in name of sample\n");
-    i = -9;
-    goto error;
-  }
-  /*	See if sample already loaded  */
-  if (find_sample(ctx, sampname, 0) >= 0) {
-    printf("Sample %s already present\n", sampname);
-    i = -8;
-    goto error;
-  }
-  /*	Next line should be the vset name  */
-  new_line(ctx);
-  kread = read_str(ctx, vstnam, 1);
-  if (kread < 0) {
-    printf("Error in name of variableset\n");
-    i = -9;
-    goto error;
-  }
-  /*	Check vset known  */
-  kread = find_vset(ctx, vstnam);
-  if (kread < 0) {
-    printf("Variableset %s unknown\n", vstnam);
-    i = -8;
-    goto error;
-  }
-  ctx->state.vset = ctx->var_sets[kread];
-
-  /*	Find a vacant sample slot  */
-  for (i = 0; i < MAX_SAMPLES; i++) {
-    if (ctx->samples[i] == 0)
-      goto gotit;
-  }
-  goto nospace;
-
-gotit:
-  ctx->state.sample = ctx->samples[i] = (Sample *)malloc(sizeof(Sample));
-  if (!ctx->state.sample)
-    goto nospace;
-
-  ctx->state.sample->blocks = 0;
-  ctx->state.sample->id = i;
-  strcpy(ctx->state.sample->filename, buf->cname);
-  strcpy(ctx->state.sample->name, sampname);
-  /*	Set variable-set name in sample  */
-  strcpy(ctx->state.sample->vset_name, ctx->state.vset->name);
-
-  /*	Make a vec of nv SampleVar blocks  */
-  smpl_var_list = (SampleVar *)alloc_blocks(
-      ctx, 0, ctx->state.vset->length * sizeof(SampleVar));
-  if (!smpl_var_list) {
-    printf("Cannot allocate memory for variables blocks\n");
-    i = -3;
-    goto error;
-  }
-  ctx->state.sample->variables = smpl_var_list;
-
-  /*	Read in the info for each variable into svars   */
-  for (i = 0; i < ctx->state.vset->length; i++) {
-    smpl_var_list[i].id = -1;
-    smpl_var_list[i].saux = 0;
-    smpl_var_list[i].offset = 0;
-    smpl_var_list[i].nval = 0;
-  }
-  record_length = 1 + sizeof(int); /* active flag and ident  */
-  for (i = 0; i < ctx->state.vset->length; i++) {
-    smpl_var = &ctx->state.sample->variables[i];
-    vset_var = &ctx->state.vset->variables[i];
-    smpl_var->id = i;
-    vtype = vset_var->vtype;
-
-    /*	Make the saux block  */
-    saux = (char *)alloc_blocks(ctx, 0, vtype->smpl_aux_size);
-    if (!saux) {
-      printf("Cant make auxilliary var block\n");
-      i = -6;
-      goto error;
-    }
-    smpl_var->saux = saux;
-
-    /*	Read auxilliary information   */
-    if ((*vtype->read_aux_smpl)(ctx, saux)) {
-      printf("Error in reading auxilliary info var %d\n", i + 1);
-      i = -7;
-      goto error;
+  do {
+    if (open_buffser(ctx)) {
+      printf("Cannot open sample file %s\n", buf->cname);
+      out = -2;
+      break;
     }
 
-    /*	Set the offset of the (missing, value) pair  */
-    smpl_var->offset = record_length;
-    record_length += (1 + vtype->data_size); /* missing flag and value */
-  } /* End of variables loop */
-
-  /*	Now attempt to read in the data. The first item is the number of cases*/
-  new_line(ctx);
-  kread = read_int(ctx, &num_cases, 1);
-  if (kread) {
-    printf("Cant read number of cases\n");
-    i = -11;
-    goto error;
-  }
-  ctx->state.sample->num_cases = num_cases;
-  ctx->state.sample->num_active = 0;
-  /*	Make a vector of nc records each of size reclen  */
-  ctx->state.sample->records = field =
-      (char *)alloc_blocks(ctx, 0, num_cases * record_length);
-  if (!field) {
-    printf("No space for data\n");
-    i = -8;
-    goto error;
-  }
-  ctx->state.sample->record_length = record_length;
-
-  /*	Read in the data cases, each preceded by an active flag and ident   */
-  for (n = 0; n < num_cases; n++) {
+    /*	Begin to read sample file. First entry is its name   */
     new_line(ctx);
-    kread = read_int(ctx, &caseid, 1);
-    if (kread) {
-      printf("Cant read ident, case %d\n", n + 1);
-      i = -12;
-      goto error;
+    kread = read_str(ctx, sampname, 1);
+    if (kread < 0) {
+      printf("Error in name of sample\n");
+      out = -9;
+      break;
     }
-    /*	If ident negative, so clear active */
-    if (caseid < 0) {
-      caseid = -caseid;
-      *field = 0;
-    } else {
-      *field = 1;
-      ctx->state.sample->num_active++;
+    /*	See if sample already loaded  */
+    if (find_sample(ctx, sampname, 0) >= 0) {
+      printf("Sample %s already present\n", sampname);
+      out = -8;
+      break;
     }
-    field++;
-    memcpy(field, &caseid, sizeof(int));
-    field += sizeof(int);
-    /*	Posn now points to where the (missing, val) pair for the
-    attribute should start.  */
+    /*	Next line should be the vset name  */
+    new_line(ctx);
+    kread = read_str(ctx, vstnam, 1);
+    if (kread < 0) {
+      printf("Error in name of variableset\n");
+      out = -9;
+      break;
+    }
+    /*	Check vset known  */
+    kread = find_vset(ctx, vstnam);
+    if (kread < 0) {
+      printf("Variableset %s unknown\n", vstnam);
+      out = -8;
+      break;
+    }
+    ctx->state.vset = ctx->var_sets[kread];
+
+    /*	Find a vacant sample slot  */
+    for (i = 0; i < MAX_SAMPLES; i++) {
+      if (ctx->samples[i] == 0) {
+        indx = i;
+        break;
+      }
+    }
+    if (indx < 0) {
+      printf("No space for another sample\n");
+      out = -1;
+      break;
+    }
+
+    ctx->state.sample = ctx->samples[indx] = (Sample *)malloc(sizeof(Sample));
+    if (!ctx->state.sample) {
+      printf("No space for another sample\n");
+      out = -1;
+      break;
+    }
+
+    ctx->state.sample->blocks = 0;
+    ctx->state.sample->id = indx;
+    strcpy(ctx->state.sample->filename, buf->cname);
+    strcpy(ctx->state.sample->name, sampname);
+    /*	Set variable-set name in sample  */
+    strcpy(ctx->state.sample->vset_name, ctx->state.vset->name);
+
+    /*	Make a vec of nv SampleVar blocks  */
+    smpl_var_list = (SampleVar *)alloc_blocks(
+        ctx, 0, ctx->state.vset->length * sizeof(SampleVar));
+    if (!smpl_var_list) {
+      printf("Cannot allocate memory for variables blocks\n");
+      out = -3;
+      break;
+    }
+    ctx->state.sample->variables = smpl_var_list;
+
+    /*	Read in the info for each variable into svars   */
+    for (i = 0; i < ctx->state.vset->length; i++) {
+      smpl_var_list[i].id = -1;
+      smpl_var_list[i].saux = 0;
+      smpl_var_list[i].offset = 0;
+      smpl_var_list[i].nval = 0;
+    }
+    record_length = 1 + sizeof(int); /* active flag and ident  */
     for (i = 0; i < ctx->state.vset->length; i++) {
       smpl_var = &ctx->state.sample->variables[i];
       vset_var = &ctx->state.vset->variables[i];
+      smpl_var->id = i;
       vtype = vset_var->vtype;
-      kread = (*vtype->read_datum)(ctx, field + 1, i);
-      if (kread < 0) {
-        printf("Data error case %d var %d\n", n + 1, i + 1);
-        swallow(ctx);
-      }
-      if (kread)
-        *field = 1; /* Data missing */
-      else {
-        *field = 0;
-        smpl_var->nval++;
-      }
-      field += (vtype->data_size + 1);
-    }
-    ctx->state.sample->num_added++;
-  }
-  printf("Number of active cases = %d\n", ctx->state.sample->num_active);
-  close_buffer(ctx);
-  ctx->state.buffer = ctx->current_source;
-  if (sort_sample(ctx, ctx->state.sample)) {
-    printf("Sort failure on sample\n");
-    return (-1);
-  }
-  return (ctx->state.sample->id);
 
-nospace:
-  printf("No space for another sample\n");
-  i = -1;
-error:
+      /*	Make the saux block  */
+      saux = (char *)alloc_blocks(ctx, 0, vtype->smpl_aux_size);
+      if (!saux) {
+        printf("Cant make auxilliary var block\n");
+        out = -6;
+        break;
+      }
+      smpl_var->saux = saux;
+
+      /*	Read auxilliary information   */
+      if ((*vtype->read_aux_smpl)(ctx, saux)) {
+        printf("Error in reading auxilliary info var %d\n", i + 1);
+        out = -7;
+        break;
+      }
+
+      /*	Set the offset of the (missing, value) pair  */
+      smpl_var->offset = record_length;
+      record_length += (1 + vtype->data_size); /* missing flag and value */
+    } /* End of variables loop */
+    if (out < 0)
+      break;
+
+    /*	Now attempt to read in the data. The first item is the number of cases*/
+    new_line(ctx);
+    kread = read_int(ctx, &num_cases, 1);
+    if (kread) {
+      printf("Cant read number of cases\n");
+      out = -11;
+      break;
+    }
+    ctx->state.sample->num_cases = num_cases;
+    ctx->state.sample->num_active = 0;
+    /*	Make a vector of nc records each of size reclen  */
+    ctx->state.sample->records = field =
+        (char *)alloc_blocks(ctx, 0, num_cases * record_length);
+    if (!field) {
+      printf("No space for data\n");
+      out = -8;
+      break;
+    }
+    ctx->state.sample->record_length = record_length;
+
+    /*	Read in the data cases, each preceded by an active flag and ident   */
+    for (n = 0; n < num_cases; n++) {
+      new_line(ctx);
+      kread = read_int(ctx, &caseid, 1);
+      if (kread) {
+        printf("Cant read ident, case %d\n", n + 1);
+        out = -12;
+        break;
+      }
+      /*	If ident negative, so clear active */
+      if (caseid < 0) {
+        caseid = -caseid;
+        *field = 0;
+      } else {
+        *field = 1;
+        ctx->state.sample->num_active++;
+      }
+      field++;
+      memcpy(field, &caseid, sizeof(int));
+      field += sizeof(int);
+      /*	Posn now points to where the (missing, val) pair for the
+      attribute should start.  */
+      for (i = 0; i < ctx->state.vset->length; i++) {
+        smpl_var = &ctx->state.sample->variables[i];
+        vset_var = &ctx->state.vset->variables[i];
+        vtype = vset_var->vtype;
+        kread = (*vtype->read_datum)(ctx, field + 1, i);
+        if (kread < 0) {
+          printf("Data error case %d var %d\n", n + 1, i + 1);
+          swallow(ctx);
+        }
+        if (kread)
+          *field = 1; /* Data missing */
+        else {
+          *field = 0;
+          smpl_var->nval++;
+        }
+        field += (vtype->data_size + 1);
+      }
+      ctx->state.sample->num_added++;
+    }
+    if (out < 0)
+      break;
+
+    printf("Number of active cases = %d\n", ctx->state.sample->num_active);
+    close_buffer(ctx);
+    ctx->state.buffer = ctx->current_source;
+    if (sort_sample(ctx, ctx->state.sample)) {
+      printf("Sort failure on sample\n");
+      return (-1);
+    }
+    return (ctx->state.sample->id);
+
+  } while (0);
+
   close_buffer(ctx);
   memcpy(&ctx->state, &oldctx, sizeof(State));
-  return (i);
+  return (out);
 }
 
 /*	-----------------------  sname2id  ------------------------  */
@@ -524,21 +552,22 @@ error:
 /*	'expect' shows if sample expected to be present  */
 int find_sample(SnobContext *ctx, char *nam, int expect) {
   int i;
+  int found = -1;
 
   for (i = 0; i < MAX_SAMPLES; i++) {
     if (ctx->samples[i]) {
-      if (!strcmp(nam, ctx->samples[i]->name))
-        goto searched;
+      if (!strcmp(nam, ctx->samples[i]->name)) {
+        found = i;
+        break;
+      }
     }
   }
-  i = -1;
 
-searched:
-  if ((i < 0) && expect)
+  if ((found < 0) && expect)
     printf("Cannot find sample %s\n", nam);
-  if ((i >= 0) && (!expect))
+  if ((found >= 0) && (!expect))
     printf("Sample %s already loaded\n", nam);
-  return (i);
+  return (found);
 }
 
 /// @brief Create an empty sample ready for loading data
@@ -580,7 +609,8 @@ int create_sample(SnobContext *ctx, char *name, int size, int *units,
         out = -1;
         break;
       }
-      ctx->state.sample = ctx->samples[found] = (Sample *)malloc(sizeof(Sample));
+      ctx->state.sample = ctx->samples[found] =
+          (Sample *)malloc(sizeof(Sample));
       if (!ctx->state.sample) {
         log_msg(ctx, 2, "No space for data");
         out = -1;
@@ -748,84 +778,91 @@ void qssamp1(SnobContext *ctx, char *bot, int nn, int len) {
   char *top, *rp1, *rp2, *cen;
   int av, bv, cv, nb, nt;
 
-again:
-  if (nn < 2)
-    return;
-  if (nn >= 6)
-    goto recurse;
-  /*	Do a short block by bubble  */
-  rp1 = bot;
-  for (nt = 0; nt < nn - 1; nt++) {
-    memcpy(&bv, rp1 + 1, sizeof(int));
-    rp2 = cen = rp1;
-    for (nb = nt + 1; nb < nn; nb++) {
-      rp2 += len;
-      memcpy(&av, rp2 + 1, sizeof(int));
-      if (av < bv) {
-        bv = av;
-        cen = rp2;
+  while (1) {
+    if (nn < 2)
+      return;
+
+    if (nn < 6) {
+      /*	Do a short block by bubble  */
+      rp1 = bot;
+      for (nt = 0; nt < nn - 1; nt++) {
+        memcpy(&bv, rp1 + 1, sizeof(int));
+        rp2 = cen = rp1;
+        for (nb = nt + 1; nb < nn; nb++) {
+          rp2 += len;
+          memcpy(&av, rp2 + 1, sizeof(int));
+          if (av < bv) {
+            bv = av;
+            cen = rp2;
+          }
+        }
+        if (cen != rp1)
+          swaprec(cen, rp1, len);
+        rp1 += len;
       }
+      return;
     }
-    if (cen != rp1)
-      swaprec(cen, rp1, len);
-    rp1 += len;
-  }
-  return;
 
-recurse:
-  /*	Pick a random central value  */
-  nt = nn * rand_float(ctx);
-  if (nt == nn)
-    nt = nn / 2;
-  cen = bot + nt * len;
-  memcpy(&cv, cen + 1, sizeof(int));
-  top = bot + (nn - 1) * len;
-  rp1 = bot;
-  rp2 = top;
-  nt = nb = 0;
-loop1:
-  memcpy(&av, rp2 + 1, sizeof(int));
-  if (av >= cv) {
-    nt++;
-    rp2 -= len;
-    if (rp2 >= rp1)
-      goto loop1;
-    else
-      goto done;
-  }
-loop2:
-  memcpy(&bv, rp1 + 1, sizeof(int));
-  if (bv < cv) {
-    nb++;
-    rp1 += len;
-    if (rp2 >= rp1)
-      goto loop2;
-    else
-      goto done;
-  }
-  /*	Have av < cv, bv >= cv  */
-  swaprec(rp1, rp2, len);
-  nt++;
-  rp2 -= len;
-  nb++;
-  rp1 += len;
-  if (rp2 >= rp1)
-    goto loop1;
+    /*	Pick a random central value  */
+    nt = nn * rand_float(ctx);
+    if (nt == nn)
+      nt = nn / 2;
+    cen = bot + nt * len;
+    memcpy(&cv, cen + 1, sizeof(int));
+    top = bot + (nn - 1) * len;
+    rp1 = bot;
+    rp2 = top;
+    nt = nb = 0;
 
-done:
-  /*	Check that something has been placed in lower block.  */
-  if (nb)
-    goto doboth;
-  /*	Nothing was less than cv, the value at cen, so swap it to bot */
-  swaprec(cen, bot, len);
-  nn--;
-  bot += len;
-  goto again;
+    while (rp2 >= rp1) {
+      /* Advance rp2 until we find a value < cv */
+      while (rp2 >= rp1) {
+        memcpy(&av, rp2 + 1, sizeof(int));
+        if (av >= cv) {
+          nt++;
+          rp2 -= len;
+        } else {
+          break;
+        }
+      }
 
-doboth:
-  qssamp1(ctx, bot, nb, len);
-  qssamp1(ctx, bot + nb * len, nt, len);
-  return;
+      if (rp2 < rp1)
+        break;
+
+      /* Advance rp1 until we find a value >= cv */
+      while (rp2 >= rp1) {
+        memcpy(&bv, rp1 + 1, sizeof(int));
+        if (bv < cv) {
+          nb++;
+          rp1 += len;
+        } else {
+          break;
+        }
+      }
+
+      if (rp2 < rp1)
+        break;
+
+      /*	Have av < cv, bv >= cv  */
+      swaprec(rp1, rp2, len);
+      nt++;
+      rp2 -= len;
+      nb++;
+      rp1 += len;
+    }
+
+    /*	Check that something has been placed in lower block.  */
+    if (nb) {
+      qssamp1(ctx, bot, nb, len);
+      qssamp1(ctx, bot + nb * len, nt, len);
+      return;
+    }
+
+    /*	Nothing was less than cv, the value at cen, so swap it to bot */
+    swaprec(cen, bot, len);
+    nn--;
+    bot += len;
+  }
 }
 
 int sort_sample(SnobContext *ctx, Sample *samp) {
@@ -858,20 +895,21 @@ int find_sample_index(SnobContext *ctx, int id) {
   len = ctx->state.sample->record_length;
   iu = ctx->state.sample->num_cases;
   il = 0;
-chop:
-  ic = (iu + il) >> 1;
-  memcpy(&cid, recs + ic * len, sizeof(int));
-  if (ic == il)
-    goto chopped;
-  if (cid > id) {
-    iu = ic;
-    goto chop;
+
+  while (1) {
+    ic = (iu + il) >> 1;
+    memcpy(&cid, recs + ic * len, sizeof(int));
+    if (ic == il)
+      break;
+    if (cid > id) {
+      iu = ic;
+    } else if (cid < id) {
+      il = ic;
+    } else {
+      break;
+    }
   }
-  if (cid < id) {
-    il = ic;
-    goto chop;
-  }
-chopped:
+
   return ((cid == id) ? ic : -1);
 }
 
@@ -937,7 +975,8 @@ int item_list(SnobContext *ctx, char *tlstname) {
     record = ctx->state.sample->records + nn * ctx->state.sample->record_length;
     memcpy(&tid, record + 1, sizeof(int));
     fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, ctx->sons[bc]->serial >> 2,
-            ctx->sons[bl]->serial >> 2, ScoreRScale * ctx->sons[bl]->factor_scores[nn]);
+            ctx->sons[bl]->serial >> 2,
+            ScoreRScale * ctx->sons[bl]->factor_scores[nn]);
   }
 
   fclose(tlst);

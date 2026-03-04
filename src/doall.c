@@ -226,7 +226,8 @@ void tidy(SnobContext *ctx, int hit, int no_subs) {
       dad = popln->classes[i];
       // Check if conditions are met to make subclasses
       if (dad->type == Leaf && !dad->num_sons &&
-          dad->weights_sum >= (2.1 * ctx->min_size) && dad->age >= ctx->min_age) {
+          dad->weights_sum >= (2.1 * ctx->min_size) &&
+          dad->age >= ctx->min_age) {
         make_subclasses(ctx, i);
         kkd++;
       }
@@ -451,7 +452,8 @@ int do_all(SnobContext *ctx, int ncycles, int all) {
       niter = nfail = 0;
       continue;
     }
-    if (((ctx->interactive) && (!ctx->use_stdin) && hark(ctx, CommsBuffer.inl)) ||
+    if (((ctx->interactive) && (!ctx->use_stdin) &&
+         hark(ctx, CommsBuffer.inl)) ||
         (ctx->stop)) {
       kicked = 1;
       break;
@@ -507,39 +509,51 @@ int do_dads(SnobContext *ctx, int ncy) {
     /*	Begin a recursive scan of classes down to leaves   */
     cls = root;
 
-  newdad:
-    if (cls->type == Leaf)
-      goto complete;
-    cls->dad_par_cost = 0.0;
-    cls->relab = cls->weights_sum = 0.0;
-    dad = cls;
-    cls = popln->classes[cls->son_id];
-    goto newdad;
+    while (1) {
+      /* Traverse down to the leftmost leaf */
+      while (cls->type != Leaf) {
+        cls->dad_par_cost = 0.0;
+        cls->relab = cls->weights_sum = 0.0;
+        dad = cls;
+        cls = popln->classes[cls->son_id];
+      }
 
-  complete:
-    /*	If a leaf, use adjustclass, else use ncostvarall  */
-    if (cls->type == Leaf) {
-      ctx->control = Tweak;
-      adjust_class(ctx, cls, 0);
-    } else {
-      ctx->control = AdjPr;
-      parent_cost_all_vars(ctx, cls, 1);
-      cls->best_par_cost = cls->dad_par_cost;
-    }
-    if (cls->dad_id < 0)
-      goto alladjusted;
-    dad = popln->classes[cls->dad_id];
-    dad->dad_par_cost += cls->best_par_cost;
-    dad->weights_sum += cls->weights_sum;
-    dad->relab += cls->relab;
-    if (cls->sib_id >= 0) {
-      cls = popln->classes[cls->sib_id];
-      goto newdad;
-    }
-    cls = dad;
-    goto complete;
+      /* Traverse up and right */
+      int all_adjusted = 0;
+      while (1) {
+        /*	If a leaf, use adjustclass, else use ncostvarall  */
+        if (cls->type == Leaf) {
+          ctx->control = Tweak;
+          adjust_class(ctx, cls, 0);
+        } else {
+          ctx->control = AdjPr;
+          parent_cost_all_vars(ctx, cls, 1);
+          cls->best_par_cost = cls->dad_par_cost;
+        }
 
-  alladjusted:
+        if (cls->dad_id < 0) {
+          all_adjusted = 1;
+          break;
+        }
+
+        dad = popln->classes[cls->dad_id];
+        dad->dad_par_cost += cls->best_par_cost;
+        dad->weights_sum += cls->weights_sum;
+        dad->relab += cls->relab;
+
+        if (cls->sib_id >= 0) {
+          cls = popln->classes[cls->sib_id];
+          break; /* Break the inner traversal loop to go down again starting at
+                    the sibling */
+        }
+        cls = dad;
+      }
+
+      if (all_adjusted) {
+        break; /* Done with tree traversal */
+      }
+    }
+
     root->best_par_cost = root->dad_par_cost;
     root->best_cost = root->dad_par_cost + root->cntcost;
     /*	Test for convergence  */
@@ -568,6 +582,7 @@ int do_good(SnobContext *ctx, int ncy, double target) {
   double oldcost;
   Population *popln = ctx->state.popln;
   Class *root = popln->classes[popln->root];
+  int done = 0;
 
   do_all(ctx, 1, 1);
   for (nn = 0; nn < 6; nn++)
@@ -581,29 +596,32 @@ int do_good(SnobContext *ctx, int ncy, double target) {
     else
       nfail++;
     rep(ctx, (nfail) ? 'g' : 'G');
-    if (ctx->heard)
-      goto kicked;
-    if (nfail > 2)
-      goto done;
-    if (root->best_cost < target)
-      goto bullseye;
+    if (ctx->heard) {
+      log_msg(ctx, 1, "Dogood interrupted after %4d cycles", nn);
+      done = 1;
+      break;
+    }
+    if (nfail > 2) {
+      done = 1;
+      break;
+    }
+    if (root->best_cost < target) {
+      log_msg(ctx, 1, "Dogood reached target after %4d cycles", nn);
+      done = 1;
+      break;
+    }
     /*	See if new cost significantly better than cost 5 cycles ago */
     for (j = 0; j < 5; j++)
       olddogcosts[j] = olddogcosts[j + 1];
     olddogcosts[5] = root->best_cost;
-    if ((olddogcosts[0] - olddogcosts[5]) < 0.2)
-      goto done;
+    if ((olddogcosts[0] - olddogcosts[5]) < 0.2) {
+      done = 1;
+      break;
+    }
   }
-  nn = -1;
-  goto done;
-
-bullseye:
-  log_msg(ctx, 1, "Dogood reached target after %4d cycles", nn);
-  goto done;
-
-kicked:
-  log_msg(ctx, 1, "Dogood interrupted after %4d cycles", nn);
-done:
+  if (!done) {
+    nn = -1;
+  }
   return (nn);
 }
 
@@ -657,7 +675,8 @@ void do_case(SnobContext *ctx, int item, int all, int derivs, int num_son) {
   while (clc < num_son) {
     cls = ctx->sons[clc];
     set_class_score(ctx, cls, item);
-    if ((!ctx->see_all) && (ctx->scores.CaseFacInt & 1)) { /* Ignore this and decendants */
+    if ((!ctx->see_all) &&
+        (ctx->scores.CaseFacInt & 1)) { /* Ignore this and decendants */
       clc = ctx->next_ic[clc];
       continue;
     } else if (!ctx->see_all)
@@ -806,7 +825,8 @@ void do_case(SnobContext *ctx, int item, int all, int derivs, int num_son) {
         else
           cls->dad_case_cost = low + log(w2);
       }
-      /*	Assign randomly if sub age 0, or to-best if sub age < ctx->min_age */
+      /*	Assign randomly if sub age 0, or to-best if sub age <
+       * ctx->min_age */
       if (sub1->age < ctx->min_age) {
         if (sub1->age == 0) {
           w1 = (rand_int(ctx) < 0) ? 1.0 : 0.0;
