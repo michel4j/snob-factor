@@ -4,6 +4,7 @@ import ctypes as ct
 import json
 import os
 import struct
+import atexit
 import time
 import uuid
 from enum import IntFlag, auto
@@ -17,8 +18,6 @@ import pandas as pd
 # Load the shared library
 lib_path = os.path.join(os.path.dirname(__file__), '_snob.so')
 lib = ct.CDLL(lib_path)
-
-LOG_LEVEL = 1
 
 
 class SnobContext(ct.Structure):
@@ -39,50 +38,55 @@ class Classification(ct.Structure):
     ]
 
 
-lib.initialize.argtypes = [initialize]
+lib.initialize.argtypes = [ct.c_int, ct.c_int, ct.c_int]
 lib.initialize.restype = SnobContextPtr
+lib.destroy_context.argtypes = [SnobContextPtr]
+lib.destroy_context.restype = None
 lib.init_population.restype = ct.c_int
-lib.load_vset.argtypes = [SnobContextPtr, load_vset]
+lib.load_vset.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.load_vset.restype = ct.c_int
-lib.load_sample.argtypes = [SnobContextPtr, load_sample]
+lib.load_sample.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.load_sample.restype = ct.c_int
-lib.report_space.argtypes = [SnobContextPtr, report_space]
+lib.report_space.argtypes = [SnobContextPtr, ct.c_int]
 lib.report_space.restype = ct.c_int
-lib.classify.argtypes = [SnobContextPtr, classify]
+lib.classify.argtypes = [SnobContextPtr, ct.c_int, ct.c_int, ct.c_int, ct.c_double]
 lib.classify.restype = Classification
-lib.print_class.argtypes = [SnobContextPtr, print_class]
-lib.item_list.argtypes = [SnobContextPtr, item_list]
+lib.print_class.argtypes = [SnobContextPtr, ct.c_int, ct.c_int]
+lib.item_list.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.get_assignments.restype = ct.c_int
-lib.get_assignments.argtypes = [SnobContextPtr, get_assignments]
-lib.create_vset.argtypes = [SnobContextPtr, create_vset]
-lib.get_class_details.argtypes = [SnobContextPtr, get_class_details]
-lib.save_model.argtypes = [SnobContextPtr, save_model]
+lib.get_assignments.argtypes = [SnobContextPtr, ct.c_char_p]
+lib.create_vset.argtypes = [SnobContextPtr, ct.c_int]
+lib.create_vset.restype = ct.c_int
+lib.get_class_details.argtypes = [SnobContextPtr, ct.c_int]
+lib.get_class_details.restype = ct.c_int
+lib.save_model.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.save_model.restype = ct.c_int
-lib.load_model.argtypes = [SnobContextPtr, load_model]
+lib.load_model.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.load_model.restype = Classification
-lib.set_control_flags.argtypes = [SnobContextPtr, set_control_flags]
+lib.set_control_flags.argtypes = [SnobContextPtr, ct.c_int]
+lib.set_control_flags.restype = ct.c_int
 # create_vset
-lib.create_vset.argtypes = [SnobContextPtr, create_vset]
+lib.create_vset.argtypes = [SnobContextPtr, ct.c_int]
 lib.create_vset.restype = ct.c_int
 
 # set_attribute
-lib.add_attribute.argtypes = [SnobContextPtr, add_attribute]
+lib.add_attribute.argtypes = [SnobContextPtr, ct.c_int]
 lib.add_attribute.restype = ct.c_int
 
 # create_sample
-lib.create_sample.argtypes = [SnobContextPtr, create_sample]
+lib.create_sample.argtypes = [SnobContextPtr, ct.c_int]
 lib.create_sample.restype = ct.c_int
 
 # add_record
-lib.add_record.argtypes = [SnobContextPtr, add_record]
+lib.add_record.argtypes = [SnobContextPtr, ct.c_int]
 lib.add_record.restype = ct.c_int
 
 # select_sample
-lib.select_sample.argtypes = [SnobContextPtr, select_sample]
-lib.select_population.argtypes = [SnobContextPtr, select_population]
+lib.select_sample.argtypes = [SnobContextPtr, ct.c_int]
+lib.select_population.argtypes = [SnobContextPtr, ct.c_int]
 
 # print_data
-lib.print_var_datum.argtypes = [SnobContextPtr, print_var_datum]
+lib.print_var_datum.argtypes = [SnobContextPtr, ct.c_int]
 
 DataType = Literal['real', 'multi-state', 'binary', 'degrees', 'radians']
 
@@ -124,7 +128,31 @@ class Timer:
         )
 
 
-class CategoryEncoder:
+class Encoder:
+    """
+    Base class for encoders
+    """
+    def __call__(self, value: Any) -> Any:
+        raise NotImplementedError
+    
+    def set_states(self, states: Sequence[Any]):
+        pass
+
+
+class SimpleEncoder(Encoder):
+    """
+    A simple encoder that returns the value as a given type
+    """
+    type_: type
+
+    def __init__(self, type_):
+        self.type_ = type_
+    
+    def __call__(self, value: Any) -> Any:
+        return self.type_(value)
+
+
+class CategoryEncoder(Encoder):
     """
     Keep a sorted list of states for converting categories to integers
     """
@@ -184,6 +212,7 @@ class SNOBClassifier:
             tol: float = 5e-3,
             name: str = 'mml',
             seed: int = 0,
+            log_level: int = 1,
             from_file: str | Path | None = None,
     ):
         """
@@ -194,13 +223,14 @@ class SNOBClassifier:
         :param tol:  Convergence tolerance. Stops trying if percentage drop in message costs is less than this
         :param name: Internal Name of classifier, default "mml"
         :param seed:  Random number seed, 0 implies no seed.
+        :param log_level: Log level, default 1
         :param from_file: File name of saved model to load
         """
 
-        self.ctx = lib.initialize(0, 0, self.seed)
+        self.ctx = lib.initialize(0, log_level, seed)
         self.has_fit = False
         self.file_pending = False
-        self.from_file = Path(from_file) if from_file is not None else None
+        self.from_file: Path | None = Path(from_file) if from_file is not None else None
         self.attrs = attrs
         self.columns = list(self.attrs.keys())
         self.cycles = cycles
@@ -213,7 +243,7 @@ class SNOBClassifier:
         self.num_features = len(attrs)
         self.seed = seed
         self.summary = None
-        self.encoder = {}
+        self.encoder: Dict[str, Encoder] = {}
         self.format = ''.join(
             self.TypeFormat[type_] for field, type_ in self.attrs.items()
         )
@@ -223,11 +253,10 @@ class SNOBClassifier:
             if type_ in ['binary', 'multi-state']:
                 self.encoder[name] = CategoryEncoder()
             else:
-                self.encoder[name] = float
+                self.encoder[name] = SimpleEncoder(float)
 
-        if self.from_file is not None and self.from_file.exists():
-            self.has_fit = True
-            self.file_pending = True
+        if self.from_file is not None:
+            self.file_pending = self.has_fit = self.from_file.exists()
 
     @staticmethod
     def get_precision(col) -> float:
@@ -317,7 +346,6 @@ class SNOBClassifier:
             data = pd.DataFrame({field: data[:,i] for i, field in enumerate(self.columns)})
 
         with Timer():
-            initialize(log_level=LOG_LEVEL, seed=self.seed)
             self.add_vset(data)
             self.num_records = self.add_data(data, name=self.name)
             result = lib.classify(self.ctx, self.cycles, self.steps, self.moves, self.tol)
@@ -370,8 +398,7 @@ class SNOBClassifier:
         lib.get_class_details(self.ctx, buffer, buffer_size)
         return json.loads(buffer.value.decode('utf-8'))
 
-    @staticmethod
-    def fetch_assignments(size: int) -> pd.DataFrame:
+    def fetch_assignments(self, size: int) -> pd.DataFrame:
         """
         Get the assignments for all records
         :param size: Number of records
@@ -414,7 +441,6 @@ class SNOBClassifier:
             return pd.DataFrame()
         elif self.file_pending and data is not None:
             self.file_pending = False
-            initialize(log_level=LOG_LEVEL, seed=self.seed)
             set_control_flags(self.ctx, Adjust.SCORES)
             self.add_vset(data)
             self.num_records = self.add_data(data, name=sample_name)
@@ -455,7 +481,17 @@ def initialize(log_level: int = 0, seed: int = 0):
     :param seed: random number seed, 0 will use system time
 
     """
-    return lib.initialize(0, log_level, seed)
+    ctx = lib.initialize(0, log_level, seed)
+    atexit.register(destroy_context, ctx)
+    return ctx
+
+
+def destroy_context(ctx):
+    """
+    Destroy SNOB system
+    :param ctx: SNOB context
+    """
+    lib.destroy_context(ctx)
 
 
 def set_control_flags(ctx, flags: Adjust):
@@ -501,7 +537,7 @@ def classify(
     :return: list of class dictionaries
     """
     with Timer():
-        ctx = initialize(log_level=LOG_LEVEL)
+        ctx = initialize(log_level=1)
         lib.load_vset(ctx, str(vset_file).encode('utf-8'))
         lib.load_sample(ctx, str(sample_file).encode('utf-8'))
         lib.peek_data()

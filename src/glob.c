@@ -169,8 +169,6 @@ void handle_sigint(int sig) {
 /// @param threads number of threads to use during parallel portions, 0 = use
 /// OpenMP environment variables instead
 
-static int Initialized = 0;
-
 SnobContext *initialize(int interact, int debug, int seed) {
   int k;
   SnobContext *ctx = 0;
@@ -192,52 +190,36 @@ SnobContext *initialize(int interact, int debug, int seed) {
     ctx->random_seed = time(NULL);
   }
 
-  if (!Initialized) {
-    signal(SIGINT, handle_sigint);
-    default_tune(ctx);
-    do_types(ctx);
+  signal(SIGINT, handle_sigint);
+  default_tune(ctx);
+  do_types(ctx);
 
-    for (k = 0; k < MAX_POPULATIONS; k++)
-      ctx->populations[k] = 0;
-    for (k = 0; k < MAX_SAMPLES; k++)
-      ctx->samples[k] = 0;
-    for (k = 0; k < MAX_VSETS; k++)
-      ctx->var_sets[k] = 0;
-  } else {
-    // Cleanup
-    for (k = 0; k < MAX_POPULATIONS; k++)
-      destroy_population(ctx, k);
-    for (k = 0; k < MAX_SAMPLES; k++)
-      destroy_sample(ctx, k);
-    for (k = 0; k < MAX_VSETS; k++)
-      destroy_vset(ctx, k);
-  }
-  Initialized = 1;
+  for (k = 0; k < MAX_POPULATIONS; k++)
+    ctx->populations[k] = 0;
+  for (k = 0; k < MAX_SAMPLES; k++)
+    ctx->samples[k] = 0;
+  for (k = 0; k < MAX_VSETS; k++)
+    ctx->var_sets[k] = 0;
+
   return ctx;
 }
 
-void reset(SnobContext *ctx) {
+void destroy_context(SnobContext *ctx) {
   int k;
   if (!ctx) {
-    ctx = (SnobContext *)calloc(1, sizeof(SnobContext));
+    return;
   }
-  ctx->random_seed = 1234567;
-  ctx->see_all = 2;
-  ctx->fix = ctx->d_fix = Partial;
-  ctx->d_control = ctx->control = AdjAll;
-
-  if (Initialized) {
-    for (k = 0; k < MAX_POPULATIONS; k++)
-      destroy_population(ctx, k);
-    for (k = 0; k < MAX_SAMPLES; k++)
-      destroy_sample(ctx, k);
-    for (k = 0; k < MAX_VSETS; k++)
-      destroy_vset(ctx, k);
-    if (ctx->types) {
-      free(ctx->types);
-      ctx->types = 0;
-    }
+  for (k = 0; k < MAX_POPULATIONS; k++)
+    destroy_population(ctx, k);
+  for (k = 0; k < MAX_SAMPLES; k++)
+    destroy_sample(ctx, k);
+  for (k = 0; k < MAX_VSETS; k++)
+    destroy_vset(ctx, k);
+  if (ctx->types) {
+    free(ctx->types);
+    ctx->types = 0;
   }
+  free(ctx);
 }
 
 /// @brief Print the details about the number of classes, leaves, and the

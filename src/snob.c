@@ -71,8 +71,7 @@ int main(int argc, char *argv[]) {
   log_msg(ctx, 1, "Elapsed Time: %10.3f s", wall_time);
 
   // Free context
-  reset(ctx);
-  free(ctx);
+  destroy_context(ctx);
 
   return 0;
 }

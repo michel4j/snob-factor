@@ -138,9 +138,9 @@ typedef struct ClassStruct {
       ********************* */
   int id;
   short *factor_scores; /* Factor scores */
-                        /* ctx->scores times 4096 held as signed shorts in +-30000 */
-  ClassVar **basics;    /* ptr to vec of ptrs to variable basics */
-  ExplnVar **stats;     /* ptr to vec of ptrs to variable stats blocks*/
+  /* ctx->scores times 4096 held as signed shorts in +-30000 */
+  ClassVar **basics; /* ptr to vec of ptrs to variable basics */
+  ExplnVar **stats;  /* ptr to vec of ptrs to variable stats blocks*/
 } Class;
 
 /*	-----------------  Variable types  ---------------------  */
@@ -460,7 +460,7 @@ int error_value(SnobContext *ctx, const char *message, const int value);
 void print_progress(SnobContext *ctx, size_t count, size_t max);
 void save_context(SnobContext *ctx);
 void restore_context(SnobContext *ctx);
-void reset(SnobContext *ctx);
+void destroy_context(SnobContext *ctx);
 void set_control_flags(SnobContext *ctx, int flags);
 
 void cleanup_population(SnobContext *ctx);
