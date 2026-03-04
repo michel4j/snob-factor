@@ -1,32 +1,21 @@
-#include "snob.h"
-
-/*	--------------  Global variables declared here  ----------------  */
-
-#ifndef GLOBALS
-#define EXT extern
+typedef struct SnobContextStruct {
+    extern
 #else
 #define EXT
 #endif
 
-typedef struct SnobContextStruct {
-    /* mathematical constants */
-    double HALF_LOG_2PI, HALF_LOG_2, LATTICE, PI, BIT, TWOBIT, TWO_ON_PI, HALF_PI;
+/*	mathematical constants   */
+EXT double HALF_LOG_2PI, HALF_LOG_2, LATTICE, PI, BIT, TWOBIT, TWO_ON_PI, HALF_PI;
     double ZeroVec[MAX_ZERO];
     double FacLog[MAX_CLASSES + 1];
     volatile sig_atomic_t Stop;
-
-    /* general */
     int NTypes;
     VarType *Types;
     Context CurCtx, BkpCtx;
     VarSet *VarSets[MAX_VSETS];
     Sample *Samples[MAX_SAMPLES];
     Population *Populations[MAX_POPULATIONS];
-
-    /* re inputs for main */
     Buffer *CurSource;
-
-    /* re hark */
     int Heard;
     int UseStdIn;
     int Interactive;
@@ -34,34 +23,39 @@ typedef struct SnobContextStruct {
     int Control, DControl;
     int DFix, Fix;
     int NumRepChars;
-
     Score Scores;
-
-    /* re Doall */
     int RSeed;
     int NoSubs;
     int NewSubs;
     Class *Sons[MAX_CLASSES];
     int NextIc[MAX_CLASSES];
-
-    /* re Tuning */
-    int MinAge, MinFacAge, MinSubAge, MaxSubAge;
-    int HoldTime, Forever;
-    double MinSize, MinWt, MinSubWt;
+    int MinAge;
+    int MinFacAge;
+    int MinSubAge;
+    int MaxSubAge;
+    int HoldTime;
+    int Forever;
+    double MinSize;
+    double MinWt;
+    double MinSubWt;
     int SigScoreChange;
     int SeeAll;
     int DontIgnore;
     int ScoreChanges;
     int NewSubsTime;
-    double InitialAdj, MaxAdj, MinGain, Mbeta, Bbeta;
-    int RootAge, GiveUp;
-
-    /* re Badmoves */
+    double InitialAdj;
+    double MaxAdj;
+    double MinGain;
+    double Mbeta;
+    double Bbeta;
+    int RootAge;
+    int GiveUp;
     int BadKey[BadSize];
 } SnobContext;
 
-EXT __thread SnobContext *current_ctx;
+extern __thread SnobContext *current_ctx;
 
+#ifdef USE_SNOB_CONTEXT_MACROS
 #define HALF_LOG_2PI (current_ctx->HALF_LOG_2PI)
 #define HALF_LOG_2 (current_ctx->HALF_LOG_2)
 #define LATTICE (current_ctx->LATTICE)
@@ -118,3 +112,4 @@ EXT __thread SnobContext *current_ctx;
 #define RootAge (current_ctx->RootAge)
 #define GiveUp (current_ctx->GiveUp)
 #define BadKey (current_ctx->BadKey)
+#endif

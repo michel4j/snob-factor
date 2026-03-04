@@ -6,8 +6,7 @@ from pathlib import Path
 import snob
 
 EXAMPLES = [
-    'phi', 'sd1', '5m1c', '5r8c', '6m1c', '6m2r2c',
-    '6r1c', '6r1b', 'd2', 'vm', 'vmd',
+    'phi',
 ]
 
 if __name__ == '__main__':
@@ -25,5 +24,5 @@ if __name__ == '__main__':
         print('#' * 80)
         print(f"Classifying: {name}")
 
-        classes = snob.classify(vset_file, sample_file, cycles=3, steps=50, moves=2, tol=0.01)
+        classes = snob.classify(vset_file, sample_file, cycles=25, steps=50, moves=4, tol=5e-3)
         snob.show_classes(classes)

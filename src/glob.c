@@ -8,10 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 
-/* Initialize some variables */
-int Interactive = 0;
-int Debug = 0;
-int NumRepChars = 0;
+/* Global variables now in SnobContext (current_ctx->...) */
 
 /*    To assist in printing class serials  */
 char *serial_to_str(Class *cls) {
@@ -165,6 +162,9 @@ static int Initialized = 0;
 
 void initialize(int interact, int debug, int seed) {
     int k;
+    if (!current_ctx) {
+        current_ctx = (SnobContext*)calloc(1, sizeof(SnobContext));
+    }
     Interactive = interact;
     Debug = debug;
     Stop = 0;
@@ -204,6 +204,9 @@ void initialize(int interact, int debug, int seed) {
 
 void reset() {
     int k;
+    if (!current_ctx) {
+        current_ctx = (SnobContext*)calloc(1, sizeof(SnobContext));
+    }
     RSeed = 1234567;
     SeeAll = 2;
     Fix = DFix = Partial;
