@@ -18,7 +18,6 @@ def fit_model(name, train_data):
             'v5': 'real',
         },
         cycles=50, steps=50, moves=4, seed=1234567,
-        log_level=0  # Reduce log output during concurrent test
     )
     sfc.fit(train_data)
     leaves = [c['id'] for c in sfc.get_classes() if c['type'] == 2]
