@@ -112,7 +112,7 @@ int load_vset(SnobContext *ctx, const char *filename) {
 
   buf = &bufst;
   for (i = 0; i < MAX_VSETS; i++)
-    if (!VarSets[i])
+    if (!ctx->var_sets[i])
       goto gotit;
 nospce:
   printf("No space for VariableSet\n");
@@ -121,7 +121,7 @@ nospce:
 
 gotit:
   indx = i;
-  ctx->state.vset = VarSets[i] = (VarSet *)malloc(sizeof(VarSet));
+  ctx->state.vset = ctx->var_sets[i] = (VarSet *)malloc(sizeof(VarSet));
   if (!ctx->state.vset)
     goto nospce;
   ctx->state.vset->id = indx;
@@ -194,13 +194,13 @@ gotit:
       vset_var->inactive = 1;
       itype = -itype;
     }
-    if ((itype < 1) || (itype > NTypes)) {
+    if ((itype < 1) || (itype > ctx->num_types)) {
       printf("Bad type code %d for var %d\n", itype, i + 1);
       i = -5;
       goto error;
     }
     itype = itype - 1; /*  Convert types to start at 0  */
-    vtype = vset_var->vtype = &Types[itype];
+    vtype = vset_var->vtype = &ctx->types[itype];
     vset_var->type = itype;
 
     /*	Make the vaux block  */
@@ -225,7 +225,7 @@ gotit:
 
 error:
   close_buffer(ctx);
-  ctx->state.buffer = CurSource;
+  ctx->state.buffer = ctx->current_source;
   return (i);
 }
 
@@ -239,13 +239,13 @@ int create_vset(SnobContext *ctx, const char *name, int num_vars) {
   VSetVar *vset_var_list;
 
   for (int i = 0; i < MAX_VSETS; i++) {
-    if (!VarSets[i]) {
+    if (!ctx->var_sets[i]) {
       found = i;
       break;
     }
   }
   if (found >= 0) {
-    ctx->state.vset = VarSets[found] = (VarSet *)malloc(sizeof(VarSet));
+    ctx->state.vset = ctx->var_sets[found] = (VarSet *)malloc(sizeof(VarSet));
     if (!ctx->state.vset) {
       return error_value(ctx, "Cannot allocate memory for VariableSet", -1);
     }
@@ -290,15 +290,15 @@ int add_attribute(SnobContext *ctx, int index, const char *name, int itype,
   VarType *vtype;
   VSetVar *vset_var;
 
-  if ((index < ctx->state.vset->length) && (itype > 0) && (itype <= NTypes)) {
+  if ((index < ctx->state.vset->length) && (itype > 0) && (itype <= ctx->num_types)) {
     vset_var = &ctx->state.vset->variables[index];
     vset_var->id = index;
     strcpy(vset_var->name, name);
-    vset_var->vtype = &Types[itype];
+    vset_var->vtype = &ctx->types[itype];
     vset_var->inactive = 0;
 
     itype = itype - 1; /*  Convert types to start at 0  */
-    vtype = vset_var->vtype = &Types[itype];
+    vtype = vset_var->vtype = &ctx->types[itype];
     vset_var->type = itype;
 
     /*	Make the vaux block  */
@@ -374,17 +374,17 @@ int load_sample(SnobContext *ctx, const char *fname) {
     i = -8;
     goto error;
   }
-  ctx->state.vset = VarSets[kread];
+  ctx->state.vset = ctx->var_sets[kread];
 
   /*	Find a vacant sample slot  */
   for (i = 0; i < MAX_SAMPLES; i++) {
-    if (Samples[i] == 0)
+    if (ctx->samples[i] == 0)
       goto gotit;
   }
   goto nospace;
 
 gotit:
-  ctx->state.sample = Samples[i] = (Sample *)malloc(sizeof(Sample));
+  ctx->state.sample = ctx->samples[i] = (Sample *)malloc(sizeof(Sample));
   if (!ctx->state.sample)
     goto nospace;
 
@@ -503,7 +503,7 @@ gotit:
   }
   printf("Number of active cases = %d\n", ctx->state.sample->num_active);
   close_buffer(ctx);
-  ctx->state.buffer = CurSource;
+  ctx->state.buffer = ctx->current_source;
   if (sort_sample(ctx, ctx->state.sample)) {
     printf("Sort failure on sample\n");
     return (-1);
@@ -526,8 +526,8 @@ int find_sample(SnobContext *ctx, char *nam, int expect) {
   int i;
 
   for (i = 0; i < MAX_SAMPLES; i++) {
-    if (Samples[i]) {
-      if (!strcmp(nam, Samples[i]->name))
+    if (ctx->samples[i]) {
+      if (!strcmp(nam, ctx->samples[i]->name))
         goto searched;
     }
   }
@@ -569,7 +569,7 @@ int create_sample(SnobContext *ctx, char *name, int size, int *units,
   } else {
     //	Find a vacant sample slot
     for (int i = 0; i < MAX_SAMPLES; i++) {
-      if (Samples[i] == 0) {
+      if (ctx->samples[i] == 0) {
         found = i;
         break;
       }
@@ -580,7 +580,7 @@ int create_sample(SnobContext *ctx, char *name, int size, int *units,
         out = -1;
         break;
       }
-      ctx->state.sample = Samples[found] = (Sample *)malloc(sizeof(Sample));
+      ctx->state.sample = ctx->samples[found] = (Sample *)malloc(sizeof(Sample));
       if (!ctx->state.sample) {
         log_msg(ctx, 2, "No space for data");
         out = -1;
@@ -714,8 +714,8 @@ int find_vset(SnobContext *ctx, char *nam) {
 
   ii = -1;
   for (i = 0; i < MAX_VSETS; i++) {
-    if (VarSets[i]) {
-      if (!strcmp(nam, VarSets[i]->name))
+    if (ctx->var_sets[i]) {
+      if (!strcmp(nam, ctx->var_sets[i]->name))
         ii = i;
     }
   }
@@ -924,7 +924,7 @@ int item_list(SnobContext *ctx, char *tlstname) {
     bw = 0.0;
     bs = ctx->state.sample->num_cases + 1;
     for (i = 0; i < num_son; i++) {
-      cls = Sons[i];
+      cls = ctx->sons[i];
       if ((cls->case_weight > 0.5) && (cls->weights_sum < bs)) {
         bc = i;
         bs = cls->weights_sum;
@@ -936,8 +936,8 @@ int item_list(SnobContext *ctx, char *tlstname) {
     }
     record = ctx->state.sample->records + nn * ctx->state.sample->record_length;
     memcpy(&tid, record + 1, sizeof(int));
-    fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, Sons[bc]->serial >> 2,
-            Sons[bl]->serial >> 2, ScoreRScale * Sons[bl]->factor_scores[nn]);
+    fprintf(tlst, "%8d %6d %6d  %6.3f\n", tid, ctx->sons[bc]->serial >> 2,
+            ctx->sons[bl]->serial >> 2, ScoreRScale * ctx->sons[bl]->factor_scores[nn]);
   }
 
   fclose(tlst);
@@ -968,21 +968,21 @@ int get_assignments(SnobContext *ctx, int *ids, int *prim_cls,
     record = ctx->state.sample->records + nn * ctx->state.sample->record_length;
     memcpy(&ids[nn], record + 1, sizeof(int));
     for (i = 0; i < num_son; i++) {
-      cls = Sons[i];
+      cls = ctx->sons[i];
       if ((cls->type == Leaf) && (cls->case_weight > best_weight)) {
         next_leaf = best_leaf;
         best_leaf = i;
         best_weight = cls->case_weight;
       }
     }
-    if ((next_leaf >= 0) && (Sons[next_leaf]->case_weight > 1e-3)) {
-      prim_cls[nn] = Sons[best_leaf]->serial;
-      prim_probs[nn] = Sons[best_leaf]->case_weight;
-      sec_cls[nn] = Sons[next_leaf]->serial;
-      sec_probs[nn] = Sons[next_leaf]->case_weight;
+    if ((next_leaf >= 0) && (ctx->sons[next_leaf]->case_weight > 1e-3)) {
+      prim_cls[nn] = ctx->sons[best_leaf]->serial;
+      prim_probs[nn] = ctx->sons[best_leaf]->case_weight;
+      sec_cls[nn] = ctx->sons[next_leaf]->serial;
+      sec_probs[nn] = ctx->sons[next_leaf]->case_weight;
     } else {
-      prim_cls[nn] = Sons[best_leaf]->serial;
-      prim_probs[nn] = Sons[best_leaf]->case_weight;
+      prim_cls[nn] = ctx->sons[best_leaf]->serial;
+      prim_probs[nn] = ctx->sons[best_leaf]->case_weight;
       sec_cls[nn] = -1;
       sec_probs[nn] = 0.0;
     }
@@ -998,19 +998,19 @@ void destroy_sample(SnobContext *ctx, int sx) {
     prev = ctx->state.sample->id;
   else
     prev = -1;
-  ctx->state.sample = Samples[sx];
+  ctx->state.sample = ctx->samples[sx];
   if (!ctx->state.sample)
     return;
 
   free_blocks(ctx, 0);
   free(ctx->state.sample);
-  Samples[sx] = 0;
+  ctx->samples[sx] = 0;
   ctx->state.sample = 0;
   if (sx == prev)
     return;
   if (prev < 0)
     return;
-  ctx->state.sample = Samples[prev];
+  ctx->state.sample = ctx->samples[prev];
 }
 
 /*    -------------------- destroy_vset --------------------  */
@@ -1021,17 +1021,17 @@ void destroy_vset(SnobContext *ctx, int vx) {
     prev = ctx->state.vset->id;
   else
     prev = -1;
-  ctx->state.vset = VarSets[vx];
+  ctx->state.vset = ctx->var_sets[vx];
   if (!ctx->state.vset)
     return;
 
   free_blocks(ctx, 3);
   free(ctx->state.vset);
-  VarSets[vx] = 0;
+  ctx->var_sets[vx] = 0;
   ctx->state.vset = 0;
   if (vx == prev)
     return;
   if (prev < 0)
     return;
-  ctx->state.vset = VarSets[prev];
+  ctx->state.vset = ctx->var_sets[prev];
 }

@@ -133,7 +133,7 @@ void vonm_define(SnobContext *ctx, int typindx) {
   /*	typindx is the index in types[] of this type   */
   VarType *vtype;
 
-  vtype = &Types[typindx];
+  vtype = &ctx->types[typindx];
   vtype->id = typindx;
   /* 	Set type name as string up to 59 chars  */
   vtype->name = "Von Mises";
@@ -203,7 +203,7 @@ int set_smpl_aux(SnobContext *ctx, void *saux, int unit, double prec) {
   sax->unit = unit;
   sax->eps = prec;
   if (sax->unit)
-    sax->eps *= (PI / 180.0);
+    sax->eps *= (ctx->pi / 180.0);
   if (sax->eps > 0.01)
     sax->epsfac = 2.0 * sin(0.5 * sax->eps) / sax->eps;
   else
@@ -237,7 +237,7 @@ int set_datum(SnobContext *ctx, char *loc, int iv, void *value) {
   xn.xx = *(double *)(value);
   int active = (isnan(xn.xx)) ? -1 : 1;
   if (unit) {
-    xn.xx *= (PI / 180.0);
+    xn.xx *= (ctx->pi / 180.0);
   }
   xn.sinxx = epsfac * sin(xn.xx);
   xn.cosxx = epsfac * cos(xn.xx);
@@ -356,7 +356,7 @@ void score_var(SnobContext *ctx, int iv, Class *cls) {
     return;
 
   /*	Get t  */
-  tt = cls_var->ld * Scores.CaseFacScore;
+  tt = cls_var->ld * ctx->scores.CaseFacScore;
   /*	tt is tan of w/2.  Use the formulae for cos and sin in terms of
       tan of half-angle.  */
   r2 = 1.0 / (1.0 + tt * tt);
@@ -384,28 +384,28 @@ void score_var(SnobContext *ctx, int iv, Class *cls) {
       is treated in two parts, as we don't yet know vsprd. The part in
       (vsq * ldsprd) gives a contibution to wd1 via the r2 factor:  */
   wd1 +=
-      0.5 * cls_var->fmufish * cls_var->ldsprd * Scores.CaseFacScoreSq * dr2dw;
+      0.5 * cls_var->fmufish * cls_var->ldsprd * ctx->scores.CaseFacScoreSq * dr2dw;
 
   /*	This part also directly contributes to vvd1 via the vsq factor: */
-  Scores.CaseFacScoreD1 +=
-      cls_var->fmufish * cls_var->ldsprd * r2 * Scores.CaseFacScore;
+  ctx->scores.CaseFacScoreD1 +=
+      cls_var->fmufish * cls_var->ldsprd * r2 * ctx->scores.CaseFacScore;
 
   /*	This gives a term in mvvd2 :  */
-  Scores.EstFacScoreD2 += cls_var->fmufish * cls_var->ldsprd * r2;
+  ctx->scores.EstFacScoreD2 += cls_var->fmufish * cls_var->ldsprd * r2;
 
   /*	The second part, involving vsprd, is treated by accumulating
       in vvd3 the deriv wrt vv of the multiplier of half vsprd.   */
-  Scores.CaseFacScoreD3 += cls_var->fmufish * cls_var->ldsq * dr2dw * dwdv;
+  ctx->scores.CaseFacScoreD3 += cls_var->fmufish * cls_var->ldsq * dr2dw * dwdv;
 
   /*	The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
   /*	and so to deriv wrt vv of:  wd1 * dwdv  */
 
-  Scores.CaseFacScoreD1 += wd1 * dwdv;
+  ctx->scores.CaseFacScoreD1 += wd1 * dwdv;
 
   /*	Now for contribution to vvd2. This is 2 * the coeff of vsprd in
       the item cost.  */
-  Scores.CaseFacScoreD2 += cls_var->fmufish * cls_var->ldsq * r2;
-  Scores.EstFacScoreD2 += cls_var->fmufish * cls_var->ldsq * 4.0;
+  ctx->scores.CaseFacScoreD2 += cls_var->fmufish * cls_var->ldsq * r2;
+  ctx->scores.EstFacScoreD2 += cls_var->fmufish * cls_var->ldsq * 4.0;
   /*		Note, the max value of r2 is 4  */
 }
 
@@ -433,7 +433,7 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
   cost = cls_var->slgi0 - del - saux->leps;
   /*	slgi0 contains the roundoff costs from shsprd   */
   exp_var->parkstcost = cost;
-  Scores.CaseNoFacCost += cost;
+  ctx->scores.CaseNoFacCost += cost;
 
   /*	Only do faccost if fac  */
   if (fac) {
@@ -442,7 +442,7 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
     /*	flgi0 already contains the mc2 term hsprd * Fh */
 
     /*	And we need -kap * cos (mu + w - xx)   */
-    tt = cls_var->ld * Scores.CaseFacScore;
+    tt = cls_var->ld * ctx->scores.CaseFacScore;
     r2 = 1.0 / (1.0 + tt * tt);
     cosw = (1.0 - tt * tt) * r2;
     r2 = 2.0 * r2;
@@ -454,12 +454,12 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
         (cls_var->fhx * saux->xn.cosxx - cls_var->fhy * saux->xn.sinxx) * sinw;
 
     /*	And cost term mc3, depending on tsprd:  */
-    tsprd = Scores.CaseFacScoreSq * cls_var->ldsprd +
-            cls_var->ldsq * Scores.cvvsprd;
+    tsprd = ctx->scores.CaseFacScoreSq * cls_var->ldsprd +
+            cls_var->ldsq * ctx->scores.cvvsprd;
     cost += 0.5 * cls_var->fmufish * tsprd * r2;
   }
 
-  Scores.CaseFacCost += cost;
+  ctx->scores.CaseFacCost += cost;
   exp_var->parkftcost = cost;
 }
 
@@ -492,7 +492,7 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
 
   /*	Now for factor form  */
   if (fac) {
-    tt = cls_var->ld * Scores.CaseFacScore;
+    tt = cls_var->ld * ctx->scores.CaseFacScore;
     /*	Hence cos(w), sin(w)  */
     r2 = 1.0 / (1.0 + tt * tt);
     cosw = (1.0 - tt * tt) * r2; /* (1-t^2) / (1+t^2) */
@@ -513,8 +513,8 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
         also derivs of mc2, but there remains mc3, and load. */
 
     /*	Cost mc3 = 0.5 * Fmu * tsprd * r2  */
-    tsprd = Scores.CaseFacScoreSq * cls_var->ldsprd +
-            cls_var->ldsq * Scores.cvvsprd;
+    tsprd = ctx->scores.CaseFacScoreSq * cls_var->ldsprd +
+            cls_var->ldsq * ctx->scores.cvvsprd;
     wtr2 = case_weight * r2;
     /*	Accumulate wsprd = tsprd * r2  */
     exp_var->fwd2 += tsprd * wtr2;
@@ -531,13 +531,13 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
 
     /*	The deriv wrt w leads to a deriv wrt t of wd1 * dwdt  */
     /*	and so to a deriv wrt ld of: (vv * wd1 * dwdt)  */
-    exp_var->ldd1 += case_weight * Scores.CaseFacScore * wd1 * dwdt;
+    exp_var->ldd1 += case_weight * ctx->scores.CaseFacScore * wd1 * dwdt;
 
     /*	There is also a deriv wrt ld via tsprd.  */
-    exp_var->ldd1 += cls_var->fmufish * wtr2 * cls_var->ld * Scores.cvvsprd;
+    exp_var->ldd1 += cls_var->fmufish * wtr2 * cls_var->ld * ctx->scores.cvvsprd;
 
     /*	Accum as ldd2 twice the multiplier of ldsprd in mc3  */
-    exp_var->ldd2 += 0.5 * cls_var->fmufish * r2 * Scores.CaseFacScoreSq;
+    exp_var->ldd2 += 0.5 * cls_var->fmufish * r2 * ctx->scores.CaseFacScoreSq;
   }
 }
 
@@ -557,7 +557,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
   Basic *dad_var = (dad) ? (Basic *)dad->basics[iv] : 0;
 
   set_var(ctx, iv, cls);
-  adj = InitialAdj;
+  adj = ctx->initial_adj;
   cnt = exp_var->cnt;
 
   /*	Get prior constants from dad, or if root, fake them  */
@@ -571,7 +571,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
   }
 
   /*	If too few data for this variable, use dad's n-paras  */
-  if ((Control & AdjPr) && (cnt < MinSize)) {
+  if ((ctx->control & AdjPr) && (cnt < ctx->min_size)) {
     cls_var->nhx = cls_var->shx = cls_var->fhx = dadhx;
     cls_var->nhy = cls_var->shy = cls_var->fhy = dadhy;
     cls_var->ld = 0.0;
@@ -589,7 +589,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
     cls_var->ld = 0.0;
     cls_var->sfh = cls_var->ffh = -1.0;
     /*	Make a stab at class tcost  */
-    cls->cstcost += cnt * (2.0 * HALF_LOG_2PI - saux->leps + cls->mlogab) + 1.0;
+    cls->cstcost += cnt * (2.0 * ctx->half_log_2pi - saux->leps + cls->mlogab) + 1.0;
     cls->cftcost = cls->cstcost + 100.0 * cnt;
   }
 
@@ -598,9 +598,9 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
   /*	Compute parameter costs as they are  */
   del1 = (dadhx - cls_var->shx) * (dadhx - cls_var->shx) +
          (dadhy - cls_var->shy) * (dadhy - cls_var->shy);
-  spcost = 2.0 * HALF_LOG_2PI + log(dhsprd) +
+  spcost = 2.0 * ctx->half_log_2pi + log(dhsprd) +
            0.5 * temp1 * (del1 + 2.0 * cls_var->shsprd) - log(cls_var->shsprd) +
-           2.0 * LATTICE;
+           2.0 * ctx->lattice;
 
   if (!fac) {
     fpcost = spcost + 100.0;
@@ -608,12 +608,12 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
   } else {
     del2 = (dadhx - cls_var->fhx) * (dadhx - cls_var->fhx) +
            (dadhy - cls_var->fhy) * (dadhy - cls_var->fhy);
-    fpcost = 2.0 * HALF_LOG_2PI + log(dhsprd) +
+    fpcost = 2.0 * ctx->half_log_2pi + log(dhsprd) +
              0.5 * temp1 * (del2 + 2.0 * cls_var->fhsprd) -
-             log(cls_var->fhsprd) + 2.0 * LATTICE;
+             log(cls_var->fhsprd) + 2.0 * ctx->lattice;
     /*    The prior for load ld is N (0, 1)  */
-    fpcost += HALF_LOG_2PI + 0.5 * (cls_var->ldsq + cls_var->ldsprd);
-    fpcost -= 0.5 * log(cls_var->ldsprd) + LATTICE;
+    fpcost += ctx->half_log_2pi + 0.5 * (cls_var->ldsq + cls_var->ldsprd);
+    fpcost -= 0.5 * log(cls_var->ldsprd) + ctx->lattice;
   }
 
   /*	Store param costs for this variable  */
@@ -623,7 +623,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
   cls->nofac_par_cost += spcost;
   cls->fac_par_cost += fpcost;
 
-  if ((!(Control & AdjPr)) || (cnt < MinSize)) {
+  if ((!(ctx->control & AdjPr)) || (cnt < ctx->min_size)) {
     return;
   }
 
@@ -722,8 +722,8 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
       adj = 1.25;
     if (del1 > exp_var->oldftcost)
       adj = 0.5 * adj;
-    if (adj < InitialAdj)
-      adj = InitialAdj;
+    if (adj < ctx->initial_adj)
+      adj = ctx->initial_adj;
     exp_var->adj = adj;
     exp_var->oldftcost = del1;
     cls_var->fhsprd = 1.0 / hkd2;
@@ -786,7 +786,7 @@ void show(SnobContext *ctx, Class *cls, int iv) {
   mu = atan2(cls_var->bhx, cls_var->bhy);
   printf(" B:  Mean ");
   if (saux->unit)
-    printf("%6.1f deg", (180.0 / PI) * mu);
+    printf("%6.1f deg", (180.0 / ctx->pi) * mu);
   else
     printf("%6.3f rad", mu);
   printf("  Kappa %8.2f\n", kappa);
@@ -814,7 +814,7 @@ void details(SnobContext *ctx, Class *cls, int iv, MemBuffer *buffer) {
   mu = atan2(cls_var->bhx, cls_var->bhy);
   if (saux->unit)
     print_buffer(ctx, buffer, "\"mean\": %0.4f, \"units\": \"deg\", ",
-                 (180.0 / PI) * mu);
+                 (180.0 / ctx->pi) * mu);
   else
     print_buffer(ctx, buffer, "\"mean\": %0.4f, \"units\": \"rad\", ", mu);
   print_buffer(ctx, buffer, "\"kappa\": %0.3f}", kappa);
@@ -1005,7 +1005,7 @@ void cost_var_nonleaf(SnobContext *ctx, int iv, int vald, Class *cls) {
   tsvn -= meanx * tsxn + meany * tsyn;
   /*      Variance around mean  */
 
-  if ((Control & AdjPr)) {
+  if ((ctx->control & AdjPr)) {
     /*	Iterate the adjustment of params, spread  */
     for (n = 0; n < 5; n++) {
       /*	Update params  */
@@ -1024,11 +1024,11 @@ void cost_var_nonleaf(SnobContext *ctx, int iv, int vald, Class *cls) {
 
   /*	Calc cost  */
   del = (nhx - dadhx) * (nhx - dadhx) + (nhy - dadhy) * (nhy - dadhy);
-  pcost = 2.0 * HALF_LOG_2PI + 2.0 * log(dadhsprd) +
+  pcost = 2.0 * ctx->half_log_2pi + 2.0 * log(dadhsprd) +
           (0.5 * del + nhsprd / nson) / dadhsprd + nhsprd / dadhsprd;
   /*	Add hlog Fisher, lattice  */
   pcost += 0.5 * log(nson * nson * (nson + nints)) -
-           2.0 * log(nhsprd + 1.0e-8) + 3.0 * LATTICE;
+           2.0 * log(nhsprd + 1.0e-8) + 3.0 * ctx->lattice;
 
   /*	Add roundoff for 3 params (nhx, nhy, nhsprd)  */
   pcost += 1.5;

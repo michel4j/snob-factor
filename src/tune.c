@@ -7,27 +7,27 @@
 void default_tune(SnobContext *ctx) {
     int i;
 
-    MinAge = 4;
-    MinFacAge = 11;
-    MinSubAge = 6;
-    MaxSubAge = 50;
-    HoldTime = 15;
-    Forever = 100;
-    MinSize = 4.0;
-    NewSubsTime = 10;
-    InitialAdj = 0.3;
-    MaxAdj = 1.3;
-    RootAge = 25;
-    MinGain = 0.01;
-    GiveUp = 6;
-    MinWt = 0.005;
-    MinSubWt = 0.01;
-    SigScoreChange = 5;
-    Mbeta = 0.00;
+    ctx->min_age = 4;
+    ctx->min_fac_age = 11;
+    ctx->min_sub_age = 6;
+    ctx->max_sub_age = 50;
+    ctx->hold_time = 15;
+    ctx->forever = 100;
+    ctx->min_size = 4.0;
+    ctx->new_subs_time = 10;
+    ctx->initial_adj = 0.3;
+    ctx->max_adj = 1.3;
+    ctx->root_age = 25;
+    ctx->min_gain = 0.01;
+    ctx->give_up = 6;
+    ctx->min_weight = 0.005;
+    ctx->min_sub_weight = 0.01;
+    ctx->sig_score_change = 5;
+    ctx->m_beta = 0.00;
 
     /*	Set table of log factorials  */
-    FacLog[0] = FacLog[1] = 0.0;
+    ctx->fac_log[0] = ctx->fac_log[1] = 0.0;
     for (i = 2; i <= MAX_CLASSES; i++)
-        FacLog[i] = FacLog[i - 1] + log((double)i);
+        ctx->fac_log[i] = ctx->fac_log[i - 1] + log((double)i);
     return;
 }

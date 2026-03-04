@@ -49,19 +49,19 @@ int new_line(SnobContext *ctx) {
   if (buf->cfile == 0) { /* Input via comms */
     j = 0;               /* To count tries at opening comms */
   retry:
-    if (UseStdIn)
+    if (ctx->use_stdin)
       goto usestd;
     i = hark(ctx, buf->inl);
     /*	i = 0 means comms OK but no input yet. 1 means input present
         -1 means no comms file or bad format  */
     if (i == 1) {
-      Heard = buf->nch = 0;
+      ctx->heard = buf->nch = 0;
       return (0);
     }
     if (i < 0) {
       j++;
       if (j > 3) {
-        UseStdIn = 1;
+        ctx->use_stdin = 1;
         printf(
             "There being no comms file, input will be taken from StdInput\n");
         goto retry;
@@ -92,7 +92,7 @@ int new_line(SnobContext *ctx) {
     if (j != '\n')
       goto nextchar;
     buf->inl[i + 1] = 0;
-    Heard = buf->nch = 0;
+    ctx->heard = buf->nch = 0;
     return (0);
   }
 
@@ -414,14 +414,14 @@ void close_buffer(SnobContext *ctx) {
 /*	If flag, revert due to an interrupt via hark, so use existing
 CommsBuffer line. Otherwise, get a new line  */
 void revert(SnobContext *ctx, int flag) {
-  if (CurSource->cfile)
-    printf("Command file %s\n terminated at line %d\n", CurSource->cname,
-           CurSource->line);
+  if (ctx->current_source->cfile)
+    printf("Command file %s\n terminated at line %d\n", ctx->current_source->cname,
+           ctx->current_source->line);
   close_buffer(ctx);
-  CurSource = &CommsBuffer;
-  ctx->state.buffer = CurSource;
+  ctx->current_source = &CommsBuffer;
+  ctx->state.buffer = ctx->current_source;
   if (flag)
-    CurSource->nch = 0;
+    ctx->current_source->nch = 0;
   else
     new_line(ctx);
   return;
@@ -432,21 +432,21 @@ void revert(SnobContext *ctx, int flag) {
 a new line.  flp(ctx) does a new line.  */
 
 void rep(SnobContext *ctx, int ch) {
-  if (Debug < 1) {
+  if (ctx->debug < 1) {
     putchar(ch);
-    NumRepChars++;
-    if (NumRepChars == 80) {
+    ctx->num_rep_chars++;
+    if (ctx->num_rep_chars == 80) {
       putchar('\n');
-      NumRepChars = 0;
+      ctx->num_rep_chars = 0;
     }
     fflush(stdout);
   }
 }
 
 void flp(SnobContext *ctx) {
-  if (NumRepChars && (Debug < 1)) {
+  if (ctx->num_rep_chars && (ctx->debug < 1)) {
     putchar('\n');
-    NumRepChars = 0;
+    ctx->num_rep_chars = 0;
   }
   return;
 }

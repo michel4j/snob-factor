@@ -49,7 +49,7 @@ open1:
     putc('\n', co);
     fclose(co);
 finish:
-    Heard = k;
+    ctx->heard = k;
     return (k);
 
 receive:

@@ -24,7 +24,7 @@ int serial_to_id(SnobContext *ctx, int ss) {
 
 /*	---------------------  set_class_score --------------------------   */
 void set_class_score(SnobContext *ctx, Class *cls, int item) {
-  cls->case_score = Scores.CaseFacInt = cls->factor_scores[item];
+  cls->case_score = ctx->scores.CaseFacInt = cls->factor_scores[item];
 }
 
 /*	---------------------   makeclass  -------------------------   */
@@ -50,7 +50,7 @@ int make_class(SnobContext *ctx) {
     i = find_sample(ctx, popln->sample_name, 1);
     if (i < 0)
       return (-2);
-    ctx->state.sample = Samples[i];
+    ctx->state.sample = ctx->samples[i];
   }
 
   /*	Find a vacant slot in the popln's classes vec   */
@@ -280,7 +280,7 @@ void clear_costs(SnobContext *ctx, Class *cls) {
   cls->score_change_count = 0;
   cls->vav = 0.0;
   cls->totvv = 0.0;
-  if (!SeeAll)
+  if (!ctx->see_all)
     cls->scancnt = 0;
   for (i = 0; i < ctx->state.vset->length; i++) {
     vtype = ctx->state.vset->variables[i].vtype;
@@ -319,7 +319,7 @@ void set_best_costs(SnobContext *ctx, Class *cls) {
 /*	To evaluate derivs of cost wrt score in all vars of a class.
     Does one item, number case  */
 /*	Leaves data values set in stats, but does no scoring if class too
-young. If class age = MinFacAge, will guess scores but not cost them */
+young. If class age = ctx->min_fac_age, will guess scores but not cost them */
 /*	If control & AdjSc, will adjust score  */
 void score_all_vars(SnobContext *ctx, Class *cls, int item) {
   int i, igbit, oldicvv;
@@ -328,40 +328,40 @@ void score_all_vars(SnobContext *ctx, Class *cls, int item) {
   VarType *vtype;
 
   set_class_score(ctx, cls, item);
-  if ((cls->age < MinFacAge) || (cls->use == Tiny)) {
-    Scores.CaseFacScore = cls->avg_factor_scores = cls->sum_score_sq = 0.0;
-    Scores.CaseFacInt = 0;
+  if ((cls->age < ctx->min_fac_age) || (cls->use == Tiny)) {
+    ctx->scores.CaseFacScore = cls->avg_factor_scores = cls->sum_score_sq = 0.0;
+    ctx->scores.CaseFacInt = 0;
   } else {
     if (cls->sum_score_sq <= 0.0) {
       /*	Generate a fake score to get started.   */
       cls->boost_count = 0;
-      Scores.cvvsprd = 0.1 / ctx->state.vset->length;
+      ctx->scores.cvvsprd = 0.1 / ctx->state.vset->length;
       oldicvv = igbit = 0;
-      Scores.CaseFacScore = (rand_int(ctx) < 0) ? 1.0 : -1.0;
+      ctx->scores.CaseFacScore = (rand_int(ctx) < 0) ? 1.0 : -1.0;
     } else {
       /*	Get current score  */
-      oldicvv = Scores.CaseFacInt;
-      igbit = Scores.CaseFacInt & 1;
-      Scores.CaseFacScore = Scores.CaseFacInt * ScoreRScale;
+      oldicvv = ctx->scores.CaseFacInt;
+      igbit = ctx->scores.CaseFacInt & 1;
+      ctx->scores.CaseFacScore = ctx->scores.CaseFacInt * ScoreRScale;
       /*	Subtract average from last pass  */
       /*xx
           cvv -= cls->avg_factor_scores;
       */
-      if (cls->boost_count && ((Control & AdjSP) == AdjSP)) {
-        Scores.CaseFacScore *= cls->score_boost;
-        Scores.CaseFacScore = fmax(fmin(Scores.CaseFacScore, Maxv), -Maxv);
-        del = Scores.CaseFacScore * HScoreScale;
+      if (cls->boost_count && ((ctx->control & AdjSP) == AdjSP)) {
+        ctx->scores.CaseFacScore *= cls->score_boost;
+        ctx->scores.CaseFacScore = fmax(fmin(ctx->scores.CaseFacScore, Maxv), -Maxv);
+        del = ctx->scores.CaseFacScore * HScoreScale;
         del -= (del < 0.0) ? 1.0 : 0.0;
-        Scores.CaseFacInt = del + 0.5;
-        Scores.CaseFacInt = Scores.CaseFacInt
+        ctx->scores.CaseFacInt = del + 0.5;
+        ctx->scores.CaseFacInt = ctx->scores.CaseFacInt
                             << 1; /* Round to nearest even times ScoreScale */
         igbit = 0;
-        Scores.CaseFacScore = Scores.CaseFacInt * ScoreRScale;
+        ctx->scores.CaseFacScore = ctx->scores.CaseFacInt * ScoreRScale;
       }
 
-      Scores.CaseFacScoreSq = Scores.CaseFacScore * Scores.CaseFacScore;
-      Scores.CaseFacScoreD1 = Scores.CaseFacScoreD2 = Scores.EstFacScoreD2 =
-          Scores.CaseFacScoreD3 = 0.0;
+      ctx->scores.CaseFacScoreSq = ctx->scores.CaseFacScore * ctx->scores.CaseFacScore;
+      ctx->scores.CaseFacScoreD1 = ctx->scores.CaseFacScoreD2 = ctx->scores.EstFacScoreD2 =
+          ctx->scores.CaseFacScoreD3 = 0.0;
       for (i = 0; i < ctx->state.vset->length; i++) {
         vset_var = &ctx->state.vset->variables[i];
         if (!vset_var->inactive) {
@@ -371,40 +371,40 @@ void score_all_vars(SnobContext *ctx, Class *cls, int item) {
               cls); /*	score_var should add to vvd1, vvd2, vvd3, mvvd2.  */
         }
       }
-      Scores.CaseFacScoreD1 += Scores.CaseFacScore;
-      Scores.CaseFacScoreD2 += 1.0;
-      Scores.EstFacScoreD2 += 1.0; /*  From prior  */
+      ctx->scores.CaseFacScoreD1 += ctx->scores.CaseFacScore;
+      ctx->scores.CaseFacScoreD2 += 1.0;
+      ctx->scores.EstFacScoreD2 += 1.0; /*  From prior  */
       // There is a cost term 0.5 * cvvsprd from the prior (whence the
       // additional 1 in vvd2).
-      Scores.cvvsprd = 1.0 / Scores.CaseFacScoreD2;
+      ctx->scores.cvvsprd = 1.0 / ctx->scores.CaseFacScoreD2;
       // Also, overall cost includes 0.5*cvvsprd*vvd2, so there is a derivative
       // term wrt cvv of 0.5*cvvsprd*vvd3
-      Scores.CaseFacScoreD1 += 0.5 * Scores.cvvsprd * Scores.CaseFacScoreD3;
-      del = Scores.CaseFacScoreD1 / Scores.EstFacScoreD2;
-      if (Control & AdjSc) {
-        Scores.CaseFacScore -= del;
+      ctx->scores.CaseFacScoreD1 += 0.5 * ctx->scores.cvvsprd * ctx->scores.CaseFacScoreD3;
+      del = ctx->scores.CaseFacScoreD1 / ctx->scores.EstFacScoreD2;
+      if (ctx->control & AdjSc) {
+        ctx->scores.CaseFacScore -= del;
       }
     }
 
-    Scores.CaseFacScore = fmax(fmin(Scores.CaseFacScore, Maxv), -Maxv);
-    del = Scores.CaseFacScore * HScoreScale;
+    ctx->scores.CaseFacScore = fmax(fmin(ctx->scores.CaseFacScore, Maxv), -Maxv);
+    del = ctx->scores.CaseFacScore * HScoreScale;
     del -= (del < 0.0) ? 1.0 : 0.0;
-    Scores.CaseFacInt = del + rand_float(ctx);
-    Scores.CaseFacInt = Scores.CaseFacInt
+    ctx->scores.CaseFacInt = del + rand_float(ctx);
+    ctx->scores.CaseFacInt = ctx->scores.CaseFacInt
                         << 1;   /* Round to nearest even times ScoreScale */
-    Scores.CaseFacInt |= igbit; /* Restore original ignore bit */
+    ctx->scores.CaseFacInt |= igbit; /* Restore original ignore bit */
     if (!igbit) {
-      oldicvv -= Scores.CaseFacInt;
+      oldicvv -= ctx->scores.CaseFacInt;
       oldicvv = (oldicvv < 0) ? -oldicvv : oldicvv;
-      if (oldicvv > SigScoreChange)
+      if (oldicvv > ctx->sig_score_change)
         cls->score_change_count++;
     }
-    cls->case_fac_score = Scores.CaseFacScore = Scores.CaseFacInt * ScoreRScale;
-    cls->case_fac_score_sq = Scores.CaseFacScoreSq =
-        Scores.CaseFacScore * Scores.CaseFacScore;
-    cls->cvvsprd = Scores.cvvsprd;
+    cls->case_fac_score = ctx->scores.CaseFacScore = ctx->scores.CaseFacInt * ScoreRScale;
+    cls->case_fac_score_sq = ctx->scores.CaseFacScoreSq =
+        ctx->scores.CaseFacScore * ctx->scores.CaseFacScore;
+    cls->cvvsprd = ctx->scores.cvvsprd;
   }
-  cls->factor_scores[item] = cls->case_score = Scores.CaseFacInt;
+  cls->factor_scores[item] = cls->case_score = ctx->scores.CaseFacInt;
 }
 
 /*	----------------------  costvarall  --------------------------  */
@@ -417,13 +417,13 @@ void cost_all_vars(SnobContext *ctx, Class *cls, int item) {
   VarType *vtype;
 
   set_class_score(ctx, cls, item);
-  if ((cls->age < MinFacAge) || (cls->use == Tiny))
+  if ((cls->age < ctx->min_fac_age) || (cls->use == Tiny))
     fac = 0;
   else {
     fac = 1;
-    Scores.CaseFacScoreSq = Scores.CaseFacScore * Scores.CaseFacScore;
+    ctx->scores.CaseFacScoreSq = ctx->scores.CaseFacScore * ctx->scores.CaseFacScore;
   }
-  Scores.CaseCost = Scores.CaseNoFacCost = Scores.CaseFacCost =
+  ctx->scores.CaseCost = ctx->scores.CaseNoFacCost = ctx->scores.CaseFacCost =
       cls->mlogab; /* Abundance cost */
   for (int iv = 0; iv < ctx->state.vset->length; iv++) {
     vset_var = &ctx->state.vset->variables[iv];
@@ -434,8 +434,8 @@ void cost_all_vars(SnobContext *ctx, Class *cls, int item) {
     }
   }
 
-  cls->total_case_cost = cls->nofac_case_cost = Scores.CaseNoFacCost;
-  cls->fac_case_cost = Scores.CaseNoFacCost + 10.0;
+  cls->total_case_cost = cls->nofac_case_cost = ctx->scores.CaseNoFacCost;
+  cls->fac_case_cost = ctx->scores.CaseNoFacCost + 10.0;
   if (cls->num_sons < 2)
     cls->dad_case_cost = 0.0;
   cls->coding_case_cost = 0.0;
@@ -446,16 +446,16 @@ void cost_all_vars(SnobContext *ctx, Class *cls, int item) {
     // However, we appeal to the large number of score parameters, which gives a
     // more negative 'lattice' ((log 12)/2 for one parameter) approaching -(1/2)
     // log (2 Pi e) which results in the reduced cost :
-    cls->clvsprd = log(Scores.cvvsprd);
-    tmp = 0.5 * (Scores.CaseFacScoreSq + Scores.cvvsprd - cls->clvsprd - 1.0);
+    cls->clvsprd = log(ctx->scores.cvvsprd);
+    tmp = 0.5 * (ctx->scores.CaseFacScoreSq + ctx->scores.cvvsprd - cls->clvsprd - 1.0);
     // Over all scores for the class, the lattice effect will add approx
     //         ( log (2 Pi cnt)) / 2  + 1
     // to the class cost. This is added later, once cnt is known.
-    Scores.CaseFacCost += tmp;
-    cls->fac_case_cost = Scores.CaseFacCost;
+    ctx->scores.CaseFacCost += tmp;
+    cls->fac_case_cost = ctx->scores.CaseFacCost;
     cls->coding_case_cost = tmp;
     if (cls->use == Fac)
-      cls->total_case_cost = Scores.CaseFacCost;
+      cls->total_case_cost = ctx->scores.CaseFacCost;
   }
 }
 
@@ -469,16 +469,16 @@ void deriv_all_vars(SnobContext *ctx, Class *cls, int item) {
 
   set_class_score(ctx, cls, item);
   cls->newcnt += case_weight;
-  if ((cls->age < MinFacAge) || (cls->use == Tiny))
+  if ((cls->age < ctx->min_fac_age) || (cls->use == Tiny))
     fac = 0;
   else {
     fac = 1;
-    Scores.CaseFacScore = cls->case_fac_score;
-    Scores.CaseFacScoreSq = cls->case_fac_score_sq;
-    Scores.cvvsprd = cls->cvvsprd;
-    cls->newvsq += case_weight * Scores.CaseFacScoreSq;
+    ctx->scores.CaseFacScore = cls->case_fac_score;
+    ctx->scores.CaseFacScoreSq = cls->case_fac_score_sq;
+    ctx->scores.cvvsprd = cls->cvvsprd;
+    cls->newvsq += case_weight * ctx->scores.CaseFacScoreSq;
     cls->vav += case_weight * cls->clvsprd;
-    cls->totvv += Scores.CaseFacScore * case_weight;
+    cls->totvv += ctx->scores.CaseFacScore * case_weight;
   }
   for (int iv = 0; iv < ctx->state.vset->length; iv++) {
     vset_var = &ctx->state.vset->variables[iv];
@@ -509,14 +509,14 @@ void adjust_class(SnobContext *ctx, Class *cls, int dod) {
 
   /*	Get root (logarithmic average of vvsprds)  */
   cls->vav = exp(0.5 * cls->vav / (cls->newcnt + 0.1));
-  if (Control & AdjSc)
+  if (ctx->control & AdjSc)
     cls->sum_score_sq = cls->newvsq;
-  if (Control & AdjPr) {
+  if (ctx->control & AdjPr) {
     cls->weights_sum = cls->newcnt;
     /*	Count down holds   */
-    if ((cls->hold_type) && (cls->hold_type < Forever))
+    if ((cls->hold_type) && (cls->hold_type < ctx->forever))
       cls->hold_type--;
-    if ((cls->hold_use) && (cls->hold_use < Forever))
+    if ((cls->hold_use) && (cls->hold_use < ctx->forever))
       cls->hold_use--;
     if (dad) {
       cls->relab = (dad->relab * (cls->weights_sum + 0.5)) /
@@ -528,19 +528,19 @@ void adjust_class(SnobContext *ctx, Class *cls, int dod) {
     }
   }
   /*	But if a young subclass, make relab half of dad's  */
-  if ((dad) && (cls->type == Sub) && (cls->age < MinSubAge)) {
+  if ((dad) && (cls->type == Sub) && (cls->age < ctx->min_sub_age)) {
     cls->relab = 0.5 * dad->relab;
   }
 
-  if ((cls->age < MinFacAge) || (cls->use == Tiny))
+  if ((cls->age < ctx->min_fac_age) || (cls->use == Tiny))
     fac = 0;
   else
     fac = 1;
 
   /*	Set npars to show if class may be treated as a dad  */
   npars = 1;
-  if ((cls->age < MinAge) || (cls->num_sons < 2) ||
-      (popln->classes[cls->son_id]->age < MinSubAge))
+  if ((cls->age < ctx->min_age) || (cls->num_sons < 2) ||
+      (popln->classes[cls->son_id]->age < ctx->min_sub_age))
     npars = 0;
   if (cls->type == Dad)
     npars = 1;
@@ -558,7 +558,7 @@ void adjust_class(SnobContext *ctx, Class *cls, int dod) {
 
   /*	If vsq less than 0.3, set vboost to inflate  */
   /*	but only if both scores and params are being adjusted  */
-  if (((Control & AdjSP) == AdjSP) && fac &&
+  if (((ctx->control & AdjSP) == AdjSP) && fac &&
       (cls->sum_score_sq < (0.3 * cls->weights_sum))) {
     cls->score_boost =
         sqrt((1.0 * cls->weights_sum) / (cls->sum_score_sq + 1.0));
@@ -577,7 +577,7 @@ void adjust_class(SnobContext *ctx, Class *cls, int dod) {
   cls->nofac_cost = cls->nofac_par_cost + cls->cstcost;
   /*	The 'lattice' effect on the cost of coding scores is approx
       (log (2 Pi cnt))/2 + 1,  which adds to cftcost  */
-  cls->cftcost += 0.5 * log(cls->newcnt + 1.0) + HALF_LOG_2PI + 1.0;
+  cls->cftcost += 0.5 * log(cls->newcnt + 1.0) + ctx->half_log_2pi + 1.0;
   cls->fac_cost = cls->fac_par_cost + cls->cftcost;
   if (npars)
     cls->dad_cost = cls->dad_par_cost + cls->cntcost;
@@ -585,7 +585,7 @@ void adjust_class(SnobContext *ctx, Class *cls, int dod) {
     cls->dad_cost = cls->dad_par_cost = cls->cntcost = 0.0;
 
   /*	Contemplate changes to class use and type   */
-  if (!cls->hold_use && (Control & AdjPr)) {
+  if (!cls->hold_use && (ctx->control & AdjPr)) {
     /*	If scores boosted too many times, make Tiny and hold   */
     if (cls->boost_count > 20) {
       cls->use = Tiny;
@@ -608,7 +608,7 @@ void adjust_class(SnobContext *ctx, Class *cls, int dod) {
       } else if (cls->use == Tiny) {
         cls->use = Plain;
         cls->sum_score_sq = 0.0;
-      } else if (cls->age >= MinFacAge) {
+      } else if (cls->age >= ctx->min_fac_age) {
         if (cls->use == Plain) {
           if (cls->fac_cost < cls->nofac_cost) {
             cls->use = Fac;
@@ -621,18 +621,18 @@ void adjust_class(SnobContext *ctx, Class *cls, int dod) {
       }
     }
   }
-  if (dod && !cls->hold_type && (Control & AdjTr) && (cls->num_sons >= 2)) {
+  if (dod && !cls->hold_type && (ctx->control & AdjTr) && (cls->num_sons >= 2)) {
     leafcost = (cls->use == Fac) ? cls->fac_cost : cls->nofac_cost;
-    if ((cls->type == Dad) && (leafcost < cls->dad_cost) && (Fix != Random)) {
+    if ((cls->type == Dad) && (leafcost < cls->dad_cost) && (ctx->fix != Random)) {
       log_msg(ctx, 1, "Changing type of class%s from Dad to Leaf",
               serial_to_str(ctx, cls));
-      SeeAll = 4;
+      ctx->see_all = 4;
       /*	Kill all sons  */
       delete_sons(ctx, cls->id); /* which changes type to leaf */
     } else if (npars && (leafcost > cls->dad_cost) && (cls->type == Leaf)) {
       log_msg(ctx, 1, "Changing type of class%s from Leaf to Dad",
               serial_to_str(ctx, cls));
-      SeeAll = 4;
+      ctx->see_all = 4;
       cls->type = Dad;
       if (dad) {
         dad->hold_type += 3;
@@ -649,7 +649,7 @@ void adjust_class(SnobContext *ctx, Class *cls, int dod) {
     }
   }
   set_best_costs(ctx, cls);
-  if (Control & AdjPr) {
+  if (ctx->control & AdjPr) {
     cls->age++;
   }
 }
@@ -684,9 +684,9 @@ void parent_cost_all_vars(SnobContext *ctx, Class *cls, int valid) {
   nson = cls->num_sons;
   /*	The sons of a dad may be listed in any order, so the param cost
   of the dad can be reduced by log (nson !)  */
-  abcost -= FacLog[nson];
+  abcost -= ctx->fac_log[nson];
   /*	The cost of saying 'dad' and number of sons is set at nson bits. */
-  abcost += nson * BIT;
+  abcost += nson * ctx->bit;
   /*	Now add cost of specifying the relabs of the sons.  */
   /*	Their relabs are absolute, but we specify them as fractions of this
   dad's relab. The cost includes -0.5 * Sum_sons { log (sonab / dadab) }
@@ -697,9 +697,9 @@ void parent_cost_all_vars(SnobContext *ctx, Class *cls, int valid) {
     abcost -= 0.5 * log(son->relab * rrelab);
   }
   /*	Add other terms from Fisher  */
-  abcost += (nson - 1) * (log(cls->weights_sum) + LATTICE);
+  abcost += (nson - 1) * (log(cls->weights_sum) + ctx->lattice);
   /*	And from prior:  */
-  abcost -= FacLog[nson - 1];
+  abcost -= ctx->fac_log[nson - 1];
   /*	The sons will have been processed by 'adjustclass' already, and
   this will have caused their best pcosts to be added into cls->cnpcost  */
   cls->dad_par_cost += abcost;
@@ -713,12 +713,12 @@ void delete_sons(SnobContext *ctx, int kk) {
   int kks;
   Population *popln = ctx->state.popln;
 
-  if (!(Control & AdjTr))
+  if (!(ctx->control & AdjTr))
     return;
   cls = popln->classes[kk];
   if (cls->num_sons <= 0)
     return;
-  SeeAll = 4;
+  ctx->see_all = 4;
 
   for (kks = cls->son_id; kks > 0; kks = son->sib_id) {
     son = popln->classes[kks];
@@ -745,14 +745,14 @@ int split_leaf(SnobContext *ctx, int kk) {
     return (1);
   }
   cls->type = Dad;
-  cls->hold_type = HoldTime;
+  cls->hold_type = ctx->hold_time;
   for (kks = cls->son_id; kks >= 0; kks = son->sib_id) {
     son = popln->classes[kks];
     son->type = Leaf;
     son->serial = 4 * popln->next_serial;
     popln->next_serial++;
   }
-  SeeAll = 4;
+  ctx->see_all = 4;
   return (0);
 }
 
@@ -781,7 +781,7 @@ void delete_all_classes(SnobContext *ctx) {
   cls->age = 0;
   cls->hold_type = cls->hold_use = 0;
   cls->type = Leaf;
-  tidy(ctx, 1, NoSubs + 1);
+  tidy(ctx, 1, ctx->no_subs + 1);
   return;
 }
 

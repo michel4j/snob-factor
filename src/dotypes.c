@@ -16,22 +16,22 @@ void do_types(SnobContext *ctx) {
     int i;
 
     /*	Set the number of attribute types  */
-    NTypes = 4;
+    ctx->num_types = 4;
 
     /*	Set constants  */
-    PI = 4.0 * atan(1.0);
-    HALF_LOG_2PI = 0.5 * log(2.0 * PI);
-    TWO_ON_PI = 2.0 / PI;
-    HALF_PI = 0.5 * PI;
-    BIT = log(2.0);
-    TWOBIT = 2.0 * BIT;
-    HALF_LOG_2 = 0.5 * log(2.0);
-    LATTICE = -0.5 * log(12.0);
+    ctx->pi = 4.0 * atan(1.0);
+    ctx->half_log_2pi = 0.5 * log(2.0 * ctx->pi);
+    ctx->two_on_pi = 2.0 / ctx->pi;
+    ctx->half_pi = 0.5 * ctx->pi;
+    ctx->bit = log(2.0);
+    ctx->twobit = 2.0 * ctx->bit;
+    ctx->half_log_2 = 0.5 * log(2.0);
+    ctx->lattice = -0.5 * log(12.0);
     for (i = 0; i < MAX_ZERO; i++)
-        ZeroVec[i] = 0.0;
+        ctx->zero_vec[i] = 0.0;
 
     /*	Make the 'types' vector  */
-    Types = (VarType *)malloc(NTypes * sizeof(VarType));
+    ctx->types = (VarType *)malloc(ctx->num_types * sizeof(VarType));
 
     reals_define(ctx, 0);
     expmults_define(ctx, 1);

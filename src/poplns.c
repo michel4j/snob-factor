@@ -51,7 +51,7 @@ int make_population(SnobContext *ctx, int fill) {
   }
   /*	Find vacant popln slot    */
   for (indx = 0; indx < MAX_POPULATIONS; indx++) {
-    if (Populations[indx] == 0) {
+    if (ctx->populations[indx] == 0) {
       found = indx;
       break;
     }
@@ -61,7 +61,7 @@ int make_population(SnobContext *ctx, int fill) {
     return error_value(ctx, "No space for another population", -1);
   }
 
-  popln = Populations[found] = (Population *)malloc(sizeof(Population));
+  popln = ctx->populations[found] = (Population *)malloc(sizeof(Population));
   if (!popln) {
     return error_value(ctx, "No space for another population", -1);
   }
@@ -174,7 +174,7 @@ void make_subclasses(SnobContext *ctx, int kk) {
   double cntk;
   int kka, kkb, iv, nch;
   Population *popln = ctx->state.popln;
-  if (NoSubs)
+  if (ctx->no_subs)
     return;
   cls = popln->classes[kk];
 
@@ -186,14 +186,14 @@ void make_subclasses(SnobContext *ctx, int kk) {
   }
   /*	And that it is big enough to support subs    */
   cntk = cls->weights_sum;
-  if (cntk < (2 * MinSize + 2.0)) {
+  if (cntk < (2 * ctx->min_size + 2.0)) {
     cleanup_subclasses(clsa, clsb);
     return;
   }
   /*	Ensure clp's as-dad params set to plain values  */
-  Control = 0;
+  ctx->control = 0;
   adjust_class(ctx, cls, 0);
-  Control = DControl;
+  ctx->control = ctx->d_control;
   kka = make_class(ctx);
   if (kka < 0) {
     cleanup_subclasses(clsa, clsb);
@@ -210,7 +210,7 @@ void make_subclasses(SnobContext *ctx, int kk) {
   clsa->serial = cls->serial + 1;
   clsb->serial = cls->serial + 2;
 
-  /*	Fix hierarchy links.  */
+  /*	ctx->fix hierarchy links.  */
   cls->num_sons = 2;
   cls->son_id = kka;
   clsa->dad_id = clsb->dad_id = kk;
@@ -241,17 +241,17 @@ void make_subclasses(SnobContext *ctx, int kk) {
 /*	To destroy popln index px    */
 void destroy_population(SnobContext *ctx, int px) {
   int prev = (ctx->state.popln) ? ctx->state.popln->id : -1;
-  Population *popln = Populations[px];
+  Population *popln = ctx->populations[px];
 
   if (popln) {
     ctx->state.popln = popln;
     free_blocks(ctx, 2);
     free_blocks(ctx, 1);
     free(popln);
-    Populations[px] = 0;
+    ctx->populations[px] = 0;
     ctx->state.popln = 0;
     if ((px != prev) && (prev >= 0)) {
-      ctx->state.popln = Populations[prev];
+      ctx->state.popln = ctx->populations[prev];
     }
   }
 }
@@ -282,7 +282,7 @@ int copy_population(SnobContext *ctx, int p1, int fill, char *newname) {
   nomcnt = 0.0;
   memcpy(&oldctx, &ctx->state, sizeof(State));
   indx = -1;
-  fpop = Populations[p1];
+  fpop = ctx->populations[p1];
   if (!fpop) {
     log_msg(ctx, 1, "No popln index %d", p1);
     indx = -106;
@@ -294,7 +294,7 @@ int copy_population(SnobContext *ctx, int p1, int fill, char *newname) {
     indx = -101;
     goto finish;
   }
-  ctx->state.vset = VarSets[kk];
+  ctx->state.vset = ctx->var_sets[kk];
   sindx = -1;
   num_cases = 0;
   if (!fill)
@@ -316,7 +316,7 @@ int copy_population(SnobContext *ctx, int p1, int fill, char *newname) {
 
 sampfound:
   if (sindx >= 0) {
-    ctx->state.sample = Samples[sindx];
+    ctx->state.sample = ctx->samples[sindx];
     num_cases = ctx->state.sample->num_cases;
   } else {
     ctx->state.sample = 0;
@@ -342,7 +342,7 @@ sampfound:
     goto finish;
   }
 
-  popln = ctx->state.popln = Populations[indx];
+  popln = ctx->state.popln = ctx->populations[indx];
   if (ctx->state.sample) {
     strcpy(popln->sample_name, ctx->state.sample->name);
     popln->sample_size = ctx->state.sample->num_cases;
@@ -438,7 +438,7 @@ siborback:
   goto siborback;
 
 alldone: /*  All classes copied. Tidy up */
-  tidy(ctx, 0, NoSubs);
+  tidy(ctx, 0, ctx->no_subs);
   popln->next_serial = (hiser >> 2) + 1;
 
 finish:
@@ -501,18 +501,18 @@ void print_tree(SnobContext *ctx) {
          ctx->state.sample->num_cases);
   printf("  Cost %10.2f\n", popln->classes[popln->root]->best_cost);
   printf("\n  Assign mode ");
-  if (Fix == Partial)
+  if (ctx->fix == Partial)
     printf("Partial    ");
-  if (Fix == Most_likely)
+  if (ctx->fix == Most_likely)
     printf("Most_likely");
-  if (Fix == Random)
+  if (ctx->fix == Random)
     printf("Random     ");
   printf("--- Adjust:");
-  if (Control & AdjPr)
+  if (ctx->control & AdjPr)
     printf(" Params");
-  if (Control & AdjSc)
-    printf(" Scores");
-  if (Control & AdjTr)
+  if (ctx->control & AdjSc)
+    printf(" ctx->scores");
+  if (ctx->control & AdjTr)
     printf(" Tree");
   printf("\n");
   pdeep = 0;
@@ -562,7 +562,7 @@ void track_best(SnobContext *ctx, int verify) {
   Population *popln = ctx->state.popln;
 
   if ((!ctx->state.popln) || (strcmp("work", ctx->state.popln->name)) ||
-      (Fix == Random)) {
+      (ctx->fix == Random)) {
     /*	Check current popln is 'work'  */
     /*	Don't believe cost if fix is random  */
     return;
@@ -574,7 +574,7 @@ void track_best(SnobContext *ctx, int verify) {
     log_msg(ctx, 1, "Cannot make BST_ model");
     return;
   }
-  bstpop = Populations[bstid];
+  bstpop = ctx->populations[bstid];
   bstroot = bstpop->root;
   bstcst = bstpop->classes[bstroot]->best_cost;
   if (popln->classes[popln->root]->best_cost >= bstcst)
@@ -582,10 +582,10 @@ void track_best(SnobContext *ctx, int verify) {
   /*	Current looks better, but do a doall to ensure cost is correct */
   /*	But only bother if 'verify'  */
   if (verify) {
-    kk = Control;
-    Control = 0;
+    kk = ctx->control;
+    ctx->control = 0;
     do_all(ctx, 1, 1);
-    Control = kk;
+    ctx->control = kk;
     if (popln->classes[popln->root]->best_cost >= (bstcst))
       return;
   }
@@ -613,7 +613,7 @@ int find_population(SnobContext *ctx, char *nam) {
       return (-1);
   }
   for (i = 0; i < MAX_POPULATIONS; i++) {
-    if (Populations[i] && (!strcmp(lname, Populations[i]->name)))
+    if (ctx->populations[i] && (!strcmp(lname, ctx->populations[i]->name)))
       return (i);
   }
   return (-1);
@@ -654,12 +654,12 @@ int save_population(SnobContext *ctx, int p1, int fill, char *newname) {
   Population *popln = 0;
 
   file_ptr = 0;
-  if (!Populations[p1]) {
+  if (!ctx->populations[p1]) {
     log_msg(ctx, 1, "No popln index %d", p1);
     return -106;
   }
   /*	Begin by copying the popln to a clean TrialPop   */
-  popln = Populations[p1];
+  popln = ctx->populations[p1];
   if (!strcmp(popln->name, "TrialPop")) {
     log_msg(ctx, 1, "Cannot save TrialPop");
     return -105;
@@ -696,8 +696,8 @@ int save_population(SnobContext *ctx, int p1, int fill, char *newname) {
   /*	We can now be sure that, in TrialPop, all subs are gone and classes
       have id-s from 0 up, starting with root  */
   /*	switch context to TrialPop  */
-  ctx->state.popln = Populations[i];
-  ctx->state.vset = VarSets[find_vset(ctx, popln->vst_name)];
+  ctx->state.popln = ctx->populations[i];
+  ctx->state.vset = ctx->var_sets[find_vset(ctx, popln->vst_name)];
   sample_size = popln->sample_size;
   if (!fill)
     sample_size = 0;
@@ -803,7 +803,7 @@ int load_population(SnobContext *ctx, char *nam) {
     log_msg(ctx, 1, "Model needs variableset %s", name);
     goto error;
   }
-  ctx->state.vset = VarSets[j];
+  ctx->state.vset = ctx->var_sets[j];
   fscanf(file_ptr, "%s", name);          /* Reading sample name */
   fscanf(file_ptr, "%d%d", &fncl, &fnc); /* num of classes, cases */
                                          /*	Advance to real data */
@@ -818,7 +818,7 @@ int load_population(SnobContext *ctx, char *nam) {
       num_cases = 0;
       ctx->state.sample = 0;
     } else {
-      ctx->state.sample = Samples[j];
+      ctx->state.sample = ctx->samples[j];
       if (ctx->state.sample->num_cases != fnc) {
         log_msg(ctx, 1, "Size conflict Model%9d vs. Sample%9d", fnc, num_cases);
         goto error;
@@ -838,7 +838,7 @@ int load_population(SnobContext *ctx, char *nam) {
   indx = make_population(ctx, num_cases);
   if (indx < 0)
     goto error;
-  popln = ctx->state.popln = Populations[indx];
+  popln = ctx->state.popln = ctx->populations[indx];
   popln->sample_size = num_cases;
   strcpy(popln->name, "TrialPop");
   if (!num_cases)
@@ -937,7 +937,7 @@ int set_work_population(SnobContext *ctx, int pp) {
   fpop = 0;
   if (pp < 0)
     goto error;
-  fpop = popln = Populations[pp];
+  fpop = popln = ctx->populations[pp];
   if (!popln)
     goto error;
   /*	Save the 'nc' of the popln to be loaded  */
@@ -948,7 +948,7 @@ int set_work_population(SnobContext *ctx, int pp) {
     log_msg(ctx, 1, "Load cannot find variable set");
     goto error;
   }
-  ctx->state.vset = VarSets[j];
+  ctx->state.vset = ctx->var_sets[j];
   /*	Check VarSet  */
   if (ctx->state.sample &&
       strcmp(ctx->state.vset->name, oldctx.sample->vset_name)) {
@@ -966,25 +966,25 @@ int set_work_population(SnobContext *ctx, int pp) {
   windx = copy_population(ctx, pp, 1, "work");
   if (windx < 0)
     goto error;
-  if (Populations[pp]->sample_size)
+  if (ctx->populations[pp]->sample_size)
     goto finish;
 
   /*	The popln was copied as if unattached, so scores, weights must be
       fixed  */
   log_msg(ctx, 1, "Model will have weights, scores adjusted to sample.");
-  Fix = Partial;
-  Control = AdjSc;
+  ctx->fix = Partial;
+  ctx->control = AdjSc;
 fixscores:
-  SeeAll = 16;
+  ctx->see_all = 16;
   do_all(ctx, 15, 0);
   /*	doall should leave a count of score changes in global  */
-  log_msg(ctx, 1, "%8d  score changes", ScoreChanges);
-  if (Heard) {
+  log_msg(ctx, 1, "%8d  score changes", ctx->score_changes);
+  if (ctx->heard) {
     log_msg(ctx, 1, "Score fixing stopped prematurely");
-  } else if (ScoreChanges > 1)
+  } else if (ctx->score_changes > 1)
     goto fixscores;
-  Fix = DFix;
-  Control = DControl;
+  ctx->fix = ctx->d_fix;
+  ctx->control = ctx->d_control;
   goto finish;
 
 error:
@@ -993,7 +993,7 @@ finish:
   /*	Restore 'nc' of copied popln  */
   if (fpop)
     fpop->sample_size = fpopnc;
-  if ((windx >= 0) && (Debug < 1))
+  if ((windx >= 0) && (ctx->debug < 1))
     print_tree(ctx);
   return (windx);
 }
@@ -1017,7 +1017,7 @@ void correlpops(SnobContext *ctx, int xid) {
   int num_cases = (ctx->state.sample) ? ctx->state.sample->num_cases : 0;
 
   wpop = popln;
-  xpop = Populations[xid];
+  xpop = ctx->populations[xid];
   if (!xpop) {
     log_msg(ctx, 1, "No such model");
     goto finish;
@@ -1036,18 +1036,18 @@ void correlpops(SnobContext *ctx, int xid) {
   }
   /*	Should be able to proceed  */
   fnact = ctx->state.sample->num_active;
-  Control = AdjSc;
-  SeeAll = 4;
-  NoSubs++;
+  ctx->control = AdjSc;
+  ctx->see_all = 4;
+  ctx->no_subs++;
   do_all(ctx, 3, 1);
   wpop = popln;
   wnl = find_all(ctx, Leaf);
   for (wic = 0; wic < wnl; wic++)
-    wsons[wic] = Sons[wic];
+    wsons[wic] = ctx->sons[wic];
   /*	Switch to xpop  */
   ctx->state.popln = xpop;
 
-  SeeAll = 4;
+  ctx->see_all = 4;
   do_all(ctx, 3, 1);
   /*	Find all leaves of xpop  */
   xnl = find_all(ctx, Leaf);
@@ -1056,7 +1056,7 @@ void correlpops(SnobContext *ctx, int xid) {
     goto finish;
   }
   for (xic = 0; xic < xnl; xic++)
-    xsons[xic] = Sons[xic];
+    xsons[xic] = ctx->sons[xic];
   /*	Clear table   */
   for (wic = 0; wic < wnl; wic++) {
     for (xic = 0; xic < xnl; xic++)
@@ -1064,7 +1064,7 @@ void correlpops(SnobContext *ctx, int xid) {
   }
 
   /*	Now accumulate cross products of weights for each active item */
-  SeeAll = 2;
+  ctx->see_all = 2;
   for (n = 0; n < num_cases; n++) {
     ctx->state.popln = wpop;
 
@@ -1106,9 +1106,9 @@ void correlpops(SnobContext *ctx, int xid) {
   }
 
 finish:
-  if (NoSubs > 0)
-    NoSubs--;
+  if (ctx->no_subs > 0)
+    ctx->no_subs--;
   ctx->state.popln = wpop;
-  Control = DControl;
+  ctx->control = ctx->d_control;
   return;
 }

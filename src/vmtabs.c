@@ -5122,7 +5122,7 @@ asymp:
 #define Sf double
 #define Sw int
 
-double PI;
+double ctx->pi;
 
 /*	----------------  calc (ka, *li0, *aa, ni) -------------  */
 void calc(ka, li0, aa, ni) double ka, *li0, *aa;
@@ -5131,7 +5131,7 @@ int ni;
     double xx, hh, cx, sum1, sum2, pp;
     int ii;
 
-    hh = PI / ni;
+    hh = ctx->pi / ni;
 
     sum1 = sum2 = 0.0;
     for (ii = ni - 1; ii >= 0; ii--) {
@@ -5156,7 +5156,7 @@ int main(SnobContext *ctx) {
     int ni;
     double aa, li0, aaa, ali0, daa;
 
-    PI = 4.0 * atan(1.0);
+    ctx->pi = 4.0 * atan(1.0);
 loop:
     printf("Enter kappa: ");
     scanf("%lf", &kap);

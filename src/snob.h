@@ -23,7 +23,7 @@ typedef struct SnobContextStruct SnobContext;
 #define MAX_ZERO 100          /*  Length of the Zero vector  */
 #define INPUT_BUFFER_SIZE 450 /*    Length of input line buffer */
 
-/*	-----------------  Control  ------------------------------   */
+/*	-----------------  ctx->control  ------------------------------   */
 #define AdjSc 1
 #define AdjTr 2
 #define AdjPr 4
@@ -138,7 +138,7 @@ typedef struct ClassStruct {
       ********************* */
   int id;
   short *factor_scores; /* Factor scores */
-                        /* Scores times 4096 held as signed shorts in +-30000 */
+                        /* ctx->scores times 4096 held as signed shorts in +-30000 */
   ClassVar **basics;    /* ptr to vec of ptrs to variable basics */
   ExplnVar **stats;     /* ptr to vec of ptrs to variable stats blocks*/
 } Class;
@@ -226,7 +226,7 @@ typedef struct VSetStruct {
   VSetVar *variables;
 } VarSet;
 
-/*	--------------------  Samples  ---------------------------   */
+/*	--------------------  ctx->samples  ---------------------------   */
 
 typedef struct SampleVarStruct {
   int id;

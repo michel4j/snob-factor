@@ -12,7 +12,7 @@ void flatten(SnobContext *ctx) {
   Population *popln = ctx->state.popln;
   Class *root = popln->classes[popln->root];
 
-  tidy(ctx, 0, NoSubs);
+  tidy(ctx, 0, ctx->no_subs);
   if (root->num_sons == 0) {
     log_msg(ctx, 0, "Nothing to flatten");
     return;
@@ -36,20 +36,20 @@ void flatten(SnobContext *ctx) {
       cls->dad_id = popln->root;
     }
   }
-  NoSubs++;
-  tidy(ctx, 0, NoSubs);
+  ctx->no_subs++;
+  tidy(ctx, 0, ctx->no_subs);
   root->type = Dad;
-  root->hold_type = Forever;
+  root->hold_type = ctx->forever;
   do_all(ctx, 1, 1);
   do_dads(ctx, 3);
   do_all(ctx, 3, 0);
-  if (Interactive & Heard) {
+  if (ctx->interactive & ctx->heard) {
     log_msg(ctx, 0, "Flatten ends prematurely");
   }
-  if (NoSubs > 0) {
-    NoSubs--;
+  if (ctx->no_subs > 0) {
+    ctx->no_subs--;
   }
-  if (Debug < 1)
+  if (ctx->debug < 1)
     print_tree(ctx);
 }
 
@@ -116,7 +116,7 @@ double insert_dad(SnobContext *ctx, int ser1, int ser2, int *dadid) {
     memcpy(ndad, odad, nch);
     ndad->serial = popln->next_serial << 2;
     popln->next_serial++;
-    ndad->age = MinFacAge - 3;
+    ndad->age = ctx->min_fac_age - 3;
     ndad->hold_type = 0;
     /* Copy Basics. the structures should have been made.  */
     for (iv = 0; iv < ctx->state.vset->length; iv++) {
@@ -140,8 +140,8 @@ double insert_dad(SnobContext *ctx, int ser1, int ser2, int *dadid) {
     ndad->relab = cls1->relab + cls2->relab;
     ndad->weights_sum = cls1->weights_sum + cls2->weights_sum;
 
-    /*	Fix linkages  */
-    tidy(ctx, 0, NoSubs);
+    /*	ctx->fix linkages  */
+    tidy(ctx, 0, ctx->no_subs);
     do_dads(ctx, 20);
     newcost = root->best_par_cost;
     drop = origcost - newcost;
@@ -173,7 +173,7 @@ int best_insert_dad(SnobContext *ctx, int force) {
   i1, i2 as the indices. i1 runs from 0 to population->hicl-1, i2 from i1+1 to
   population->hicl
   */
-  NoSubs++;
+  ctx->no_subs++;
   /*	Do one pass over population to set costs   */
   do_all(ctx, 1, 1);
   bestdrop = -1.0e20;
@@ -219,7 +219,7 @@ inner:
   newp = copy_population(ctx, ctx->state.popln->id, 0, "TrialPop");
   if (newp < 0)
     goto popfails;
-  ctx->state.popln = Populations[newp];
+  ctx->state.popln = ctx->populations[newp];
   root = ctx->state.popln->classes[ctx->state.popln->root];
   res = insert_dad(ctx, ser1, ser2, &newid);
   if (newid < 0) {
@@ -254,16 +254,16 @@ alldone:
   newp = copy_population(ctx, ctx->state.popln->id, 1, "TrialPop");
   if (newp < 0)
     goto popfails;
-  ctx->state.popln = Populations[newp];
+  ctx->state.popln = ctx->populations[newp];
   root = ctx->state.popln->classes[ctx->state.popln->root];
   log_msg(ctx, 0, "TRYING INSERT %6d,%6d", bser1 >> 2, bser2 >> 2);
   res = insert_dad(ctx, bser1, bser2, &newid);
   /*	But check it is not killed off   */
   newser = ctx->state.popln->classes[newid]->serial;
-  Control = 0;
+  ctx->control = 0;
   do_all(ctx, 1, 1);
-  Control = AdjAll;
-  if (Heard) {
+  ctx->control = AdjAll;
+  if (ctx->heard) {
     log_msg(ctx, 0, "BestInsDad ends prematurely");
     return (0);
   }
@@ -290,7 +290,7 @@ popfails:
 
 winner:
   log_msg(ctx, 0, "%s", (succ) ? "ACCEPTED !!!" : "FORCED");
-  if (Debug < 1)
+  if (ctx->debug < 1)
     print_tree(ctx);
   clr_bad_move(ctx);
   /*	Reverse roles of 'work' and TrialPop  */
@@ -300,8 +300,8 @@ winner:
     track_best(ctx, 1);
 
 finish:
-  if (NoSubs > 0)
-    NoSubs--;
+  if (ctx->no_subs > 0)
+    ctx->no_subs--;
   return (newser);
 }
 
@@ -332,7 +332,7 @@ double splice_dad(SnobContext *ctx, int ser) {
     goto finish;
   if (cls->num_sons <= 0)
     goto finish;
-  /*	All seems OK. Fix idads in kk's sons  */
+  /*	All seems OK. ctx->fix idads in kk's sons  */
   origcost = root->best_par_cost;
   for (kks = cls->son_id; kks >= 0; kks = son->sib_id) {
     son = popln->classes[kks];
@@ -341,8 +341,8 @@ double splice_dad(SnobContext *ctx, int ser) {
   /*	Now kill off class kk  */
   cls->type = Vacant;
   popln->num_classes--;
-  /*	Fix linkages  */
-  tidy(ctx, 0, NoSubs);
+  /*	ctx->fix linkages  */
+  tidy(ctx, 0, ctx->no_subs);
   do_dads(ctx, 20);
   newcost = root->best_par_cost;
   drop = origcost - newcost;
@@ -362,7 +362,7 @@ int best_remove_dad(SnobContext *ctx) {
   double res, bestdrop, origcost;
   Population *popln = ctx->state.popln;
 
-  NoSubs++;
+  ctx->no_subs++;
   bestdrop = -1.0e20;
   bser = -1;
 
@@ -387,7 +387,7 @@ loop:
   newp = copy_population(ctx, ctx->state.popln->id, 0, "TrialPop");
   if (newp < 0)
     goto popfails;
-  popln = ctx->state.popln = Populations[newp];
+  popln = ctx->state.popln = ctx->populations[newp];
 
   root = popln->classes[popln->root];
   res = splice_dad(ctx, ser);
@@ -412,15 +412,15 @@ i1done:
   newp = copy_population(ctx, ctx->state.popln->id, 1, "TrialPop");
   if (newp < 0)
     goto popfails;
-  popln = ctx->state.popln = Populations[newp];
+  popln = ctx->state.popln = ctx->populations[newp];
 
   root = popln->classes[popln->root];
   log_msg(ctx, 0, "TRYING DELETE %6d", bser >> 2);
   res = splice_dad(ctx, bser);
-  Control = 0;
+  ctx->control = 0;
   do_all(ctx, 1, 1);
-  Control = AdjAll;
-  if (Heard) {
+  ctx->control = AdjAll;
+  if (ctx->heard) {
     log_msg(ctx, 0, "BestDelDad ends prematurely");
     return (0);
   }
@@ -441,15 +441,15 @@ popfails:
 winner:
   clr_bad_move(ctx);
   log_msg(ctx, 0, "ACCEPTED !!!");
-  if (Debug < 1)
+  if (ctx->debug < 1)
     print_tree(ctx);
   strcpy(oldctx.popln->name, "TrialPop");
   strcpy(ctx->state.popln->name, "work");
   track_best(ctx, 1);
 
 finish:
-  if (NoSubs > 0)
-    NoSubs--;
+  if (ctx->no_subs > 0)
+    ctx->no_subs--;
   return (bser);
 }
 
@@ -461,43 +461,43 @@ void binary_hierarchy(SnobContext *ctx, int flat) {
 
   if (flat)
     flatten(ctx);
-  NoSubs++;
-  if (Heard)
+  ctx->no_subs++;
+  if (ctx->heard)
     goto kicked;
   clr_bad_move(ctx);
 insloop:
   nn = best_insert_dad(ctx, 1);
-  if (Heard)
+  if (ctx->heard)
     goto kicked;
   if (nn > 0)
     goto insloop;
 
   try_moves(ctx, 2);
-  if (Heard)
+  if (ctx->heard)
     goto kicked;
 
 delloop:
   nn = best_remove_dad(ctx);
-  if (Heard)
+  if (ctx->heard)
     goto kicked;
   if (nn > 0)
     goto delloop;
 
   try_moves(ctx, 2);
-  if (Heard)
+  if (ctx->heard)
     goto kicked;
 
 finish:
-  if (Debug < 1)
+  if (ctx->debug < 1)
     print_tree(ctx);
-  if (NoSubs > 0)
-    NoSubs--;
+  if (ctx->no_subs > 0)
+    ctx->no_subs--;
   clr_bad_move(ctx);
   return;
 
 kicked:
   nn = find_population(ctx, "work");
-  ctx->state.popln = Populations[nn];
+  ctx->state.popln = ctx->populations[nn];
 
   log_msg(ctx, 0, "BinHier ends prematurely");
   goto finish;
@@ -525,7 +525,7 @@ void ranclass(SnobContext *ctx, int nn) {
     goto finish;
   }
 
-  NoSubs = 0;
+  ctx->no_subs = 0;
   delete_all_classes(ctx);
   n = 1;
   if (nn < 2)
@@ -535,15 +535,15 @@ again:
   if (n >= nn)
     goto windup;
   num_son = find_all(ctx, Leaf);
-  /*	Locate biggest leaf with subs aged at least MinAge  */
+  /*	Locate biggest leaf with subs aged at least ctx->min_age  */
   ib = -1;
   bs = 0.0;
   for (ic = 0; ic < num_son; ic++) {
-    cls = Sons[ic];
+    cls = ctx->sons[ic];
     if (cls->num_sons < 2)
       goto icdone;
     sub = popln->classes[cls->son_id];
-    if (sub->age < MinAge)
+    if (sub->age < ctx->min_age)
       goto icdone;
     if (cls->weights_sum > bs) {
       bs = cls->weights_sum;
@@ -557,22 +557,22 @@ again:
     goto again;
   }
   /*	Split sons[ib]  */
-  dad = Sons[ib];
+  dad = ctx->sons[ib];
   if (split_leaf(ctx, dad->id))
     goto windup;
   log_msg(ctx, 0, "Splitting %s size%8.1f", serial_to_str(ctx, dad),
           dad->weights_sum);
-  dad->hold_type = Forever;
+  dad->hold_type = ctx->forever;
   n++;
   goto again;
 
 windup:
-  NoSubs = 1;
+  ctx->no_subs = 1;
   do_all(ctx, 5, 1);
   flatten(ctx);
   do_all(ctx, 6, 0);
   do_all(ctx, 4, 1);
-  if (Debug < 1)
+  if (ctx->debug < 1)
     print_tree(ctx);
   root->hold_type = 0;
 
@@ -620,16 +620,16 @@ double move_class(SnobContext *ctx, int ser1, int ser2) {
   }
   /*	All seems OK, so make change in links   */
   cls1->dad_id = k2;
-  /*	Fix linkages  */
-  tidy(ctx, 0, NoSubs);
+  /*	ctx->fix linkages  */
+  tidy(ctx, 0, ctx->no_subs);
   do_dads(ctx, 30);
   if (popln->sample_size) {
     do_all(ctx, 4, 0);
-    if (Heard)
+    if (ctx->heard)
       goto kicked;
     /* 	To collect weights, counts */
     do_all(ctx, 4, 1);
-    if (Heard)
+    if (ctx->heard)
       goto kicked;
   }
   newcost = root->best_par_cost;
@@ -677,7 +677,7 @@ int best_move_class(SnobContext *ctx, int force) {
 
   /*	To get all pairs, we need a double loop over class indexes. I use
   i1, i2 as the indices.   */
-  NoSubs++;
+  ctx->no_subs++;
   bestdrop = -1.0e20;
   bser1 = bser2 = -1;
 
@@ -728,7 +728,7 @@ outer:
     if (newp < 0) {
       goto popfails;
     }
-    ctx->state.popln = Populations[newp];
+    ctx->state.popln = ctx->populations[newp];
     root = ctx->state.popln->classes[ctx->state.popln->root];
     res = move_class(ctx, ser1, ser2);
     if (res > bestdrop) {
@@ -758,15 +758,15 @@ alldone:
   newp = copy_population(ctx, ctx->state.popln->id, 1, "TrialPop");
   if (newp < 0)
     goto popfails;
-  ctx->state.popln = Populations[newp];
+  ctx->state.popln = ctx->populations[newp];
 
   root = ctx->state.popln->classes[ctx->state.popln->root];
   log_msg(ctx, 0, "TRYING MOVE CLASS %6d TO DAD %6d", bser1 >> 2, bser2 >> 2);
   res = move_class(ctx, bser1, bser2);
-  Control = 0;
+  ctx->control = 0;
   do_all(ctx, 1, 1);
-  Control = AdjAll;
-  if (Heard)
+  ctx->control = AdjAll;
+  if (ctx->heard)
     log_msg(ctx, 0, "BestMoveClass ends prematurely");
   /*	Setting dogood's target to origcost-1 allows early exit  */
   /*	See if the trial model has improved over original  */
@@ -789,7 +789,7 @@ popfails:
 
 winner:
   log_msg(ctx, 0, "%s", (succ) ? "ACCEPTED !!!" : "FORCED");
-  if (Debug < 1)
+  if (ctx->debug < 1)
     print_tree(ctx);
   clr_bad_move(ctx);
   /*	Reverse roles of 'work' and TrialPop  */
@@ -799,8 +799,8 @@ winner:
     track_best(ctx, 1);
 
 finish:
-  if (NoSubs > 0)
-    NoSubs--;
+  if (ctx->no_subs > 0)
+    ctx->no_subs--;
   return (succ);
 }
 
@@ -810,7 +810,7 @@ succession have failed, or until all possible moves have been tried   */
 void try_moves(SnobContext *ctx, int ntry) {
   int nfail, succ;
 
-  NoSubs++;
+  ctx->no_subs++;
   do_all(ctx, 1, 1);
   clr_bad_move(ctx);
   nfail = 0;
@@ -822,13 +822,13 @@ void try_moves(SnobContext *ctx, int ntry) {
     nfail++;
     if (succ)
       nfail = 0;
-    if ((Heard) || (Stop)) {
+    if ((ctx->heard) || (ctx->stop)) {
       log_msg(ctx, 0, "Trymoves ends prematurely");
       break;
     }
   }
 
-  if (NoSubs > 0)
-    NoSubs--;
+  if (ctx->no_subs > 0)
+    ctx->no_subs--;
   return;
 }

@@ -46,10 +46,10 @@ void show_pop_names(SnobContext *ctx) {
   int i;
   printf("The defined models are:\n");
   for (i = 0; i < MAX_POPULATIONS; i++) {
-    if (Populations[i]) {
-      printf("%2d %s", i + 1, Populations[i]->name);
-      if (Populations[i]->sample_size)
-        printf(" Sample %s", Populations[i]->sample_name);
+    if (ctx->populations[i]) {
+      printf("%2d %s", i + 1, ctx->populations[i]->name);
+      if (ctx->populations[i]->sample_size)
+        printf(" Sample %s", ctx->populations[i]->sample_name);
       else
         printf(" (unattached)");
       printf("\n");
@@ -57,7 +57,7 @@ void show_pop_names(SnobContext *ctx) {
   }
   printf("Also, the pseudonym \"BST_\" can be used for the best\n");
   printf("model for the current sample\n");
-  NumRepChars = 0;
+  ctx->num_rep_chars = 0;
 }
 
 /*      ----------------------  show_smpl_names  -----------------  */
@@ -65,11 +65,11 @@ void show_smpl_names(SnobContext *ctx) {
   int k;
   printf("Loaded samples:\n");
   for (k = 0; k < MAX_SAMPLES; k++) {
-    if (Samples[k]) {
-      printf("%2d:  %s\n", k + 1, Samples[k]->name);
+    if (ctx->samples[k]) {
+      printf("%2d:  %s\n", k + 1, ctx->samples[k]->name);
     }
   }
-  NumRepChars = 0;
+  ctx->num_rep_chars = 0;
 }
 
 /// @brief Select the sample by the given name
@@ -79,16 +79,16 @@ void select_sample(SnobContext *ctx, char *name) {
   smpl_id = find_sample(ctx, name, 1);
   if (smpl_id >= 0) {
     log_msg(ctx, 1, "Selecting sample [%d] %s", smpl_id,
-            Samples[smpl_id]->name);
+            ctx->samples[smpl_id]->name);
     k = copy_population(ctx, ctx->state.popln->id, 0, "OldWork");
     if (k >= 0) {
       if (ctx->state.popln) {
         destroy_population(ctx, ctx->state.popln->id);
       }
       ctx->state.popln = 0;
-      ctx->state.sample = Samples[smpl_id];
+      ctx->state.sample = ctx->samples[smpl_id];
       log_msg(ctx, 0, "Preparing Initial Population for sample [%d] %s",
-              smpl_id, Samples[smpl_id]->name);
+              smpl_id, ctx->samples[smpl_id]->name);
       k = init_population(ctx);
       if (k < 0) {
         log_msg(ctx, 1, "Cannot make first population for sample");
@@ -107,7 +107,7 @@ void select_sample(SnobContext *ctx, char *name) {
 void select_population(SnobContext *ctx, char *name) {
   int k, p = find_population(ctx, name);
   if (p >= 0) {
-    if (!strcmp(Populations[p]->name, "work")) {
+    if (!strcmp(ctx->populations[p]->name, "work")) {
       if (ctx->state.popln && (ctx->state.popln->id == p)) {
         log_msg(ctx, 0, "Work already picked");
       } else {
@@ -117,7 +117,7 @@ void select_population(SnobContext *ctx, char *name) {
     } else {
       k = set_work_population(ctx, p);
     }
-    ctx->state.popln = Populations[k];
+    ctx->state.popln = ctx->populations[k];
   } else {
     log_msg(ctx, 0, "No existing population '%s'", name);
   }
@@ -126,8 +126,8 @@ void select_population(SnobContext *ctx, char *name) {
 
 void log_msg(SnobContext *ctx, int level, const char *format, ...) {
 
-  if (level >= Debug) {
-    if (NumRepChars > 0) {
+  if (level >= ctx->debug) {
+    if (ctx->num_rep_chars > 0) {
       printf("\n");
     }
     va_list args;
@@ -135,7 +135,7 @@ void log_msg(SnobContext *ctx, int level, const char *format, ...) {
     vprintf(format, args);
     va_end(args);
     printf("\n");
-    NumRepChars = 0;
+    ctx->num_rep_chars = 0;
   }
 }
 
@@ -154,13 +154,13 @@ int error_value(SnobContext *ctx, const char *message, const int value) {
   return value;
 }
 
-#undef Stop
+#undef STOP
 __thread SnobContext *signal_ctx = NULL;
 void handle_sigint(int sig) {
   if (signal_ctx)
-    signal_ctx->Stop = 1;
+    signal_ctx->stop = 1;
 }
-#define Stop (ctx->Stop)
+#define STOP (ctx->stop)
 
 /// @brief Initialize SNOB parameters
 /// @param interact integer specifying if running from a library or not 1 =
@@ -178,18 +178,18 @@ SnobContext *initialize(int interact, int debug, int seed) {
     ctx = (SnobContext *)calloc(1, sizeof(SnobContext));
   }
   signal_ctx = ctx;
-  Interactive = interact;
-  Debug = debug;
-  Stop = 0;
+  ctx->interactive = interact;
+  ctx->debug = debug;
+  ctx->stop = 0;
 
-  SeeAll = 2;
-  Fix = DFix = Partial;
-  DControl = Control = AdjAll;
+  ctx->see_all = 2;
+  ctx->fix = ctx->d_fix = Partial;
+  ctx->d_control = ctx->control = AdjAll;
 
   if (seed != 0) {
-    RSeed = seed;
+    ctx->random_seed = seed;
   } else {
-    RSeed = time(NULL);
+    ctx->random_seed = time(NULL);
   }
 
   if (!Initialized) {
@@ -198,11 +198,11 @@ SnobContext *initialize(int interact, int debug, int seed) {
     do_types(ctx);
 
     for (k = 0; k < MAX_POPULATIONS; k++)
-      Populations[k] = 0;
+      ctx->populations[k] = 0;
     for (k = 0; k < MAX_SAMPLES; k++)
-      Samples[k] = 0;
+      ctx->samples[k] = 0;
     for (k = 0; k < MAX_VSETS; k++)
-      VarSets[k] = 0;
+      ctx->var_sets[k] = 0;
   } else {
     // Cleanup
     for (k = 0; k < MAX_POPULATIONS; k++)
@@ -221,10 +221,10 @@ void reset(SnobContext *ctx) {
   if (!ctx) {
     ctx = (SnobContext *)calloc(1, sizeof(SnobContext));
   }
-  RSeed = 1234567;
-  SeeAll = 2;
-  Fix = DFix = Partial;
-  DControl = Control = AdjAll;
+  ctx->random_seed = 1234567;
+  ctx->see_all = 2;
+  ctx->fix = ctx->d_fix = Partial;
+  ctx->d_control = ctx->control = AdjAll;
 
   if (Initialized) {
     for (k = 0; k < MAX_POPULATIONS; k++)
@@ -269,9 +269,9 @@ void cleanup_population(SnobContext *ctx) {
   if (index >= 0) {
     destroy_population(ctx, index);
   }
-  Fix = DFix;
-  Control = DControl;
-  tidy(ctx, 1, NoSubs);
+  ctx->fix = ctx->d_fix;
+  ctx->control = ctx->d_control;
+  tidy(ctx, 1, ctx->no_subs);
   track_best(ctx, 1);
 }
 
@@ -349,7 +349,7 @@ Result classify(SnobContext *ctx, const int max_cycles, const int do_steps,
     prev_leaves = ctx->state.popln->num_leaves;
     cost = root->best_cost;
     cycle++;
-    if ((no_change_count > 2) || (Stop)) {
+    if ((no_change_count > 2) || (ctx->stop)) {
       break;
     }
 
@@ -358,7 +358,7 @@ Result classify(SnobContext *ctx, const int max_cycles, const int do_steps,
   if (cycle >= max_cycles) {
     log_msg(ctx, 1, "WARNING: Classification did not converge after %d cycles",
             max_cycles);
-  } else if (Stop) {
+  } else if (ctx->stop) {
     log_msg(ctx, 1, "WARNING: Classification interrupted after %d cycles",
             cycle);
   } else {
@@ -393,11 +393,11 @@ int load_model(SnobContext *ctx, char *filename) {
 }
 
 void save_context(SnobContext *ctx) {
-  memcpy(&ctx->bkpState, &ctx->state, sizeof(State));
+  memcpy(&ctx->state_backup, &ctx->state, sizeof(State));
 }
 void restore_context(SnobContext *ctx) {
-  memcpy(&ctx->state, &ctx->bkpState, sizeof(State));
+  memcpy(&ctx->state, &ctx->state_backup, sizeof(State));
 }
 void set_control_flags(SnobContext *ctx, int flags) {
-  Control = DControl = flags;
+  ctx->control = ctx->d_control = flags;
 }

@@ -151,7 +151,7 @@ void expmults_define(SnobContext *ctx, int typindx) {
   double xg;
   VarType *vtype;
 
-  vtype = &Types[typindx];
+  vtype = &ctx->types[typindx];
   vtype->id = typindx;
   /* 	Set type name as string up to 59 chars  */
   vtype->name = "MultiState";
@@ -347,7 +347,7 @@ void set_probs(SnobContext *ctx, int iv, Prob *probs, Class *cls) {
       0.0; /* For calculating dispersion of bp[] */
   sum = 0.0;
   for (k = 0; k < states; k++) {
-    tt = fabs(Scores.CaseFacScore - fbp[k]);
+    tt = fabs(ctx->scores.CaseFacScore - fbp[k]);
     /*	Do table interpolation in gausorg   */
     tt = tt * Gns;
     ig = tt;
@@ -491,16 +491,16 @@ void score_var(SnobContext *ctx, int iv, Class *cls) {
     set_probs(ctx, iv, &probs, cls); /* Will calc pr[], qr[], gg, ff  */
     t1d1 = probs.b1p - fbp[saux->xn];
     t2d1 = -(0.5 * states * rstatesm) *
-           (cls_var->fapsprd + Scores.CaseFacScoreSq * cls_var->bpsprd) *
+           (cls_var->fapsprd + ctx->scores.CaseFacScoreSq * cls_var->bpsprd) *
            probs.ff * probs.b1p;
-    t3d1 = Scores.CaseFacScore * cls_var->bpsprd * probs.ff;
+    t3d1 = ctx->scores.CaseFacScore * cls_var->bpsprd * probs.ff;
 
-    Scores.CaseFacScoreD1 += t1d1 + t3d1 + t2d1;
-    Scores.CaseFacScoreD2 += probs.gg;
-    /* xx	vvd2 += Mbeta * evi->mgg;  */
-    Scores.EstFacScoreD2 += (probs.gg > exp_var->mgg) ? probs.gg : exp_var->mgg;
+    ctx->scores.CaseFacScoreD1 += t1d1 + t3d1 + t2d1;
+    ctx->scores.CaseFacScoreD2 += probs.gg;
+    /* xx	vvd2 += ctx->m_beta * evi->mgg;  */
+    ctx->scores.EstFacScoreD2 += (probs.gg > exp_var->mgg) ? probs.gg : exp_var->mgg;
     /* Since we don't know vsprd, just calc and accumulate deriv of 'gg' */
-    Scores.CaseFacScoreD3 +=
+    ctx->scores.CaseFacScoreD3 +=
         probs.b3p - probs.b1p * (3.0 * probs.gg + probs.b1p2);
   }
 }
@@ -533,7 +533,7 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
 
   /*	Do nofac costing first  */
   cost = scst[saux->xn];
-  Scores.CaseNoFacCost += cost;
+  ctx->scores.CaseNoFacCost += cost;
 
   /*	Only do faccost if fac  */
   Prob probs;
@@ -542,15 +542,15 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
     cost = -log(pr[saux->xn]); /* -log prob of xn */
     exp_var->conff =
         0.5 * probs.ff *
-        (cls_var->fapsprd + Scores.CaseFacScoreSq * cls_var->bpsprd);
+        (cls_var->fapsprd + ctx->scores.CaseFacScoreSq * cls_var->bpsprd);
     exp_var->ff = probs.ff;
     exp_var->parkb1p = probs.b1p;
     exp_var->parkb2p = probs.b2p;
     cost += exp_var->conff;
-    cost += 0.5 * Scores.cvvsprd *
-            probs.gg; /* In cost calculation, use gg as is without Mbeta mod  */
+    cost += 0.5 * ctx->scores.cvvsprd *
+            probs.gg; /* In cost calculation, use gg as is without ctx->m_beta mod  */
   }
-  Scores.CaseFacCost += cost;
+  ctx->scores.CaseFacCost += cost;
   exp_var->parkftcost = cost;
 }
 
@@ -598,7 +598,7 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
   /*	Now for factor form  */
   Prob probs;
 
-  exp_var->vsq += case_weight * Scores.CaseFacScoreSq;
+  exp_var->vsq += case_weight * ctx->scores.CaseFacScoreSq;
   if (fac) {
     probs.b1p = exp_var->parkb1p;
     probs.b1p2 = probs.b1p * probs.b1p;
@@ -606,10 +606,10 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
 
     /*	From 1st cost term:  */
     fapd1[saux->xn] -= case_weight;
-    fbpd1[saux->xn] -= case_weight * Scores.CaseFacScore;
+    fbpd1[saux->xn] -= case_weight * ctx->scores.CaseFacScore;
     for (k = 0; k < states; k++) {
       fapd1[k] += case_weight * pr[k];
-      fbpd1[k] += case_weight * pr[k] * Scores.CaseFacScore;
+      fbpd1[k] += case_weight * pr[k] * ctx->scores.CaseFacScore;
     }
 
     /*	Second cost term :  */
@@ -618,25 +618,25 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
     for (k = 0; k < states; k++) {
       inc = cons1 - pr[k] * cons2;
       fapd1[k] += inc;
-      fbpd1[k] += Scores.CaseFacScore * inc;
+      fbpd1[k] += ctx->scores.CaseFacScore * inc;
     }
 
     /*	Third cost term:  */
     cons1 = 2.0 * probs.b1p2 - probs.b2p;
-    cons2 = case_weight * Scores.cvvsprd * Mbeta * rstates;
+    cons2 = case_weight * ctx->scores.cvvsprd * ctx->m_beta * rstates;
     for (k = 0; k < states; k++) {
-      inc = 0.5 * case_weight * Scores.cvvsprd * pr[k] *
+      inc = 0.5 * case_weight * ctx->scores.cvvsprd * pr[k] *
             (fbp[k] * fbp[k] - 2.0 * fbp[k] * probs.b1p + cons1);
       fapd1[k] += inc;
-      fbpd1[k] += Scores.CaseFacScore * inc;
+      fbpd1[k] += ctx->scores.CaseFacScore * inc;
       /*	Terms I forgot :  */
-      fbpd1[k] += case_weight * Scores.cvvsprd * pr[k] * (fbp[k] - probs.b1p);
+      fbpd1[k] += case_weight * ctx->scores.cvvsprd * pr[k] * (fbp[k] - probs.b1p);
       fbpd1[k] += cons2 * fbp[k];
     }
 
     /*	Second derivs (i.e. derivs wrt fapsprd, bpsprd)  */
     exp_var->apd2 += case_weight * exp_var->ff;
-    exp_var->bpd2 += case_weight * exp_var->ff * Scores.CaseFacScoreSq;
+    exp_var->bpd2 += case_weight * exp_var->ff * ctx->scores.CaseFacScoreSq;
   }
   return;
 }
@@ -681,12 +681,12 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
     dapsprd = dad_var->napsprd;
   } else { /* Root */
     dad_var = 0;
-    dadnap = ZeroVec;
+    dadnap = ctx->zero_vec;
     dapsprd = 1.0;
   }
 
   /*	If too few data, use dad's n-paras   */
-  if ((Control & AdjPr) && (cnt < MinSize)) {
+  if ((ctx->control & AdjPr) && (cnt < ctx->min_size)) {
     for (k = 0; k < states; k++) {
       nap[k] = sap[k] = fap[k] = dadnap[k];
       fbp[k] = 0.0;
@@ -735,7 +735,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
   is a variance in (states-1) space with sum-sq spread dapsprd, Normal form */
   spcost = 0.5 * vara / dapsprd;          /* The squared deviations term */
   spcost += 0.5 * statesm * log(dapsprd); /* statesm * log sigma */
-  spcost += statesm * (HALF_LOG_2PI + LATTICE);
+  spcost += statesm * (ctx->half_log_2pi + ctx->lattice);
   /*	This completes the prior density terms  */
   /*	The vol of uncertainty is (sapsprd/statesm)^(statesm/2)  */
   spcost -= 0.5 * statesm * log(cls_var->sapsprd / statesm);
@@ -752,7 +752,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
     is a variance in (states-1) space with sum-sq spread dapsprd, Normal form */
     fpcost = 0.5 * vara / dapsprd;          /* The squared deviations term */
     fpcost += 0.5 * statesm * log(dapsprd); /* statesm * log sigma */
-    fpcost += statesm * (HALF_LOG_2PI + LATTICE);
+    fpcost += statesm * (ctx->half_log_2pi + ctx->lattice);
     /*	The vol of uncertainty is (fapsprd/statesm)^(statesm/2)  */
     fpcost -= 0.5 * statesm * log(cls_var->fapsprd / statesm);
 
@@ -762,7 +762,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
       vara += fbp[k] * fbp[k];
     vara += cls_var->bpsprd; /* Additional variance from roundoff */
     fpcost += 0.5 * vara;    /* The squared deviations term */
-    fpcost += statesm * (HALF_LOG_2PI + LATTICE);
+    fpcost += statesm * (ctx->half_log_2pi + ctx->lattice);
     /*	The vol of uncertainty is (bpsprd/statesm)^(statesm/2)  */
     fpcost -= 0.5 * statesm * log(cls_var->bpsprd / statesm);
   } else {
@@ -776,7 +776,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
   /*	Add to class param costs  */
   cls->nofac_par_cost += spcost;
   cls->fac_par_cost += fpcost;
-  if ((!(Control & AdjPr)) || (cnt < MinSize)) {
+  if ((!(ctx->control & AdjPr)) || (cnt < ctx->min_size)) {
     return;
   }
 
@@ -807,7 +807,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
     tt = 0.5 * cnt * cls_var->sapsprd * probs.ff * rstatesm;
     /*	Use dads's nap[], dapsprd for Normal prior.   */
     /*	Reduce corrections by statesm/states  */
-    adj = InitialAdj * statesm / states;
+    adj = ctx->initial_adj * statesm / states;
     for (k = 0; k < states; k++) {
       del = (sap[k] - dadnap[k]) / dapsprd; /* 1st deriv from prior */
       del += pr[k] * cnt - scnt[k];         /* From data */
@@ -837,7 +837,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
     exp_var->apd2 += 1.0 / dapsprd;
     exp_var->bpd2 += 1.0;
     /*	Stabilization  */
-    Scores.CaseFacScore = 0.0;
+    ctx->scores.CaseFacScore = 0.0;
     set_probs(ctx, iv, &probs, cls);
     for (k = 0; k < states; k++)
       fapd1[k] += 0.5 * pr[k];
@@ -849,9 +849,9 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
     if (sum < exp_var->oldftcost)
       adj = exp_var->adj * 1.1;
     else
-      adj = InitialAdj;
-    if (adj > MaxAdj)
-      adj = MaxAdj;
+      adj = ctx->initial_adj;
+    if (adj > ctx->max_adj)
+      adj = ctx->max_adj;
     exp_var->adj = adj;
     exp_var->oldftcost = sum;
     /*	To do the adjustments, divide 1st derivs by a 'max' value of 2nd
@@ -1137,11 +1137,11 @@ void cost_var_nonleaf(SnobContext *ctx, int iv, int vald, Class *cls) {
     pcost += del * del;
   }
   pcost = 0.5 * (pcost + statesm * apsprd / nson) / dapsprd +
-          statesm * (HALF_LOG_2PI + 0.5 * log(dapsprd));
+          statesm * (ctx->half_log_2pi + 0.5 * log(dapsprd));
   /*      Add hlog Fisher, lattice  */
   pcost += 0.5 * log(0.5 * nson * statesm + nints) +
            0.5 * statesm * log((double)nson) -
-           0.5 * (statesm + 2.0) * log(apsprd) + states * LATTICE;
+           0.5 * (statesm + 2.0) * log(apsprd) + states * ctx->lattice;
   /*	Add roundoff for states params  */
   pcost += 0.5 * states;
   exp_var->npcost = pcost;

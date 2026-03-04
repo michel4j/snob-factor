@@ -8,15 +8,15 @@ static double rcons = (1.0 / (2048.0 * 1024.0 * 1024.0));
 #define B32 0x80000000
 int rand_int(SnobContext *ctx) {
   int js;
-  RSeed = 69069 * RSeed + 103322787;
-  js = RSeed & M32;
+  ctx->random_seed = 69069 * ctx->random_seed + 103322787;
+  js = ctx->random_seed & M32;
   return (js);
 }
 
 int rand_uint(SnobContext *ctx) {
   int js;
-  RSeed = 69069 * RSeed + 103322787;
-  js = RSeed & M32;
+  ctx->random_seed = 69069 * ctx->random_seed + 103322787;
+  js = ctx->random_seed & M32;
   if (js & B32)
     js = M32 - js;
   return (js & M32);
@@ -24,8 +24,8 @@ int rand_uint(SnobContext *ctx) {
 
 double rand_float(SnobContext *ctx) {
   int js;
-  RSeed = 69069 * RSeed + 103322787;
-  js = RSeed & M32;
+  ctx->random_seed = 69069 * ctx->random_seed + 103322787;
+  js = ctx->random_seed & M32;
   if (js & B32)
     js = M32 - js;
   return (rcons * js);
@@ -42,13 +42,13 @@ int find_all(SnobContext *ctx, int class_type) {
   Population *popln = ctx->state.popln;
   Class *root = ctx->state.popln->classes[ctx->state.popln->root];
 
-  tidy(ctx, 1, NoSubs);
+  tidy(ctx, 1, ctx->no_subs);
   j = 0;
   cls = root;
 
   while (cls) {
     if (class_type & cls->type) {
-      Sons[j++] = cls;
+      ctx->sons[j++] = cls;
     }
     next_class(ctx, &cls);
   }
@@ -56,10 +56,10 @@ int find_all(SnobContext *ctx, int class_type) {
 
   // Set indices in nextic[] for non-descendant classes
   for (i = 0; i < num_son; i++) {
-    int idi = Sons[i]->id;
+    int idi = ctx->sons[i]->id;
 
     for (j = i + 1; j < num_son; j++) {
-      cls = Sons[j];
+      cls = ctx->sons[j];
       while (cls->id != idi) {
         if (cls->dad_id < 0) {
           break;
@@ -70,7 +70,7 @@ int find_all(SnobContext *ctx, int class_type) {
         break;
       }
     }
-    NextIc[i] = (j < num_son) ? j : num_son;
+    ctx->next_ic[i] = (j < num_son) ? j : num_son;
   }
   return num_son;
 }
@@ -146,11 +146,11 @@ void tidy(SnobContext *ctx, int hit, int no_subs) {
         return; // Previously infinite loop for(;;) ;
       }
       int hard = 0;
-      if (hit && (cls->weights_sum < MinSize)) {
+      if (hit && (cls->weights_sum < ctx->min_size)) {
         cause = Deadsmall;
         hard = 1;
       } else if (hit && (cls->type == Sub) &&
-                 ((cls->age > MaxSubAge) || no_subs)) {
+                 ((cls->age > ctx->max_sub_age) || no_subs)) {
         cause = Dead;
         hard = 2;
       } else if (popln->classes[kkd]->type == Vacant) {
@@ -158,9 +158,9 @@ void tidy(SnobContext *ctx, int hit, int no_subs) {
         hard = 2;
       }
 
-      if ((hard == 2) || ((hard == 1) && (Control & AdjTr))) {
-        if (SeeAll < 2)
-          SeeAll = 2;
+      if ((hard == 2) || ((hard == 1) && (ctx->control & AdjTr))) {
+        if (ctx->see_all < 2)
+          ctx->see_all = 2;
         cls->dad_id = cause;
         cls->type = Vacant;
         ndead++;
@@ -197,8 +197,8 @@ void tidy(SnobContext *ctx, int hit, int no_subs) {
       if (cls->type == Sub) {
         cause = Dead;
       } else {
-        if (SeeAll < 2)
-          SeeAll = 2;
+        if (ctx->see_all < 2)
+          ctx->see_all = 2;
         dad->type = cls->type;
         dad->use = cls->use;
         dad->hold_type = cls->hold_type;
@@ -220,13 +220,13 @@ void tidy(SnobContext *ctx, int hit, int no_subs) {
 
   kkd = 0;
   // Check conditions directly and proceed if true
-  if (hit && (Control & AdjTr) && NewSubs) {
+  if (hit && (ctx->control & AdjTr) && ctx->new_subs) {
     /* Add subclasses to large-enough leaves */
     for (i = 0; i <= popln->hi_class; i++) {
       dad = popln->classes[i];
       // Check if conditions are met to make subclasses
       if (dad->type == Leaf && !dad->num_sons &&
-          dad->weights_sum >= (2.1 * MinSize) && dad->age >= MinAge) {
+          dad->weights_sum >= (2.1 * ctx->min_size) && dad->age >= ctx->min_age) {
         make_subclasses(ctx, i);
         kkd++;
       }
@@ -259,23 +259,23 @@ void tidy(SnobContext *ctx, int hit, int no_subs) {
 
 void update_seeall_newsubs(SnobContext *ctx, int niter, int ncycles) {
 
-  if ((niter % NewSubsTime) == 0) {
-    NewSubs = 1;
-    if (SeeAll < 2)
-      SeeAll = 2;
+  if ((niter % ctx->new_subs_time) == 0) {
+    ctx->new_subs = 1;
+    if (ctx->see_all < 2)
+      ctx->see_all = 2;
   } else {
-    NewSubs = 0;
+    ctx->new_subs = 0;
   }
   if ((ncycles - niter) <= 2) {
-    SeeAll = ncycles - niter;
+    ctx->see_all = ncycles - niter;
   }
   if (ncycles < 2) {
-    SeeAll = 2;
+    ctx->see_all = 2;
   }
-  if (NoSubs) {
-    NewSubs = 0;
+  if (ctx->no_subs) {
+    ctx->new_subs = 0;
   }
-  if ((niter > NewSubsTime) && (SeeAll == 1)) {
+  if ((niter > ctx->new_subs_time) && (ctx->see_all == 1)) {
     track_best(ctx, 0);
   }
 }
@@ -284,35 +284,35 @@ void find_and_estimate(SnobContext *ctx, int *all, int niter, int ncycles) {
   int repeat, num_son;
   do {
     repeat = 0;
-    if (Fix == Random)
-      SeeAll = 3;
-    tidy(ctx, 1, NoSubs);
+    if (ctx->fix == Random)
+      ctx->see_all = 3;
+    tidy(ctx, 1, ctx->no_subs);
     if (niter >= (ncycles - 1))
       *all = (Dad + Leaf + Sub);
     num_son = find_all(ctx, *all);
 
     for (int k = 0; k < num_son; k++) {
-      clear_costs(ctx, Sons[k]);
+      clear_costs(ctx, ctx->sons[k]);
     }
 
     for (int j = 0; j < ctx->state.sample->num_cases; j++) {
       do_case(ctx, j, *all, 1, num_son);
       /*	docase ignores classes with ignore bit in cls->vv[] for the case
-       * unless SeeAll is on.  */
+       * unless ctx->see_all is on.  */
     }
 
-    // All classes in Sons[] now have stats assigned to them.
+    // All classes in ctx->sons[] now have stats assigned to them.
     // If all=Leaf, the classes are all leaves, so we just re-estimate
     // their parameters and get their pcosts for fac and plain uses,
     // using 'adjust'. But first, check all newcnt-s for vanishing
     // classes.
-    if (Control & (AdjPr + AdjTr)) {
+    if (ctx->control & (AdjPr + AdjTr)) {
       for (int k = 0; k < num_son; k++) {
-        if (Sons[k]->newcnt < MinSize) {
-          Sons[k]->weights_sum = 0.0;
-          Sons[k]->type = Vacant;
-          SeeAll = 2;
-          NewSubs = 0;
+        if (ctx->sons[k]->newcnt < ctx->min_size) {
+          ctx->sons[k]->weights_sum = 0.0;
+          ctx->sons[k]->type = Vacant;
+          ctx->see_all = 2;
+          ctx->new_subs = 0;
           repeat = 1;
           break;
         }
@@ -328,13 +328,13 @@ double update_leaf_classes(SnobContext *ctx, double *oldleafsum, int *nfail,
   leafsum = 0.0;
 
   for (int ic = 0; ic < num_son; ic++) {
-    adjust_class(ctx, Sons[ic], 0);
+    adjust_class(ctx, ctx->sons[ic], 0);
     /*	The second para tells adjust not to do as-dad params  */
-    leafsum += Sons[ic]->best_cost;
+    leafsum += ctx->sons[ic]->best_cost;
   }
-  if (SeeAll == 0) {
+  if (ctx->see_all == 0) {
     token = '.';
-  } else if (leafsum < (*oldleafsum - MinGain)) {
+  } else if (leafsum < (*oldleafsum - ctx->min_gain)) {
     (*nfail) = 0;
     *oldleafsum = leafsum;
     token = 'L';
@@ -382,10 +382,10 @@ void update_all_classes(SnobContext *ctx, double *oldcost, int *nfail) {
   }
 
   //	Test for an improvement
-  if (SeeAll == 0) {
+  if (ctx->see_all == 0) {
     rep(ctx, '.');
   } else {
-    if (root->best_cost < (*oldcost - MinGain)) {
+    if (root->best_cost < (*oldcost - ctx->min_gain)) {
       (*nfail) = 0;
       *oldcost = root->best_cost;
       rep(ctx, 'A');
@@ -426,7 +426,7 @@ int do_all(SnobContext *ctx, int ncycles, int all) {
   oldleafsum = 0.0;
   num_son = find_all(ctx, Leaf);
   for (ic = 0; ic < num_son; ic++) {
-    oldleafsum += Sons[ic]->best_cost;
+    oldleafsum += ctx->sons[ic]->best_cost;
   }
 
   while (niter < ncycles) {
@@ -441,7 +441,7 @@ int do_all(SnobContext *ctx, int ncycles, int all) {
       update_all_classes(ctx, &oldcost, &nfail);
     }
 
-    if (nfail > GiveUp) {
+    if (nfail > ctx->give_up) {
       if (all != Leaf)
         break;
       /*	But if we were doing just leaves, wind up with a couple of
@@ -451,13 +451,13 @@ int do_all(SnobContext *ctx, int ncycles, int all) {
       niter = nfail = 0;
       continue;
     }
-    if (((Interactive) && (!UseStdIn) && hark(ctx, CommsBuffer.inl)) ||
-        (Stop)) {
+    if (((ctx->interactive) && (!ctx->use_stdin) && hark(ctx, CommsBuffer.inl)) ||
+        (ctx->stop)) {
       kicked = 1;
       break;
     }
-    if (SeeAll > 0)
-      SeeAll--;
+    if (ctx->see_all > 0)
+      ctx->see_all--;
     ncydone++;
     niter++;
   }
@@ -469,7 +469,7 @@ int do_all(SnobContext *ctx, int ncycles, int all) {
   }
   /*	Scan leaf classes whose use is 'Fac' to accumulate significant
       score changes.  */
-  ScoreChanges = count_score_changes(ctx);
+  ctx->score_changes = count_score_changes(ctx);
   return (ncydone);
 }
 
@@ -486,17 +486,17 @@ int do_dads(SnobContext *ctx, int ncy) {
   int nn, nfail, num_son;
   Population *popln = ctx->state.popln;
   Class *root = popln->classes[popln->root];
-  if (!(Control & AdjPr))
+  if (!(ctx->control & AdjPr))
     ncy = 1;
 
   /*	Capture no-prior params for subless leaves  */
   num_son = find_all(ctx, Leaf);
-  nfail = Control;
-  Control = Noprior;
+  nfail = ctx->control;
+  ctx->control = Noprior;
   for (nn = 0; nn < num_son; nn++) {
-    adjust_class(ctx, Sons[nn], 0);
+    adjust_class(ctx, ctx->sons[nn], 0);
   }
-  Control = nfail;
+  ctx->control = nfail;
   nn = nfail = 0;
 
   do {
@@ -519,10 +519,10 @@ int do_dads(SnobContext *ctx, int ncy) {
   complete:
     /*	If a leaf, use adjustclass, else use ncostvarall  */
     if (cls->type == Leaf) {
-      Control = Tweak;
+      ctx->control = Tweak;
       adjust_class(ctx, cls, 0);
     } else {
-      Control = AdjPr;
+      ctx->control = AdjPr;
       parent_cost_all_vars(ctx, cls, 1);
       cls->best_par_cost = cls->dad_par_cost;
     }
@@ -545,15 +545,15 @@ int do_dads(SnobContext *ctx, int ncy) {
     /*	Test for convergence  */
     nn++;
     nfail++;
-    if (root->dad_par_cost < (oldcost - MinGain))
+    if (root->dad_par_cost < (oldcost - ctx->min_gain))
       nfail = 0;
     rep(ctx, (nfail) ? 'd' : 'D');
     if (nfail > 3) {
-      Control = DControl;
+      ctx->control = ctx->d_control;
       return (nn);
     }
   } while (nn < ncy);
-  Control = DControl;
+  ctx->control = ctx->d_control;
   return (-1);
 }
 
@@ -576,12 +576,12 @@ int do_good(SnobContext *ctx, int ncy, double target) {
   for (nn = 0; nn < ncy; nn++) {
     oldcost = root->best_cost;
     do_all(ctx, 2, 0);
-    if (root->best_cost < (oldcost - MinGain))
+    if (root->best_cost < (oldcost - ctx->min_gain))
       nfail = 0;
     else
       nfail++;
     rep(ctx, (nfail) ? 'g' : 'G');
-    if (Heard)
+    if (ctx->heard)
       goto kicked;
     if (nfail > 2)
       goto done;
@@ -655,12 +655,12 @@ void do_case(SnobContext *ctx, int item, int all, int derivs, int num_son) {
   /*	Deal with every class, as set up in sons[]  */
   clc = 0;
   while (clc < num_son) {
-    cls = Sons[clc];
+    cls = ctx->sons[clc];
     set_class_score(ctx, cls, item);
-    if ((!SeeAll) && (Scores.CaseFacInt & 1)) { /* Ignore this and decendants */
-      clc = NextIc[clc];
+    if ((!ctx->see_all) && (ctx->scores.CaseFacInt & 1)) { /* Ignore this and decendants */
+      clc = ctx->next_ic[clc];
       continue;
-    } else if (!SeeAll)
+    } else if (!ctx->see_all)
       cls->scancnt++;
     /*	Score and cost the class  */
     score_all_vars(ctx, cls, item);
@@ -674,18 +674,18 @@ void do_case(SnobContext *ctx, int item, int all, int derivs, int num_son) {
   if (num_son != 1) { /*  Not Just doing root  */
     /*	Clear all casewts   */
     for (clc = 0; clc < num_son; clc++)
-      Sons[clc]->case_weight = 0.0;
+      ctx->sons[clc]->case_weight = 0.0;
     mincost = 1.0e30;
     clc = 0;
     while (clc < num_son) {
-      cls = Sons[clc];
-      if ((!SeeAll) && (cls->case_score & 1)) {
+      cls = ctx->sons[clc];
+      if ((!ctx->see_all) && (cls->case_score & 1)) {
         cls->total_case_cost = 1.0e30;
-        clc = NextIc[clc];
+        clc = ctx->next_ic[clc];
         continue;
       }
       clc++;
-      if (Fix == Random) {
+      if (ctx->fix == Random) {
         w1 = 2.0 * rand_float(ctx);
         cls->total_case_cost += w1;
         cls->fac_case_cost += w1;
@@ -700,13 +700,13 @@ void do_case(SnobContext *ctx, int item, int all, int derivs, int num_son) {
     }
 
     sum = 0.0;
-    if (Fix != Most_likely) {
+    if (ctx->fix != Most_likely) {
       /*	Minimum cost is in mincost. Compute unnormalized weights  */
       clc = 0;
       while (clc < num_son) {
-        cls = Sons[clc];
-        if ((cls->case_score & 1) && (!SeeAll)) {
-          clc = NextIc[clc];
+        cls = ctx->sons[clc];
+        if ((cls->case_score & 1) && (!ctx->see_all)) {
+          clc = ctx->next_ic[clc];
           continue;
         }
         clc++;
@@ -718,7 +718,7 @@ void do_case(SnobContext *ctx, int item, int all, int derivs, int num_son) {
       }
     } else {
       for (clc = 0; clc < num_son; clc++) {
-        cls = Sons[clc];
+        cls = ctx->sons[clc];
         if ((cls->type == Leaf) && (cls->total_case_cost == mincost)) {
           sum += 1.0;
           cls->case_weight = 1.0;
@@ -731,7 +731,7 @@ void do_case(SnobContext *ctx, int item, int all, int derivs, int num_son) {
     if (sum <= 0.0) {
       return;
     }
-    if (Fix == Random)
+    if (ctx->fix == Random)
       rootcost = mincost;
     else
       rootcost = mincost - log(sum);
@@ -739,9 +739,9 @@ void do_case(SnobContext *ctx, int item, int all, int derivs, int num_son) {
     sum = 1.0 / sum;
     clc = 0;
     while (clc < num_son) {
-      cls = Sons[clc];
-      if ((cls->case_score & 1) && (!SeeAll)) {
-        clc = NextIc[clc];
+      cls = ctx->sons[clc];
+      if ((cls->case_score & 1) && (!ctx->see_all)) {
+        clc = ctx->next_ic[clc];
         continue;
       }
       clc++;
@@ -758,7 +758,7 @@ void do_case(SnobContext *ctx, int item, int all, int derivs, int num_son) {
       sub2 = popln->classes[sub1->sib_id];
 
       /*	Test subclass ignore flags unless seeall   */
-      if (!(SeeAll)) {
+      if (!(ctx->see_all)) {
         if (sub1->case_score & 1) {
           if (!(sub2->case_score & 1)) {
             sub2->case_weight = cls->case_weight;
@@ -782,12 +782,12 @@ void do_case(SnobContext *ctx, int item, int all, int derivs, int num_son) {
         w2 = exp(diff);
         w1 = 1.0 / (1.0 + w2);
         w2 *= w1;
-        if (w2 < MinSubWt)
+        if (w2 < ctx->min_sub_weight)
           sub2->case_score |= 1;
         else
           sub2->case_score &= -2;
         sub2->factor_scores[item] = sub2->case_score;
-        if (Fix == Random)
+        if (ctx->fix == Random)
           cls->dad_case_cost = low;
         else
           cls->dad_case_cost = low + log(w1);
@@ -796,18 +796,18 @@ void do_case(SnobContext *ctx, int item, int all, int derivs, int num_son) {
         w1 = exp(-diff);
         w2 = 1.0 / (1.0 + w1);
         w1 *= w2;
-        if (w1 < MinSubWt)
+        if (w1 < ctx->min_sub_weight)
           sub1->case_score |= 1;
         else
           sub1->case_score &= -2;
         sub1->factor_scores[item] = sub1->case_score;
-        if (Fix == Random)
+        if (ctx->fix == Random)
           cls->dad_case_cost = low;
         else
           cls->dad_case_cost = low + log(w2);
       }
-      /*	Assign randomly if sub age 0, or to-best if sub age < MinAge */
-      if (sub1->age < MinAge) {
+      /*	Assign randomly if sub age 0, or to-best if sub age < ctx->min_age */
+      if (sub1->age < ctx->min_age) {
         if (sub1->age == 0) {
           w1 = (rand_int(ctx) < 0) ? 1.0 : 0.0;
         } else {
@@ -823,12 +823,12 @@ void do_case(SnobContext *ctx, int item, int all, int derivs, int num_son) {
         Collect weights from leaves into Dads, setting their casecosts  */
     if (root->type != Leaf) { /* skip when root is only leaf */
       for (clc = num_son - 1; clc >= 0; clc--) {
-        cls = Sons[clc];
+        cls = ctx->sons[clc];
         if ((cls->type == Sub) ||
-            ((!SeeAll) && (cls->factor_scores[item] & 1))) {
+            ((!ctx->see_all) && (cls->factor_scores[item] & 1))) {
           continue;
         }
-        if (cls->case_weight < MinWt)
+        if (cls->case_weight < ctx->min_weight)
           cls->factor_scores[item] |= 1;
         else
           cls->factor_scores[item] &= -2;
@@ -854,7 +854,7 @@ void do_case(SnobContext *ctx, int item, int all, int derivs, int num_son) {
     return;
   }
   for (clc = 0; clc < num_son; clc++) {
-    cls = Sons[clc];
+    cls = ctx->sons[clc];
     if (cls->case_weight > 0.0) {
       deriv_all_vars(ctx, cls, item);
     }

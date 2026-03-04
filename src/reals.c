@@ -101,7 +101,7 @@ void reals_define(SnobContext *ctx, int typindx) {
   /*	typindx is the index in types[] of this type   */
   VarType *vtype;
 
-  vtype = &Types[typindx];
+  vtype = &ctx->types[typindx];
   vtype->id = typindx;
   /* 	Set type name as string up to 59 chars  */
   vtype->name = "Standard Gaussian";
@@ -281,13 +281,13 @@ void score_var(SnobContext *ctx, int iv, Class *cls) {
 
   if (saux->missing)
     return;
-  del = cls_var->fmu + Scores.CaseFacScore * cls_var->ld - saux->xn;
-  Scores.CaseFacScoreD1 +=
+  del = cls_var->fmu + ctx->scores.CaseFacScore * cls_var->ld - saux->xn;
+  ctx->scores.CaseFacScoreD1 +=
       exp_var->frsds *
-      (del * cls_var->ld + Scores.CaseFacScore * cls_var->ldsprd);
+      (del * cls_var->ld + ctx->scores.CaseFacScore * cls_var->ldsprd);
   md2 = exp_var->frsds * (exp_var->ldsq + cls_var->ldsprd);
-  Scores.CaseFacScoreD2 += md2;
-  Scores.EstFacScoreD2 += 1.1 * md2;
+  ctx->scores.CaseFacScoreD2 += md2;
+  ctx->scores.EstFacScoreD2 += 1.1 * md2;
   return;
 }
 
@@ -310,24 +310,24 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
   /*	Do no-fac cost first  */
   del = cls_var->smu - saux->xn;
   var = del * del + cls_var->smusprd + saux->epssq;
-  cost = 0.5 * var * exp_var->srsds + cls_var->ssdlsprd + HALF_LOG_2PI +
+  cost = 0.5 * var * exp_var->srsds + cls_var->ssdlsprd + ctx->half_log_2pi +
          cls_var->ssdl - saux->leps;
   exp_var->parkstcost = cost;
-  Scores.CaseNoFacCost += cost;
+  ctx->scores.CaseNoFacCost += cost;
 
   /*	Only do faccost if fac  */
   if (!fac)
     goto facdone;
-  del += Scores.CaseFacScore * cls_var->ld;
+  del += ctx->scores.CaseFacScore * cls_var->ld;
   var = del * del + cls_var->fmusprd + saux->epssq +
-        Scores.CaseFacScoreSq * cls_var->ldsprd +
-        Scores.cvvsprd * exp_var->ldsq;
+        ctx->scores.CaseFacScoreSq * cls_var->ldsprd +
+        ctx->scores.cvvsprd * exp_var->ldsq;
   exp_var->var = var;
-  cost = HALF_LOG_2PI + 0.5 * exp_var->frsds * var + cls_var->fsdl +
+  cost = ctx->half_log_2pi + 0.5 * exp_var->frsds * var + cls_var->fsdl +
          cls_var->fsdlsprd * 2.0 - saux->leps;
 
 facdone:
-  Scores.CaseFacCost += cost;
+  ctx->scores.CaseFacCost += cost;
   exp_var->parkftcost = cost;
 
   return;
@@ -363,7 +363,7 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
   if (fac) {
 
     frsds = exp_var->frsds;
-    del = cls_var->fmu + Scores.CaseFacScore * cls_var->ld - saux->xn;
+    del = cls_var->fmu + ctx->scores.CaseFacScore * cls_var->ld - saux->xn;
     /*	From cost_var, we have:
         cost = 0.5 * evi->frsds * var + cls_var->fsdl + cls_var->fsdlsprd*2.0 +
        consts where var is given by: del^2 + musprd + cvvsq*ldsprd +
@@ -375,9 +375,9 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
     exp_var->fmud1 += case_weight * del * frsds;
     exp_var->fmud2 += case_weight * frsds;
     exp_var->ldd1 += case_weight * frsds *
-                     (del * Scores.CaseFacScore + cls_var->ld * Scores.cvvsprd);
+                     (del * ctx->scores.CaseFacScore + cls_var->ld * ctx->scores.cvvsprd);
     exp_var->ldd2 +=
-        case_weight * frsds * (Scores.CaseFacScoreSq + Scores.cvvsprd);
+        case_weight * frsds * (ctx->scores.CaseFacScoreSq + ctx->scores.cvvsprd);
   }
 }
 
@@ -397,7 +397,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
 
   del3 = del4 = 0.0;
   set_var(ctx, iv, cls);
-  adj = InitialAdj;
+  adj = ctx->initial_adj;
   cnt = exp_var->cnt;
 
   /*	Get prior constants from dad, or if root, fake them  */
@@ -419,7 +419,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
   }
 
   /*	If too few data for this variable, use dad's n-paras  */
-  if ((Control & AdjPr) && (cnt < MinSize)) {
+  if ((ctx->control & AdjPr) && (cnt < ctx->min_size)) {
     cls_var->nmu = cls_var->smu = cls_var->fmu = dadmu;
     cls_var->nsdl = cls_var->ssdl = cls_var->fsdl = dadsdl;
     cls_var->ld = 0.0;
@@ -446,7 +446,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
     }
     /*	Make a stab at class tcost  */
     cls->cstcost +=
-        cnt * (HALF_LOG_2PI + cls_var->ssdl - saux->leps + 0.5 + cls->mlogab) +
+        cnt * (ctx->half_log_2pi + cls_var->ssdl - saux->leps + 0.5 + cls->mlogab) +
         1.0;
     cls->cftcost = cls->cstcost + 100.0 * cnt;
   }
@@ -458,13 +458,13 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
 
   /*	Compute parameter costs as they are  */
   del1 = dadmu - cls_var->smu;
-  spcost = HALF_LOG_2PI +
+  spcost = ctx->half_log_2pi +
            0.5 * (log(dmusprd) + temp1 * (del1 * del1 + cls_var->smusprd));
   del2 = dadsdl - cls_var->ssdl;
-  spcost += HALF_LOG_2PI +
+  spcost += ctx->half_log_2pi +
             0.5 * (log(dsdlsprd) + temp2 * (del2 * del2 + cls_var->ssdlsprd));
   spcost -= 0.5 * log(cls_var->smusprd * cls_var->ssdlsprd);
-  spcost += 2.0 * LATTICE;
+  spcost += 2.0 * ctx->lattice;
 
   if (!fac) {
     fpcost = spcost + 100.0;
@@ -472,16 +472,16 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
     goto facdone1;
   }
   del3 = cls_var->fmu - dadmu;
-  fpcost = HALF_LOG_2PI +
+  fpcost = ctx->half_log_2pi +
            0.5 * (log(dmusprd) + temp1 * (del3 * del3 + cls_var->fmusprd));
   del4 = cls_var->fsdl - dadsdl;
-  fpcost += HALF_LOG_2PI +
+  fpcost += ctx->half_log_2pi +
             0.5 * (log(dsdlsprd) + temp2 * (del4 * del4 + cls_var->fsdlsprd));
   /*    The prior for load ld id N (0, sigsq)  */
-  fpcost += HALF_LOG_2PI + 0.5 * (exp_var->ldsq + cls_var->ldsprd) * frsds +
+  fpcost += ctx->half_log_2pi + 0.5 * (exp_var->ldsq + cls_var->ldsprd) * frsds +
             cls_var->fsdl;
   fpcost -= 0.5 * log(cls_var->fmusprd * cls_var->fsdlsprd * cls_var->ldsprd);
-  fpcost += 3.0 * LATTICE;
+  fpcost += 3.0 * ctx->lattice;
 
 facdone1:
 
@@ -491,9 +491,9 @@ facdone1:
   /*	Add to class param costs  */
   cls->nofac_par_cost += spcost;
   cls->fac_par_cost += fpcost;
-  if (cnt < MinSize)
+  if (cnt < ctx->min_size)
     goto adjdone;
-  if (!(Control & AdjPr))
+  if (!(ctx->control & AdjPr))
     goto tweaks;
   /*	Adjust non-fac parameters.   */
   /*	From things, smud1 = (tx - cnt*mu) * srsds, from prior,
@@ -570,12 +570,12 @@ tweaks: /* Come here if no adjustments made */
   /*	If Noprior, guess no-prior params, sprds and store instead of
       as-dad values. Actually store in nparsprd the val 1/bparsprd,
       and in npar the val bpar / bparsprd   */
-  if (Control & Noprior) {
+  if (ctx->control & Noprior) {
     cls_var->nmusprd = (1.0 / cls_var->bmusprd) - (1.0 / dmusprd);
     cls_var->nmu = cls_var->bmu / cls_var->bmusprd - dadmu / dmusprd;
     cls_var->nsdlsprd = (1.0 / cls_var->bsdlsprd) - (1.0 / dsdlsprd);
     cls_var->nsdl = cls_var->bsdl / cls_var->bsdlsprd - dadsdl / dsdlsprd;
-  } else if (Control & Tweak) {
+  } else if (ctx->control & Tweak) {
     /*	Adjust "best" params by applying effect of dad prior to
         the no-prior values  */
     cls_var->bmusprd = 1.0 / (cls_var->nmusprd + (1.0 / dmusprd));
@@ -827,7 +827,7 @@ void cost_var_nonleaf(SnobContext *ctx, int iv, int vald, Class *cls) {
         the value of V  */
     mean = tstn / nson;   /* Mean of sons' param  */
     tstvn -= mean * tstn; /*	Variance around mean  */
-    if (!(Control & AdjPr))
+    if (!(ctx->control & AdjPr))
       goto adjdone;
 
     /*	Iterate the adjustment of param, spread  */
@@ -848,11 +848,11 @@ void cost_var_nonleaf(SnobContext *ctx, int iv, int vald, Class *cls) {
 
   adjdone: /*	Calc cost  */
     del = pp - dadpp;
-    pcost += HALF_LOG_2PI + 1.5 * log(dppsprd) +
+    pcost += ctx->half_log_2pi + 1.5 * log(dppsprd) +
              0.5 * (del * del + ppsprd / nson) / dppsprd + ppsprd / dppsprd;
     /*	Add hlog Fisher, lattice  */
     pcost += 0.5 * log(nson * (0.5 * nson + nints)) - 1.5 * log(ppsprd) +
-             2.0 * LATTICE;
+             2.0 * ctx->lattice;
 
     /*	Add roundoff for 2 params  (pp, ppsprd)  */
     pcost += 1.0;

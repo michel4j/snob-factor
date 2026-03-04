@@ -95,7 +95,7 @@ when installing a new type of variable. It is also necessary to change the
 void expbinary_define(SnobContext *ctx, int typindx) {
   /*	typindx is the index in types[] of this type   */
   VarType *vtype;
-  vtype = &Types[typindx];
+  vtype = &ctx->types[typindx];
   vtype->id = typindx;
   /* 	Set type name as string up to 59 chars  */
   vtype->name = "Binary";
@@ -278,7 +278,7 @@ void score_var(SnobContext *ctx, int iv, Class *cls) {
   if (saux->missing)
     return;
   /*	Calc prob of val 1  */
-  cc = cls_var->fap + Scores.CaseFacScore * cls_var->fbp;
+  cc = cls_var->fap + ctx->scores.CaseFacScore * cls_var->fbp;
   if (cc > 0.0) {
     pr1 = exp(-2.0 * cc);
     pr0 = pr1 / (1.0 + pr1);
@@ -297,24 +297,24 @@ void score_var(SnobContext *ctx, int iv, Class *cls) {
   hdffbydv = -cc * cls_var->fbp * ff * ff;
   ft = 4.0 * pr0 * pr1;
   hdftbydv = ft * (pr0 - pr1) * cls_var->fbp;
-  /*	Apply Bbeta mix to the approximate Fish  */
-  hdffbydv = Bbeta * hdffbydv + (1.0 - Bbeta) * hdftbydv;
-  ff = Bbeta * ff + (1.0 - Bbeta) * ft;
+  /*	Apply ctx->b_beta mix to the approximate Fish  */
+  hdffbydv = ctx->b_beta * hdffbydv + (1.0 - ctx->b_beta) * hdftbydv;
+  ff = ctx->b_beta * ff + (1.0 - ctx->b_beta) * ft;
   /*	Now build deriv of cost wrt vv  */
   if (saux->xn == 1)
     dbyv = -2.0 * cls_var->fbp * pr0;
   else
     dbyv = 2.0 * cls_var->fbp * pr1;
   /*	From cost term 0.5 * vvsq * bpsprd * ft: */
-  dbyv += Scores.CaseFacScore * cls_var->bpsprd * ft;
+  dbyv += ctx->scores.CaseFacScore * cls_var->bpsprd * ft;
   /*	And via dftbydv, terms 0.5*(fapsprd * vvsq*bpsprd)*ft :   */
   dbyv +=
-      (cls_var->fapsprd + Scores.CaseFacScoreSq * cls_var->bpsprd) * hdftbydv;
-  Scores.CaseFacScoreD1 += dbyv;
-  Scores.CaseFacScoreD2 += exp_var->bsq * ff;
-  Scores.EstFacScoreD2 += exp_var->bsq * ff;
+      (cls_var->fapsprd + ctx->scores.CaseFacScoreSq * cls_var->bpsprd) * hdftbydv;
+  ctx->scores.CaseFacScoreD1 += dbyv;
+  ctx->scores.CaseFacScoreD2 += exp_var->bsq * ff;
+  ctx->scores.EstFacScoreD2 += exp_var->bsq * ff;
   /*	Don't yet know cvvsprd, so just accum bsq * dffbydv  */
-  Scores.CaseFacScoreD3 += 2.0 * exp_var->bsq * hdffbydv;
+  ctx->scores.CaseFacScoreD3 += 2.0 * exp_var->bsq * hdffbydv;
   return;
 }
 
@@ -338,12 +338,12 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
   }
   /*	Do nofac costing first  */
   cost = exp_var->scst[saux->xn];
-  Scores.CaseNoFacCost += cost;
+  ctx->scores.CaseNoFacCost += cost;
 
   /*	Only do faccost if fac  */
   if (!fac)
     goto facdone;
-  cc = cls_var->fap + Scores.CaseFacScore * cls_var->fbp;
+  cc = cls_var->fap + ctx->scores.CaseFacScore * cls_var->fbp;
   if (cc > 0.0) {
     small = exp(-2.0 * cc);
     pr0 = small / (1.0 + small);
@@ -371,22 +371,22 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
   hdffbydc = -cc * ff * ff;
   exp_var->parkft = ft = 4.0 * pr0 * pr1;
   hdftbydc = ft * (pr0 - pr1);
-  /*	Apply Bbeta mix to the approximate Fish  */
-  hdffbydc = Bbeta * hdffbydc + (1.0 - Bbeta) * hdftbydc;
-  ff = Bbeta * ff + (1.0 - Bbeta) * ft;
+  /*	Apply ctx->b_beta mix to the approximate Fish  */
+  hdffbydc = ctx->b_beta * hdffbydc + (1.0 - ctx->b_beta) * hdftbydc;
+  ff = ctx->b_beta * ff + (1.0 - ctx->b_beta) * ft;
   /*	In calculating the cost, use ft for all spreads, rather than using
       ff for the v spread, but use ff in getting differentials  */
   cost +=
-      0.5 * ((cls_var->fapsprd + Scores.CaseFacScoreSq * cls_var->bpsprd) * ft +
-             exp_var->bsq * Scores.cvvsprd * ft);
+      0.5 * ((cls_var->fapsprd + ctx->scores.CaseFacScoreSq * cls_var->bpsprd) * ft +
+             exp_var->bsq * ctx->scores.cvvsprd * ft);
   exp_var->dbya +=
-      (cls_var->fapsprd + Scores.CaseFacScoreSq * cls_var->bpsprd) * hdftbydc +
-      exp_var->bsq * Scores.cvvsprd * hdffbydc;
+      (cls_var->fapsprd + ctx->scores.CaseFacScoreSq * cls_var->bpsprd) * hdftbydc +
+      exp_var->bsq * ctx->scores.cvvsprd * hdffbydc;
   exp_var->dbyb =
-      Scores.CaseFacScore * exp_var->dbya + cls_var->fbp * Scores.cvvsprd * ff;
+      ctx->scores.CaseFacScore * exp_var->dbya + cls_var->fbp * ctx->scores.cvvsprd * ff;
 
 facdone:
-  Scores.CaseFacCost += cost;
+  ctx->scores.CaseFacCost += cost;
   exp_var->parkftcost = cost;
   return;
 }
@@ -416,12 +416,12 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
   /*	Now for factor form  */
   if (fac) {
 
-    exp_var->vsq += case_weight * Scores.CaseFacScoreSq;
+    exp_var->vsq += case_weight * ctx->scores.CaseFacScoreSq;
     exp_var->fapd1 += case_weight * exp_var->dbya;
     exp_var->fbpd1 += case_weight * exp_var->dbyb;
     /*	Accum actual 2nd derivs  */
     exp_var->apd2 += case_weight * exp_var->parkft;
-    exp_var->bpd2 += case_weight * exp_var->parkft * Scores.CaseFacScoreSq;
+    exp_var->bpd2 += case_weight * exp_var->parkft * ctx->scores.CaseFacScoreSq;
   }
 }
 
@@ -452,7 +452,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
   }
 
   /*	If too few data, use dad's n-paras   */
-  if ((Control & AdjPr) && (cnt < MinSize)) {
+  if ((ctx->control & AdjPr) && (cnt < ctx->min_size)) {
     cls_var->nap = cls_var->sap = cls_var->fap = cls_var->dadnap;
     cls_var->fbp = 0.0;
     cls_var->napsprd = cls_var->fapsprd = cls_var->sapsprd = cls_var->dapsprd;
@@ -483,7 +483,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
   is a variance with squared spread cls_var->dapsprd, Normal form */
   spcost = 0.5 * vara / cls_var->dapsprd; /* The squared deviations term */
   spcost += 0.5 * log(cls_var->dapsprd);  /* log sigma */
-  spcost += HALF_LOG_2PI + LATTICE;
+  spcost += ctx->half_log_2pi + ctx->lattice;
   /*	This completes the prior density terms  */
   /*	The vol of uncertainty is sqrt (sapsprd)  */
   spcost -= 0.5 * log(cls_var->sapsprd);
@@ -497,13 +497,13 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
     vara = del * del + cls_var->fapsprd;
     fpcost = 0.5 * vara / cls_var->dapsprd; /* The squared deviations term */
     fpcost += 0.5 * log(cls_var->dapsprd);  /* log sigma */
-    fpcost += (HALF_LOG_2PI + LATTICE);
+    fpcost += (ctx->half_log_2pi + ctx->lattice);
     fpcost -= 0.5 * log(cls_var->fapsprd);
 
     /*	And for fbp[]:  (N(0,1) prior)  */
     vara = cls_var->fbp * cls_var->fbp + cls_var->bpsprd;
     fpcost += 0.5 * vara; /* The squared deviations term */
-    fpcost += HALF_LOG_2PI + LATTICE - 0.5 * log(cls_var->bpsprd);
+    fpcost += ctx->half_log_2pi + ctx->lattice - 0.5 * log(cls_var->bpsprd);
   }
 
   /*	Store param costs  */
@@ -512,9 +512,9 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
   /*	Add to class param costs  */
   cls->nofac_par_cost += spcost;
   cls->fac_par_cost += fpcost;
-  if (!(Control & AdjPr))
+  if (!(ctx->control & AdjPr))
     goto adjdone;
-  if (cnt < MinSize)
+  if (cnt < ctx->min_size)
     goto adjdone;
 
   /*	Adjust non-fac params.  */
@@ -557,9 +557,9 @@ adjloop:
   if (tt < exp_var->oldftcost)
     adj = exp_var->adj * 1.1;
   else
-    adj = InitialAdj;
-  if (adj > MaxAdj)
-    adj = MaxAdj;
+    adj = ctx->initial_adj;
+  if (adj > ctx->max_adj)
+    adj = ctx->max_adj;
   exp_var->adj = adj;
   exp_var->oldftcost = tt;
   cls_var->fap -= adj * exp_var->fapd1 / exp_var->apd2;
@@ -704,10 +704,10 @@ adjloop:
   del = cls_var->nap - cls_var->dadnap;
   pcost = del * del;
   pcost = 0.5 * (pcost + apsprd / nson) / cls_var->dapsprd +
-          (HALF_LOG_2PI + 0.5 * log(cls_var->dapsprd));
+          (ctx->half_log_2pi + 0.5 * log(cls_var->dapsprd));
   /*      Add hlog Fisher, lattice  */
   pcost += 0.5 * log(0.5 * nson + nints) + 0.5 * log((double)nson) -
-           1.5 * log(apsprd) + 2.0 * LATTICE;
+           1.5 * log(apsprd) + 2.0 * ctx->lattice;
   /*	Add roundoff for params  */
   pcost += 1.0;
   exp_var->npcost = pcost;
