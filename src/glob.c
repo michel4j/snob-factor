@@ -233,6 +233,10 @@ void reset(SnobContext *ctx) {
       destroy_sample(ctx, k);
     for (k = 0; k < MAX_VSETS; k++)
       destroy_vset(ctx, k);
+    if (ctx->types) {
+      free(ctx->types);
+      ctx->types = 0;
+    }
   }
 }
 
