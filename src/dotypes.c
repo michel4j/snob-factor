@@ -7,12 +7,12 @@ of functions for the new type.
 
 #include "glob.h"
 
-void reals_define(int typindx);
-void expmults_define(int typindx);
-void expbinary_define(int typindx);
-void vonm_define(int typindx);
+void reals_define(SnobContext *ctx, int typindx);
+void expmults_define(SnobContext *ctx, int typindx);
+void expbinary_define(SnobContext *ctx, int typindx);
+void vonm_define(SnobContext *ctx, int typindx);
 
-void do_types() {
+void do_types(SnobContext *ctx) {
     int i;
 
     /*	Set the number of attribute types  */
@@ -33,10 +33,10 @@ void do_types() {
     /*	Make the 'types' vector  */
     Types = (VarType *)malloc(NTypes * sizeof(VarType));
 
-    reals_define(0);
-    expmults_define(1);
-    expbinary_define(2);
-    vonm_define(3);
+    reals_define(ctx, 0);
+    expmults_define(ctx, 1);
+    expbinary_define(ctx, 2);
+    vonm_define(ctx, 3);
 
     return;
 }

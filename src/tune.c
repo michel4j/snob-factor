@@ -4,7 +4,7 @@
 #include "glob.h"
 
 /*	----------------  defaulttune -------------------------------- */
-void default_tune() {
+void default_tune(SnobContext *ctx) {
     int i;
 
     MinAge = 4;

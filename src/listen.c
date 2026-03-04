@@ -9,7 +9,7 @@
 /*	Listens for instruction via file "comms"    */
 static int seq = '0';
 
-int hark(char *lline) {
+int hark(SnobContext *ctx, char *lline) {
     FILE *co;
     int i, k, m;
     int rk1, rk2, rseq1, rseq2;
@@ -95,12 +95,12 @@ formok:
 
 /*	----------------------- testmain ---------------------------  */
 #ifdef TEST
-main() {
+main(SnobContext *ctx) {
     int i, j, kk;
     char gl[LI];
 
 loop:
-    kk = hark(gl);
+    kk = hark(ctx, gl);
     if (!kk) {
         sleep(1);
         goto loop;

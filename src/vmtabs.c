@@ -5150,7 +5150,7 @@ int ni;
 }
 
 /*	---------------  main  ----------------------- */
-int main() {
+int main(SnobContext *ctx) {
     double kap;
     double lap, llap, rkap;
     int ni;
