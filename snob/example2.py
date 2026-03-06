@@ -27,5 +27,5 @@ if __name__ == '__main__':
         print('#' * 80)
         print(f"Classifying: {name}")
 
-        classes = snob.classify(vset_file, sample_file, cycles=25, steps=50, moves=4, tol=5e-3)
+        classes = snob.classify(vset_file, sample_file, cycles=25, steps=50, moves=4, seed=1234567, tol=5e-3)
         snob.show_classes(classes)

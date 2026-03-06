@@ -522,6 +522,7 @@ def classify(
         cycles: int = 3,
         steps: int = 50,
         moves: int = 3,
+        seed: int = 0,
         tol: float = 1e-2
 ):
     """
@@ -531,11 +532,12 @@ def classify(
     :param cycles:  Number of classification cycles
     :param steps: Number of do_all steps
     :param moves: Number of try_move steps
+    :param seed: random number seed, 0 will use system time
     :param tol:  percentage drop above which we should continue trying
     :return: list of class dictionaries
     """
     with Timer():
-        ctx = initialize(log_level=1)
+        ctx = initialize(log_level=1, seed=seed)
         lib.load_vset(ctx, str(vset_file).encode('utf-8'))
         lib.load_sample(ctx, str(sample_file).encode('utf-8'))
         lib.peek_data(ctx)
