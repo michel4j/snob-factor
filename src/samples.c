@@ -4,6 +4,9 @@
 
 /**
  * @brief To print datum for variable i, case n, in sample
+ * @param ctx Pointer to the Snob context.
+ * @param i
+ * @param n
  */
 void print_var_datum(SnobContext *ctx, int i, int n) {
     Sample *samp;
@@ -80,6 +83,7 @@ void peek_data(SnobContext *ctx) {
 /**
  * @brief To read in a vset from a file. Returns index of vset
  * Returns negative if fail
+ * @param ctx Pointer to the Snob context.
  */
 
 int read_vset(SnobContext *ctx) {
@@ -327,6 +331,8 @@ int add_attribute(SnobContext *ctx, int index, const char *name, int itype, int 
 /**
  * @brief To open a sample file and read in all about the sample.
  * Returns index of new sample in samples array
+ * @param ctx Pointer to the Snob context.
+ * @param fname Name or filename string.
  */
 int load_sample(SnobContext *ctx, const char *fname) {
 
@@ -542,6 +548,9 @@ int load_sample(SnobContext *ctx, const char *fname) {
 /**
  * @brief To find sample id given its name. Returns -1 if unknown
  * 'expect' shows if sample expected to be present
+ * @param ctx Pointer to the Snob context.
+ * @param nam Name or filename string.
+ * @param expect
  */
 int find_sample(SnobContext *ctx, char *nam, int expect) {
     int i;
@@ -725,6 +734,8 @@ int sort_current_sample(SnobContext *ctx) {
 
 /**
  * @brief To find vset id given its name. Returns -1 if unknown
+ * @param ctx Pointer to the Snob context.
+ * @param nam Name or filename string.
  */
 int find_vset(SnobContext *ctx, char *nam) {
     int i, ii;
@@ -743,6 +754,9 @@ int find_vset(SnobContext *ctx, char *nam) {
 
 /**
  * @brief To quicksort a sample into increasing ident order
+ * @param p1
+ * @param p2
+ * @param ll
  */
 
 //	Record swapper
@@ -871,6 +885,8 @@ int sort_sample(SnobContext *ctx, Sample *samp) {
 
 /**
  * @brief Given a item ident, returns index in sample, or -1 if not found
+ * @param ctx Pointer to the Snob context.
+ * @param id Identifier or serial number.
  */
 int find_sample_index(SnobContext *ctx, int id) {
     int iu, il, ic, cid, len;
@@ -905,6 +921,8 @@ int find_sample_index(SnobContext *ctx, int id) {
 /**
  * @brief Records best class and score for all things in a sample.
  *
+ * @param ctx Pointer to the Snob context.
+ * @param tlstname Name or filename string.
  */
 int item_list(SnobContext *ctx, char *tlstname) {
     FILE *tlst;
@@ -1019,6 +1037,8 @@ int get_assignments(SnobContext *ctx, int *ids, int *prim_cls, double *prim_prob
 
 /**
  * @brief To destroy sample index sx
+ * @param ctx Pointer to the Snob context.
+ * @param sx
  */
 void destroy_sample(SnobContext *ctx, int sx) {
     int prev;
@@ -1043,6 +1063,8 @@ void destroy_sample(SnobContext *ctx, int sx) {
 
 /**
  * @brief To destroy vset index vx
+ * @param ctx Pointer to the Snob context.
+ * @param vx
  */
 void destroy_vset(SnobContext *ctx, int vx) {
     int prev;

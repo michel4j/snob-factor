@@ -3,27 +3,32 @@
 
 /**
  * @brief Finds class index (id) from serial, or -3 if error
+ * @param ctx Pointer to the Snob context.
+ * @param serial Class serial number.
  */
-int serial_to_id(SnobContext *ctx, int ss) {
+int serial_to_id(SnobContext *ctx, int serial) {
     int k;
     Class *cls;
     Population *popln = ctx->state.popln;
 
-    if (ss >= 1) {
+    if (serial >= 1) {
         for (k = 0; k <= popln->hi_class; k++) {
             cls = popln->classes[k];
-            if (cls && (cls->type != Vacant) && (cls->serial == ss))
+            if (cls && (cls->type != Vacant) && (cls->serial == serial))
                 return (k);
         }
     }
     char suffix = ' ';
-    if (ss & 3)
-        suffix = (ss & 1) ? 'a' : 'b';
-    log_msg(ctx, 1, "No such class serial as %d %c", ss >> 2, suffix);
+    if (serial & 3)
+        suffix = (serial & 1) ? 'a' : 'b';
+    log_msg(ctx, 1, "No such class serial as %d %c", serial >> 2, suffix);
     return (-3);
 }
 
 /**
+ * @param ctx Pointer to the Snob context.
+ * @param cls Pointer to the class.
+ * @param item Index of the data item/case.
  */
 void set_class_score(SnobContext *ctx, Class *cls, int item) {
     cls->case_score = ctx->scores.CaseFacInt = cls->factor_scores[item];
@@ -36,6 +41,7 @@ void set_class_score(SnobContext *ctx, Class *cls, int item) {
  * if nc = 0, that's it. Otherwize, if a sample is defined in pop,
  * score vector.
  * Returns index of class, or negative if no good
+ * @param ctx Pointer to the Snob context.
  */
 
 int make_class(SnobContext *ctx) {
@@ -145,8 +151,11 @@ int make_class(SnobContext *ctx) {
 }
 
 /**
- * @brief To print parameters of a class
+ * @brief Print parameters of a class
  * If kk = -1, prints all non-subs. If kk = -2, prints all
+ * @param ctx Pointer to the Snob context.
+ * @param cls Pointer to the class.
+ * @param full Full print.
  */
 const char *typstr[] = {"typ?", " DAD", "LEAF", "typ?", " Sub"};
 const char *usestr[] = {"Tny", "Pln", "Fac"};
@@ -190,18 +199,25 @@ void print_one_class(SnobContext *ctx, Class *cls, int full) {
     }
 }
 
-void print_class(SnobContext *ctx, int n, int full) {
+/**
+ * @brief Print parameters of a class
+ * If index = -1, prints all non-subs. If index = -2, prints all
+ * @param ctx Pointer to the Snob context.
+ * @param index Class index.
+ * @param full Full print.
+ */
+void print_class(SnobContext *ctx, int index, int full) {
     Class *cls;
     Class *root = ctx->state.popln->classes[ctx->state.popln->root];
-    if (n >= 0) {
-        cls = ctx->state.popln->classes[n];
+    if (index >= 0) {
+        cls = ctx->state.popln->classes[index];
         print_one_class(ctx, cls, full);
-    } else if (n < -2) {
-        printf("%d passed to printclass\n", n);
+    } else if (index < -2) {
+        printf("%d passed to printclass\n", index);
     } else {
         cls = root;
         do {
-            if ((n == -2) || (cls->type != Sub)) {
+            if ((index == -2) || (cls->type != Sub)) {
                 print_one_class(ctx, cls, full);
             }
             next_class(ctx, &cls);
@@ -209,6 +225,12 @@ void print_class(SnobContext *ctx, int n, int full) {
     }
 }
 
+/**
+ * @brief Get the details of a class as a JSON object buffer
+ * @param ctx Pointer to the Snob context.
+ * @param cls Pointer to the class.
+ * @param buffer Memory buffer to write/read.
+ */
 void get_details_for(SnobContext *ctx, Class *cls, MemBuffer *buffer) {
     int i;
     VarType *vtype;
@@ -236,6 +258,12 @@ void get_details_for(SnobContext *ctx, Class *cls, MemBuffer *buffer) {
     print_buffer(ctx, buffer, "]}");
 }
 
+/**
+ * @brief Get the details of all classes in a popln as a JSON array buffer
+ * @param ctx Pointer to the Snob context.
+ * @param buffer Memory buffer to write/read.
+ * @param buffer_size Size of the buffer.
+ */
 void get_class_details(SnobContext *ctx, char *buffer, size_t buffer_size) {
     MemBuffer dest;
 
@@ -261,6 +289,8 @@ void get_class_details(SnobContext *ctx, char *buffer, size_t buffer_size) {
 /**
  * @brief Clears tcosts (cntcost, cftcost, cstcost). Also clears newcnt,
  * newvsq, and calls clear_stats for all variables
+ * @param ctx Pointer to the Snob context.
+ * @param cls Pointer to the class.
  */
 void clear_costs(SnobContext *ctx, Class *cls) {
     int i;
@@ -284,6 +314,8 @@ void clear_costs(SnobContext *ctx, Class *cls) {
 
 /**
  * @brief To set 'b' params, costs to reflect current use
+ * @param ctx Pointer to the Snob context.
+ * @param cls Pointer to the class.
  */
 void set_best_costs(SnobContext *ctx, Class *cls) {
     int i;
@@ -310,11 +342,14 @@ void set_best_costs(SnobContext *ctx, Class *cls) {
 }
 
 /**
- * @brief To evaluate derivs of cost wrt score in all vars of a class.
+ * @brief Evaluate derivs of cost wrt score in all vars of a class.
  * Does one item, number case
  * Leaves data values set in stats, but does no scoring if class too
  * young. If class age = ctx->min_fac_age, will guess scores but not cost them
  * If control & AdjSc, will adjust score
+ * @param ctx Pointer to the Snob context.
+ * @param cls Pointer to the class.
+ * @param item Index of the data item/case.
  */
 void score_all_vars(SnobContext *ctx, Class *cls, int item) {
     int i, igbit, oldicvv;
@@ -400,6 +435,9 @@ void score_all_vars(SnobContext *ctx, Class *cls, int item) {
 /**
  * @brief Does cost_var on all vars of class for the current item, setting
  * cls->casecost according to use of class
+ * @param ctx Pointer to the Snob context.
+ * @param cls Pointer to the class.
+ * @param item Index of the data item/case.
  */
 void cost_all_vars(SnobContext *ctx, Class *cls, int item) {
     int fac;
@@ -450,6 +488,9 @@ void cost_all_vars(SnobContext *ctx, Class *cls, int item) {
 
 /**
  * @brief To collect derivative statistics for all vars of a class
+ * @param ctx Pointer to the Snob context.
+ * @param cls Pointer to the class.
+ * @param item Index of the data item/case.
  */
 void deriv_all_vars(SnobContext *ctx, Class *cls, int item) {
     int fac;
@@ -488,6 +529,9 @@ void deriv_all_vars(SnobContext *ctx, Class *cls, int item) {
 /**
  * @brief To compute pcosts of a class, and if needed, adjust params
  * Will process as-dad params only if 'dod'
+ * @param ctx Pointer to the Snob context.
+ * @param cls Pointer to the class.
+ * @param dod Flag to process as-dad parameters.
  */
 void adjust_class(SnobContext *ctx, Class *cls, int dod) {
     int iv, fac, npars, small;
@@ -642,6 +686,9 @@ void adjust_class(SnobContext *ctx, Class *cls, int dod) {
 /**
  * @brief To do parent costing on all vars of a class
  * If not 'valid', don't cost, and fake params
+ * @param ctx Pointer to the Snob context.
+ * @param cls Pointer to the class.
+ * @param valid Identifier or serial number.
  */
 void parent_cost_all_vars(SnobContext *ctx, Class *cls, int valid) {
     Class *son;
@@ -675,8 +722,8 @@ void parent_cost_all_vars(SnobContext *ctx, Class *cls, int valid) {
     abcost += nson * SNOB_BIT;
     //	Now add cost of specifying the relabs of the sons.
     /*	Their relabs are absolute, but we specify them as fractions of this
-    dad's relab. The cost includes -0.5 * Sum_sons { log (sonab / dadab) }
-        */
+        dad's relab. The cost includes -0.5 * Sum_sons { log (sonab / dadab) }
+    */
     rrelab = 1.0 / cls->relab;
     for (son_id = cls->son_id; son_id >= 0; son_id = son->sib_id) {
         son = popln->classes[son_id];
@@ -687,31 +734,34 @@ void parent_cost_all_vars(SnobContext *ctx, Class *cls, int valid) {
     //	And from prior:
     abcost -= ctx->fac_log[nson - 1];
     /*	The sons will have been processed by 'adjustclass' already, and
-    this will have caused their best pcosts to be added into cls->cnpcost  */
+        this will have caused their best pcosts to be added into cls->cnpcost
+    */
     cls->dad_par_cost += abcost;
     return;
 }
 
 /**
  * @brief To delete the sons of a class
+ * @param ctx Pointer to the Snob context.
+ * @param index Class index.
  */
-void delete_sons(SnobContext *ctx, int kk) {
+void delete_sons(SnobContext *ctx, int index) {
     Class *cls, *son;
-    int kks;
+    int son_index;
     Population *popln = ctx->state.popln;
 
     if (!(ctx->control & AdjTr))
         return;
-    cls = popln->classes[kk];
+    cls = popln->classes[index];
     if (cls->num_sons <= 0)
         return;
     ctx->see_all = 4;
 
-    for (kks = cls->son_id; kks > 0; kks = son->sib_id) {
-        son = popln->classes[kks];
+    for (son_index = cls->son_id; son_index > 0; son_index = son->sib_id) {
+        son = popln->classes[son_index];
         son->type = Vacant;
         son->dad_id = Deadkilled;
-        delete_sons(ctx, kks);
+        delete_sons(ctx, son_index);
     }
     cls->num_sons = 0;
     cls->son_id = -1;
@@ -723,19 +773,21 @@ void delete_sons(SnobContext *ctx, int kk) {
 /**
  * @brief If kk is a leaf and has subs, turns it into a dad and makes
  * its subs into leaves.  Returns 0 if successful.
+ * @param ctx Pointer to the Snob context.
+ * @param index Class index.
  */
-int split_leaf(SnobContext *ctx, int kk) {
+int split_leaf(SnobContext *ctx, int index) {
     Class *son, *cls;
-    int kks;
+    int son_index;
     Population *popln = ctx->state.popln;
-    cls = popln->classes[kk];
+    cls = popln->classes[index];
     if ((cls->type != Leaf) || (cls->num_sons < 2) || cls->hold_type) {
         return (1);
     }
     cls->type = Dad;
     cls->hold_type = ctx->hold_time;
-    for (kks = cls->son_id; kks >= 0; kks = son->sib_id) {
-        son = popln->classes[kks];
+    for (son_index = cls->son_id; son_index >= 0; son_index = son->sib_id) {
+        son = popln->classes[son_index];
         son->type = Leaf;
         son->serial = 4 * popln->next_serial;
         popln->next_serial++;
@@ -746,6 +798,7 @@ int split_leaf(SnobContext *ctx, int kk) {
 
 /**
  * @brief To remove all classes of a popln except its root
+ * @param ctx Pointer to the Snob context.
  */
 void delete_all_classes(SnobContext *ctx) {
     int k;
@@ -775,28 +828,30 @@ void delete_all_classes(SnobContext *ctx) {
 }
 
 /**
- * @brief given a ptr cpop to a popln and an integer iss, returns the index
+ * @brief Given a ptr cpop to a popln and an integer iss, returns the index
  * of the next leaf in the popln with serial > iss, or -1 if there is none
  * Intended for scanning the leaves of a popln in serial order
+ * @param ctx Pointer to the Snob context.
+ * @param popln Pointer to the population.
+ * @param serial Serial number.
  */
-int next_leaf(SnobContext *ctx, Population *cpop, int iss) {
+int next_leaf(SnobContext *ctx, Population *popln, int serial) {
     Class *cls;
     int i, j, k, n;
 
     n = -1;
     k = 10000000;
-    for (i = 0; i <= cpop->hi_class; i++) {
-        cls = cpop->classes[i];
+    for (i = 0; i <= popln->hi_class; i++) {
+        cls = popln->classes[i];
         if (cls->type != Leaf)
-            goto idone;
+            continue;
         j = cls->serial;
-        if (j <= iss)
-            goto idone;
+        if (j <= serial)
+            continue;
         if (j < k) {
             k = j;
             n = i;
         }
-    idone:;
     }
     return (n);
 }

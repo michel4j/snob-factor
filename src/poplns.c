@@ -6,6 +6,8 @@
 /**
  * @brief given a ptr to a ptr to a class in pop, changes the Class* to point
  * to the next class in a depth-first traversal, or 0 if there is none
+ * @param ctx Pointer to the Snob context.
+ * @param ptr
  */
 void next_class(SnobContext *ctx, Class **ptr) {
     Class *cls;
@@ -36,6 +38,8 @@ void next_class(SnobContext *ctx, Class **ptr) {
  * or score vectors, and the popln is not connected to the current sample.
  * OTHERWIZE, the root class is fully configured for the current sample.
  *
+ * @param ctx Pointer to the Snob context.
+ * @param fill
  */
 
 int make_population(SnobContext *ctx, int fill) {
@@ -135,6 +139,7 @@ int make_population(SnobContext *ctx, int fill) {
  * @brief To make an initial population given a vset and a samp.
  * Should return a popln index for a popln with a root class set up
  * and non-fac estimates done
+ * @param ctx Pointer to the Snob context.
  */
 int init_population(SnobContext *ctx) {
     int ipop;
@@ -157,6 +162,8 @@ int init_population(SnobContext *ctx) {
 }
 /**
  * @brief Given a class index kk, makes two subclasses
+ * @param clsa
+ * @param clsb
  */
 void cleanup_subclasses(Class *clsa, Class *clsb) {
     if (clsa) {
@@ -240,6 +247,8 @@ void make_subclasses(SnobContext *ctx, int kk) {
 
 /**
  * @brief To destroy popln index px
+ * @param ctx Pointer to the Snob context.
+ * @param px
  */
 void destroy_population(SnobContext *ctx, int px) {
     int prev = (ctx->state.popln) ? ctx->state.popln->id : -1;
@@ -271,6 +280,10 @@ void destroy_population(SnobContext *ctx, int px) {
  * If newname is "work", the context ctx is left addressing the new
  * popln, but otherwise is not disturbed.
  *
+ * @param ctx Pointer to the Snob context.
+ * @param p1
+ * @param fill
+ * @param newname Name or filename string.
  */
 int copy_population(SnobContext *ctx, int p1, int fill, char *newname) {
     Population *fpop, *popln;
@@ -490,6 +503,7 @@ void print_subtree(SnobContext *ctx, int kk) {
 }
 
 /**
+ * @param ctx Pointer to the Snob context.
  */
 void print_tree(SnobContext *ctx) {
 
@@ -556,6 +570,8 @@ int get_best_pop(SnobContext *ctx) {
 
 /**
  * @brief If current model is better than 'BST_...', updates BST_...
+ * @param ctx Pointer to the Snob context.
+ * @param verify
  */
 void track_best(SnobContext *ctx, int verify) {
     Population *bstpop;
@@ -600,6 +616,8 @@ void track_best(SnobContext *ctx, int verify) {
 
 /**
  * @brief To find a popln with given name and return its id, or -1 if fail
+ * @param ctx Pointer to the Snob context.
+ * @param nam Name or filename string.
  */
 int find_population(SnobContext *ctx, char *nam) {
     int i;
@@ -644,6 +662,10 @@ char *const saveheading = "Scnob-Model-Save-File";
  * Basics and Stats. If fill but pop->nc = 0, behaves as for fill = 0.
  * Returns length of recorded file.
  *
+ * @param ctx Pointer to the Snob context.
+ * @param p1
+ * @param fill
+ * @param newname Name or filename string.
  */
 int save_population(SnobContext *ctx, int p1, int fill, char *newname) {
 
@@ -773,6 +795,8 @@ int save_population(SnobContext *ctx, int p1, int fill, char *newname) {
 
 /**
  * @brief To read a model saved by savepop
+ * @param ctx Pointer to the Snob context.
+ * @param nam Name or filename string.
  */
 int load_population(SnobContext *ctx, char *nam) {
     char pname[80], name[80], *jp;
@@ -930,6 +954,8 @@ finish:
 /**
  * @brief To load popln pp into work, attaching sample as needed.
  * Returns index of work, and sets ctx, or returns neg if fail
+ * @param ctx Pointer to the Snob context.
+ * @param pp
  */
 int set_work_population(SnobContext *ctx, int pp) {
     int j, windx, fpopnc;
@@ -1009,6 +1035,8 @@ finish:
  * Table entries show the weight assigned to both one leaf of 'work' and one
  * leaf of the other popln, as a permillage of active things.
  *
+ * @param ctx Pointer to the Snob context.
+ * @param xid Identifier or serial number.
  */
 void correlpops(SnobContext *ctx, int xid) {
     float table[MAX_CLASSES][MAX_CLASSES];

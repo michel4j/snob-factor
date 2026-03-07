@@ -10,6 +10,8 @@
 #define FIT_CYCLES 25
 
 /**
+ * @param argc
+ * @param argv
  */
 int main(int argc, char *argv[]) {
     int index, cycles = FIT_CYCLES, steps = DO_ALL_STEPS, moves = TRY_MOVE_STEPS;

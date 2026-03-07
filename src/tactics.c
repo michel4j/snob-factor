@@ -5,6 +5,7 @@
  * @brief Destroys all non-root Dads, leaving all old non-dads (leaf or sub)
  * which had no children as leaves, direct sons of root. Prepares for a rebuild
  * Locks the type of root to dad
+ * @param ctx Pointer to the Snob context.
  */
 void flatten(SnobContext *ctx) {
 
@@ -62,6 +63,10 @@ void flatten(SnobContext *ctx) {
  * of the other, provided neither is the root
  * The change, if possible, is made to ctx.popln.
  * dadid is set to the id of the new dad, if any.
+ * @param ctx Pointer to the Snob context.
+ * @param ser1 Identifier or serial number.
+ * @param ser2 Identifier or serial number.
+ * @param dadid Identifier or serial number.
  */
 double insert_dad(SnobContext *ctx, int ser1, int ser2, int *dadid) {
     Class *cls1, *cls2, *ndad, *odad;
@@ -157,6 +162,8 @@ double insert_dad(SnobContext *ctx, int ser1, int ser2, int *dadid) {
 /**
  * @brief Returns serial of new dad, or 0 if best no good, or -1 if none
  * to try
+ * @param ctx Pointer to the Snob context.
+ * @param force Flag to force operation.
  */
 int best_insert_dad(SnobContext *ctx, int force) {
     State oldctx;
@@ -310,6 +317,7 @@ finish:
 
 /**
  * @brief Flattens and the rebuilds the tree
+ * @param ctx Pointer to the Snob context.
  */
 void rebuild(SnobContext *ctx) { log_msg(ctx, 0, "Rebuild obsolete!"); }
 
@@ -317,6 +325,8 @@ void rebuild(SnobContext *ctx) { log_msg(ctx, 0, "Rebuild obsolete!"); }
  * @brief If class ser is Dad (not root), it is removed, and its sons become
  * sons of its dad.
  *
+ * @param ctx Pointer to the Snob context.
+ * @param ser Identifier or serial number.
  */
 double splice_dad(SnobContext *ctx, int ser) {
     Class *son, *cls;
@@ -359,6 +369,7 @@ finish:
  * @brief Tries all feasible deldads, does dogood on best and installs
  * as work if an improvement.
  * Returns 1 if accepted, 0 if tried and no good, -1 if none to try
+ * @param ctx Pointer to the Snob context.
  */
 int best_remove_dad(SnobContext *ctx) {
     State oldctx;
@@ -462,6 +473,8 @@ finish:
 /**
  * @brief If flat, flattens population. Then inserts dads to make a binary
  * hierarchy. Then deletes dads as appropriate
+ * @param ctx Pointer to the Snob context.
+ * @param flat
  */
 void binary_hierarchy(SnobContext *ctx, int flat) {
     int nn;
@@ -512,6 +525,8 @@ kicked:
 
 /**
  * @brief To make nn random classes
+ * @param ctx Pointer to the Snob context.
+ * @param nn
  */
 void ranclass(SnobContext *ctx, int nn) {
     int n, ic, ib, num_son;
@@ -589,6 +604,9 @@ finish:
 
 /**
  * @brief To move class ser1 to be a child of class ser2
+ * @param ctx Pointer to the Snob context.
+ * @param ser1 Identifier or serial number.
+ * @param ser2 Identifier or serial number.
  */
 double move_class(SnobContext *ctx, int ser1, int ser2) {
     Class *cls1, *cls2, *odad;
@@ -655,6 +673,8 @@ done:
 }
 
 /**
+ * @param ctx Pointer to the Snob context.
+ * @param param
  */
 void trial(SnobContext *ctx, int param) {
     log_msg(ctx, 0, "Running TRIAL");
@@ -667,6 +687,8 @@ void trial(SnobContext *ctx, int param) {
  * does it. Returns 1 if an improvement, 0 if best no improvement, -1 if none
  * possible.
  *
+ * @param ctx Pointer to the Snob context.
+ * @param force Flag to force operation.
  */
 int best_move_class(SnobContext *ctx, int force) {
     State oldctx;
@@ -817,6 +839,8 @@ finish:
 /**
  * @brief Tries moving classes using bestmoveclass until ntry attempts in
  * succession have failed, or until all possible moves have been tried
+ * @param ctx Pointer to the Snob context.
+ * @param ntry
  */
 void try_moves(SnobContext *ctx, int ntry) {
     int nfail, succ;

@@ -5151,6 +5151,7 @@ int ni;
 }
 
 /**
+ * @param ctx Pointer to the Snob context.
  */
 int main(SnobContext *ctx) {
     double kap;

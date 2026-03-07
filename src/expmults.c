@@ -144,6 +144,8 @@ static void reduce_stats(SnobContext *ctx, int iv, Class *dest, Class *src);
  * when installing a new type of variable. It is also necessary to change the
  * "Ntypes" constant, and to decide on a type id (an integer) for the new type.
  *
+ * @param ctx Pointer to the Snob context.
+ * @param typindx Index.
  */
 
 void expmults_define(SnobContext *ctx, int typindx) {
@@ -190,6 +192,9 @@ void expmults_define(SnobContext *ctx, int typindx) {
 }
 
 /**
+ * @param ctx Pointer to the Snob context.
+ * @param iv
+ * @param cls Pointer to the class.
  */
 void set_var(SnobContext *ctx, int iv, Class *cls) {}
 
@@ -197,6 +202,8 @@ void set_var(SnobContext *ctx, int iv, Class *cls) {}
  * @brief To read any auxiliary info about a variable of this type in some
  * sample.
  *
+ * @param ctx Pointer to the Snob context.
+ * @param vaux
  */
 int read_attr_aux(SnobContext *ctx, void *vaux) {
     int i, states;
@@ -231,12 +238,17 @@ int set_attr_aux(SnobContext *ctx, void *vaux, int states) {
 
 /**
  * @brief To read auxilliary info re sample for this attribute
+ * @param ctx Pointer to the Snob context.
+ * @param sax
  */
 int read_smpl_aux(SnobContext *ctx, void *sax) { return (0); } //	Multistate has no auxilliary info re sample
 int set_smpl_aux(SnobContext *ctx, void *sax, int unit, double prec) { return (0); }
 
 /**
  * @brief To read a value for this variable type
+ * @param ctx Pointer to the Snob context.
+ * @param loc
+ * @param iv
  */
 int read_datum(SnobContext *ctx, char *loc, int iv) {
     int i;
@@ -267,6 +279,8 @@ int set_datum(SnobContext *ctx, char *loc, int iv, void *value) {
 
 /**
  * @brief To print a Datum value
+ * @param ctx Pointer to the Snob context.
+ * @param loc
  */
 void print_datum(SnobContext *ctx, char *loc) {
     //	Print datum from address loc
@@ -278,6 +292,8 @@ void print_datum(SnobContext *ctx, char *loc) {
  * @brief To use info in ctx.vset to set sizes of basic and stats
  * blocks for variable, and place in VSetVar basicsize, statssize.
  *
+ * @param ctx Pointer to the Snob context.
+ * @param iv
  */
 void set_sizes(SnobContext *ctx, int iv) {
     VSetVar *vset_var = &ctx->state.vset->variables[iv];
@@ -292,6 +308,9 @@ void set_sizes(SnobContext *ctx, int iv) {
 }
 
 /**
+ * @param ctx Pointer to the Snob context.
+ * @param iv
+ * @param cls Pointer to the class.
  */
 void set_best_pars(SnobContext *ctx, int iv, Class *cls) {
     Basic *cls_var = (Basic *)cls->basics[iv];
@@ -328,6 +347,10 @@ void set_best_pars(SnobContext *ctx, int iv, Class *cls) {
  * @brief Routine to set state probs for a item using fap, fbp, cvv
  * Sets probs in pr[], -log probs in qr[].
  * Also calcs b1p, b2p, b3p, b1p2, gg
+ * @param ctx Pointer to the Snob context.
+ * @param iv
+ * @param probs
+ * @param cls Pointer to the class.
  */
 void set_probs(SnobContext *ctx, int iv, Prob *probs, Class *cls) {
     double sum, tt, lsum;
@@ -386,6 +409,9 @@ void set_probs(SnobContext *ctx, int iv, Prob *probs, Class *cls) {
 /**
  * @brief Clears stats to accumulate in cost_var, and derives useful functions
  * of basic params
+ * @param ctx Pointer to the Snob context.
+ * @param iv
+ * @param cls Pointer to the class.
  */
 void clear_stats(SnobContext *ctx, int iv, Class *cls) {
     double sum, tt;
@@ -505,6 +531,9 @@ static void reduce_stats(SnobContext *ctx, int iv, Class *dest, Class *src) {
 /**
  * @brief To eval derivs of a case wrt score, scorespread. Adds to vvd1,vvd2.
  *
+ * @param ctx Pointer to the Snob context.
+ * @param iv
+ * @param cls Pointer to the class.
  */
 void score_var(SnobContext *ctx, int iv, Class *cls) {
     double t1d1, t2d1, t3d1;
@@ -542,6 +571,10 @@ void score_var(SnobContext *ctx, int iv, Class *cls) {
 
 /**
  * @brief Accumulate item cost into CaseNoFacCost, fcasecost
+ * @param ctx Pointer to the Snob context.
+ * @param iv
+ * @param fac
+ * @param cls Pointer to the class.
  */
 void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
     double cost;
@@ -590,6 +623,10 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
 /**
  * @brief Given item weight in cwt, calcs derivs of item cost wrt basic
  * params and accumulates in paramd1, paramd2
+ * @param ctx Pointer to the Snob context.
+ * @param iv
+ * @param fac
+ * @param cls Pointer to the class.
  */
 void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
     double cons1, cons2, inc;
@@ -674,6 +711,10 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
 
 /**
  * @brief To adjust parameters of a multistate variable
+ * @param ctx Pointer to the Snob context.
+ * @param iv
+ * @param fac
+ * @param cls Pointer to the class.
  */
 void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
 
@@ -923,6 +964,9 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
 
 /**
  * @brief prints the exponential params in 'ap' converted to probs
+ * @param ap
+ * @param states
+ * @param pr
  */
 void prprint(double *ap, int states, double *pr) {
     int k;
@@ -945,6 +989,9 @@ void prprint(double *ap, int states, double *pr) {
 }
 
 /**
+ * @param ctx Pointer to the Snob context.
+ * @param cls Pointer to the class.
+ * @param iv
  */
 void show(SnobContext *ctx, Class *cls, int iv) {
     int k;
@@ -990,6 +1037,11 @@ void show(SnobContext *ctx, Class *cls, int iv) {
 
 /**
  * @brief prints the exponential params in 'ap' converted to probs
+ * @param ctx Pointer to the Snob context.
+ * @param ap
+ * @param states
+ * @param pr
+ * @param buffer Memory buffer to write/read.
  */
 void write_probs(SnobContext *ctx, double *ap, int states, double *pr, MemBuffer *buffer) {
     int k;
@@ -1065,6 +1117,10 @@ void details(SnobContext *ctx, Class *cls, int iv, MemBuffer *buffer) {
 }
 
 /**
+ * @param ctx Pointer to the Snob context.
+ * @param iv
+ * @param vald
+ * @param cls Pointer to the class.
  */
 void cost_var_nonleaf(SnobContext *ctx, int iv, int vald, Class *cls) {
     Basic *son_var;

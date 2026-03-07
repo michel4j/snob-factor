@@ -4,7 +4,8 @@
 static char *movestr[] = {" ", "Insert", "Delete", "Move"};
 
 /**
- * @brief To clear the badmoves table
+ * @brief Clear the badmoves table
+ * @param ctx Pointer to the Snob context.
  */
 void clr_bad_move(SnobContext *ctx) {
     for (int i = 0; i < BadSize; i++)
@@ -13,19 +14,23 @@ void clr_bad_move(SnobContext *ctx) {
 }
 
 /**
- * @brief To test a move for known recent fail
- * code 1 means insert ,code 2 means delete
- * code 3 means move
+ * @brief check if a specific structural modification to the model's classification tree
+ * has recently been attempted and rejected using a fast, direct-mapped hash table lookup
+ * with an eviction-based caching strategy with no collision chaining
+ * @param ctx Pointer to the Snob context.
+ * @param code Operation code. 1 = insert, 2 = delete, 3 = move
+ * @param cls_a First class
+ * @param cls_b Second class
  */
-int chk_bad_move(SnobContext *ctx, int code, int w1, int w2) {
+int chk_bad_move(SnobContext *ctx, int code, int cls_a, int cls_b) {
     int hi, key, bad, s1, s2;
 
-    s1 = w1;
-    s2 = w2;
+    s1 = cls_a;
+    s2 = cls_b;
     if ((code == 1) || (code == 3)) {
-        if (w1 > w2) {
-            s1 = w2;
-            s2 = w1;
+        if (cls_a > cls_b) {
+            s1 = cls_b;
+            s2 = cls_a;
         }
     } else
         s1 = 0;
@@ -36,26 +41,30 @@ int chk_bad_move(SnobContext *ctx, int code, int w1, int w2) {
     bad = 0;
     if (ctx->bad_key[hi] == key) {
         bad = 1;
-        log_msg(ctx, 0, "Badmove rejects %s %6d %6d", movestr[code], w1 >> 2, w2 >> 2);
+        log_msg(ctx, 0, "Badmove rejects %s %6d %6d", movestr[code], cls_a >> 2, cls_b >> 2);
     }
     return (bad);
 }
 
 /**
- * @brief To log a bad move
+ * @brief Log a bad move
+ * @param ctx Pointer to the Snob context.
+ * @param code Operation code. 1 = insert, 2 = delete, 3 = move
+ * @param cls_a First class
+ * @param cls_b Second class
  */
-void set_bad_move(SnobContext *ctx, int code, int s1, int s2) {
+void set_bad_move(SnobContext *ctx, int code, int cls_a, int cls_b) {
     int hi, key;
 
     if ((code == 1) || (code == 3)) {
-        if (s1 > s2) {
-            hi = s2;
-            s2 = s1;
-            s1 = hi;
+        if (cls_a > cls_b) {
+            hi = cls_b;
+            cls_b = cls_a;
+            cls_a = hi;
         }
     } else
-        s1 = 0;
-    key = hi = (((code << 13) + s1) << 13) + s2;
+        cls_a = 0;
+    key = hi = (((code << 13) + cls_a) << 13) + cls_b;
 
     if (hi < 0)
         hi = -1 - hi;

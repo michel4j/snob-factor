@@ -39,6 +39,8 @@ double rand_float(SnobContext *ctx) {
  * (Dad = 1, Leaf = 2, Sub = 4), so if typ = 7, will find all classes.
  * Sets the classes in 'sons[]'
  * Puts count of classes found in numson
+ * @param ctx Pointer to the Snob context.
+ * @param class_type Pointer to the class.
  */
 int find_all(SnobContext *ctx, int class_type) {
     int i, j, num_son;
@@ -82,6 +84,8 @@ int find_all(SnobContext *ctx, int class_type) {
 /**
  * @brief To re-arrange the sons in the son chain of class kk in order of
  * increasing serial number
+ * @param ctx Pointer to the Snob context.
+ * @param kk
  */
 void sortsons(SnobContext *ctx, int kk) {
     Class *cls, *cls1, *cls2;
@@ -123,6 +127,9 @@ void sortsons(SnobContext *ctx, int kk) {
  * Also deletes singleton sonclasses.  Re-counts pop->ncl, pop->hicl,
  * pop->num_leaves.
  *
+ * @param ctx Pointer to the Snob context.
+ * @param hit Hit flag.
+ * @param no_subs
  */
 void tidy(SnobContext *ctx, int hit, int no_subs) {
     Class *cls, *dad, *son;
@@ -261,6 +268,9 @@ void tidy(SnobContext *ctx, int hit, int no_subs) {
  * If 'all', does it for all classes, else just leaves
  * Leaves in scorechanges a count of significant score changes in Leaf
  * classes whose use is Fac
+ * @param ctx Pointer to the Snob context.
+ * @param niter Number of iterations.
+ * @param ncycles Number of cycles.
  */
 
 void update_seeall_newsubs(SnobContext *ctx, int niter, int ncycles) {
@@ -606,6 +616,8 @@ int do_all(SnobContext *ctx, int ncycles, int all) {
  * Then runs ncostvarall on all dads, with param adjustment. The
  * result is to recost and readjust the tree hierarchy.
  *
+ * @param ctx Pointer to the Snob context.
+ * @param ncy Number of cycles.
  */
 int do_dads(SnobContext *ctx, int ncy) {
     Class *dad, *cls;

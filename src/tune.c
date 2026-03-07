@@ -4,6 +4,7 @@
 #include "glob.h"
 
 /**
+ * @param ctx Pointer to the Snob context.
  */
 void default_tune(SnobContext *ctx) {
     int i;

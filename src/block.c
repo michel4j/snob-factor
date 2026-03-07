@@ -8,15 +8,15 @@ static int allocated = 0; //  Total block space allocated
 
 /**
  * @brief To allocate a block in a Popln chain
- * Provides a space of 'size' chars on a chain selected by 'gr'
- * gr = 3:  variable-set chain.
- * gr = 0: sample chain. gr = 1: popln chain. gr = 2:  chain for
- * (popln:sample) pair.  The actual space allocated is
+ * Provides a space of 'size' chars on a chain selected by 'chain'. The actual space allocated is
  * size + SpUnit, where SpUnit must be the smallest power of 2
  * required for item alignment, or some larger power of 2.
  *
+ * @param ctx Pointer to the Snob context.
+ * @param chain Chain number, 0 = sample, 1 = popln, 2 = model, 3 = variable-set
+ * @param size Size or length.
  */
-void *alloc_blocks(SnobContext *ctx, int gr, int size) {
+void *alloc_blocks(SnobContext *ctx, int chain, int size) {
     Block *blk;
 
     blk = (Block *)malloc(size + SpUnit);
@@ -27,7 +27,7 @@ void *alloc_blocks(SnobContext *ctx, int gr, int size) {
     blk->size = size;
     allocated += size;
 
-    switch (gr) {
+    switch (chain) {
     case 0:
         blk->next = ctx->state.sample->blocks;
         ctx->state.sample->blocks = blk;
@@ -49,12 +49,13 @@ void *alloc_blocks(SnobContext *ctx, int gr, int size) {
 }
 
 /**
- * @brief To free all blocks on chain 'gr' (0=sample, 1=popln,
- * 2 = popln:sample,  3 = variable-set)
+ * @brief To free all blocks on chain 'chain'
+ * @param ctx Pointer to the Snob context.
+ * @param chain Chain number, 0 = sample, 1 = popln, 2 = model, 3 = variable-set
  */
-void free_blocks(SnobContext *ctx, int gr) {
+void free_blocks(SnobContext *ctx, int chain) {
     Block *blk, *nblk;
-    switch (gr) {
+    switch (chain) {
     case 0:
         blk = ctx->state.sample->blocks;
         ctx->state.sample->blocks = 0;
@@ -72,7 +73,7 @@ void free_blocks(SnobContext *ctx, int gr) {
         ctx->state.vset->blocks = 0;
         break;
     default:
-        printf("False group value %d in freespace\n", gr);
+        printf("False group value %d in freespace\n", chain);
         exit(10);
     }
     while (blk) {
@@ -82,13 +83,4 @@ void free_blocks(SnobContext *ctx, int gr) {
         blk = nblk;
     }
     return;
-}
-
-/**
- * @brief To report allocated space
- */
-int report_space(SnobContext *ctx, int pp) {
-    if (pp)
-        printf("Allocated space %8d chars\n", allocated);
-    return (allocated);
 }

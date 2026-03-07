@@ -42,6 +42,7 @@ char *serial_to_str(SnobContext *ctx, Class *cls) {
 }
 
 /**
+ * @param ctx Pointer to the Snob context.
  */
 void show_pop_names(SnobContext *ctx) {
     int i;
@@ -62,6 +63,7 @@ void show_pop_names(SnobContext *ctx) {
 }
 
 /**
+ * @param ctx Pointer to the Snob context.
  */
 void show_smpl_names(SnobContext *ctx) {
     int k;

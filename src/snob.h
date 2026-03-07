@@ -330,6 +330,8 @@ typedef struct ScoreStruct {
 } Score;
 
 /**
+ * @param ctx Pointer to the Snob context.
+ * @param lline
  */
 
 //	In LISTEN.c
@@ -423,14 +425,13 @@ void trial(SnobContext *ctx, int param);
 
 //	In BADMOVES.c
 void clr_bad_move(SnobContext *ctx);
-int chk_bad_move(SnobContext *ctx, int code, int w1, int w2);
-void set_bad_move(SnobContext *ctx, int code, int s1, int s2);
+int chk_bad_move(SnobContext *ctx, int code, int cls_a, int cls_b);
+void set_bad_move(SnobContext *ctx, int code, int cls_a, int cls_b);
 //		end badmoves.c
 
 //	In BLOCK.c
-void *alloc_blocks(SnobContext *ctx, int gr, int size);
-void free_blocks(SnobContext *ctx, int gr);
-int report_space(SnobContext *ctx, int pp);
+void *alloc_blocks(SnobContext *ctx, int chain, int size);
+void free_blocks(SnobContext *ctx, int chain);
 //		end block.c
 
 //	In DOTYPES.c
