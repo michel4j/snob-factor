@@ -120,6 +120,7 @@ static void cost_var_nonleaf(SnobContext *ctx, int iv, int vald, Class *cls);
 static void adjust(SnobContext *ctx, int iv, int fac, Class *cls);
 static void show(SnobContext *ctx, Class *cls, int iv);
 static void details(SnobContext *ctx, Class *cls, int iv, MemBuffer *buffer);
+static void reduce_stats(SnobContext *ctx, int iv, Class *dest, Class *src);
 
 /*--------------------------  define ------------------------------- */
 /*	This routine is used to set up a VarType entry in the global "types"
@@ -151,6 +152,7 @@ void vonm_define(SnobContext *ctx, int typindx) {
   vtype->set_sizes = &set_sizes;
   vtype->set_best_pars = &set_best_pars;
   vtype->clear_stats = &clear_stats;
+  vtype->reduce_stats = &reduce_stats;
   vtype->score_var = &score_var;
   vtype->cost_var = &cost_var;
   vtype->deriv_var = &deriv_var;
@@ -319,6 +321,23 @@ void clear_stats(SnobContext *ctx, int iv, Class *cls) {
   cls_var->fmufish = cls_var->ldsq = 0.0;
   cls_var->slgi0 = cls_var->flgi0 = 1.8379; /* about log 2 Pi */
   cls_var->ldsq = cls_var->ld * cls_var->ld;
+}
+
+static void reduce_stats(SnobContext *ctx, int iv, Class *dest, Class *src) {
+  Stats *d_exp = (Stats *)dest->stats[iv];
+  Stats *s_exp = (Stats *)src->stats[iv];
+
+  d_exp->cnt += s_exp->cnt;
+  d_exp->stcost += s_exp->stcost;
+  d_exp->ftcost += s_exp->ftcost;
+  d_exp->vsq += s_exp->vsq;
+  d_exp->tssin += s_exp->tssin;
+  d_exp->tscos += s_exp->tscos;
+  d_exp->tfsin += s_exp->tfsin;
+  d_exp->tfcos += s_exp->tfcos;
+  d_exp->ldd1 += s_exp->ldd1;
+  d_exp->ldd2 += s_exp->ldd2;
+  d_exp->fwd2 += s_exp->fwd2;
 }
 
 /*	-------------------------  score_var  ------------------------   */

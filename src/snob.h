@@ -180,8 +180,8 @@ typedef struct VarTypeStruct {
   void (*set_sizes)(SnobContext *ctx, int iv); /* To set basicsize, statssize */
   void (*set_best_pars)(SnobContext *ctx, int iv,
                         Class *cls); /* To set current best use params */
-  void (*clear_stats)(SnobContext *ctx, int iv,
-                      Class *cls); /* To clear stats prior to re-estimation */
+  void (*clear_stats)(SnobContext *ctx, int iv, Class *cls);
+  void (*reduce_stats)(SnobContext *ctx, int iv, Class *dest, Class *src);
   void (*score_var)(SnobContext *ctx, int iv, Class *cls);
   void (*deriv_var)(SnobContext *ctx, int iv, int fac, Class *cls);
   void (*cost_var)(SnobContext *ctx, int iv, int fac, Class *cls);
