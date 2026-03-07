@@ -4,6 +4,7 @@ import ctypes as ct
 import json
 import os
 import struct
+import atexit
 import time
 import uuid
 from enum import IntFlag, auto
@@ -18,8 +19,10 @@ import pandas as pd
 lib_path = os.path.join(os.path.dirname(__file__), '_snob.so')
 lib = ct.CDLL(lib_path)
 
-LOG_LEVEL = 1
 
+class SnobContext(ct.Structure):
+    pass
+SnobContextPtr = ct.POINTER(SnobContext)
 
 class Classification(ct.Structure):
     """ Result """
@@ -36,70 +39,64 @@ class Classification(ct.Structure):
 
 
 lib.initialize.argtypes = [ct.c_int, ct.c_int, ct.c_int]
+lib.initialize.restype = SnobContextPtr
+lib.destroy_context.argtypes = [SnobContextPtr]
+lib.destroy_context.restype = None
 lib.init_population.restype = ct.c_int
-lib.load_vset.argtypes = [ct.c_char_p]
+lib.load_vset.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.load_vset.restype = ct.c_int
-lib.load_sample.argtypes = [ct.c_char_p]
+lib.load_sample.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.load_sample.restype = ct.c_int
-lib.report_space.argtypes = [ct.c_int]
+lib.report_space.argtypes = [SnobContextPtr, ct.c_int]
 lib.report_space.restype = ct.c_int
-lib.classify.argtypes = [ct.c_int, ct.c_int, ct.c_int, ct.c_double]
+lib.classify.argtypes = [SnobContextPtr, ct.c_int, ct.c_int, ct.c_int, ct.c_double]
 lib.classify.restype = Classification
-lib.print_class.argtypes = [ct.c_int, ct.c_int]
-lib.item_list.argtypes = [ct.c_char_p]
+lib.print_class.argtypes = [SnobContextPtr, ct.c_int, ct.c_int]
+lib.item_list.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.get_assignments.restype = ct.c_int
-lib.get_assignments.argtypes = [
-    ct.POINTER(ct.c_int),  # for int* ids
-    ct.POINTER(ct.c_int),  # for int* prim_cls
-    ct.POINTER(ct.c_double),  # for double* prim_probs
-    ct.POINTER(ct.c_int),  # for int* sec_cls
-    ct.POINTER(ct.c_double)  # for double* sec_probs
-]
-lib.create_vset.argtypes = []
-lib.get_class_details.argtypes = [ct.c_char_p, ct.c_size_t]
-lib.save_model.argtypes = [ct.c_char_p]
+lib.get_assignments.argtypes = [SnobContextPtr, ct.POINTER(ct.c_int), ct.POINTER(ct.c_int), ct.POINTER(ct.c_double), ct.POINTER(ct.c_int), ct.POINTER(ct.c_double)]
+lib.get_class_details.argtypes = [SnobContextPtr, ct.c_char_p, ct.c_size_t]
+lib.get_class_details.restype = ct.c_int
+lib.save_model.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.save_model.restype = ct.c_int
-lib.load_model.argtypes = [ct.c_char_p]
+lib.load_model.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.load_model.restype = Classification
-lib.set_control_flags.argtypes = [ct.c_int]
+lib.set_control_flags.argtypes = [SnobContextPtr, ct.c_int]
+lib.set_control_flags.restype = ct.c_int
 # create_vset
-lib.create_vset.argtypes = [ct.c_char_p, ct.c_int]
+lib.create_vset.argtypes = [SnobContextPtr, ct.c_char_p, ct.c_int]
 lib.create_vset.restype = ct.c_int
 
 # set_attribute
-lib.add_attribute.argtypes = [ct.c_int, ct.c_char_p, ct.c_int, ct.c_int]
+lib.add_attribute.argtypes = [SnobContextPtr, ct.c_int, ct.c_char_p, ct.c_int, ct.c_int]
 lib.add_attribute.restype = ct.c_int
 
 # create_sample
-lib.create_sample.argtypes = [ct.c_char_p, ct.c_int, ct.POINTER(ct.c_int), ct.POINTER(ct.c_double)]
+lib.create_sample.argtypes = [SnobContextPtr, ct.c_char_p, ct.c_int, ct.POINTER(ct.c_int), ct.POINTER(ct.c_double)]
 lib.create_sample.restype = ct.c_int
 
 # add_record
-lib.add_record.argtypes = [ct.c_int, ct.c_char_p]
+lib.add_record.argtypes = [SnobContextPtr, ct.c_int]
 lib.add_record.restype = ct.c_int
 
 # select_sample
-lib.select_sample.argtypes = [ct.c_char_p]
-lib.select_population.argtypes = [ct.c_char_p]
+lib.select_sample.argtypes = [SnobContextPtr, ct.c_char_p]
+lib.select_population.argtypes = [SnobContextPtr, ct.c_char_p]
 
 # print_data
-lib.print_var_datum.argtypes = [ct.c_int, ct.c_int]
+lib.print_var_datum.argtypes = [SnobContextPtr, ct.c_int, ct.c_int]
 
 DataType = Literal['real', 'multi-state', 'binary', 'degrees', 'radians']
 
 
 class SnobContextManager:
-    """
-    Saves the SNOB Context before performing certain operations
-    and restores it after.
-    """
-
+    def __init__(self, ctx):
+        self.ctx = ctx
     def __enter__(self):
-        lib.save_context()
+        lib.save_context(self.ctx)
         return self
-
     def __exit__(self, exc_type, exc_value, traceback):
-        lib.restore_context()
+        lib.restore_context(self.ctx)
 
 
 class Timer:
@@ -129,7 +126,31 @@ class Timer:
         )
 
 
-class CategoryEncoder:
+class Encoder:
+    """
+    Base class for encoders
+    """
+    def __call__(self, value: Any) -> Any:
+        raise NotImplementedError
+    
+    def set_states(self, states: Sequence[Any]):
+        pass
+
+
+class SimpleEncoder(Encoder):
+    """
+    A simple encoder that returns the value as a given type
+    """
+    type_: type
+
+    def __init__(self, type_):
+        self.type_ = type_
+    
+    def __call__(self, value: Any) -> Any:
+        return self.type_(value)
+
+
+class CategoryEncoder(Encoder):
     """
     Keep a sorted list of states for converting categories to integers
     """
@@ -189,6 +210,7 @@ class SNOBClassifier:
             tol: float = 5e-3,
             name: str = 'mml',
             seed: int = 0,
+            verbose: bool = False,
             from_file: str | Path | None = None,
     ):
         """
@@ -199,12 +221,14 @@ class SNOBClassifier:
         :param tol:  Convergence tolerance. Stops trying if percentage drop in message costs is less than this
         :param name: Internal Name of classifier, default "mml"
         :param seed:  Random number seed, 0 implies no seed.
+        :param verbose: Whether to print log messages, default False
         :param from_file: File name of saved model to load
         """
 
+        self.ctx = lib.initialize(0, 0 if verbose else 1, seed)
         self.has_fit = False
         self.file_pending = False
-        self.from_file = Path(from_file) if from_file is not None else None
+        self.from_file: Path | None = Path(from_file) if from_file is not None else None
         self.attrs = attrs
         self.columns = list(self.attrs.keys())
         self.cycles = cycles
@@ -217,7 +241,7 @@ class SNOBClassifier:
         self.num_features = len(attrs)
         self.seed = seed
         self.summary = None
-        self.encoder = {}
+        self.encoder: Dict[str, Encoder] = {}
         self.format = ''.join(
             self.TypeFormat[type_] for field, type_ in self.attrs.items()
         )
@@ -227,11 +251,10 @@ class SNOBClassifier:
             if type_ in ['binary', 'multi-state']:
                 self.encoder[name] = CategoryEncoder()
             else:
-                self.encoder[name] = float
+                self.encoder[name] = SimpleEncoder(float)
 
-        if self.from_file is not None and self.from_file.exists():
-            self.has_fit = True
-            self.file_pending = True
+        if self.from_file is not None:
+            self.file_pending = self.has_fit = self.from_file.exists()
 
     @staticmethod
     def get_precision(col) -> float:
@@ -252,7 +275,7 @@ class SNOBClassifier:
         :param data: Pandas data frame containing the data
         """
 
-        index = lib.create_vset(self.name.encode("utf-8"), len(self.attrs))
+        index = lib.create_vset(self.ctx, self.name.encode("utf-8"), len(self.attrs))
         # Add attributes
         for i, (name, type_) in enumerate(self.attrs.items()):
             if type_ in ['multi-state', 'binary']:
@@ -268,7 +291,7 @@ class SNOBClassifier:
                     aux = 20
             else:
                 aux = 0
-            lib.add_attribute(i, str(name).encode('utf-8'), self.TypeValue[type_], aux)
+            lib.add_attribute(self.ctx, i, str(name).encode('utf-8'), self.TypeValue[type_], aux)
 
     def add_data(self, data: pd.DataFrame, name: str = 'sample') -> int:
         """
@@ -287,7 +310,7 @@ class SNOBClassifier:
         ], dtype='float64')
 
         size = len(data.index)
-        lib.create_sample(
+        lib.create_sample(self.ctx, 
             name.encode('utf-8'),
             size,
             units.ctypes.data_as(ct.POINTER(ct.c_int)),
@@ -301,13 +324,13 @@ class SNOBClassifier:
                 for col in self.columns
             ]
             bytestring = struct.pack('=' + self.format, *row_values)
-            lib.add_record(i, bytestring)
+            lib.add_record(self.ctx, i, bytestring)
 
         # sort the samples
-        lib.sort_current_sample()
-        lib.show_smpl_names()
-        lib.report_space(1)
-        lib.peek_data()
+        lib.sort_current_sample(self.ctx)
+        lib.show_smpl_names(self.ctx)
+        lib.report_space(self.ctx, 1)
+        lib.peek_data(self.ctx)
         return size
 
     def fit(self, data: pd.DataFrame | NDArray, y: None = None) -> SNOBClassifier:
@@ -321,16 +344,15 @@ class SNOBClassifier:
             data = pd.DataFrame({field: data[:,i] for i, field in enumerate(self.columns)})
 
         with Timer():
-            initialize(log_level=LOG_LEVEL, seed=self.seed)
             self.add_vset(data)
             self.num_records = self.add_data(data, name=self.name)
-            result = lib.classify(self.cycles, self.steps, self.moves, self.tol)
+            result = lib.classify(self.ctx, self.cycles, self.steps, self.moves, self.tol)
             self.summary = result
             buffer_size = (result.classes + result.leaves) * (result.attrs + 1) * 80 * 4
             buffer = ct.create_string_buffer(buffer_size)
 
             # parse JSON classification result
-            lib.get_class_details(buffer, buffer_size)
+            lib.get_class_details(self.ctx, buffer, buffer_size)
             self.classes_ = json.loads(buffer.value.decode('utf-8'))
             self.has_fit = True
             return self
@@ -358,12 +380,11 @@ class SNOBClassifier:
         :param filename: path to model file
         """
         if self.has_fit:
-            lib.save_model(str(filename).encode('utf-8'))
+            lib.save_model(self.ctx, str(filename).encode('utf-8'))
         else:
             print("No fitted model to save!")
 
-    @staticmethod
-    def fetch_classification(summary: Classification) -> list:
+    def fetch_classification(self, summary: Classification) -> list:
         """
         Get the classification details for all classes
         :param summary: Classification summary
@@ -372,11 +393,10 @@ class SNOBClassifier:
 
         buffer_size = (summary.classes + summary.leaves) * (summary.attrs + 1) * 80 * 4
         buffer = ct.create_string_buffer(buffer_size)
-        lib.get_class_details(buffer, buffer_size)
+        lib.get_class_details(self.ctx, buffer, buffer_size)
         return json.loads(buffer.value.decode('utf-8'))
 
-    @staticmethod
-    def fetch_assignments(size: int) -> pd.DataFrame:
+    def fetch_assignments(self, size: int) -> pd.DataFrame:
         """
         Get the assignments for all records
         :param size: Number of records
@@ -388,7 +408,7 @@ class SNOBClassifier:
         prim_probs = (ct.c_double * size)()
         sec_cls = (ct.c_int * size)()
         sec_probs = (ct.c_double * size)()
-        lib.get_assignments(ids, prim_cls, prim_probs, sec_cls, sec_probs)
+        lib.get_assignments(self.ctx, ids, prim_cls, prim_probs, sec_cls, sec_probs)
 
         # Create a Pandas DataFrame
         df = pd.DataFrame({
@@ -419,19 +439,18 @@ class SNOBClassifier:
             return pd.DataFrame()
         elif self.file_pending and data is not None:
             self.file_pending = False
-            initialize(log_level=LOG_LEVEL, seed=self.seed)
-            set_control_flags(Adjust.SCORES)
+            set_control_flags(self.ctx, Adjust.SCORES)
             self.add_vset(data)
             self.num_records = self.add_data(data, name=sample_name)
-            self.summary = lib.load_model(str(self.from_file).encode('utf-8'))
+            self.summary = lib.load_model(self.ctx, str(self.from_file).encode('utf-8'))
             self.classes_ = self.fetch_classification(self.summary)
             self.has_fit = True
             size = self.num_records
         elif data is not None:
-            set_control_flags(Adjust.SCORES)
-            with SnobContextManager():
+            set_control_flags(self.ctx, Adjust.SCORES)
+            with SnobContextManager(self.ctx):
                 size = self.add_data(data, name=sample_name)
-            select_sample(sample_name)
+            select_sample(self.ctx, sample_name)
         else:
             size = self.num_records
 
@@ -460,31 +479,41 @@ def initialize(log_level: int = 0, seed: int = 0):
     :param seed: random number seed, 0 will use system time
 
     """
-    lib.initialize(0, log_level, seed)
+    ctx = lib.initialize(0, log_level, seed)
+    atexit.register(destroy_context, ctx)
+    return ctx
 
 
-def set_control_flags(flags: Adjust):
+def destroy_context(ctx):
+    """
+    Destroy SNOB system
+    :param ctx: SNOB context
+    """
+    lib.destroy_context(ctx)
+
+
+def set_control_flags(ctx, flags: Adjust):
     """
     Set Adjustment flags
     :param flags: Adjust Flags
     """
-    lib.set_control_flags(flags)
+    lib.set_control_flags(ctx, flags)
 
 
-def select_sample(name: str):
+def select_sample(ctx, name: str):
     """
     Select the sample by name
     :param name: Sample Name
     """
-    lib.select_sample(name.encode('utf-8'))
+    lib.select_sample(ctx, name.encode('utf-8'))
 
 
-def select_population(name: str):
+def select_population(ctx, name: str):
     """
     Select the population by name
     :param name: Population Name
     """
-    lib.select_population(name.encode('utf-8'))
+    lib.select_population(ctx, name.encode('utf-8'))
 
 
 def classify(
@@ -493,6 +522,7 @@ def classify(
         cycles: int = 3,
         steps: int = 50,
         moves: int = 3,
+        seed: int = 0,
         tol: float = 1e-2
 ):
     """
@@ -502,20 +532,21 @@ def classify(
     :param cycles:  Number of classification cycles
     :param steps: Number of do_all steps
     :param moves: Number of try_move steps
+    :param seed: random number seed, 0 will use system time
     :param tol:  percentage drop above which we should continue trying
     :return: list of class dictionaries
     """
     with Timer():
-        initialize(log_level=LOG_LEVEL)
-        lib.load_vset(str(vset_file).encode('utf-8'))
-        lib.load_sample(str(sample_file).encode('utf-8'))
-        lib.peek_data()
-        result = lib.classify(cycles, steps, moves, tol)
+        ctx = initialize(log_level=1, seed=seed)
+        lib.load_vset(ctx, str(vset_file).encode('utf-8'))
+        lib.load_sample(ctx, str(sample_file).encode('utf-8'))
+        lib.peek_data(ctx)
+        result = lib.classify(ctx, cycles, steps, moves, tol)
         buffer_size = (result.classes + result.leaves) * (result.attrs + 1) * 80 * 4
         buffer = ct.create_string_buffer(buffer_size)
 
         # parse JSON classification result
-        lib.get_class_details(buffer, buffer_size)
+        lib.get_class_details(ctx, buffer, buffer_size)
         return json.loads(buffer.value.decode('utf-8'))
 
 

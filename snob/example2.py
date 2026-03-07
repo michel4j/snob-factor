@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 from pathlib import Path
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import snob
 
@@ -24,5 +27,5 @@ if __name__ == '__main__':
         print('#' * 80)
         print(f"Classifying: {name}")
 
-        classes = snob.classify(vset_file, sample_file, cycles=25, steps=50, moves=4, tol=5e-3)
+        classes = snob.classify(vset_file, sample_file, cycles=25, steps=50, moves=4, seed=1234567, tol=5e-3)
         snob.show_classes(classes)

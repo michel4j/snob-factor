@@ -7,36 +7,24 @@ of functions for the new type.
 
 #include "glob.h"
 
-void reals_define(int typindx);
-void expmults_define(int typindx);
-void expbinary_define(int typindx);
-void vonm_define(int typindx);
+void reals_define(SnobContext *ctx, int typindx);
+void expmults_define(SnobContext *ctx, int typindx);
+void expbinary_define(SnobContext *ctx, int typindx);
+void vonm_define(SnobContext *ctx, int typindx);
 
-void do_types() {
-    int i;
+void do_types(SnobContext *ctx) {
+  ctx->num_types = 4;
 
-    /*	Set the number of attribute types  */
-    NTypes = 4;
+  for (int i = 0; i < MAX_ZERO; i++) {
+    ctx->zero_vec[i] = 0.0;
+  }
 
-    /*	Set constants  */
-    PI = 4.0 * atan(1.0);
-    HALF_LOG_2PI = 0.5 * log(2.0 * PI);
-    TWO_ON_PI = 2.0 / PI;
-    HALF_PI = 0.5 * PI;
-    BIT = log(2.0);
-    TWOBIT = 2.0 * BIT;
-    HALF_LOG_2 = 0.5 * log(2.0);
-    LATTICE = -0.5 * log(12.0);
-    for (i = 0; i < MAX_ZERO; i++)
-        ZeroVec[i] = 0.0;
+  ctx->types = (VarType *)malloc(ctx->num_types * sizeof(VarType));
 
-    /*	Make the 'types' vector  */
-    Types = (VarType *)malloc(NTypes * sizeof(VarType));
+  reals_define(ctx, 0);
+  expmults_define(ctx, 1);
+  expbinary_define(ctx, 2);
+  vonm_define(ctx, 3);
 
-    reals_define(0);
-    expmults_define(1);
-    expbinary_define(2);
-    vonm_define(3);
-
-    return;
+  return;
 }

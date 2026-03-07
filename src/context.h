@@ -1,115 +1,104 @@
 typedef struct SnobContextStruct {
-    extern
+  extern
 #else
 #define EXT
 #endif
 
-/*	mathematical constants   */
-EXT double HALF_LOG_2PI, HALF_LOG_2, LATTICE, PI, BIT, TWOBIT, TWO_ON_PI, HALF_PI;
-    double ZeroVec[MAX_ZERO];
-    double FacLog[MAX_CLASSES + 1];
-    volatile sig_atomic_t Stop;
-    int NTypes;
-    VarType *Types;
-    Context CurCtx, BkpCtx;
-    VarSet *VarSets[MAX_VSETS];
-    Sample *Samples[MAX_SAMPLES];
-    Population *Populations[MAX_POPULATIONS];
-    Buffer *CurSource;
-    int Heard;
-    int UseStdIn;
-    int Interactive;
-    int Debug;
-    int Control, DControl;
-    int DFix, Fix;
-    int NumRepChars;
-    Score Scores;
-    int RSeed;
-    int NoSubs;
-    int NewSubs;
-    Class *Sons[MAX_CLASSES];
-    int NextIc[MAX_CLASSES];
-    int MinAge;
-    int MinFacAge;
-    int MinSubAge;
-    int MaxSubAge;
-    int HoldTime;
-    int Forever;
-    double MinSize;
-    double MinWt;
-    double MinSubWt;
-    int SigScoreChange;
-    int SeeAll;
-    int DontIgnore;
-    int ScoreChanges;
-    int NewSubsTime;
-    double InitialAdj;
-    double MaxAdj;
-    double MinGain;
-    double Mbeta;
-    double Bbeta;
-    int RootAge;
-    int GiveUp;
-    int BadKey[BadSize];
+      /*	mathematical constants   */
+  double ctx->zero_vec[MAX_ZERO];
+  double ctx->fac_log[MAX_CLASSES + 1];
+  volatile sig_atomic_t ctx->stop;
+  int ctx->num_types;
+  VarType *ctx->types;
+  Context state, state_backup;
+  VarSet *ctx->var_sets[MAX_VSETS];
+  Sample *ctx->samples[MAX_SAMPLES];
+  Population *ctx->populations[MAX_POPULATIONS];
+  Buffer *ctx->current_source;
+  int ctx->heard;
+  int ctx->use_stdin;
+  int ctx->interactive;
+  int ctx->debug;
+  int ctx->control, ctx->d_control;
+  int ctx->d_fix, ctx->fix;
+  int ctx->num_rep_chars;
+  Score ctx->scores;
+  int ctx->random_seed;
+  int ctx->no_subs;
+  int ctx->new_subs;
+  Class *ctx->sons[MAX_CLASSES];
+  int ctx->next_ic[MAX_CLASSES];
+  int ctx->min_age;
+  int ctx->min_fac_age;
+  int ctx->min_sub_age;
+  int ctx->max_sub_age;
+  int ctx->hold_time;
+  int ctx->forever;
+  double ctx->min_size;
+  double ctx->min_weight;
+  double ctx->min_sub_weight;
+  int ctx->sig_score_change;
+  int ctx->see_all;
+  int ctx->dont_ignore;
+  int ctx->score_changes;
+  int ctx->new_subs_time;
+  double ctx->initial_adj;
+  double ctx->max_adj;
+  double ctx->min_gain;
+  double ctx->m_beta;
+  double ctx->b_beta;
+  int ctx->root_age;
+  int ctx->give_up;
+  int ctx->bad_key[BadSize];
 } SnobContext;
 
-extern __thread SnobContext *current_ctx;
-
 #ifdef USE_SNOB_CONTEXT_MACROS
-#define HALF_LOG_2PI (current_ctx->HALF_LOG_2PI)
-#define HALF_LOG_2 (current_ctx->HALF_LOG_2)
-#define LATTICE (current_ctx->LATTICE)
-#define PI (current_ctx->PI)
-#define BIT (current_ctx->BIT)
-#define TWOBIT (current_ctx->TWOBIT)
-#define TWO_ON_PI (current_ctx->TWO_ON_PI)
-#define HALF_PI (current_ctx->HALF_PI)
-#define ZeroVec (current_ctx->ZeroVec)
-#define FacLog (current_ctx->FacLog)
-#define Stop (current_ctx->Stop)
-#define NTypes (current_ctx->NTypes)
-#define Types (current_ctx->Types)
-#define CurCtx (current_ctx->CurCtx)
-#define BkpCtx (current_ctx->BkpCtx)
-#define VarSets (current_ctx->VarSets)
-#define Samples (current_ctx->Samples)
-#define Populations (current_ctx->Populations)
-#define CurSource (current_ctx->CurSource)
-#define Heard (current_ctx->Heard)
-#define UseStdIn (current_ctx->UseStdIn)
-#define Interactive (current_ctx->Interactive)
-#define Debug (current_ctx->Debug)
-#define Control (current_ctx->Control)
-#define DControl (current_ctx->DControl)
-#define DFix (current_ctx->DFix)
-#define Fix (current_ctx->Fix)
-#define NumRepChars (current_ctx->NumRepChars)
-#define Scores (current_ctx->Scores)
-#define RSeed (current_ctx->RSeed)
-#define NoSubs (current_ctx->NoSubs)
-#define NewSubs (current_ctx->NewSubs)
-#define Sons (current_ctx->Sons)
-#define NextIc (current_ctx->NextIc)
-#define MinAge (current_ctx->MinAge)
-#define MinFacAge (current_ctx->MinFacAge)
-#define MinSubAge (current_ctx->MinSubAge)
-#define MaxSubAge (current_ctx->MaxSubAge)
-#define HoldTime (current_ctx->HoldTime)
-#define Forever (current_ctx->Forever)
-#define MinSize (current_ctx->MinSize)
-#define MinWt (current_ctx->MinWt)
-#define MinSubWt (current_ctx->MinSubWt)
-#define SigScoreChange (current_ctx->SigScoreChange)
-#define SeeAll (current_ctx->SeeAll)
-#define DontIgnore (current_ctx->DontIgnore)
-#define ScoreChanges (current_ctx->ScoreChanges)
-#define NewSubsTime (current_ctx->NewSubsTime)
-#define InitialAdj (current_ctx->InitialAdj)
-#define MaxAdj (current_ctx->MaxAdj)
-#define MinGain (current_ctx->MinGain)
-#define Mbeta (current_ctx->Mbeta)
-#define Bbeta (current_ctx->Bbeta)
-#define RootAge (current_ctx->RootAge)
-#define GiveUp (current_ctx->GiveUp)
-#define BadKey (current_ctx->BadKey)
+#define ctx->zero_vec (ctx->zero_vec)
+#define ctx->fac_log (ctx->fac_log)
+#define ctx->stop (ctx->stop)
+#define ctx->num_types (ctx->num_types)
+#define ctx->types (ctx->types)
+#define CurCtx (ctx->CurCtx)
+#define BkpCtx (ctx->BkpCtx)
+#define ctx->var_sets (ctx->var_sets)
+#define ctx->samples (ctx->samples)
+#define ctx->populations (ctx->populations)
+#define ctx->current_source (ctx->current_source)
+#define ctx->heard (ctx->heard)
+#define ctx->use_stdin (ctx->use_stdin)
+#define ctx->interactive (ctx->interactive)
+#define ctx->debug (ctx->debug)
+#define ctx->control (ctx->control)
+#define ctx->d_control (ctx->d_control)
+#define ctx->d_fix (ctx->d_fix)
+#define ctx->fix (ctx->fix)
+#define ctx->num_rep_chars (ctx->num_rep_chars)
+#define ctx->scores (ctx->scores)
+#define ctx->random_seed (ctx->random_seed)
+#define ctx->no_subs (ctx->no_subs)
+#define ctx->new_subs (ctx->new_subs)
+#define ctx->sons (ctx->sons)
+#define ctx->next_ic (ctx->next_ic)
+#define ctx->min_age (ctx->min_age)
+#define ctx->min_fac_age (ctx->min_fac_age)
+#define ctx->min_sub_age (ctx->min_sub_age)
+#define ctx->max_sub_age (ctx->max_sub_age)
+#define ctx->hold_time (ctx->hold_time)
+#define ctx->forever (ctx->forever)
+#define ctx->min_size (ctx->min_size)
+#define ctx->min_weight (ctx->min_weight)
+#define ctx->min_sub_weight (ctx->min_sub_weight)
+#define ctx->sig_score_change (ctx->sig_score_change)
+#define ctx->see_all (ctx->see_all)
+#define ctx->dont_ignore (ctx->dont_ignore)
+#define ctx->score_changes (ctx->score_changes)
+#define ctx->new_subs_time (ctx->new_subs_time)
+#define ctx->initial_adj (ctx->initial_adj)
+#define ctx->max_adj (ctx->max_adj)
+#define ctx->min_gain (ctx->min_gain)
+#define ctx->m_beta (ctx->m_beta)
+#define ctx->b_beta (ctx->b_beta)
+#define ctx->root_age (ctx->root_age)
+#define ctx->give_up (ctx->give_up)
+#define ctx->bad_key (ctx->bad_key)
 #endif

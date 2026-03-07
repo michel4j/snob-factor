@@ -5,9 +5,9 @@ static char *movestr[] = {" ", "Insert", "Delete", "Move"};
 
 /*	---------------  clearbadm  --------------------------------  */
 /*	To clear the badmoves table  */
-void clr_bad_move() {
+void clr_bad_move(SnobContext *ctx) {
     for (int i = 0; i < BadSize; i++)
-        BadKey[i] = 0;
+        ctx->bad_key[i] = 0;
     return;
 }
 
@@ -15,7 +15,7 @@ void clr_bad_move() {
 /*	To test a move for known recent fail  */
 /*	code 1 means insert ,code 2 means delete  */
 /*	code 3 means move */
-int chk_bad_move(int code, int w1, int w2) {
+int chk_bad_move(SnobContext *ctx, int code, int w1, int w2) {
     int hi, key, bad, s1, s2;
 
     s1 = w1;
@@ -32,16 +32,16 @@ int chk_bad_move(int code, int w1, int w2) {
         hi = -1 - hi;
     hi = hi % BadSize;
     bad = 0;
-    if (BadKey[hi] == key) {
+    if (ctx->bad_key[hi] == key) {
         bad = 1;
-        log_msg(0, "Badmove rejects %s %6d %6d", movestr[code], w1 >> 2, w2 >> 2);
+        log_msg(ctx, 0, "Badmove rejects %s %6d %6d", movestr[code], w1 >> 2, w2 >> 2);
     }
     return (bad);
 }
 
 /*	------------------  setbadm  -----------------------------   */
 /*	To log a bad move  */
-void set_bad_move(int code, int s1, int s2) {
+void set_bad_move(SnobContext *ctx, int code, int s1, int s2) {
     int hi, key;
 
     if ((code == 1) || (code == 3)) {
@@ -57,6 +57,6 @@ void set_bad_move(int code, int s1, int s2) {
     if (hi < 0)
         hi = -1 - hi;
     hi = hi % BadSize;
-    BadKey[hi] = key;
+    ctx->bad_key[hi] = key;
     return;
 }

@@ -1,4 +1,4 @@
-id,dist,theta,phi,cdist,ctheta,cphi
+id,stretch,curve,twist,avg_stretch,avg_curve,avg_twist
 2w91A:E:223,5.548,1.413,0.959,6.617,1.274,1.216
 2q8kA:L:342,5.965,1.507,1.238,6.674,1.218,1.202
 2dy0A:P:118,8.661,1.271,-1.368,7.205,1.378,-0.359
