@@ -1,6 +1,9 @@
 
 #define DOALL 1
 #include "glob.h"
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 /*	-------------------- sran, fran, uran -------------------------- */
 static double rcons = (1.0 / (2048.0 * 1024.0 * 1024.0));
@@ -281,6 +284,31 @@ void update_seeall_newsubs(SnobContext *ctx, int niter, int ncycles) {
   }
 }
 
+static void reduce_class(SnobContext *ctx, Class *dst, Class *src) {
+  dst->newcnt += src->newcnt;
+  dst->newvsq += src->newvsq;
+  dst->vav += src->vav;
+  dst->totvv += src->totvv;
+  
+  dst->cstcost += src->cstcost;
+  dst->cftcost += src->cftcost;
+  dst->cntcost += src->cntcost;
+  dst->cfvcost += src->cfvcost;
+
+  dst->score_change_count += src->score_change_count;
+  dst->scancnt += src->scancnt;
+  
+  for (int i = 0; i < ctx->state.vset->length; i++) {
+    VSetVar *vset_var = &ctx->state.vset->variables[i];
+    if (!vset_var->inactive) {
+        VarType *vtype = vset_var->vtype;
+        if (vtype->reduce_stats) {
+            (*vtype->reduce_stats)(ctx, i, dst, src);
+        }
+    }
+  }
+}
+
 void find_and_estimate(SnobContext *ctx, int *all, int niter, int ncycles) {
   int repeat, num_son;
   do {
@@ -296,17 +324,112 @@ void find_and_estimate(SnobContext *ctx, int *all, int niter, int ncycles) {
       clear_costs(ctx, ctx->sons[k]);
     }
 
-    for (int j = 0; j < ctx->state.sample->num_cases; j++) {
-      do_case(ctx, j, *all, 1, num_son);
-      /*	docase ignores classes with ignore bit in cls->vv[] for the case
-       * unless ctx->see_all is on.  */
+    int num_cases = ctx->state.sample->num_cases;
+
+#pragma omp parallel
+    {
+        SnobContext local_ctx = *ctx;
+        
+        Population local_popln = *ctx->state.popln;
+        Class **local_classes = malloc((local_popln.hi_class + 1) * sizeof(Class *));
+        memset(local_classes, 0, (local_popln.hi_class + 1) * sizeof(Class *));
+        local_popln.classes = local_classes;
+        local_ctx.state.popln = &local_popln;
+        
+        Sample local_sample = *ctx->state.sample;
+        SampleVar *local_sample_vars = malloc(ctx->state.vset->length * sizeof(SampleVar));
+        for (int i = 0; i < ctx->state.vset->length; i++) {
+            local_sample_vars[i] = ctx->state.sample->variables[i];
+            int saux_size = ctx->state.vset->variables[i].vtype->smpl_aux_size;
+            if (saux_size > 0 && ctx->state.sample->variables[i].saux) {
+                local_sample_vars[i].saux = malloc(saux_size);
+                memcpy(local_sample_vars[i].saux, ctx->state.sample->variables[i].saux, saux_size);
+            } else {
+                local_sample_vars[i].saux = NULL;
+            }
+        }
+        local_sample.variables = local_sample_vars;
+        local_ctx.state.sample = &local_sample;
+        
+        State local_state = ctx->state;
+        local_state.popln = &local_popln;
+        local_state.sample = &local_sample;
+        local_ctx.state = local_state;
+
+        for (int k = 0; k <= ctx->state.popln->hi_class; k++) {
+            Class *src = ctx->state.popln->classes[k];
+            if (src && src->type != Vacant) {
+                Class *dst = malloc(sizeof(Class));
+                *dst = *src;
+                dst->scancnt = 0; // Prevent accumulating start value multiple times
+                
+                // Fields that must start at zero for proper reduction, but might not have been cleared if not in ctx->sons
+                dst->newcnt = 0.0;
+                dst->newvsq = 0.0;
+                dst->vav = 0.0;
+                dst->totvv = 0.0;
+                dst->cstcost = 0.0;
+                dst->cftcost = 0.0;
+                dst->cntcost = 0.0;
+                dst->cfvcost = 0.0;
+                dst->score_change_count = 0;
+                
+                dst->factor_scores = src->factor_scores;
+                dst->basics = src->basics;
+                dst->stats = malloc(ctx->state.vset->length * sizeof(ExplnVar *));
+                for (int i = 0; i < ctx->state.vset->length; i++) {
+                    VSetVar *vset_var = &ctx->state.vset->variables[i];
+                    dst->stats[i] = malloc(vset_var->stats_size);
+                    memcpy(dst->stats[i], src->stats[i], vset_var->stats_size);
+                }
+                local_classes[k] = dst;
+            }
+        }
+        
+        for (int k = 0; k < num_son; k++) {
+            local_ctx.sons[k] = local_classes[ctx->sons[k]->id];
+        }
+        
+#ifdef _OPENMP
+        local_ctx.random_seed = ctx->random_seed + omp_get_thread_num();
+#endif
+        
+#pragma omp for
+        for (int j = 0; j < num_cases; j++) {
+            do_case(&local_ctx, j, *all, 1, num_son);
+        }
+        
+#pragma omp critical
+        {
+            for (int k = 0; k < num_son; k++) {
+                int id = ctx->sons[k]->id;
+                if (local_classes[id]) {
+                    reduce_class(ctx, ctx->state.popln->classes[id], local_classes[id]);
+                }
+            }
+        }
+        
+        // Clean up classes
+        for (int k = 0; k <= ctx->state.popln->hi_class; k++) {
+            if (local_classes[k]) {
+                for (int i = 0; i < ctx->state.vset->length; i++) {
+                    free(local_classes[k]->stats[i]);
+                }
+                free(local_classes[k]->stats);
+                free(local_classes[k]);
+            }
+        }
+        free(local_classes);
+
+        // Clean up sample vars
+        for (int i = 0; i < ctx->state.vset->length; i++) {
+            if (local_sample_vars[i].saux) {
+                free(local_sample_vars[i].saux);
+            }
+        }
+        free(local_sample_vars);
     }
 
-    // All classes in ctx->sons[] now have stats assigned to them.
-    // If all=Leaf, the classes are all leaves, so we just re-estimate
-    // their parameters and get their pcosts for fac and plain uses,
-    // using 'adjust'. But first, check all newcnt-s for vanishing
-    // classes.
     if (ctx->control & (AdjPr + AdjTr)) {
       for (int k = 0; k < num_son; k++) {
         if (ctx->sons[k]->newcnt < ctx->min_size) {
