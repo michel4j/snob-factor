@@ -168,12 +168,12 @@ typedef struct VarTypeStruct {
     int smpl_aux_size; // size of aux block for vartype in sample
     int pop_aux_size;  // size of aux block for vartype in popln
     char *name;
-    int (*read_aux_attr)(SnobContext *ctx, void *vax);           // Fun to read aux attribute info
-    int (*read_aux_smpl)(SnobContext *ctx, void *sax);           // Fun to read aux sample info
-    int (*read_datum)(SnobContext *ctx, char *loc, int iv);      // Fun to read a datum
-    void (*print_datum)(SnobContext *ctx, char *loc);            // Fun to print datum value
-    void (*set_sizes)(SnobContext *ctx, int iv);                 // To set basicsize, statssize
-    void (*set_best_pars)(SnobContext *ctx, int iv, Class *cls); // To set current best use params
+    int (*read_aux_attr)(SnobContext *ctx, void *vax);           // Func to read aux attribute info
+    int (*read_aux_smpl)(SnobContext *ctx, void *sax);           // Func to read aux sample info
+    int (*read_datum)(SnobContext *ctx, char *loc, int iv);      // Func to read a datum
+    void (*print_datum)(SnobContext *ctx, char *loc);            // Func to print datum value
+    void (*set_sizes)(SnobContext *ctx, int iv);                 // Func to set basicsize, statssize
+    void (*set_best_pars)(SnobContext *ctx, int iv, Class *cls); // Func to set current best use params
     void (*clear_stats)(SnobContext *ctx, int iv, Class *cls);
     void (*reduce_stats)(SnobContext *ctx, int iv, Class *dest, Class *src);
     void (*score_var)(SnobContext *ctx, int iv, Class *cls);
@@ -184,10 +184,9 @@ typedef struct VarTypeStruct {
     void (*show)(SnobContext *ctx, Class *cls, int iv);
     void (*set_var)(SnobContext *ctx, int iv, Class *cls);
     void (*details)(SnobContext *ctx, Class *cls, int iv, MemBuffer *buffer);
-    int (*set_aux_attr)(SnobContext *ctx, void *vax, int aux); // To add attribute aux information directly
-    int (*set_aux_smpl)(SnobContext *ctx, void *sax, int unit,
-                        double prec);                                   // To add sample aux information directly
-    int (*set_datum)(SnobContext *ctx, char *loc, int iv, void *value); // Add a datum
+    int (*set_aux_attr)(SnobContext *ctx, void *vax, int aux);               // Func to add attribute aux info directly
+    int (*set_aux_smpl)(SnobContext *ctx, void *sax, int unit, double prec); // Func to add sample aux info directly
+    int (*set_datum)(SnobContext *ctx, char *loc, int iv, void *value);      // Func to add a datum
 } VarType;
 
 /**
