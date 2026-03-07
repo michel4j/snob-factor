@@ -342,7 +342,7 @@ void find_and_estimate(SnobContext *ctx, int *all, int niter, int ncycles) {
             local_sample_vars[i] = ctx->state.sample->variables[i];
             int saux_size = ctx->state.vset->variables[i].vtype->smpl_aux_size;
             if (saux_size > 0 && ctx->state.sample->variables[i].saux) {
-                local_sample_vars[i].saux = malloc(saux_size);
+                local_sample_vars[i].saux = malloc(saux_size + 128);
                 memcpy(local_sample_vars[i].saux, ctx->state.sample->variables[i].saux, saux_size);
             } else {
                 local_sample_vars[i].saux = NULL;
@@ -359,7 +359,7 @@ void find_and_estimate(SnobContext *ctx, int *all, int niter, int ncycles) {
         for (int k = 0; k <= ctx->state.popln->hi_class; k++) {
             Class *src = ctx->state.popln->classes[k];
             if (src && src->type != Vacant) {
-                Class *dst = malloc(sizeof(Class));
+                Class *dst = malloc(sizeof(Class) + 256); // Pad to prevent cache line false sharing of class variables
                 *dst = *src;
                 dst->scancnt = 0; // Prevent accumulating start value multiple times
                 
@@ -379,7 +379,7 @@ void find_and_estimate(SnobContext *ctx, int *all, int niter, int ncycles) {
                 dst->stats = malloc(ctx->state.vset->length * sizeof(ExplnVar *));
                 for (int i = 0; i < ctx->state.vset->length; i++) {
                     VSetVar *vset_var = &ctx->state.vset->variables[i];
-                    dst->stats[i] = malloc(vset_var->stats_size);
+                    dst->stats[i] = malloc(vset_var->stats_size + 128);
                     memcpy(dst->stats[i], src->stats[i], vset_var->stats_size);
                 }
                 local_classes[k] = dst;
@@ -389,7 +389,7 @@ void find_and_estimate(SnobContext *ctx, int *all, int niter, int ncycles) {
         for (int k = 0; k < num_son; k++) {
             local_ctx.sons[k] = local_classes[ctx->sons[k]->id];
         }
-        
+
 #ifdef _OPENMP
         local_ctx.random_seed = ctx->random_seed + omp_get_thread_num();
 #endif
@@ -398,7 +398,7 @@ void find_and_estimate(SnobContext *ctx, int *all, int niter, int ncycles) {
         for (int j = 0; j < num_cases; j++) {
             do_case(&local_ctx, j, *all, 1, num_son);
         }
-        
+
 #pragma omp critical
         {
             for (int k = 0; k < num_son; k++) {
@@ -408,7 +408,7 @@ void find_and_estimate(SnobContext *ctx, int *all, int niter, int ncycles) {
                 }
             }
         }
-        
+
         // Clean up classes
         for (int k = 0; k <= ctx->state.popln->hi_class; k++) {
             if (local_classes[k]) {
