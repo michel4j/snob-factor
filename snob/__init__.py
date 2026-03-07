@@ -50,8 +50,6 @@ lib.load_vset.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.load_vset.restype = ct.c_int
 lib.load_sample.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.load_sample.restype = ct.c_int
-lib.report_space.argtypes = [SnobContextPtr, ct.c_int]
-lib.report_space.restype = ct.c_int
 lib.classify.argtypes = [SnobContextPtr, ct.c_int, ct.c_int, ct.c_int, ct.c_double]
 lib.classify.restype = Classification
 lib.print_class.argtypes = [SnobContextPtr, ct.c_int, ct.c_int]
@@ -356,7 +354,6 @@ class SNOBClassifier:
         # sort the samples
         lib.sort_current_sample(self.ctx)
         lib.show_smpl_names(self.ctx)
-        lib.report_space(self.ctx, 1)
         lib.peek_data(self.ctx)
         return size
 
@@ -445,10 +442,10 @@ class SNOBClassifier:
         df = pd.DataFrame(
             {
                 "item": np.ctypeslib.as_array(ids),
-                "class": np.ctypeslib.as_array(prim_cls),
-                "prob": np.ctypeslib.as_array(prim_probs),
-                "next_class": np.ctypeslib.as_array(sec_cls),
-                "next_prob": np.ctypeslib.as_array(sec_probs),
+                "major_class": np.ctypeslib.as_array(prim_cls),
+                "major_prob": np.ctypeslib.as_array(prim_probs),
+                "minor_class": np.ctypeslib.as_array(sec_cls),
+                "minor_prob": np.ctypeslib.as_array(sec_probs),
             }
         )
         return df
@@ -462,7 +459,7 @@ class SNOBClassifier:
             for fitted data
         :param name: Name of dataset
         :return: pandas data Frame with columns
-            [index, class-id, probability, next_class, next_class_probability] corresponding
+            [index, major_class, major_prob, minor_class, minor_prob] corresponding
             to the top-two class assignments for each record
         """
         if isinstance(data, np.ndarray):

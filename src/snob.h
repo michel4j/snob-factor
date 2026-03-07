@@ -161,6 +161,12 @@ typedef struct MemBufferStruct {
     int offset;
 } MemBuffer;
 
+typedef struct PSauxst {
+    int missing;
+    double dummy;
+    double xn;
+} PSaux;
+
 typedef struct VarTypeStruct {
     int id;
     int data_size;

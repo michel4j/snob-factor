@@ -85,13 +85,13 @@ int find_all(SnobContext *ctx, int class_type) {
  * @brief To re-arrange the sons in the son chain of class kk in order of
  * increasing serial number
  * @param ctx Pointer to the Snob context.
- * @param kk
+ * @param index Class index
  */
-void sortsons(SnobContext *ctx, int kk) {
+void sort_sons(SnobContext *ctx, int index) {
     Class *cls, *cls1, *cls2;
     int js, *prev, nsw;
     Population *popln = ctx->state.popln;
-    cls = popln->classes[kk];
+    cls = popln->classes[index];
     if (cls->num_sons < 2) {
         return;
     }
@@ -117,7 +117,7 @@ void sortsons(SnobContext *ctx, int kk) {
     } while (nsw);
     //	Now sort sons
     for (js = cls->son_id; js >= 0; js = popln->classes[js]->sib_id) {
-        sortsons(ctx, js);
+        sort_sons(ctx, js);
     }
 }
 
@@ -260,38 +260,38 @@ void tidy(SnobContext *ctx, int hit, int no_subs) {
     }
     popln->hi_class = newhicl;
     popln->next_serial = (kkd >> 2) + 1;
-    sortsons(ctx, popln->root);
+    sort_sons(ctx, popln->root);
 }
 
 /**
- * @brief To do a complete cost-assign-adjust cycle on all things.
+ * @brief Do a complete cost-assign-adjust cycle on all things.
  * If 'all', does it for all classes, else just leaves
  * Leaves in scorechanges a count of significant score changes in Leaf
  * classes whose use is Fac
  * @param ctx Pointer to the Snob context.
- * @param niter Number of iterations.
- * @param ncycles Number of cycles.
+ * @param n_iter Number of iterations.
+ * @param n_cycles Number of cycles.
  */
 
-void update_seeall_newsubs(SnobContext *ctx, int niter, int ncycles) {
+void update_seeall_newsubs(SnobContext *ctx, int n_iter, int n_cycles) {
 
-    if ((niter % ctx->new_subs_time) == 0) {
+    if ((n_iter % ctx->new_subs_time) == 0) {
         ctx->new_subs = 1;
         if (ctx->see_all < 2)
             ctx->see_all = 2;
     } else {
         ctx->new_subs = 0;
     }
-    if ((ncycles - niter) <= 2) {
-        ctx->see_all = ncycles - niter;
+    if ((n_cycles - n_iter) <= 2) {
+        ctx->see_all = n_cycles - n_iter;
     }
-    if (ncycles < 2) {
+    if (n_cycles < 2) {
         ctx->see_all = 2;
     }
     if (ctx->no_subs) {
         ctx->new_subs = 0;
     }
-    if ((niter > ctx->new_subs_time) && (ctx->see_all == 1)) {
+    if ((n_iter > ctx->new_subs_time) && (ctx->see_all == 1)) {
         track_best(ctx, 0);
     }
 }
@@ -321,14 +321,14 @@ static void reduce_class(SnobContext *ctx, Class *dst, Class *src) {
     }
 }
 
-void find_and_estimate(SnobContext *ctx, int *all, int niter, int ncycles) {
+void find_and_estimate(SnobContext *ctx, int *all, int n_iter, int n_cycles) {
     int repeat, num_son;
     do {
         repeat = 0;
         if (ctx->fix == Random)
             ctx->see_all = 3;
         tidy(ctx, 1, ctx->no_subs);
-        if (niter >= (ncycles - 1))
+        if (n_iter >= (n_cycles - 1))
             *all = (Dad + Leaf + Sub);
         num_son = find_all(ctx, *all);
 
@@ -459,7 +459,14 @@ void find_and_estimate(SnobContext *ctx, int *all, int niter, int ncycles) {
     } while (repeat);
 }
 
-double update_leaf_classes(SnobContext *ctx, double *oldleafsum, int *nfail, int num_son) {
+/**
+ * @brief Update leaf classes
+ * @param ctx Pointer to the Snob context.
+ * @param old_leaf_sum Pointer to the old leaf sum.
+ * @param n_fail Pointer to the number of failures.
+ * @param num_son Number of sons.
+ */
+double update_leaf_classes(SnobContext *ctx, double *old_leaf_sum, int *n_fail, int num_son) {
     double leafsum = 0.0;
     char token = ' ';
     leafsum = 0.0;
@@ -471,12 +478,12 @@ double update_leaf_classes(SnobContext *ctx, double *oldleafsum, int *nfail, int
     }
     if (ctx->see_all == 0) {
         token = '.';
-    } else if (leafsum < (*oldleafsum - ctx->min_gain)) {
-        (*nfail) = 0;
-        *oldleafsum = leafsum;
+    } else if (leafsum < (*old_leaf_sum - ctx->min_gain)) {
+        (*n_fail) = 0;
+        *old_leaf_sum = leafsum;
         token = 'L';
     } else {
-        (*nfail)++;
+        (*n_fail)++;
         token = 'l';
     }
     rep(ctx, token);
@@ -484,6 +491,12 @@ double update_leaf_classes(SnobContext *ctx, double *oldleafsum, int *nfail, int
     return leafsum;
 }
 
+/**
+ * @brief Update all classes
+ * @param ctx Pointer to the Snob context.
+ * @param oldcost Pointer to the old cost.
+ * @param nfail Pointer to the number of failures.
+ */
 void update_all_classes(SnobContext *ctx, double *oldcost, int *nfail) {
     Population *popln = ctx->state.popln;
     Class *root = popln->classes[popln->root];
@@ -533,9 +546,12 @@ void update_all_classes(SnobContext *ctx, double *oldcost, int *nfail) {
     }
 }
 
+/**
+ * @brief Scan leaf classes whose use is 'Fac' to accumulate significant
+ * score changes
+ * @param ctx Pointer to the Snob context.
+ */
 int count_score_changes(SnobContext *ctx) {
-    /*	Scan leaf classes whose use is 'Fac' to accumulate significant
-        score changes.  */
     Class *cls;
     Population *popln = ctx->state.popln;
 
@@ -548,7 +564,16 @@ int count_score_changes(SnobContext *ctx) {
     return scorechanges;
 }
 
-int do_all(SnobContext *ctx, int ncycles, int all) {
+/**
+ * @brief Assigns data to classes and optimizes continuous parameters, using an Expectation-Maximization
+ * (EM) algorithm. For each item in the dataset, evaluates its cost against all potential classes and assign
+ * soft membership weights to each class. Once all items have calculated their weights for all classes,
+ * the parameters of the classes are updated to minimize the local MML cost.
+ * @param ctx Pointer to the Snob context.
+ * @param n_cycles Number of cycles.
+ * @param all All classes.
+ */
+int do_all(SnobContext *ctx, int n_cycles, int all) {
     int niter, nfail, ic, ncydone, ncyask, kicked = 0, num_son;
     double oldcost, oldleafsum;
 
@@ -556,7 +581,7 @@ int do_all(SnobContext *ctx, int ncycles, int all) {
     Class *root = popln->classes[popln->root];
 
     nfail = niter = ncydone = 0;
-    ncyask = ncycles;
+    ncyask = n_cycles;
     all = (all) ? (Dad + Leaf + Sub) : Leaf;
     oldcost = root->best_cost;
     //	Get sum of class costs, meaningful only if 'all' = Leaf
@@ -566,9 +591,9 @@ int do_all(SnobContext *ctx, int ncycles, int all) {
         oldleafsum += ctx->sons[ic]->best_cost;
     }
 
-    while (niter < ncycles) {
-        update_seeall_newsubs(ctx, niter, ncycles);
-        find_and_estimate(ctx, &all, niter, ncycles);
+    while (niter < n_cycles) {
+        update_seeall_newsubs(ctx, niter, n_cycles);
+        find_and_estimate(ctx, &all, niter, n_cycles);
 
         if (all != (Dad + Leaf + Sub)) {
             update_leaf_classes(ctx, &oldleafsum, &nfail, num_son);
@@ -584,7 +609,7 @@ int do_all(SnobContext *ctx, int ncycles, int all) {
             /*	But if we were doing just leaves, wind up with a couple of
                 'doall' cycles  */
             all = Dad + Leaf + Sub;
-            ncycles = 2;
+            n_cycles = 2;
             niter = nfail = 0;
             continue;
         }
@@ -617,26 +642,26 @@ int do_all(SnobContext *ctx, int ncycles, int all) {
  * result is to recost and readjust the tree hierarchy.
  *
  * @param ctx Pointer to the Snob context.
- * @param ncy Number of cycles.
+ * @param n_cycles Number of cycles.
  */
-int do_dads(SnobContext *ctx, int ncy) {
+int do_dads(SnobContext *ctx, int n_cycles) {
     Class *dad, *cls;
     double oldcost;
-    int nn, nfail, num_son;
+    int nn, n_fail, num_son;
     Population *popln = ctx->state.popln;
     Class *root = popln->classes[popln->root];
     if (!(ctx->control & AdjPr))
-        ncy = 1;
+        n_cycles = 1;
 
     //	Capture no-prior params for subless leaves
     num_son = find_all(ctx, Leaf);
-    nfail = ctx->control;
+    n_fail = ctx->control;
     ctx->control = Noprior;
     for (nn = 0; nn < num_son; nn++) {
         adjust_class(ctx, ctx->sons[nn], 0);
     }
-    ctx->control = nfail;
-    nn = nfail = 0;
+    ctx->control = n_fail;
+    nn = n_fail = 0;
 
     do {
         oldcost = root->dad_par_cost;
@@ -695,15 +720,15 @@ int do_dads(SnobContext *ctx, int ncy) {
         root->best_cost = root->dad_par_cost + root->cntcost;
         //	Test for convergence
         nn++;
-        nfail++;
+        n_fail++;
         if (root->dad_par_cost < (oldcost - ctx->min_gain))
-            nfail = 0;
-        rep(ctx, (nfail) ? 'd' : 'D');
-        if (nfail > 3) {
+            n_fail = 0;
+        rep(ctx, (n_fail) ? 'd' : 'D');
+        if (n_fail > 3) {
             ctx->control = ctx->d_control;
             return (nn);
         }
-    } while (nn < ncy);
+    } while (nn < n_cycles);
     ctx->control = ctx->d_control;
     return (-1);
 }
@@ -715,8 +740,8 @@ int do_dads(SnobContext *ctx, int ncy) {
 //	Uses this table of old costs to see if useful change in last 5 cycles
 double olddogcosts[6];
 
-int do_good(SnobContext *ctx, int ncy, double target) {
-    int j, nn, nfail;
+int do_good(SnobContext *ctx, int n_cycles, double target) {
+    int j, nn, n_fail;
     double oldcost;
     Population *popln = ctx->state.popln;
     Class *root = popln->classes[popln->root];
@@ -725,21 +750,21 @@ int do_good(SnobContext *ctx, int ncy, double target) {
     do_all(ctx, 1, 1);
     for (nn = 0; nn < 6; nn++)
         olddogcosts[nn] = root->best_cost + 10000.0;
-    nfail = 0;
-    for (nn = 0; nn < ncy; nn++) {
+    n_fail = 0;
+    for (nn = 0; nn < n_cycles; nn++) {
         oldcost = root->best_cost;
         do_all(ctx, 2, 0);
         if (root->best_cost < (oldcost - ctx->min_gain))
-            nfail = 0;
+            n_fail = 0;
         else
-            nfail++;
-        rep(ctx, (nfail) ? 'g' : 'G');
+            n_fail++;
+        rep(ctx, (n_fail) ? 'g' : 'G');
         if (ctx->heard) {
             log_msg(ctx, 1, "Dogood interrupted after %4d cycles", nn);
             done = 1;
             break;
         }
-        if (nfail > 2) {
+        if (n_fail > 2) {
             done = 1;
             break;
         }
@@ -769,16 +794,12 @@ int do_good(SnobContext *ctx, int ncy, double target) {
  * Assumes findall() has been used to find classes and set up
  * sons[], numson
  * If 'derivs', calcs derivatives. Otherwize not.
- *
- * Defines and uses a prototypical 'Saux' containing missing and Datum
- * fields
+ * @param ctx Pointer to the Snob context.
+ * @param item The item to process.
+ * @param all All classes.
+ * @param derivs Derivatives.
+ * @param num_son Number of sons.
  */
-typedef struct PSauxst {
-    int missing;
-    double dummy;
-    double xn;
-} PSaux;
-
 void do_case(SnobContext *ctx, int item, int all, int derivs, int num_son) {
     double mincost, sum, rootcost, low, diff, w1, w2;
     Class *sub1, *sub2, *cls;
