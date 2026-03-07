@@ -1,4 +1,5 @@
-/*	---------------------  hark  --------------------------------  */
+/**
+ */
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -6,7 +7,7 @@
 #include "glob.h"
 
 #define LI 200
-/*	Listens for instruction via file "comms"    */
+//	Listens for instruction via file "comms"
 static int seq = '0';
 
 int hark(SnobContext *ctx, char *lline) {
@@ -65,7 +66,7 @@ receive:
     rseq2 = fgetc(co);
     fclose(co);
 
-    /*	Check format	*/
+    //	Check format
     if ((rseq1 == rseq2) && (rk1 == rk2) && (rseq2 >= '0') && (rseq2 <= '9'))
         goto formok;
     if (rseq1 == 'D')
@@ -77,14 +78,14 @@ receive:
     goto send;
 
 formok:
-    /*	Have valid format.  See if just our previous message  */
+    //	Have valid format.  See if just our previous message
     if ((rseq1 == seq) && (rk1 == 'A')) {
         k = 0;
         goto finish;
     }
 
     if (rk1 == 'I') {
-        /*	See if a new message  */
+        //	See if a new message
         if (rseq1 != seq) {
             seq = rseq1;
             k = 1;
@@ -93,7 +94,8 @@ formok:
     goto send;
 }
 
-/*	----------------------- testmain ---------------------------  */
+/**
+ */
 #ifdef TEST
 main(SnobContext *ctx) {
     int i, j, kk;

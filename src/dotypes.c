@@ -13,18 +13,18 @@ void expbinary_define(SnobContext *ctx, int typindx);
 void vonm_define(SnobContext *ctx, int typindx);
 
 void do_types(SnobContext *ctx) {
-  ctx->num_types = 4;
+    ctx->num_types = 4;
 
-  for (int i = 0; i < MAX_ZERO; i++) {
-    ctx->zero_vec[i] = 0.0;
-  }
+    for (int i = 0; i < MAX_ZERO; i++) {
+        ctx->zero_vec[i] = 0.0;
+    }
 
-  ctx->types = (VarType *)malloc(ctx->num_types * sizeof(VarType));
+    ctx->types = (VarType *)malloc(ctx->num_types * sizeof(VarType));
 
-  reals_define(ctx, 0);
-  expmults_define(ctx, 1);
-  expbinary_define(ctx, 2);
-  vonm_define(ctx, 3);
+    reals_define(ctx, 0);
+    expmults_define(ctx, 1);
+    expbinary_define(ctx, 2);
+    vonm_define(ctx, 3);
 
-  return;
+    return;
 }

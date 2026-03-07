@@ -16,25 +16,25 @@ files. The declarations herein then become converted to "EXT" declarations.
 
 typedef struct SnobContextStruct SnobContext;
 
-#define MAX_SAMPLES 5 /* Max number of samples */
+#define MAX_SAMPLES 5 // Max number of samples
 #define MAX_VSETS 3
-#define MAX_POPULATIONS 5 /* Max number of popln models */
+#define MAX_POPULATIONS 5 // Max number of popln models
 #define MAX_CLASSES 999
 #define BUFFER_SIZE 64000
-#define MAX_ZERO 100 /*  Length of the Zero vector  */
+#define MAX_ZERO 100 //  Length of the Zero vector
 
-/* Mathematical Constants */
-#define SNOB_PI 3.14159265358979323846       /* 4.0 * atan(1.0) */
-#define SNOB_HALF_PI 1.5707963267948966      /* 0.5 * SNOB_PI */
-#define SNOB_TWO_ON_PI 0.6366197723675814    /* 2.0 / SNOB_PI */
-#define SNOB_HALF_LOG_2PI 0.9189385332046727 /* 0.5 * log(2.0 * SNOB_PI) */
-#define SNOB_HALF_LOG_2 0.34657359027997264  /* 0.5 * log(2.0) */
-#define SNOB_LATTICE -1.2424533248940002     /* -0.5 * log(12.0) */
-#define SNOB_BIT 0.6931471805599453          /* log(2.0) */
-#define SNOB_TWOBIT 1.3862943611198906       /* 2.0 * SNOB_BIT */
-#define INPUT_BUFFER_SIZE 450                /* Length of input line buffer */
+// Mathematical Constants
+#define SNOB_PI 3.14159265358979323846       // 4.0 * atan(1.0)
+#define SNOB_HALF_PI 1.5707963267948966      // 0.5 * SNOB_PI
+#define SNOB_TWO_ON_PI 0.6366197723675814    // 2.0 / SNOB_PI
+#define SNOB_HALF_LOG_2PI 0.9189385332046727 // 0.5 * log(2.0 * SNOB_PI)
+#define SNOB_HALF_LOG_2 0.34657359027997264  // 0.5 * log(2.0)
+#define SNOB_LATTICE -1.2424533248940002     // -0.5 * log(12.0)
+#define SNOB_BIT 0.6931471805599453          // log(2.0)
+#define SNOB_TWOBIT 1.3862943611198906       // 2.0 * SNOB_BIT
+#define INPUT_BUFFER_SIZE 450                // Length of input line buffer
 
-/*	-----------------  ctx->control  ------------------------------   */
+// ctx->control
 #define AdjSc 1
 #define AdjTr 2
 #define AdjPr 4
@@ -75,175 +75,169 @@ controls the mode of weight assignment  */
 #define Deadkilled -14
 #define BadSize 1013
 
-/*	----------------------   Classes  ---------------------------     */
+/**
+ */
 
-typedef struct ClassVarStruct { /*Structure for basic info on a var in a class*/
-  int id;
-  int signif;
-  int infac; /* shows if affected by factor  */
+typedef struct ClassVarStruct { // Structure for basic info on a var in a class
+    int id;
+    int signif;
+    int infac; // shows if affected by factor
 } ClassVar;
 
-typedef struct ExplnVarStruct { /* Stuff for var in class in expln */
-  double num_values;            /*  Num of values */
-  double btcost, ntcost, stcost, ftcost;
-  double bpcost, npcost, spcost, fpcost;
-  double sum_scores_sq; /* weighted sum of squared scores */
-  int id;
+typedef struct ExplnVarStruct { // Stuff for var in class in expln
+    double num_values;          //  Num of values
+    double btcost, ntcost, stcost, ftcost;
+    double bpcost, npcost, spcost, fpcost;
+    double sum_scores_sq; // weighted sum of squared scores
+    int id;
 } ExplnVar;
 
 typedef struct ClassStruct {
-  double relab;
-  double mlogab;    /*  - log relab  */
-  double best_cost; /* Best total class cost  */
-  double dad_cost, nofac_cost,
-      fac_cost; /* Class costs as dad, sansfac, confac */
-  double best_par_cost;
-  double dad_par_cost, nofac_par_cost,
-      fac_par_cost; /* Parameter costs in above */
-  double best_case_cost;
-  double best_fac_cost; /*  Used to track best cfcost to detect improvement*/
-  double weights_sum;   /* sum of weights of members  */
-  double sum_score_sq;  /* Sum of squared scores */
-  double score_boost;   /* Used to inflate score vector early on  */
-  double avg_factor_scores; /* average vv  */
-  char type;                /* 0 = ?, 1 = root, 2 = dad, 3 = leaf, 4 = sub */
-  char hold_type;
-  char use; /* Current use: 1=sansfac, 2=confac */
-  char hold_use;
-  int boost_count;            /*  Monitors need to boost vsq  */
-  int score_change_count;     /*  Counts significant score changes  */
-  int age;                    /*  age in massage counts  */
-  int dad_id, sib_id, son_id; /* id links in class hierarchy */
-  int num_sons;               /* Number of son classes */
-  int serial;
-  /*	******************* Items above this line must be distributed to
-              all remotes before each pass through the data.
-          The items in the next group are accumulated and must be
-          returned to central.  They are cleared to zero by cleartcosts.
-          */
-  double newcnt;  /*  Accumulates weights for cnt  */
-  double newvsq;  /*  Accumulates squared scores for vsq  */
-  double cfvcost; /*  Factor-score cost included in cftcost  */
-  double cntcost, cstcost, cftcost; /* Thing costs in above */
-  double vav;                       /* sum of log vvsprds */
-  double totvv;                     /* sum of vvs  */
-  int scancnt;                      /*  Number of things considered  */
-  /*	********************  Items below here are generated locally by
-          docase for each case, and need not be distributed or
-          returned  */
-  int case_score;          /*  Integer score of current case  */
-  double total_case_cost;  /*  tcost of current case  */
-  double nofac_case_cost;  /* Cost of current case in no-fac class */
-  double fac_case_cost;    /* """"""""""""""""""""""" factor class */
-  double coding_case_cost; /* Part of casefcost due to coding score */
-  double dad_case_cost;    /* """""""""""""""""""""""  dad   class */
-  double case_weight;      /*  weight of current case  */
-  double case_fac_score, case_fac_score_sq, cvvsprd, clvsprd;
-  /*	*******************
-      Items below this line are set up when class is made by makeclass()
-  and should NOT be copied to a new class structure. IT IS ASSUMED THAT
-  'ID' IS THE FIRST ITEM BELOW THE LINE.
-      Except for id, which never changes and is set by central, the other
-      items are pointers which will be set by remotes, will not thereafter
-      change, but may have different values in different machines.
-      ********************* */
-  int id;
-  short *factor_scores; /* Factor scores */
-  /* ctx->scores times 4096 held as signed shorts in +-30000 */
-  ClassVar **basics; /* ptr to vec of ptrs to variable basics */
-  ExplnVar **stats;  /* ptr to vec of ptrs to variable stats blocks*/
+    double relab;
+    double mlogab;                         //  - log relab
+    double best_cost;                      // Best total class cost
+    double dad_cost, nofac_cost, fac_cost; // Class costs as dad, sansfac, confac
+    double best_par_cost;
+    double dad_par_cost, nofac_par_cost, fac_par_cost; // Parameter costs in above
+    double best_case_cost;
+    double best_fac_cost;     //  Used to track best cfcost to detect improvement
+    double weights_sum;       // sum of weights of members
+    double sum_score_sq;      // Sum of squared scores
+    double score_boost;       // Used to inflate score vector early on
+    double avg_factor_scores; // average vv
+    char type;                // 0 = ?, 1 = root, 2 = dad, 3 = leaf, 4 = sub
+    char hold_type;
+    char use; // Current use: 1=sansfac, 2=confac
+    char hold_use;
+    int boost_count;            //  Monitors need to boost vsq
+    int score_change_count;     //  Counts significant score changes
+    int age;                    //  age in massage counts
+    int dad_id, sib_id, son_id; // id links in class hierarchy
+    int num_sons;               // Number of son classes
+    int serial;
+    /*	******************* Items above this line must be distributed to
+                all remotes before each pass through the data.
+            The items in the next group are accumulated and must be
+            returned to central.  They are cleared to zero by cleartcosts.
+            */
+    double newcnt;                    //  Accumulates weights for cnt
+    double newvsq;                    //  Accumulates squared scores for vsq
+    double cfvcost;                   //  Factor-score cost included in cftcost
+    double cntcost, cstcost, cftcost; // Thing costs in above
+    double vav;                       // sum of log vvsprds
+    double totvv;                     // sum of vvs
+    int scancnt;                      //  Number of things considered
+    /*	********************  Items below here are generated locally by
+            docase for each case, and need not be distributed or
+            returned  */
+    int case_score;          //  Integer score of current case
+    double total_case_cost;  //  tcost of current case
+    double nofac_case_cost;  // Cost of current case in no-fac class
+    double fac_case_cost;    // """"""""""""""""""""""" factor class
+    double coding_case_cost; // Part of casefcost due to coding score
+    double dad_case_cost;    // """""""""""""""""""""""  dad   class
+    double case_weight;      //  weight of current case
+    double case_fac_score, case_fac_score_sq, cvvsprd, clvsprd;
+    /*	*******************
+        Items below this line are set up when class is made by makeclass()
+    and should NOT be copied to a new class structure. IT IS ASSUMED THAT
+    'ID' IS THE FIRST ITEM BELOW THE LINE.
+        Except for id, which never changes and is set by central, the other
+        items are pointers which will be set by remotes, will not thereafter
+        change, but may have different values in different machines.
+        ********************* */
+    int id;
+    short *factor_scores; // Factor scores
+    // ctx->scores times 4096 held as signed shorts in +-30000
+    ClassVar **basics; // ptr to vec of ptrs to variable basics
+    ExplnVar **stats;  // ptr to vec of ptrs to variable stats blocks
 } Class;
 
-/*	-----------------  Variable types  ---------------------  */
+// Variable types
 
 typedef struct MemBufferStruct {
-  char *buffer;
-  int size;
-  int offset;
+    char *buffer;
+    int size;
+    int offset;
 } MemBuffer;
 
 typedef struct VarTypeStruct {
-  int id;
-  int data_size;
-  int attr_aux_size; /* Size of aux block for vartype in vlist */
-  int smpl_aux_size; /* size of aux block for vartype in sample */
-  int pop_aux_size;  /* size of aux block for vartype in popln */
-  char *name;
-  int (*read_aux_attr)(SnobContext *ctx,
-                       void *vax); /* Fun to read aux attribute info */
-  int (*read_aux_smpl)(SnobContext *ctx,
-                       void *sax); /* Fun to read aux sample info */
-  int (*read_datum)(SnobContext *ctx, char *loc,
-                    int iv); /* Fun to read a datum */
-  void (*print_datum)(SnobContext *ctx,
-                      char *loc);              /* Fun to print datum value */
-  void (*set_sizes)(SnobContext *ctx, int iv); /* To set basicsize, statssize */
-  void (*set_best_pars)(SnobContext *ctx, int iv,
-                        Class *cls); /* To set current best use params */
-  void (*clear_stats)(SnobContext *ctx, int iv, Class *cls);
-  void (*reduce_stats)(SnobContext *ctx, int iv, Class *dest, Class *src);
-  void (*score_var)(SnobContext *ctx, int iv, Class *cls);
-  void (*deriv_var)(SnobContext *ctx, int iv, int fac, Class *cls);
-  void (*cost_var)(SnobContext *ctx, int iv, int fac, Class *cls);
-  void (*cost_var_nonleaf)(SnobContext *ctx, int iv, int vald, Class *cls);
-  void (*adjust)(SnobContext *ctx, int iv, int fac, Class *cls);
-  void (*show)(SnobContext *ctx, Class *cls, int iv);
-  void (*set_var)(SnobContext *ctx, int iv, Class *cls);
-  void (*details)(SnobContext *ctx, Class *cls, int iv, MemBuffer *buffer);
-  int (*set_aux_attr)(SnobContext *ctx, void *vax,
-                      int aux); /* To add attribute aux information directly */
-  int (*set_aux_smpl)(SnobContext *ctx, void *sax, int unit,
-                      double prec); /* To add sample aux information directly */
-  int (*set_datum)(SnobContext *ctx, char *loc, int iv,
-                   void *value); /* Add a datum  */
+    int id;
+    int data_size;
+    int attr_aux_size; // Size of aux block for vartype in vlist
+    int smpl_aux_size; // size of aux block for vartype in sample
+    int pop_aux_size;  // size of aux block for vartype in popln
+    char *name;
+    int (*read_aux_attr)(SnobContext *ctx, void *vax);           // Fun to read aux attribute info
+    int (*read_aux_smpl)(SnobContext *ctx, void *sax);           // Fun to read aux sample info
+    int (*read_datum)(SnobContext *ctx, char *loc, int iv);      // Fun to read a datum
+    void (*print_datum)(SnobContext *ctx, char *loc);            // Fun to print datum value
+    void (*set_sizes)(SnobContext *ctx, int iv);                 // To set basicsize, statssize
+    void (*set_best_pars)(SnobContext *ctx, int iv, Class *cls); // To set current best use params
+    void (*clear_stats)(SnobContext *ctx, int iv, Class *cls);
+    void (*reduce_stats)(SnobContext *ctx, int iv, Class *dest, Class *src);
+    void (*score_var)(SnobContext *ctx, int iv, Class *cls);
+    void (*deriv_var)(SnobContext *ctx, int iv, int fac, Class *cls);
+    void (*cost_var)(SnobContext *ctx, int iv, int fac, Class *cls);
+    void (*cost_var_nonleaf)(SnobContext *ctx, int iv, int vald, Class *cls);
+    void (*adjust)(SnobContext *ctx, int iv, int fac, Class *cls);
+    void (*show)(SnobContext *ctx, Class *cls, int iv);
+    void (*set_var)(SnobContext *ctx, int iv, Class *cls);
+    void (*details)(SnobContext *ctx, Class *cls, int iv, MemBuffer *buffer);
+    int (*set_aux_attr)(SnobContext *ctx, void *vax, int aux); // To add attribute aux information directly
+    int (*set_aux_smpl)(SnobContext *ctx, void *sax, int unit,
+                        double prec);                                   // To add sample aux information directly
+    int (*set_datum)(SnobContext *ctx, char *loc, int iv, void *value); // Add a datum
 } VarType;
 
-/*	-------------------  Files ----------------------------------  */
+/**
+ */
 
 typedef struct BufferStruct {
-  FILE *cfile;
-  int line, nch;
-  char cname[80];
-  char inl[INPUT_BUFFER_SIZE];
+    FILE *cfile;
+    int line, nch;
+    char cname[80];
+    char inl[INPUT_BUFFER_SIZE];
 } Buffer;
 
-/*	------------------  Allocation blocks  --------------------  */
+// Allocation blocks
 typedef struct BlockStruct Block;
 struct BlockStruct {
-  Block *next;
-  int size;
+    Block *next;
+    int size;
 };
 
-/*	-------------------  Attributes  -------------------------   */
+/**
+ */
 
 typedef struct VSetVarStruct {
-  int id;
-  int type;
-  int inactive;   /* Inactive attribute flag */
-  int basic_size; /*  Sizeof basic block (ClassVar) for this var */
-  int stats_size; /* Sizeof stats block (ExplnVar) for this var */
-  VarType *vtype;
-  char *vaux;
-  char name[80];
+    int id;
+    int type;
+    int inactive;   // Inactive attribute flag
+    int basic_size; //  Sizeof basic block (ClassVar) for this var
+    int stats_size; // Sizeof stats block (ExplnVar) for this var
+    VarType *vtype;
+    char *vaux;
+    char name[80];
 } VSetVar;
 
 typedef struct VSetStruct {
-  int id;
-  Block *blocks;     /* Ptr to chain of blocks allocated */
-  char filename[80]; /* file name of vset */
-  char name[80];
-  int length;     /* Number of variables */
-  int num_active; /* Number of active variables */
-  VSetVar *variables;
+    int id;
+    Block *blocks;     // Ptr to chain of blocks allocated
+    char filename[80]; // file name of vset
+    char name[80];
+    int length;     // Number of variables
+    int num_active; // Number of active variables
+    VSetVar *variables;
 } VarSet;
 
-/*	--------------------  ctx->samples  ---------------------------   */
+// ctx->samples
 
 typedef struct SampleVarStruct {
-  int id;
-  int nval;
-  char *saux;
-  int offset; /*  offset of (missing, value) in record  */
+    int id;
+    int nval;
+    char *saux;
+    int offset; //  offset of (missing, value) in record
 } SampleVar;
 
 /*	Sample data is packed into a block of 'records' addressed by
@@ -260,87 +254,89 @@ actually has two parts:
     */
 
 typedef struct SampleStruct {
-  int id;
-  Block *blocks;      /* Ptr to chain of blocks allocated for sample */
-  char vset_name[80]; /* Name of variable-set */
-  int num_cases;      /* Num of cases */
-  int num_active;     /* Num of active cases */
-  int num_added; /* Num of cases added, should match num_cases after loading is
-                    complete */
-  SampleVar *variables; /* Ptr to vector of SVinsts, one per variable */
-  char *records;        /*  vector of records  */
-  int record_length;    /*  Length in chars of a data record  */
-  double best_cost;     /*  Cost of best model */
-  int best_time;        /*  Popln age when bestcost reached  */
-  char name[80];
-  char filename[80]; /*  Data file name  */
+    int id;
+    Block *blocks;        // Ptr to chain of blocks allocated for sample
+    char vset_name[80];   // Name of variable-set
+    int num_cases;        // Num of cases
+    int num_active;       // Num of active cases
+    int num_added;        /* Num of cases added, should match num_cases after loading is
+                             complete */
+    SampleVar *variables; // Ptr to vector of SVinsts, one per variable
+    char *records;        //  vector of records
+    int record_length;    //  Length in chars of a data record
+    double best_cost;     //  Cost of best model
+    int best_time;        //  Popln age when bestcost reached
+    char name[80];
+    char filename[80]; //  Data file name
 } Sample;
 
-/*	--------------------------  Population  ----------------------  */
+/**
+ */
 
 typedef struct PopVarStruct {
-  int id;
-  char *paux;
+    int id;
+    char *paux;
 } PopVar;
 
 typedef struct PoplnStruct {
-  int id;
-  Block *blocks, *model_blocks; /* Ptrs to bocks allocated for popln,
-    and for popln as model of sample */
-  char vst_name[80];            /* Name of variable-set */
-  char sample_name[80]; /*  Name of sample to which popln is attached if any*/
-  int sample_size;      /*  Size of sample attached, or 0 */
-  int num_cases;        /*  num of active cases in sample used for training */
-  Class **classes;      /* ptr to vec of ptrs to classes  */
-  PopVar *variables;    /* Ptr to vector of PVinsts, one per variable */
-  char filename[80];    /*  Popln file name  */
-  char name[80];
-  int next_serial; /*  Next serial number for a new class */
-  int num_classes; /* Number of classes  */
-  int num_leaves;  /* Number of leaves */
-  int root;        /* index of root class  */
-  int cls_vec_len; /*  Length of 'classes' vec. */
-  int hi_class;    /*  Highest allocated entry in pop->classes */
+    int id;
+    Block *blocks, *model_blocks; /* Ptrs to bocks allocated for popln,
+      and for popln as model of sample */
+    char vst_name[80];            // Name of variable-set
+    char sample_name[80];         //  Name of sample to which popln is attached if any
+    int sample_size;              //  Size of sample attached, or 0
+    int num_cases;                //  num of active cases in sample used for training
+    Class **classes;              // ptr to vec of ptrs to classes
+    PopVar *variables;            // Ptr to vector of PVinsts, one per variable
+    char filename[80];            //  Popln file name
+    char name[80];
+    int next_serial; //  Next serial number for a new class
+    int num_classes; // Number of classes
+    int num_leaves;  // Number of leaves
+    int root;        // index of root class
+    int cls_vec_len; //  Length of 'classes' vec.
+    int hi_class;    //  Highest allocated entry in pop->classes
 } Population;
 
-/*	-------------------------------------------------------------   */
+//
 
 typedef struct StateStruct {
-  VarSet *vset;
-  Sample *sample;
-  Population *popln;
-  Buffer *buffer;
+    VarSet *vset;
+    Sample *sample;
+    Population *popln;
+    Buffer *buffer;
 } State;
 
-/* Classification Result */
+// Classification Result
 typedef struct ResultStruct {
-  int num_classes; // Number of classes found, includes Dads, Leaves and Subs
-  int num_leaves;  // Number of leaves, these are the relevant categories
-  int num_attrs;   // Number of variables in vset;
-  int num_cases;   // Number of cases;
-  double model_length;   // Cost of Transmitting Model
-  double data_length;    // Cost of Transmitting Data
-  double message_length; // Total Cost
+    int num_classes;       // Number of classes found, includes Dads, Leaves and Subs
+    int num_leaves;        // Number of leaves, these are the relevant categories
+    int num_attrs;         // Number of variables in vset;
+    int num_cases;         // Number of cases;
+    double model_length;   // Cost of Transmitting Model
+    double data_length;    // Cost of Transmitting Data
+    double message_length; // Total Cost
 } Result;
 
-/* Structur for calculating factor scores */
+// Structur for calculating factor scores
 typedef struct ScoreStruct {
-  double CaseFacScore, CaseFacScoreSq, cvvsprd;
-  int CaseFacInt; /*  integer form of case_fac_score*4096 */
-  double CaseCost, CaseNoFacCost, CaseFacCost;
-  double CaseFacScoreD1, CaseFacScoreD2; /* derivs of case cost wrt score  */
-  double EstFacScoreD2; /* An over-estimate of CaseFacScoreD2 used in score
-                           ajust */
-  double CaseFacScoreD3;
+    double CaseFacScore, CaseFacScoreSq, cvvsprd;
+    int CaseFacInt; //  integer form of case_fac_score*4096
+    double CaseCost, CaseNoFacCost, CaseFacCost;
+    double CaseFacScoreD1, CaseFacScoreD2; // derivs of case cost wrt score
+    double EstFacScoreD2;                  /* An over-estimate of CaseFacScoreD2 used in score
+                                              ajust */
+    double CaseFacScoreD3;
 } Score;
 
-/*	--------- Functions -------------------------------   */
+/**
+ */
 
-/*	In LISTEN.c	*/
+//	In LISTEN.c
 int hark(SnobContext *ctx, char *lline);
-/*		end listen.c		*/
+//		end listen.c
 
-/*	In inputs.c  */
+//	In inputs.c
 #ifndef INPUTS
 extern int Terminator;
 extern Buffer CFileBuffer, CommsBuffer;
@@ -357,9 +353,9 @@ void close_buffer(SnobContext *ctx);
 void revert(SnobContext *ctx, int flag);
 void rep(SnobContext *ctx, int ch);
 void flp(SnobContext *ctx);
-/*	end inputs.c  */
+//	end inputs.c
 
-/*	In POPLNS.c   */
+//	In POPLNS.c
 void next_class(SnobContext *ctx, Class **ptr);
 int make_population(SnobContext *ctx, int fill);
 int init_population(SnobContext *ctx);
@@ -374,9 +370,9 @@ int get_best_pop(SnobContext *ctx);
 void track_best(SnobContext *ctx, int verify);
 int find_population(SnobContext *ctx, char *nam);
 void correlpops(SnobContext *ctx, int xid);
-/*		end poplns.c		*/
+//		end poplns.c
 
-/*	In CLASSES.c	*/
+//	In CLASSES.c
 int serial_to_id(SnobContext *ctx, int ss);
 int make_class(SnobContext *ctx);
 void clear_costs(SnobContext *ctx, Class *cls);
@@ -392,9 +388,9 @@ void set_class_score(SnobContext *ctx, Class *cls, int item);
 int split_leaf(SnobContext *ctx, int kk);
 void delete_all_classes(SnobContext *ctx);
 int next_leaf(SnobContext *ctx, Population *cpop, int iss);
-/*		end classes.c		*/
+//		end classes.c
 
-/*	In DOALL.c	*/
+//	In DOALL.c
 int do_all(SnobContext *ctx, int ncy, int all);
 int find_all(SnobContext *ctx, int typ);
 int do_dads(SnobContext *ctx, int ncy);
@@ -404,13 +400,13 @@ int rand_uint(SnobContext *ctx);
 int rand_int(SnobContext *ctx);
 double rand_float(SnobContext *ctx);
 void do_case(SnobContext *ctx, int cse, int all, int derivs, int num_son);
-/*		end doall.c		*/
+//		end doall.c
 
-/*	In TUNE.c	*/
+//	In TUNE.c
 void default_tune(SnobContext *ctx);
-/*		end tune.c	*/
+//		end tune.c
 
-/*	In TACTICS.c	*/
+//	In TACTICS.c
 void flatten(SnobContext *ctx);
 double insert_dad(SnobContext *ctx, int ser1, int ser2, int *dadid);
 int best_insert_dad(SnobContext *ctx, int force);
@@ -423,25 +419,25 @@ double move_class(SnobContext *ctx, int ser1, int ser2);
 int best_move_class(SnobContext *ctx, int force);
 void try_moves(SnobContext *ctx, int ntry);
 void trial(SnobContext *ctx, int param);
-/*		end tactics.c		*/
+//		end tactics.c
 
-/*	In BADMOVES.c	*/
+//	In BADMOVES.c
 void clr_bad_move(SnobContext *ctx);
 int chk_bad_move(SnobContext *ctx, int code, int w1, int w2);
 void set_bad_move(SnobContext *ctx, int code, int s1, int s2);
-/*		end badmoves.c		*/
+//		end badmoves.c
 
-/*	In BLOCK.c	*/
+//	In BLOCK.c
 void *alloc_blocks(SnobContext *ctx, int gr, int size);
 void free_blocks(SnobContext *ctx, int gr);
 int report_space(SnobContext *ctx, int pp);
-/*		end block.c		*/
+//		end block.c
 
-/*	In DOTYPES.c	*/
+//	In DOTYPES.c
 void do_types(SnobContext *ctx);
-/*		end dotypes.c		*/
+//		end dotypes.c
 
-/*	In SAMPLES.c	*/
+//	In SAMPLES.c
 void print_var_datum(SnobContext *ctx, int i, int n);
 int read_vset(SnobContext *ctx);
 int load_vset(SnobContext *ctx, const char *fname);
@@ -455,18 +451,15 @@ void destroy_sample(SnobContext *ctx, int sx);
 void destroy_vset(SnobContext *ctx, int vx);
 
 int create_vset(SnobContext *ctx, const char *name, int num_vars);
-int add_attribute(SnobContext *ctx, int index, const char *name, int itype,
-                  int aux);
-int create_sample(SnobContext *ctx, char *name, int size, int *units,
-                  double *precision);
+int add_attribute(SnobContext *ctx, int index, const char *name, int itype, int aux);
+int create_sample(SnobContext *ctx, char *name, int size, int *units, double *precision);
 int add_record(SnobContext *ctx, int index, char *bytes);
 
-/*		end samples.c		*/
+//		end samples.c
 
-/*	In glob.c	*/
+//	In glob.c
 char *serial_to_str(SnobContext *ctx, Class *cls);
-void log_msg(SnobContext *ctx, int level, const char *format, ...)
-    __attribute__((format(printf, 3, 4)));
+void log_msg(SnobContext *ctx, int level, const char *format, ...) __attribute__((format(printf, 3, 4)));
 int error_value(SnobContext *ctx, const char *message, const int value);
 void print_progress(SnobContext *ctx, size_t count, size_t max);
 void save_context(SnobContext *ctx);
@@ -482,13 +475,10 @@ void select_population(SnobContext *ctx, char *name);
 void show_pop_names(SnobContext *ctx);
 SnobContext *initialize(int interact, int debug, int seed);
 void get_class_details(SnobContext *ctx, char *buffer, size_t buffer_size);
-void print_buffer(SnobContext *ctx, MemBuffer *buffer, const char *format, ...)
-    __attribute__((format(printf, 3, 4)));
-Result classify(SnobContext *ctx, const int max_cycles, const int do_steps,
-                const int move_steps, const double tol);
+void print_buffer(SnobContext *ctx, MemBuffer *buffer, const char *format, ...) __attribute__((format(printf, 3, 4)));
+Result classify(SnobContext *ctx, const int max_cycles, const int do_steps, const int move_steps, const double tol);
 int save_model(SnobContext *ctx, char *filename);
 int load_model(SnobContext *ctx, char *filename);
 void peek_data(SnobContext *ctx);
-int get_assignments(SnobContext *ctx, int *ids, int *prim_cls,
-                    double *prim_probs, int *sec_cls, double *sec_probs);
+int get_assignments(SnobContext *ctx, int *ids, int *prim_cls, double *prim_probs, int *sec_cls, double *sec_probs);
 int sort_current_sample(SnobContext *ctx);

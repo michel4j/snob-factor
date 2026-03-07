@@ -3,18 +3,20 @@
 
 static char *movestr[] = {" ", "Insert", "Delete", "Move"};
 
-/*	---------------  clearbadm  --------------------------------  */
-/*	To clear the badmoves table  */
+/**
+ * @brief To clear the badmoves table
+ */
 void clr_bad_move(SnobContext *ctx) {
     for (int i = 0; i < BadSize; i++)
         ctx->bad_key[i] = 0;
     return;
 }
 
-/*	-----------------  testbadm  -----------------------------  */
-/*	To test a move for known recent fail  */
-/*	code 1 means insert ,code 2 means delete  */
-/*	code 3 means move */
+/**
+ * @brief To test a move for known recent fail
+ * code 1 means insert ,code 2 means delete
+ * code 3 means move
+ */
 int chk_bad_move(SnobContext *ctx, int code, int w1, int w2) {
     int hi, key, bad, s1, s2;
 
@@ -39,8 +41,9 @@ int chk_bad_move(SnobContext *ctx, int code, int w1, int w2) {
     return (bad);
 }
 
-/*	------------------  setbadm  -----------------------------   */
-/*	To log a bad move  */
+/**
+ * @brief To log a bad move
+ */
 void set_bad_move(SnobContext *ctx, int code, int s1, int s2) {
     int hi, key;
 

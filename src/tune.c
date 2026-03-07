@@ -1,9 +1,10 @@
-/*	---------------- stuff to tune actions -------------------------- */
+// stuff to tune actions
 #define NOTGLOB 1
 #define TUNE
 #include "glob.h"
 
-/*	----------------  defaulttune -------------------------------- */
+/**
+ */
 void default_tune(SnobContext *ctx) {
     int i;
 
@@ -25,7 +26,7 @@ void default_tune(SnobContext *ctx) {
     ctx->sig_score_change = 5;
     ctx->m_beta = 0.00;
 
-    /*	Set table of log factorials  */
+    //	Set table of log factorials
     ctx->fac_log[0] = ctx->fac_log[1] = 0.0;
     for (i = 2; i <= MAX_CLASSES; i++)
         ctx->fac_log[i] = ctx->fac_log[i - 1] + log((double)i);
