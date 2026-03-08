@@ -31,7 +31,7 @@ int serial_to_id(SnobContext *ctx, int serial) {
  * @param item Index of the data item/case.
  */
 void set_class_score(SnobContext *ctx, Class *cls, int item) {
-    cls->case_score = ctx->scores.CaseFacInt = cls->factor_scores[item];
+    cls->case_score = ctx->scores.case_fac_int = cls->factor_scores[item];
 }
 
 /**
@@ -359,38 +359,38 @@ void score_all_vars(SnobContext *ctx, Class *cls, int item) {
 
     set_class_score(ctx, cls, item);
     if ((cls->age < ctx->min_fac_age) || (cls->use == Tiny)) {
-        ctx->scores.CaseFacScore = cls->avg_factor_scores = cls->sum_score_sq = 0.0;
-        ctx->scores.CaseFacInt = 0;
+        ctx->scores.case_fac_score = cls->avg_factor_scores = cls->sum_score_sq = 0.0;
+        ctx->scores.case_fac_int = 0;
     } else {
         if (cls->sum_score_sq <= 0.0) {
             //	Generate a fake score to get started.
             cls->boost_count = 0;
             ctx->scores.cvvsprd = 0.1 / ctx->state.vset->length;
             oldicvv = igbit = 0;
-            ctx->scores.CaseFacScore = (rand_int(ctx) < 0) ? 1.0 : -1.0;
+            ctx->scores.case_fac_score = (rand_int(ctx) < 0) ? 1.0 : -1.0;
         } else {
             //	Get current score
-            oldicvv = ctx->scores.CaseFacInt;
-            igbit = ctx->scores.CaseFacInt & 1;
-            ctx->scores.CaseFacScore = ctx->scores.CaseFacInt * ScoreRScale;
+            oldicvv = ctx->scores.case_fac_int;
+            igbit = ctx->scores.case_fac_int & 1;
+            ctx->scores.case_fac_score = ctx->scores.case_fac_int * ScoreRScale;
             //	Subtract average from last pass
             /*xx
                 cvv -= cls->avg_factor_scores;
             */
             if (cls->boost_count && ((ctx->control & AdjSP) == AdjSP)) {
-                ctx->scores.CaseFacScore *= cls->score_boost;
-                ctx->scores.CaseFacScore = fmax(fmin(ctx->scores.CaseFacScore, Maxv), -Maxv);
-                del = ctx->scores.CaseFacScore * HScoreScale;
+                ctx->scores.case_fac_score *= cls->score_boost;
+                ctx->scores.case_fac_score = fmax(fmin(ctx->scores.case_fac_score, Maxv), -Maxv);
+                del = ctx->scores.case_fac_score * HScoreScale;
                 del -= (del < 0.0) ? 1.0 : 0.0;
-                ctx->scores.CaseFacInt = del + 0.5;
-                ctx->scores.CaseFacInt = ctx->scores.CaseFacInt << 1; // Round to nearest even times ScoreScale
+                ctx->scores.case_fac_int = del + 0.5;
+                ctx->scores.case_fac_int = ctx->scores.case_fac_int << 1; // Round to nearest even times ScoreScale
                 igbit = 0;
-                ctx->scores.CaseFacScore = ctx->scores.CaseFacInt * ScoreRScale;
+                ctx->scores.case_fac_score = ctx->scores.case_fac_int * ScoreRScale;
             }
 
-            ctx->scores.CaseFacScoreSq = ctx->scores.CaseFacScore * ctx->scores.CaseFacScore;
-            ctx->scores.CaseFacScoreD1 = ctx->scores.CaseFacScoreD2 = ctx->scores.EstFacScoreD2 =
-                ctx->scores.CaseFacScoreD3 = 0.0;
+            ctx->scores.case_fac_score_sq = ctx->scores.case_fac_score * ctx->scores.case_fac_score;
+            ctx->scores.case_fac_score_d1 = ctx->scores.case_fac_score_d2 = ctx->scores.est_fac_score_d2 =
+                ctx->scores.case_fac_score_d3 = 0.0;
             for (i = 0; i < ctx->state.vset->length; i++) {
                 vset_var = &ctx->state.vset->variables[i];
                 if (!vset_var->inactive) {
@@ -398,38 +398,38 @@ void score_all_vars(SnobContext *ctx, Class *cls, int item) {
                     (*vtype->score_var)(ctx, i, cls); //	score_var should add to vvd1, vvd2, vvd3, mvvd2.
                 }
             }
-            ctx->scores.CaseFacScoreD1 += ctx->scores.CaseFacScore;
-            ctx->scores.CaseFacScoreD2 += 1.0;
-            ctx->scores.EstFacScoreD2 += 1.0; //  From prior
+            ctx->scores.case_fac_score_d1 += ctx->scores.case_fac_score;
+            ctx->scores.case_fac_score_d2 += 1.0;
+            ctx->scores.est_fac_score_d2 += 1.0; //  From prior
             // There is a cost term 0.5 * cvvsprd from the prior (whence the
             // additional 1 in vvd2).
-            ctx->scores.cvvsprd = 1.0 / ctx->scores.CaseFacScoreD2;
+            ctx->scores.cvvsprd = 1.0 / ctx->scores.case_fac_score_d2;
             // Also, overall cost includes 0.5*cvvsprd*vvd2, so there is a derivative
             // term wrt cvv of 0.5*cvvsprd*vvd3
-            ctx->scores.CaseFacScoreD1 += 0.5 * ctx->scores.cvvsprd * ctx->scores.CaseFacScoreD3;
-            del = ctx->scores.CaseFacScoreD1 / ctx->scores.EstFacScoreD2;
+            ctx->scores.case_fac_score_d1 += 0.5 * ctx->scores.cvvsprd * ctx->scores.case_fac_score_d3;
+            del = ctx->scores.case_fac_score_d1 / ctx->scores.est_fac_score_d2;
             if (ctx->control & AdjSc) {
-                ctx->scores.CaseFacScore -= del;
+                ctx->scores.case_fac_score -= del;
             }
         }
 
-        ctx->scores.CaseFacScore = fmax(fmin(ctx->scores.CaseFacScore, Maxv), -Maxv);
-        del = ctx->scores.CaseFacScore * HScoreScale;
+        ctx->scores.case_fac_score = fmax(fmin(ctx->scores.case_fac_score, Maxv), -Maxv);
+        del = ctx->scores.case_fac_score * HScoreScale;
         del -= (del < 0.0) ? 1.0 : 0.0;
-        ctx->scores.CaseFacInt = del + rand_float(ctx);
-        ctx->scores.CaseFacInt = ctx->scores.CaseFacInt << 1; // Round to nearest even times ScoreScale
-        ctx->scores.CaseFacInt |= igbit;                      // Restore original ignore bit
+        ctx->scores.case_fac_int = del + rand_float(ctx);
+        ctx->scores.case_fac_int = ctx->scores.case_fac_int << 1; // Round to nearest even times ScoreScale
+        ctx->scores.case_fac_int |= igbit;                      // Restore original ignore bit
         if (!igbit) {
-            oldicvv -= ctx->scores.CaseFacInt;
+            oldicvv -= ctx->scores.case_fac_int;
             oldicvv = (oldicvv < 0) ? -oldicvv : oldicvv;
             if (oldicvv > ctx->sig_score_change)
                 cls->score_change_count++;
         }
-        cls->case_fac_score = ctx->scores.CaseFacScore = ctx->scores.CaseFacInt * ScoreRScale;
-        cls->case_fac_score_sq = ctx->scores.CaseFacScoreSq = ctx->scores.CaseFacScore * ctx->scores.CaseFacScore;
+        cls->case_fac_score = ctx->scores.case_fac_score = ctx->scores.case_fac_int * ScoreRScale;
+        cls->case_fac_score_sq = ctx->scores.case_fac_score_sq = ctx->scores.case_fac_score * ctx->scores.case_fac_score;
         cls->cvvsprd = ctx->scores.cvvsprd;
     }
-    cls->factor_scores[item] = cls->case_score = ctx->scores.CaseFacInt;
+    cls->factor_scores[item] = cls->case_score = ctx->scores.case_fac_int;
 }
 
 /**
@@ -450,19 +450,19 @@ void cost_all_vars(SnobContext *ctx, Class *cls, int item) {
         fac = 0;
     else {
         fac = 1;
-        ctx->scores.CaseFacScoreSq = ctx->scores.CaseFacScore * ctx->scores.CaseFacScore;
+        ctx->scores.case_fac_score_sq = ctx->scores.case_fac_score * ctx->scores.case_fac_score;
     }
-    ctx->scores.CaseCost = ctx->scores.CaseNoFacCost = ctx->scores.CaseFacCost = cls->mlogab; // Abundance cost
+    ctx->scores.case_cost = ctx->scores.case_no_fac_cost = ctx->scores.case_fac_cost = cls->mlogab; // Abundance cost
     for (int iv = 0; iv < ctx->state.vset->length; iv++) {
         vset_var = &ctx->state.vset->variables[iv];
         if (!vset_var->inactive) {
             vtype = vset_var->vtype;
-            (*vtype->cost_var)(ctx, iv, fac, cls); // will add to CaseNoFacCost, CaseFacCost
+            (*vtype->cost_var)(ctx, iv, fac, cls); // will add to case_no_fac_cost, case_fac_cost
         }
     }
 
-    cls->total_case_cost = cls->nofac_case_cost = ctx->scores.CaseNoFacCost;
-    cls->fac_case_cost = ctx->scores.CaseNoFacCost + 10.0;
+    cls->total_case_cost = cls->nofac_case_cost = ctx->scores.case_no_fac_cost;
+    cls->fac_case_cost = ctx->scores.case_no_fac_cost + 10.0;
     if (cls->num_sons < 2)
         cls->dad_case_cost = 0.0;
     cls->coding_case_cost = 0.0;
@@ -474,15 +474,15 @@ void cost_all_vars(SnobContext *ctx, Class *cls, int item) {
         // more negative 'lattice' ((log 12)/2 for one parameter) approaching -(1/2)
         // log (2 Pi e) which results in the reduced cost :
         cls->clvsprd = log(ctx->scores.cvvsprd);
-        tmp = 0.5 * (ctx->scores.CaseFacScoreSq + ctx->scores.cvvsprd - cls->clvsprd - 1.0);
+        tmp = 0.5 * (ctx->scores.case_fac_score_sq + ctx->scores.cvvsprd - cls->clvsprd - 1.0);
         // Over all scores for the class, the lattice effect will add approx
         //         ( log (2 Pi cnt)) / 2  + 1
         // to the class cost. This is added later, once cnt is known.
-        ctx->scores.CaseFacCost += tmp;
-        cls->fac_case_cost = ctx->scores.CaseFacCost;
+        ctx->scores.case_fac_cost += tmp;
+        cls->fac_case_cost = ctx->scores.case_fac_cost;
         cls->coding_case_cost = tmp;
         if (cls->use == Fac)
-            cls->total_case_cost = ctx->scores.CaseFacCost;
+            cls->total_case_cost = ctx->scores.case_fac_cost;
     }
 }
 
@@ -504,12 +504,12 @@ void deriv_all_vars(SnobContext *ctx, Class *cls, int item) {
         fac = 0;
     else {
         fac = 1;
-        ctx->scores.CaseFacScore = cls->case_fac_score;
-        ctx->scores.CaseFacScoreSq = cls->case_fac_score_sq;
+        ctx->scores.case_fac_score = cls->case_fac_score;
+        ctx->scores.case_fac_score_sq = cls->case_fac_score_sq;
         ctx->scores.cvvsprd = cls->cvvsprd;
-        cls->newvsq += case_weight * ctx->scores.CaseFacScoreSq;
+        cls->newvsq += case_weight * ctx->scores.case_fac_score_sq;
         cls->vav += case_weight * cls->clvsprd;
-        cls->totvv += ctx->scores.CaseFacScore * case_weight;
+        cls->totvv += ctx->scores.case_fac_score * case_weight;
     }
     for (int iv = 0; iv < ctx->state.vset->length; iv++) {
         vset_var = &ctx->state.vset->variables[iv];

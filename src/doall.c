@@ -832,7 +832,7 @@ void do_case(SnobContext *ctx, int item, int all, int derivs, int num_son) {
     while (clc < num_son) {
         cls = ctx->sons[clc];
         set_class_score(ctx, cls, item);
-        if ((!ctx->see_all) && (ctx->scores.CaseFacInt & 1)) { // Ignore this and decendants
+        if ((!ctx->see_all) && (ctx->scores.case_fac_int & 1)) { // Ignore this and decendants
             clc = ctx->next_ic[clc];
             continue;
         } else if (!ctx->see_all)

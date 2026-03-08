@@ -26,5 +26,7 @@ if __name__ == "__main__":
     sfc.fit(train_data)
     sfc.save_model("/tmp/vmd_test.mod")
     pred = sfc.predict()
+    for column in ["major_class", "minor_class", "major_prob", "minor_prob"]:
+        train_data[column] = pred[column].values
     snob.show_classes(sfc.get_classes())
-    print(pred)
+    print(train_data)

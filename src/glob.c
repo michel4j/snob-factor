@@ -1,5 +1,4 @@
 
-#define GLOBALS 1
 #include "glob.h"
 #include <math.h>
 #include <stdarg.h>
@@ -8,9 +7,11 @@
 #include <string.h>
 #include <unistd.h>
 
-// Global variables now in SnobContext (current_ctx->...)
-
-//    To assist in printing class serials
+/** @brief Convert a class serial to a string
+ *  @param ctx Pointer to the Snob context.
+ *  @param cls Pointer to the class
+ *  @return String representation of the class serial
+ */
 char *serial_to_str(SnobContext *ctx, Class *cls) {
     static char str[8];
     int i, j, k;
@@ -41,8 +42,8 @@ char *serial_to_str(SnobContext *ctx, Class *cls) {
     return str;
 }
 
-/**
- * @param ctx Pointer to the Snob context.
+/** @brief Show the names of the defined models
+ *  @param ctx Pointer to the Snob context.
  */
 void show_pop_names(SnobContext *ctx) {
     int i;
@@ -62,8 +63,8 @@ void show_pop_names(SnobContext *ctx) {
     ctx->num_rep_chars = 0;
 }
 
-/**
- * @param ctx Pointer to the Snob context.
+/** @brief Show the names of the loaded samples
+ *  @param ctx Pointer to the Snob context.
  */
 void show_smpl_names(SnobContext *ctx) {
     int k;
@@ -76,8 +77,10 @@ void show_smpl_names(SnobContext *ctx) {
     ctx->num_rep_chars = 0;
 }
 
-/// @brief Select the sample by the given name
-/// @param name name of sample to select
+/** @brief Select the sample by the given name
+ *  @param ctx Pointer to the Snob context.
+ *  @param name name of sample to select
+ */
 void select_sample(SnobContext *ctx, char *name) {
     int smpl_id, k;
     smpl_id = find_sample(ctx, name, 1);
@@ -104,8 +107,10 @@ void select_sample(SnobContext *ctx, char *name) {
     }
 }
 
-/// @brief Select a population by name
-/// @param name
+/** @brief Select a population by name
+ *  @param ctx Pointer to the Snob context.
+ *  @param name name of population to select
+ */
 void select_population(SnobContext *ctx, char *name) {
     int k, p = find_population(ctx, name);
     if (p >= 0) {
@@ -126,6 +131,12 @@ void select_population(SnobContext *ctx, char *name) {
     show_population(ctx);
 }
 
+/** @brief Log a message to the console
+ *  @param ctx Pointer to the Snob context.
+ *  @param level The level of the message (0 = info, 1 = warning, 2 = error)
+ *  @param format The format string for the message
+ *  @param ... The arguments for the format string
+ */
 void log_msg(SnobContext *ctx, int level, const char *format, ...) {
 
     if (level >= ctx->debug) {
@@ -141,6 +152,12 @@ void log_msg(SnobContext *ctx, int level, const char *format, ...) {
     }
 }
 
+/** @brief Print a message to a memory buffer
+ *  @param ctx Pointer to the Snob context.
+ *  @param dest Pointer to the memory buffer
+ *  @param format The format string for the message
+ *  @param ... The arguments for the format string
+ */
 void print_buffer(SnobContext *ctx, MemBuffer *dest, const char *format, ...) {
     va_list args;
     va_start(args, format);
@@ -150,6 +167,12 @@ void print_buffer(SnobContext *ctx, MemBuffer *dest, const char *format, ...) {
     va_end(args);
 }
 
+/** @brief Return an error value
+ *  @param ctx Pointer to the Snob context.
+ *  @param message The error message
+ *  @param value The value to return
+ *  @return The value
+ */
 int error_value(SnobContext *ctx, const char *message, const int value) {
     log_msg(ctx, 1, "%s", message);
     return value;
@@ -157,19 +180,22 @@ int error_value(SnobContext *ctx, const char *message, const int value) {
 
 #undef STOP
 __thread SnobContext *signal_ctx = NULL;
+
+/** @brief Handle SIGINT signal
+ *  @param sig The signal number
+ */
 void handle_sigint(int sig) {
     if (signal_ctx)
         signal_ctx->stop = 1;
 }
 #define STOP (ctx->stop)
 
-/// @brief Initialize SNOB parameters
-/// @param interact integer specifying if running from a library or not 1 =
-/// interactive, 0 = non interactive
-/// @param debug turn on verbose printing of progress
-/// @param threads number of threads to use during parallel portions, 0 = use
-/// OpenMP environment variables instead
-
+/** @brief Initialize SNOB parameters
+ *  @param interact integer specifying if running from a library or not
+ *  1 = interactive, 0 = non interactive
+ *  @param debug turn on verbose printing of progress
+ *  @param seed seed for random number generator
+ */
 SnobContext *initialize(int interact, int debug, int seed) {
     int k;
     SnobContext *ctx = 0;
@@ -205,6 +231,9 @@ SnobContext *initialize(int interact, int debug, int seed) {
     return ctx;
 }
 
+/** @brief Destroy the Snob context
+ *  @param ctx Pointer to the Snob context.
+ */
 void destroy_context(SnobContext *ctx) {
     int k;
     if (!ctx) {
@@ -223,8 +252,10 @@ void destroy_context(SnobContext *ctx) {
     free(ctx);
 }
 
-/// @brief Print the details about the number of classes, leaves, and the
-/// associated costs for the current population
+/** @brief Print the details about the number of classes, leaves, and the
+ *  associated costs for the current population
+ *  @param ctx Pointer to the Snob context.
+ */
 void show_population(SnobContext *ctx) {
     Class *root;
     Population *popln = ctx->state.popln;
@@ -247,6 +278,9 @@ void show_population(SnobContext *ctx) {
             "------------");
 }
 
+/** @brief Clean up the population
+ *  @param ctx Pointer to the Snob context.
+ */
 void cleanup_population(SnobContext *ctx) {
     int index = find_population(ctx, "TrialPop");
     if (index >= 0) {
@@ -258,6 +292,11 @@ void cleanup_population(SnobContext *ctx) {
     track_best(ctx, 1);
 }
 
+/** @brief Print progress bar
+ *  @param ctx Pointer to the Snob context.
+ *  @param count Current count
+ *  @param max Maximum count
+ */
 void print_progress(SnobContext *ctx, size_t count, size_t max) {
     const int bar_width = 70;
 
@@ -275,15 +314,16 @@ void print_progress(SnobContext *ctx, size_t count, size_t max) {
     fflush(stdout);
 }
 
-/// @brief Run f full classification sequence
-/// @param max_cycles Maximum number of full cycles of doall followed by
-/// trymoves
-/// @param do_steps Number of doall steps of assignment and estimation
-/// @param move_steps Number of trymoves steps to fix the classification tree
-/// @param tol  Convergence tolerance as a percentage. Classification stops if
-/// the cost improvement is less than the tolerance
-/// @return Classification Result Structure containing number of classes and
-/// cost
+/** @brief Run f full classification sequence
+ *  @param max_cycles Maximum number of full cycles of doall followed by
+ *  trymoves
+ *  @param do_steps Number of doall steps of assignment and estimation
+ *  @param move_steps Number of trymoves steps to fix the classification tree
+ *  @param tol  Convergence tolerance as a percentage. Classification stops if
+ *  the cost improvement is less than the tolerance
+ *  @return Classification Result Structure containing number of classes and
+ *  cost
+ */
 Result classify(SnobContext *ctx, const int max_cycles, const int do_steps, const int move_steps, const double tol) {
     Result result;
     Class *root;
@@ -354,21 +394,40 @@ Result classify(SnobContext *ctx, const int max_cycles, const int do_steps, cons
     return result;
 }
 
-/// @brief Save a Classification Model to file
-/// @param filename model file
-/// @return >= 0 if successful
+/** @brief Save a Classification Model to file
+ *  @param ctx Pointer to the Snob context.
+ *  @param filename model file
+ *  @return >= 0 if successful
+ */
 int save_model(SnobContext *ctx, char *filename) {
     int best;
     best = copy_population(ctx, get_best_pop(ctx), 0, "SavedModel");
     return save_population(ctx, best, 0, filename);
 }
 
+/** @brief Load a Classification Model from file
+ *  @param ctx Pointer to the Snob context.
+ *  @param filename model file
+ *  @return >= 0 if successful
+ */
 int load_model(SnobContext *ctx, char *filename) {
     int result;
     result = load_population(ctx, filename);
     return set_work_population(ctx, result);
 }
 
+/** @brief Save the current state of the Snob context
+ *  @param ctx Pointer to the Snob context.
+ */
 void save_context(SnobContext *ctx) { memcpy(&ctx->state_backup, &ctx->state, sizeof(State)); }
+
+/** @brief Restore the Snob context from backup
+ *  @param ctx Pointer to the Snob context.
+ */
 void restore_context(SnobContext *ctx) { memcpy(&ctx->state, &ctx->state_backup, sizeof(State)); }
+
+/** @brief Set the control flags
+ *  @param ctx Pointer to the Snob context.
+ *  @param flags The control flags
+ */
 void set_control_flags(SnobContext *ctx, int flags) { ctx->control = ctx->d_control = flags; }

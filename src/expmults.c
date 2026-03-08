@@ -375,7 +375,7 @@ void set_probs(SnobContext *ctx, int iv, Prob *probs, Class *cls) {
     probs->b3p = probs->b2p = probs->b1p = 0.0; // For calculating dispersion of bp[]
     sum = 0.0;
     for (k = 0; k < states; k++) {
-        tt = fabs(ctx->scores.CaseFacScore - fbp[k]);
+        tt = fabs(ctx->scores.case_fac_score - fbp[k]);
         //	Do table interpolation in gausorg
         tt = tt * Gns;
         ig = tt;
@@ -556,21 +556,21 @@ void score_var(SnobContext *ctx, int iv, Class *cls) {
     if ((!vset_var->inactive) && (!saux->missing)) {
         set_probs(ctx, iv, &probs, cls); // Will calc pr[], qr[], gg, ff
         t1d1 = probs.b1p - fbp[saux->xn];
-        t2d1 = -(0.5 * states * rstatesm) * (cls_var->fapsprd + ctx->scores.CaseFacScoreSq * cls_var->bpsprd) *
+        t2d1 = -(0.5 * states * rstatesm) * (cls_var->fapsprd + ctx->scores.case_fac_score_sq * cls_var->bpsprd) *
                probs.ff * probs.b1p;
-        t3d1 = ctx->scores.CaseFacScore * cls_var->bpsprd * probs.ff;
+        t3d1 = ctx->scores.case_fac_score * cls_var->bpsprd * probs.ff;
 
-        ctx->scores.CaseFacScoreD1 += t1d1 + t3d1 + t2d1;
-        ctx->scores.CaseFacScoreD2 += probs.gg;
+        ctx->scores.case_fac_score_d1 += t1d1 + t3d1 + t2d1;
+        ctx->scores.case_fac_score_d2 += probs.gg;
         // xx	vvd2 += ctx->m_beta * evi->mgg;
-        ctx->scores.EstFacScoreD2 += (probs.gg > exp_var->mgg) ? probs.gg : exp_var->mgg;
+        ctx->scores.est_fac_score_d2 += (probs.gg > exp_var->mgg) ? probs.gg : exp_var->mgg;
         // Since we don't know vsprd, just calc and accumulate deriv of 'gg'
-        ctx->scores.CaseFacScoreD3 += probs.b3p - probs.b1p * (3.0 * probs.gg + probs.b1p2);
+        ctx->scores.case_fac_score_d3 += probs.b3p - probs.b1p * (3.0 * probs.gg + probs.b1p2);
     }
 }
 
 /**
- * @brief Accumulate item cost into CaseNoFacCost, fcasecost
+ * @brief Accumulate item cost into case_no_fac_cost, fcasecost
  * @param ctx Pointer to the Snob context.
  * @param iv
  * @param fac
@@ -602,21 +602,21 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
 
     //	Do nofac costing first
     cost = scst[saux->xn];
-    ctx->scores.CaseNoFacCost += cost;
+    ctx->scores.case_no_fac_cost += cost;
 
     //	Only do faccost if fac
     Prob probs;
     if (fac) {
         set_probs(ctx, iv, &probs, cls);
         cost = -log(pr[saux->xn]); // -log prob of xn
-        exp_var->conff = 0.5 * probs.ff * (cls_var->fapsprd + ctx->scores.CaseFacScoreSq * cls_var->bpsprd);
+        exp_var->conff = 0.5 * probs.ff * (cls_var->fapsprd + ctx->scores.case_fac_score_sq * cls_var->bpsprd);
         exp_var->ff = probs.ff;
         exp_var->parkb1p = probs.b1p;
         exp_var->parkb2p = probs.b2p;
         cost += exp_var->conff;
         cost += 0.5 * ctx->scores.cvvsprd * probs.gg; // In cost calculation, use gg as is without ctx->m_beta mod
     }
-    ctx->scores.CaseFacCost += cost;
+    ctx->scores.case_fac_cost += cost;
     exp_var->parkftcost = cost;
 }
 
@@ -666,7 +666,7 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
     //	Now for factor form
     Prob probs;
 
-    exp_var->vsq += case_weight * ctx->scores.CaseFacScoreSq;
+    exp_var->vsq += case_weight * ctx->scores.case_fac_score_sq;
     if (fac) {
         probs.b1p = exp_var->parkb1p;
         probs.b1p2 = probs.b1p * probs.b1p;
@@ -674,10 +674,10 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
 
         //	From 1st cost term:
         fapd1[saux->xn] -= case_weight;
-        fbpd1[saux->xn] -= case_weight * ctx->scores.CaseFacScore;
+        fbpd1[saux->xn] -= case_weight * ctx->scores.case_fac_score;
         for (k = 0; k < states; k++) {
             fapd1[k] += case_weight * pr[k];
-            fbpd1[k] += case_weight * pr[k] * ctx->scores.CaseFacScore;
+            fbpd1[k] += case_weight * pr[k] * ctx->scores.case_fac_score;
         }
 
         //	Second cost term :
@@ -686,7 +686,7 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
         for (k = 0; k < states; k++) {
             inc = cons1 - pr[k] * cons2;
             fapd1[k] += inc;
-            fbpd1[k] += ctx->scores.CaseFacScore * inc;
+            fbpd1[k] += ctx->scores.case_fac_score * inc;
         }
 
         //	Third cost term:
@@ -696,7 +696,7 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
             inc =
                 0.5 * case_weight * ctx->scores.cvvsprd * pr[k] * (fbp[k] * fbp[k] - 2.0 * fbp[k] * probs.b1p + cons1);
             fapd1[k] += inc;
-            fbpd1[k] += ctx->scores.CaseFacScore * inc;
+            fbpd1[k] += ctx->scores.case_fac_score * inc;
             //	Terms I forgot :
             fbpd1[k] += case_weight * ctx->scores.cvvsprd * pr[k] * (fbp[k] - probs.b1p);
             fbpd1[k] += cons2 * fbp[k];
@@ -704,7 +704,7 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
 
         //	Second derivs (i.e. derivs wrt fapsprd, bpsprd)
         exp_var->apd2 += case_weight * exp_var->ff;
-        exp_var->bpd2 += case_weight * exp_var->ff * ctx->scores.CaseFacScoreSq;
+        exp_var->bpd2 += case_weight * exp_var->ff * ctx->scores.case_fac_score_sq;
     }
     return;
 }
@@ -910,7 +910,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
         exp_var->apd2 += 1.0 / dapsprd;
         exp_var->bpd2 += 1.0;
         //	Stabilization
-        ctx->scores.CaseFacScore = 0.0;
+        ctx->scores.case_fac_score = 0.0;
         set_probs(ctx, iv, &probs, cls);
         for (k = 0; k < states; k++)
             fapd1[k] += 0.5 * pr[k];

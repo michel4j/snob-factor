@@ -140,6 +140,10 @@ class BuildCMakeExt(build_ext):
 
         super().run()
 
+    def build_extension(self, ext):
+        # Override to prevent the standard gcc build process since CMake handles it
+        pass
+
     # def get_ext_fullpath(self, ext_name):
     #     return str(pathlib.Path(super().get_ext_fullpath(ext_name)).parent.parent / f'{ext_name}.so')
 

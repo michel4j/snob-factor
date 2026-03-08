@@ -408,7 +408,7 @@ void score_var(SnobContext *ctx, int iv, Class *cls) {
         return;
 
     //	Get t
-    tt = cls_var->ld * ctx->scores.CaseFacScore;
+    tt = cls_var->ld * ctx->scores.case_fac_score;
     /*	tt is tan of w/2.  Use the formulae for cos and sin in terms of
         tan of half-angle.  */
     r2 = 1.0 / (1.0 + tt * tt);
@@ -434,32 +434,32 @@ void score_var(SnobContext *ctx, int iv, Class *cls) {
     /*	The mc3 term 0.5 * Fmu * r2 * (vsq * ldsprd + ldsq * vsprd)
         is treated in two parts, as we don't yet know vsprd. The part in
         (vsq * ldsprd) gives a contibution to wd1 via the r2 factor:  */
-    wd1 += 0.5 * cls_var->fmufish * cls_var->ldsprd * ctx->scores.CaseFacScoreSq * dr2dw;
+    wd1 += 0.5 * cls_var->fmufish * cls_var->ldsprd * ctx->scores.case_fac_score_sq * dr2dw;
 
     //	This part also directly contributes to vvd1 via the vsq factor:
-    ctx->scores.CaseFacScoreD1 += cls_var->fmufish * cls_var->ldsprd * r2 * ctx->scores.CaseFacScore;
+    ctx->scores.case_fac_score_d1 += cls_var->fmufish * cls_var->ldsprd * r2 * ctx->scores.case_fac_score;
 
     //	This gives a term in mvvd2 :
-    ctx->scores.EstFacScoreD2 += cls_var->fmufish * cls_var->ldsprd * r2;
+    ctx->scores.est_fac_score_d2 += cls_var->fmufish * cls_var->ldsprd * r2;
 
     /*	The second part, involving vsprd, is treated by accumulating
         in vvd3 the deriv wrt vv of the multiplier of half vsprd.   */
-    ctx->scores.CaseFacScoreD3 += cls_var->fmufish * cls_var->ldsq * dr2dw * dwdv;
+    ctx->scores.case_fac_score_d3 += cls_var->fmufish * cls_var->ldsq * dr2dw * dwdv;
 
     //	The deriv wrt w leads to a deriv wrt t of wd1 * dwdt
     //	and so to deriv wrt vv of:  wd1 * dwdv
 
-    ctx->scores.CaseFacScoreD1 += wd1 * dwdv;
+    ctx->scores.case_fac_score_d1 += wd1 * dwdv;
 
     /*	Now for contribution to vvd2. This is 2 * the coeff of vsprd in
         the item cost.  */
-    ctx->scores.CaseFacScoreD2 += cls_var->fmufish * cls_var->ldsq * r2;
-    ctx->scores.EstFacScoreD2 += cls_var->fmufish * cls_var->ldsq * 4.0;
+    ctx->scores.case_fac_score_d2 += cls_var->fmufish * cls_var->ldsq * r2;
+    ctx->scores.est_fac_score_d2 += cls_var->fmufish * cls_var->ldsq * 4.0;
     //		Note, the max value of r2 is 4
 }
 
 /**
- * @brief Accumulates item cost into CaseNoFacCost, CaseFacCost
+ * @brief Accumulates item cost into case_no_fac_cost, case_fac_cost
  * @param ctx Pointer to the Snob context.
  * @param iv
  * @param fac
@@ -487,7 +487,7 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
     cost = cls_var->slgi0 - del - saux->leps;
     //	slgi0 contains the roundoff costs from shsprd
     exp_var->parkstcost = cost;
-    ctx->scores.CaseNoFacCost += cost;
+    ctx->scores.case_no_fac_cost += cost;
 
     //	Only do faccost if fac
     if (fac) {
@@ -496,7 +496,7 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
         //	flgi0 already contains the mc2 term hsprd * Fh
 
         //	And we need -kap * cos (mu + w - xx)
-        tt = cls_var->ld * ctx->scores.CaseFacScore;
+        tt = cls_var->ld * ctx->scores.case_fac_score;
         r2 = 1.0 / (1.0 + tt * tt);
         cosw = (1.0 - tt * tt) * r2;
         r2 = 2.0 * r2;
@@ -507,11 +507,11 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
                 (cls_var->fhx * saux->xn.cosxx - cls_var->fhy * saux->xn.sinxx) * sinw;
 
         //	And cost term mc3, depending on tsprd:
-        tsprd = ctx->scores.CaseFacScoreSq * cls_var->ldsprd + cls_var->ldsq * ctx->scores.cvvsprd;
+        tsprd = ctx->scores.case_fac_score_sq * cls_var->ldsprd + cls_var->ldsq * ctx->scores.cvvsprd;
         cost += 0.5 * cls_var->fmufish * tsprd * r2;
     }
 
-    ctx->scores.CaseFacCost += cost;
+    ctx->scores.case_fac_cost += cost;
     exp_var->parkftcost = cost;
 }
 
@@ -549,7 +549,7 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
 
     //	Now for factor form
     if (fac) {
-        tt = cls_var->ld * ctx->scores.CaseFacScore;
+        tt = cls_var->ld * ctx->scores.case_fac_score;
         //	Hence cos(w), sin(w)
         r2 = 1.0 / (1.0 + tt * tt);
         cosw = (1.0 - tt * tt) * r2; // (1-t^2) / (1+t^2)
@@ -570,7 +570,7 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
             also derivs of mc2, but there remains mc3, and load. */
 
         //	Cost mc3 = 0.5 * Fmu * tsprd * r2
-        tsprd = ctx->scores.CaseFacScoreSq * cls_var->ldsprd + cls_var->ldsq * ctx->scores.cvvsprd;
+        tsprd = ctx->scores.case_fac_score_sq * cls_var->ldsprd + cls_var->ldsq * ctx->scores.cvvsprd;
         wtr2 = case_weight * r2;
         //	Accumulate wsprd = tsprd * r2
         exp_var->fwd2 += tsprd * wtr2;
@@ -585,13 +585,13 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
 
         //	The deriv wrt w leads to a deriv wrt t of wd1 * dwdt
         //	and so to a deriv wrt ld of: (vv * wd1 * dwdt)
-        exp_var->ldd1 += case_weight * ctx->scores.CaseFacScore * wd1 * dwdt;
+        exp_var->ldd1 += case_weight * ctx->scores.case_fac_score * wd1 * dwdt;
 
         //	There is also a deriv wrt ld via tsprd.
         exp_var->ldd1 += cls_var->fmufish * wtr2 * cls_var->ld * ctx->scores.cvvsprd;
 
         //	Accum as ldd2 twice the multiplier of ldsprd in mc3
-        exp_var->ldd2 += 0.5 * cls_var->fmufish * r2 * ctx->scores.CaseFacScoreSq;
+        exp_var->ldd2 += 0.5 * cls_var->fmufish * r2 * ctx->scores.case_fac_score_sq;
     }
 }
 

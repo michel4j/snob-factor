@@ -19,9 +19,11 @@ the item   */
 Buffer CFileBuffer, CommsBuffer; // Buffers for command input
 int Terminator;
 
-// bufopen()
-/*	Given a Buffer with a name in it, sets up and initializes the named
- * file*/
+/** @brief Given a Buffer with a name in it, sets up and initializes the named
+ * file
+ *  @param ctx Pointer to the Snob context.
+ *  @return 0 if successful, 1 if file not found, -1 if error
+ */
 int open_buffser(SnobContext *ctx) {
     Buffer *buf;
 
@@ -38,8 +40,10 @@ int open_buffser(SnobContext *ctx) {
     //	Leaves the buffer at "end of line 0"
 }
 
-// newline ()
-//	To skip to next line
+/** @brief Skip to next line
+ *  @param ctx Pointer to the Snob context.
+ *  @return 0 if successful, -1 if error
+ */
 int new_line(SnobContext *ctx) {
     Buffer *buf;
     //	Discard anything in inl and read in a new line, to '\n'
@@ -139,7 +143,9 @@ int new_line(SnobContext *ctx) {
     }
 }
 
-// reperror (ctx)
+/** @brief Report a format error
+ *  @param ctx Pointer to the Snob context.
+ */
 void reperror(SnobContext *ctx) {
     int i, j;
     char k;
@@ -164,11 +170,12 @@ void reperror(SnobContext *ctx) {
     return;
 }
 
-// readint ()
-/*	Readint, readdf, readalf will automatically advance to the next
-line if cnl not zero, but will return 2 if cnl = 0 and EOL is reached before
-the read is satisfied  */
-//	To read an integer into x
+/** @brief Read an integer from the input buffer
+ *  @param ctx Pointer to the Snob context.
+ *  @param x Pointer to the integer to read
+ *  @param cnl Flag to indicate whether to advance to the next line
+ *  @return 0 if successful, 2 if end of line reached before read, -1 if error
+ */
 int read_int(SnobContext *ctx, int *x, int cnl) {
     Buffer *buf;
     int sign, i, v;
@@ -233,8 +240,12 @@ int read_int(SnobContext *ctx, int *x, int cnl) {
     return (0);
 }
 
-// readdf ()
-//	To read a float into (double) x
+/** @brief Read a double from the input buffer
+ *  @param ctx Pointer to the Snob context.
+ *  @param x Pointer to the double to read
+ *  @param cnl Flag to indicate whether to advance to the next line
+ *  @return 0 if successful, 2 if end of line reached before read, -1 if error
+ */
 int read_double(SnobContext *ctx, double *x, int cnl) {
     Buffer *buf;
     int sign, i;
@@ -312,8 +323,12 @@ int read_double(SnobContext *ctx, double *x, int cnl) {
     return (0);
 }
 
-// readalf ()
-//	To read a string of characters
+/** @brief Read a string from the input buffer
+ *  @param ctx Pointer to the Snob context.
+ *  @param str Pointer to the string to read
+ *  @param cnl Flag to indicate whether to advance to the next line
+ *  @return 0 if successful, 2 if end of line reached before read, -1 if error
+ */
 int read_str(SnobContext *ctx, char *str, int cnl) {
     Buffer *buf;
     int i, n;
@@ -367,8 +382,11 @@ int read_str(SnobContext *ctx, char *str, int cnl) {
     return (0);
 }
 
-// readch ()
-//	Returns next char, or -1 if error, or 2 if EOL and not cnl
+/** @brief Read a character from the input buffer
+ *  @param ctx Pointer to the Snob context.
+ *  @param cnl Flag to indicate whether to advance to the next line
+ *  @return The character read, -1 if error, 2 if end of line reached before read
+ */
 int read_char(SnobContext *ctx, int cnl) {
     Buffer *buf;
     int i;
@@ -389,8 +407,9 @@ int read_char(SnobContext *ctx, int cnl) {
     }
 }
 
-// swallow (ctx)
-//	To swallow an erroneus field, stopping at blank, newline or tab
+/** @brief Swallow an erroneous field, stopping at blank, newline or tab
+ *  @param ctx Pointer to the Snob context.
+ */
 void swallow(SnobContext *ctx) {
     Buffer *buf;
     int i;
@@ -405,8 +424,9 @@ void swallow(SnobContext *ctx) {
     }
 }
 
-// bufclose ()
-//	To close the open input file
+/** @brief Close the open input file
+ *  @param ctx Pointer to the Snob context.
+ */
 void close_buffer(SnobContext *ctx) {
     if (!ctx->state.buffer)
         return;
@@ -417,10 +437,10 @@ void close_buffer(SnobContext *ctx) {
     return;
 }
 
-// revert (ctx)
-//	To revert to comms-file input
-/*	If flag, revert due to an interrupt via hark, so use existing
-CommsBuffer line. Otherwise, get a new line  */
+/** @brief Revert to comms-file input
+ *  @param ctx Pointer to the Snob context.
+ *  @param flag Flag to indicate whether to use existing CommsBuffer line
+ */
 void revert(SnobContext *ctx, int flag) {
     if (ctx->current_source->cfile)
         printf("Command file %s\n terminated at line %d\n", ctx->current_source->cname, ctx->current_source->line);
@@ -434,10 +454,10 @@ void revert(SnobContext *ctx, int flag) {
     return;
 }
 
-// rep(ctx)
-/*	rep(ctx, ch) prints char ch and flushes stdout. If end of line, does
-a new line.  flp(ctx) does a new line.  */
-
+/** @brief Print a character to the output buffer
+ *  @param ctx Pointer to the Snob context.
+ *  @param ch The character to print
+ */
 void rep(SnobContext *ctx, int ch) {
     if (ctx->debug < 1) {
         putchar(ch);
@@ -450,6 +470,9 @@ void rep(SnobContext *ctx, int ch) {
     }
 }
 
+/** @brief Flush the output buffer
+ *  @param ctx Pointer to the Snob context.
+ */
 void flp(SnobContext *ctx) {
     if (ctx->num_rep_chars && (ctx->debug < 1)) {
         putchar('\n');

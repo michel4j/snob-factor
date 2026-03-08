@@ -336,16 +336,16 @@ void score_var(SnobContext *ctx, int iv, Class *cls) {
 
     if (saux->missing)
         return;
-    del = cls_var->fmu + ctx->scores.CaseFacScore * cls_var->ld - saux->xn;
-    ctx->scores.CaseFacScoreD1 += exp_var->frsds * (del * cls_var->ld + ctx->scores.CaseFacScore * cls_var->ldsprd);
+    del = cls_var->fmu + ctx->scores.case_fac_score * cls_var->ld - saux->xn;
+    ctx->scores.case_fac_score_d1 += exp_var->frsds * (del * cls_var->ld + ctx->scores.case_fac_score * cls_var->ldsprd);
     md2 = exp_var->frsds * (exp_var->ldsq + cls_var->ldsprd);
-    ctx->scores.CaseFacScoreD2 += md2;
-    ctx->scores.EstFacScoreD2 += 1.1 * md2;
+    ctx->scores.case_fac_score_d2 += md2;
+    ctx->scores.est_fac_score_d2 += 1.1 * md2;
     return;
 }
 
 /**
- * @brief Accumulates item cost into CaseNoFacCost, CaseFacCost
+ * @brief Accumulates item cost into case_no_fac_cost, case_fac_cost
  * @param ctx Pointer to the Snob context.
  * @param iv
  * @param fac
@@ -370,19 +370,19 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
     var = del * del + cls_var->smusprd + saux->epssq;
     cost = 0.5 * var * exp_var->srsds + cls_var->ssdlsprd + SNOB_HALF_LOG_2PI + cls_var->ssdl - saux->leps;
     exp_var->parkstcost = cost;
-    ctx->scores.CaseNoFacCost += cost;
+    ctx->scores.case_no_fac_cost += cost;
 
     //	Only do faccost if fac
     if (!fac)
         goto facdone;
-    del += ctx->scores.CaseFacScore * cls_var->ld;
-    var = del * del + cls_var->fmusprd + saux->epssq + ctx->scores.CaseFacScoreSq * cls_var->ldsprd +
+    del += ctx->scores.case_fac_score * cls_var->ld;
+    var = del * del + cls_var->fmusprd + saux->epssq + ctx->scores.case_fac_score_sq * cls_var->ldsprd +
           ctx->scores.cvvsprd * exp_var->ldsq;
     exp_var->var = var;
     cost = SNOB_HALF_LOG_2PI + 0.5 * exp_var->frsds * var + cls_var->fsdl + cls_var->fsdlsprd * 2.0 - saux->leps;
 
 facdone:
-    ctx->scores.CaseFacCost += cost;
+    ctx->scores.case_fac_cost += cost;
     exp_var->parkftcost = cost;
 
     return;
@@ -423,7 +423,7 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
     if (fac) {
 
         frsds = exp_var->frsds;
-        del = cls_var->fmu + ctx->scores.CaseFacScore * cls_var->ld - saux->xn;
+        del = cls_var->fmu + ctx->scores.case_fac_score * cls_var->ld - saux->xn;
         /*	From cost_var, we have:
             cost = 0.5 * evi->frsds * var + cls_var->fsdl + cls_var->fsdlsprd*2.0 +
            consts where var is given by: del^2 + musprd + cvvsq*ldsprd +
@@ -434,8 +434,8 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
         exp_var->fsdld2 += 2.0 * case_weight;
         exp_var->fmud1 += case_weight * del * frsds;
         exp_var->fmud2 += case_weight * frsds;
-        exp_var->ldd1 += case_weight * frsds * (del * ctx->scores.CaseFacScore + cls_var->ld * ctx->scores.cvvsprd);
-        exp_var->ldd2 += case_weight * frsds * (ctx->scores.CaseFacScoreSq + ctx->scores.cvvsprd);
+        exp_var->ldd1 += case_weight * frsds * (del * ctx->scores.case_fac_score + cls_var->ld * ctx->scores.cvvsprd);
+        exp_var->ldd2 += case_weight * frsds * (ctx->scores.case_fac_score_sq + ctx->scores.cvvsprd);
     }
 }
 

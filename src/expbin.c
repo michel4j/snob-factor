@@ -2,14 +2,16 @@
 
 #include "glob.h"
 
+/*
+    The Vaux structure matches that of Multistate, although not all
+    used for Binary
+*/
 typedef struct Vauxst {
     int states;
     double rstatesm;  // 1 / (states-1)
     double lstatessq; //  log (states^2)
     double mff;       // a max value for ff
 } Vaux;
-/*	The Vaux structure matches that of Multistate, although not all
-    used for Binary  */
 
 typedef int Datum;
 
@@ -24,17 +26,19 @@ typedef struct Pauxst {
 } Paux;
 
 //	Common variable for holding a data value
-
-typedef struct Basicst { /* Basic parameter info about var in class.
-            The first few fields are standard and must
-            appear in the order shown.  */
-    int id;              // The variable number (index)
+/*
+   Basic parameter info about var in class.
+   The first few fields are standard and must
+   appear in the order shown.
+*/
+typedef struct Basicst {
+    int id; // The variable number (index)
     int signif;
     int infac; // shows if affected by factor
-    /********************  Following fields vary according to need ***/
+
+    // Following fields vary according to need
     double bap;     // current ap val
-    double bapsprd; /*  Spread measure for ap parameters.
-        This gives the expected squared round-off error in bap */
+    double bapsprd; // Spread measure for ap parameters. This gives the expected squared round-off error in bap
     double nap, sap, fap, fbp;
     double napsprd; // basically, the squared sprd among the ap params of children
     double sapsprd;
@@ -44,14 +48,17 @@ typedef struct Basicst { /* Basic parameter info about var in class.
     double samplesize; // Size of sample on which estimates based
 } Basic;
 
-typedef struct Statsst { // Stuff accumulated to revise Basic
-                         // First fields are standard
-    double cnt;          // Weighted count
+/*
+   Stats accumulated to revise Basic. First fields are standard
+*/
+typedef struct Statsst {
+    double cnt; // Weighted count
     double btcost, ntcost, stcost, ftcost;
     double bpcost, npcost, spcost, fpcost;
     double vsq; //  weighted sum of squared scores for this var
     int id;     // Variable number
-    /********************  Following fields vary according to need ***/
+
+    // Following fields vary according to need
     double parkftcost; // Unweighted item costs of xn
     double cnt1, fapd1, fbpd1;
     double tvsprd;
@@ -92,15 +99,13 @@ static void reduce_stats(SnobContext *ctx, int iv, Class *dest, Class *src);
  * "Ntypes" constant, and to decide on a type id (an integer) for the new type.
  *
  * @param ctx Pointer to the Snob context.
- * @param typindx Index.
+ * @param type_index Index in types[] of this type
  */
-
-void expbinary_define(SnobContext *ctx, int typindx) {
-    //	typindx is the index in types[] of this type
+void expbinary_define(SnobContext *ctx, int type_index) {
     VarType *vtype;
-    vtype = &ctx->types[typindx];
-    vtype->id = typindx;
-    // 	Set type name as string up to 59 chars
+    vtype = &ctx->types[type_index];
+    vtype->id = type_index;
+    // Set type name as string up to 59 chars
     vtype->name = "Binary";
     vtype->data_size = sizeof(Datum);
     vtype->attr_aux_size = sizeof(Vaux);
@@ -129,18 +134,18 @@ void expbinary_define(SnobContext *ctx, int typindx) {
 
 /**
  * @param ctx Pointer to the Snob context.
- * @param iv
+ * @param var_index
  * @param cls Pointer to the class.
  */
-void set_var(SnobContext *ctx, int iv, Class *cls) {
+void set_var(SnobContext *ctx, int var_index, Class *cls) {
     /*
-        Basic *cls_var = (Basic *)cls->basics[iv];
-        Stats *exp_var = (Stats *)cls->stats[iv];
+        Basic *cls_var = (Basic *)cls->basics[var_index];
+        Stats *exp_var = (Stats *)cls->stats[var_index];
     */
 }
 
 /**
- * @brief To read any auxiliary info about a variable of this type in some
+ * @brief Read any auxiliary info about a variable of this type in some
  * sample.
  *
  * @param ctx Pointer to the Snob context.
@@ -150,7 +155,7 @@ int read_attr_aux(SnobContext *ctx, void *vax) { return (0); }
 int set_attr_aux(SnobContext *ctx, void *vax, int aux) { return (0); }
 
 /**
- * @brief To read auxilliary info re sample for this attribute
+ * @brief Read auxilliary info re sample for this attribute
  * @param ctx Pointer to the Snob context.
  * @param sax
  */
@@ -158,12 +163,12 @@ int read_smpl_aux(SnobContext *ctx, void *sax) { return (0); } //	Multistate has
 int set_smpl_aux(SnobContext *ctx, void *sax, int unit, double prec) { return (0); }
 
 /**
- * @brief To read a value for this variable type
+ * @brief Read a value for this variable type
  * @param ctx Pointer to the Snob context.
  * @param loc
- * @param iv
+ * @param var_index
  */
-int read_datum(SnobContext *ctx, char *loc, int iv) {
+int read_datum(SnobContext *ctx, char *loc, int var_index) {
     int i;
     int xn;
 
@@ -172,11 +177,11 @@ int read_datum(SnobContext *ctx, char *loc, int iv) {
     if (i) {
         return (i);
     }
-    set_datum(ctx, loc, iv, &xn);
+    set_datum(ctx, loc, var_index, &xn);
     return i;
 }
 
-int set_datum(SnobContext *ctx, char *loc, int iv, void *value) {
+int set_datum(SnobContext *ctx, char *loc, int var_index, void *value) {
     int xn = *(int *)(value);
     if (!xn) {
         return -1 * (int)sizeof(int); // Missing
@@ -191,26 +196,26 @@ int set_datum(SnobContext *ctx, char *loc, int iv, void *value) {
 }
 
 /**
- * @brief To print a Datum value
+ * @brief Print a Datum value
  * @param ctx Pointer to the Snob context.
  * @param loc
  */
 void print_datum(SnobContext *ctx, char *loc) {
-    //	Print datum from address loc
+    // Print datum from address loc
     printf("%9d ", (*((int *)(loc)) + 1));
     return;
 }
 
 /**
- * @brief To use info in ctx.vset to set sizes of basic and stats
+ * @brief Use info in ctx.vset to set sizes of basic and stats
  * blocks for variable, and place in VSetVar basicsize, statssize.
  *
  * @param ctx Pointer to the Snob context.
- * @param iv
+ * @param var_index
  */
-void set_sizes(SnobContext *ctx, int iv) {
+void set_sizes(SnobContext *ctx, int var_index) {
 
-    VSetVar *vset_var = &ctx->state.vset->variables[iv];
+    VSetVar *vset_var = &ctx->state.vset->variables[var_index];
 
     //	Set sizes of ClassVar (basic) and ExplnVar (stats) in VSetVar
     vset_var->basic_size = sizeof(Basic);
@@ -220,14 +225,14 @@ void set_sizes(SnobContext *ctx, int iv) {
 
 /**
  * @param ctx Pointer to the Snob context.
- * @param iv
+ * @param var_index
  * @param cls Pointer to the class.
  */
-void set_best_pars(SnobContext *ctx, int iv, Class *cls) {
+void set_best_pars(SnobContext *ctx, int var_index, Class *cls) {
 
-    set_var(ctx, iv, cls);
-    Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv];
+    set_var(ctx, var_index, cls);
+    Basic *cls_var = (Basic *)cls->basics[var_index];
+    Stats *exp_var = (Stats *)cls->stats[var_index];
 
     if (cls->type == Dad) {
         cls_var->bap = cls_var->nap;
@@ -252,15 +257,15 @@ void set_best_pars(SnobContext *ctx, int iv, Class *cls) {
  * @brief Clears stats to accumulate in cost_var, and derives useful functions
  * of basic params
  * @param ctx Pointer to the Snob context.
- * @param iv
+ * @param var_index
  * @param cls Pointer to the class.
  */
-void clear_stats(SnobContext *ctx, int iv, Class *cls) {
+void clear_stats(SnobContext *ctx, int var_index, Class *cls) {
     double round, pr0, pr1;
 
-    set_var(ctx, iv, cls);
-    Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv];
+    set_var(ctx, var_index, cls);
+    Basic *cls_var = (Basic *)cls->basics[var_index];
+    Stats *exp_var = (Stats *)cls->stats[var_index];
 
     exp_var->cnt = 0.0;
     exp_var->stcost = exp_var->ftcost = 0.0;
@@ -270,9 +275,9 @@ void clear_stats(SnobContext *ctx, int iv, Class *cls) {
     exp_var->tvsprd = 0.0;
     if (cls->age == 0)
         return;
-    //	Some useful functions
-    //	Set up non-fac case costs in scst[]
-    //	This requires us to calculate probs and log probs of states.
+    // Some useful functions
+    // Set up non-fac case costs in scst[]
+    // This requires us to calculate probs and log probs of states.
     if (cls_var->sap > 0.0) {
         pr1 = 1.0 / (1.0 + exp(-2.0 * cls_var->sap));
         pr0 = 1.0 - pr1;
@@ -280,7 +285,7 @@ void clear_stats(SnobContext *ctx, int iv, Class *cls) {
         pr0 = 1.0 / (1.0 + exp(2.0 * cls_var->sap));
         pr1 = 1.0 - pr0;
     }
-    //	Fisher is 4.pr0.pr1
+    // Fisher is 4.pr0.pr1
     round = 2.0 * pr0 * pr1 * cls_var->sapsprd;
     exp_var->scst[0] = round - log(pr0);
     exp_var->scst[1] = round - log(pr1);
@@ -289,9 +294,16 @@ void clear_stats(SnobContext *ctx, int iv, Class *cls) {
     return;
 }
 
-static void reduce_stats(SnobContext *ctx, int iv, Class *dest, Class *src) {
-    Stats *d_exp = (Stats *)dest->stats[iv];
-    Stats *s_exp = (Stats *)src->stats[iv];
+/**
+ * @brief Reduce stats from src to dest
+ * @param ctx Pointer to the Snob context.
+ * @param var_index
+ * @param dest Pointer to the destination class.
+ * @param src Pointer to the source class.
+ */
+static void reduce_stats(SnobContext *ctx, int var_index, Class *dest, Class *src) {
+    Stats *d_exp = (Stats *)dest->stats[var_index];
+    Stats *s_exp = (Stats *)src->stats[var_index];
 
     d_exp->cnt += s_exp->cnt;
     d_exp->stcost += s_exp->stcost;
@@ -306,27 +318,27 @@ static void reduce_stats(SnobContext *ctx, int iv, Class *dest, Class *src) {
 }
 
 /**
- * @brief To eval derivs of a case wrt score, scorespread. Adds to vvd1,vvd2.
+ * @brief Evaluate derivs of a case wrt score, scorespread. Adds to vvd1,vvd2.
  *
  * @param ctx Pointer to the Snob context.
- * @param iv
+ * @param var_index Index of the variable.
  * @param cls Pointer to the class.
  */
-void score_var(SnobContext *ctx, int iv, Class *cls) {
+void score_var(SnobContext *ctx, int var_index, Class *cls) {
     double cc, pr0, pr1, ff, ft, dbyv, hdffbydv, hdftbydv;
-    VSetVar *vset_var = &ctx->state.vset->variables[iv];
-    SampleVar *smpl_var = &ctx->state.sample->variables[iv];
+    VSetVar *vset_var = &ctx->state.vset->variables[var_index];
+    SampleVar *smpl_var = &ctx->state.sample->variables[var_index];
     Saux *saux = (Saux *)(smpl_var->saux);
-    Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv];
+    Basic *cls_var = (Basic *)cls->basics[var_index];
+    Stats *exp_var = (Stats *)cls->stats[var_index];
 
-    set_var(ctx, iv, cls);
+    set_var(ctx, var_index, cls);
     if (vset_var->inactive)
         return;
     if (saux->missing)
         return;
-    //	Calc prob of val 1
-    cc = cls_var->fap + ctx->scores.CaseFacScore * cls_var->fbp;
+    // Calc prob of val 1
+    cc = cls_var->fap + ctx->scores.case_fac_score * cls_var->fbp;
     if (cc > 0.0) {
         pr1 = exp(-2.0 * cc);
         pr0 = pr1 / (1.0 + pr1);
@@ -336,52 +348,50 @@ void score_var(SnobContext *ctx, int iv, Class *cls) {
         pr1 = pr0 / (1.0 + pr0);
         pr0 = 1.0 - pr1;
     }
-    //	Approximate Fisher by 1/(1+cc^2)  (wrt cc)
-    /*	This approx is for getting vvd2.  Use true Fisher 4.p0.p1 for
-        variation in ap, bp.  */
-    /*	Now, dffbydc = -2 * cc * ff * ff, and
-             dftbydc = 8 * p0 * p1 * (p0-p1) = 2 * ft * (p0-p1)   */
+    // Approximate Fisher by 1/(1+cc^2)  (wrt cc)
+    /* This approx is for getting vvd2.  Use true Fisher 4.p0.p1 for variation in ap, bp.  */
+    /* Now, dffbydc = -2 * cc * ff * ff, and dftbydc = 8 * p0 * p1 * (p0-p1) = 2 * ft * (p0-p1)   */
     ff = 1.0 / (1.0 + cc * cc);
     hdffbydv = -cc * cls_var->fbp * ff * ff;
     ft = 4.0 * pr0 * pr1;
     hdftbydv = ft * (pr0 - pr1) * cls_var->fbp;
-    //	Apply ctx->b_beta mix to the approximate Fish
+    // Apply ctx->b_beta mix to the approximate Fish
     hdffbydv = ctx->b_beta * hdffbydv + (1.0 - ctx->b_beta) * hdftbydv;
     ff = ctx->b_beta * ff + (1.0 - ctx->b_beta) * ft;
-    //	Now build deriv of cost wrt vv
+    // Now build deriv of cost wrt vv
     if (saux->xn == 1)
         dbyv = -2.0 * cls_var->fbp * pr0;
     else
         dbyv = 2.0 * cls_var->fbp * pr1;
-    //	From cost term 0.5 * vvsq * bpsprd * ft:
-    dbyv += ctx->scores.CaseFacScore * cls_var->bpsprd * ft;
-    //	And via dftbydv, terms 0.5*(fapsprd * vvsq*bpsprd)*ft :
-    dbyv += (cls_var->fapsprd + ctx->scores.CaseFacScoreSq * cls_var->bpsprd) * hdftbydv;
-    ctx->scores.CaseFacScoreD1 += dbyv;
-    ctx->scores.CaseFacScoreD2 += exp_var->bsq * ff;
-    ctx->scores.EstFacScoreD2 += exp_var->bsq * ff;
-    //	Don't yet know cvvsprd, so just accum bsq * dffbydv
-    ctx->scores.CaseFacScoreD3 += 2.0 * exp_var->bsq * hdffbydv;
+    // From cost term 0.5 * vvsq * bpsprd * ft:
+    dbyv += ctx->scores.case_fac_score * cls_var->bpsprd * ft;
+    // And via dftbydv, terms 0.5*(fapsprd * vvsq*bpsprd)*ft :
+    dbyv += (cls_var->fapsprd + ctx->scores.case_fac_score_sq * cls_var->bpsprd) * hdftbydv;
+    ctx->scores.case_fac_score_d1 += dbyv;
+    ctx->scores.case_fac_score_d2 += exp_var->bsq * ff;
+    ctx->scores.est_fac_score_d2 += exp_var->bsq * ff;
+    // Don't yet know cvvsprd, so just accum bsq * dffbydv
+    ctx->scores.case_fac_score_d3 += 2.0 * exp_var->bsq * hdffbydv;
     return;
 }
 
 /**
- * @brief Accumulate item cost into CaseNoFacCost, CaseFacCost
+ * @brief Accumulate item cost into case_no_fac_cost, case_fac_cost
  * @param ctx Pointer to the Snob context.
- * @param iv
+ * @param var_index Variable Index
  * @param fac
  * @param cls Pointer to the class.
  */
-void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
+void cost_var(SnobContext *ctx, int var_index, int fac, Class *cls) {
     double cost;
     double cc, ff, ft, hdffbydc, hdftbydc, pr0, pr1, small;
 
-    SampleVar *smpl_var = &ctx->state.sample->variables[iv];
+    SampleVar *smpl_var = &ctx->state.sample->variables[var_index];
     Saux *saux = (Saux *)(smpl_var->saux);
-    Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv];
+    Basic *cls_var = (Basic *)cls->basics[var_index];
+    Stats *exp_var = (Stats *)cls->stats[var_index];
 
-    set_var(ctx, iv, cls);
+    set_var(ctx, var_index, cls);
     if (saux->missing)
         return;
     if (cls->age == 0) {
@@ -390,52 +400,50 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
     }
     //	Do nofac costing first
     cost = exp_var->scst[saux->xn];
-    ctx->scores.CaseNoFacCost += cost;
+    ctx->scores.case_no_fac_cost += cost;
 
     //	Only do faccost if fac
-    if (!fac)
-        goto facdone;
-    cc = cls_var->fap + ctx->scores.CaseFacScore * cls_var->fbp;
-    if (cc > 0.0) {
-        small = exp(-2.0 * cc);
-        pr0 = small / (1.0 + small);
-        pr1 = 1.0 - pr0;
-        if (saux->xn) {
-            cost = -log(pr1);
-            exp_var->dbya = -2.0 * pr0;
+    if (fac) {
+        cc = cls_var->fap + ctx->scores.case_fac_score * cls_var->fbp;
+        if (cc > 0.0) {
+            small = exp(-2.0 * cc);
+            pr0 = small / (1.0 + small);
+            pr1 = 1.0 - pr0;
+            if (saux->xn) {
+                cost = -log(pr1);
+                exp_var->dbya = -2.0 * pr0;
+            } else {
+                cost = 2.0 * cc + log(1.0 + small);
+                exp_var->dbya = 2.0 * pr1;
+            }
         } else {
-            cost = 2.0 * cc + log(1.0 + small);
-            exp_var->dbya = 2.0 * pr1;
+            small = exp(2.0 * cc);
+            pr1 = small / (1.0 + small);
+            pr0 = 1.0 - pr1;
+            if (saux->xn) {
+                cost = -2.0 * cc + log(1.0 + small);
+                exp_var->dbya = -2.0 * pr0;
+            } else {
+                cost = -log(pr0);
+                exp_var->dbya = 2.0 * pr1;
+            }
         }
-    } else {
-        small = exp(2.0 * cc);
-        pr1 = small / (1.0 + small);
-        pr0 = 1.0 - pr1;
-        if (saux->xn) {
-            cost = -2.0 * cc + log(1.0 + small);
-            exp_var->dbya = -2.0 * pr0;
-        } else {
-            cost = -log(pr0);
-            exp_var->dbya = 2.0 * pr1;
-        }
+        ff = 1.0 / (1.0 + cc * cc);
+        hdffbydc = -cc * ff * ff;
+        exp_var->parkft = ft = 4.0 * pr0 * pr1;
+        hdftbydc = ft * (pr0 - pr1);
+        //	Apply ctx->b_beta mix to the approximate Fish
+        hdffbydc = ctx->b_beta * hdffbydc + (1.0 - ctx->b_beta) * hdftbydc;
+        ff = ctx->b_beta * ff + (1.0 - ctx->b_beta) * ft;
+        /*	In calculating the cost, use ft for all spreads, rather than using
+            ff for the v spread, but use ff in getting differentials  */
+        cost += 0.5 * ((cls_var->fapsprd + ctx->scores.case_fac_score_sq * cls_var->bpsprd) * ft +
+                       exp_var->bsq * ctx->scores.cvvsprd * ft);
+        exp_var->dbya += (cls_var->fapsprd + ctx->scores.case_fac_score_sq * cls_var->bpsprd) * hdftbydc +
+                         exp_var->bsq * ctx->scores.cvvsprd * hdffbydc;
+        exp_var->dbyb = ctx->scores.case_fac_score * exp_var->dbya + cls_var->fbp * ctx->scores.cvvsprd * ff;
     }
-    ff = 1.0 / (1.0 + cc * cc);
-    hdffbydc = -cc * ff * ff;
-    exp_var->parkft = ft = 4.0 * pr0 * pr1;
-    hdftbydc = ft * (pr0 - pr1);
-    //	Apply ctx->b_beta mix to the approximate Fish
-    hdffbydc = ctx->b_beta * hdffbydc + (1.0 - ctx->b_beta) * hdftbydc;
-    ff = ctx->b_beta * ff + (1.0 - ctx->b_beta) * ft;
-    /*	In calculating the cost, use ft for all spreads, rather than using
-        ff for the v spread, but use ff in getting differentials  */
-    cost += 0.5 * ((cls_var->fapsprd + ctx->scores.CaseFacScoreSq * cls_var->bpsprd) * ft +
-                   exp_var->bsq * ctx->scores.cvvsprd * ft);
-    exp_var->dbya += (cls_var->fapsprd + ctx->scores.CaseFacScoreSq * cls_var->bpsprd) * hdftbydc +
-                     exp_var->bsq * ctx->scores.cvvsprd * hdffbydc;
-    exp_var->dbyb = ctx->scores.CaseFacScore * exp_var->dbya + cls_var->fbp * ctx->scores.cvvsprd * ff;
-
-facdone:
-    ctx->scores.CaseFacCost += cost;
+    ctx->scores.case_fac_cost += cost;
     exp_var->parkftcost = cost;
     return;
 }
@@ -470,12 +478,12 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
     //	Now for factor form
     if (fac) {
 
-        exp_var->vsq += case_weight * ctx->scores.CaseFacScoreSq;
+        exp_var->vsq += case_weight * ctx->scores.case_fac_score_sq;
         exp_var->fapd1 += case_weight * exp_var->dbya;
         exp_var->fbpd1 += case_weight * exp_var->dbyb;
         //	Accum actual 2nd derivs
         exp_var->apd2 += case_weight * exp_var->parkft;
-        exp_var->bpd2 += case_weight * exp_var->parkft * ctx->scores.CaseFacScoreSq;
+        exp_var->bpd2 += case_weight * exp_var->parkft * ctx->scores.case_fac_score_sq;
     }
 }
 
