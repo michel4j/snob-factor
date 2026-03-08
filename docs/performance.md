@@ -4,12 +4,12 @@ Successfully refactored the C codebase to use OpenMP for parallel processing dur
 
 ## Modifications
 
-The parallelization strategy required ensuring isolated environments to avoid data races during execution of the complex [do_case](file:///home/michel/Projects/snob-factor/src/doall.c#766-1006) logic which previously mutated global or shared structs significantly. 
+The parallelization strategy required ensuring isolated environments to avoid data races during execution of the complex [do_case]() logic which previously mutated global or shared structs significantly. 
 
 1. **Context Cloning**: Inside the OpenMP parallel loops, a deep thread-local copy of the main `SnobContext`, `Sample`, `Population`, and active `Class` statistics was generated. 
 2. **Eliminated Data Races**: The primary source of data races were `saux` fields inside `Sample` and various temporary counters in `Class` and `Stats`.
-3. **Reduction Strategy**: Implemented sequential reduction steps after the parallel execution of the [do_case](file:///home/michel/Projects/snob-factor/src/doall.c#766-1006) iterations to map and aggregate individual thread accumulations correctly back into the main Context `Class` and `Stats` structs.
-4. **Variable Handlers Update**: Modified `VarType` structures across [reals.c](file:///home/michel/Projects/snob-factor/src/reals.c), [expbin.c](file:///home/michel/Projects/snob-factor/src/expbin.c), [expmults.c](file:///home/michel/Projects/snob-factor/src/expmults.c), and [vonm.c](file:///home/michel/Projects/snob-factor/src/vonm.c) to accept [reduce_stats](file:///home/michel/Projects/snob-factor/src/vonm.c#326-342) callbacks tailored to deeply clone and reduce the various `Stats` variants securely.
+3. **Reduction Strategy**: Implemented sequential reduction steps after the parallel execution of the [do_case]() iterations to map and aggregate individual thread accumulations correctly back into the main Context `Class` and `Stats` structs.
+4. **Variable Handlers Update**: Modified `VarType` structures across [reals.c], [expbin.c], [expmults.c], and [vonm.c] to accept [reduce_stats]() callbacks tailored to deeply clone and reduce the various `Stats` variants securely.
 
 ## Verification
 
@@ -17,5 +17,5 @@ Compiled the source extension and validated the OpenMP builds by comparing the o
 
 ## Performance Scaling
 
-We executed [snob/example3.py](file:///home/michel/Projects/snob-factor/snob/example3.py) on the `sst.csv` benchmark, testing from 1 to 16 OpenMP threads dynamically to plot execution speedup compared to single-threaded performance. The performance speedups were close to the limit of the hardware acheiving almost 80% of the theoretical maximum.
+We executed [snob/example3.py] on the `sst.csv` benchmark, testing from 1 to 16 OpenMP threads dynamically to plot execution speedup compared to single-threaded performance. The performance speedups were close to the limit of the hardware acheiving almost 80% of the theoretical maximum.
 

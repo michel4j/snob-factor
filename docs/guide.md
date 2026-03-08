@@ -1,5 +1,6 @@
 About Factor Snob
------------------
+=================
+
 This is the documentation for snob-factor, a Python wrapper for the Factor Snob C program
 originally written by Chris Wallace. A lot of the documentation has been pieced together
 from the original README file as well as notes and guides originally authored by Lloyd 

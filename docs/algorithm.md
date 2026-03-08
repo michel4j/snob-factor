@@ -11,7 +11,7 @@ Total Message Length = Model Length + Data Length
 - **Model Length (Parameter Cost)**: The cost of encoding the number of classes, the tree structure linking them, and the parameters (e.g., means and standard deviations for real variables, probabilities for discrete variables) to a precision optimized by MML principles. In the codebase, this is accumulated in variables like `cls->best_par_cost`.
 - **Data Length (Case Cost)**: The cost to encode the individual data cases under the given model. The better a data point fits a class's distribution, the shorter its encoded length (`cls->best_case_cost`).
 
-The `Result classify` function inside [src/glob.c](file:///home/michel/Projects/snob-factor/src/glob.c) is the high-level loop that minimizes this total message length.
+The `Result classify` function inside [src/glob.c] is the high-level loop that minimizes this total message length.
 
 ## 2. Model Structure (Hierarchical Clustering)
 
@@ -23,35 +23,35 @@ Unlike flat mixture models (like k-means), `snob-factor` uses a hierarchy of cla
 
 ## 3. The Algorithm Execution
 
-The [classify()](file:///home/michel/Projects/snob-factor/src/glob.c#281-365) function continually alternates between two primary phases until the MML cost no longer decreases:
-1. **Parameter Estimation ([do_all](file:///home/michel/Projects/snob-factor/src/doall.c#415-477))**: Assigns data to classes and optimizes continuous parameters.
-2. **Structural Search ([try_moves](file:///home/michel/Projects/snob-factor/src/tactics.c#807-835), [tactics.c](file:///home/michel/Projects/snob-factor/src/tactics.c))**: Changes the discrete structure of the hierarchy (e.g., splitting, merging, moving).
+The [classify()]function continually alternates between two primary phases until the MML cost no longer decreases:
+1. **Parameter Estimation [do_all]()**: Assigns data to classes and optimizes continuous parameters.
+2. **Structural Search [try_moves]()**: Changes the discrete structure of the hierarchy (e.g., splitting, merging, moving).
 
-### Phase A: [do_all](file:///home/michel/Projects/snob-factor/src/doall.c#415-477) - Assignment and Parameter Optimization
+### Phase A: [do_all]() - Assignment and Parameter Optimization
 
-Implemented in [src/doall.c](file:///home/michel/Projects/snob-factor/src/doall.c), this phase is analogous to an Expectation-Maximization (EM) cycle, but adapted for MML:
+Implemented in [src/doall.c], this phase is analogous to an Expectation-Maximization (EM) cycle, but adapted for MML:
 
-#### Assignment ([do_case](file:///home/michel/Projects/snob-factor/src/doall.c#643-883))
+#### Assignment [do_case()]
 For each item in the dataset, the code evaluates its cost against all potential classes.
-- For a real variable (in [src/reals.c](file:///home/michel/Projects/snob-factor/src/reals.c)), the case cost is $-\log P(x | \mu, \sigma) + \text{cost of encoding latent factors}$. 
+- For a real variable, the case cost is $-\log P(x | \mu, \sigma) + \text{cost of encoding latent factors}$. 
 - The case is assigned soft weights (`cls->case_weight`) across leaves. The weights are calculated proportionally to $\exp(-\text{cost})$.
 
-#### Estimation ([adjust_class](file:///home/michel/Projects/snob-factor/src/classes.c#498-656))
+#### Estimation [adjust_class()]
 Once all items have calculated their weights for all classes, the parameters of the classes are updated to minimize the local MML cost:
 - Instead of simple Maximum Likelihood estimates, the parameters incorporate prior information from their parent (`Dad`) class.
 - The parameter "spread" (which determines the coding precision) is adapted such that parameters are stated optimally (e.g., standard deviation precision $\propto 1/\sqrt{N}$).
 
-### Phase B: Structural Search Tactics ([tactics.c](file:///home/michel/Projects/snob-factor/src/tactics.c))
+### Phase B: Structural Search Tactics [try_moves()]
 
 The code employs heuristic moves to adjust the hierarchy. If a move reduces the total MML cost, it is accepted.
-- **Split Leaf ([split_leaf](file:///home/michel/Projects/snob-factor/src/classes.c#736-758))**: Converts a large, diffuse leaf into a Dad with Subclass leaves.
-- **Insert Dad ([insert_dad](file:///home/michel/Projects/snob-factor/src/tactics.c#56-154))**: Selects two classes that are structurally sibling nodes and groups them under a newly created "Dad" class. This is accepted if the cost of stating the new Dad's parameters is offset by the savings in specifying the two children's parameters as small offsets from the new Dad.
-- **Remove/Splice Dad ([splice_dad](file:///home/michel/Projects/snob-factor/src/tactics.c#312-352))**: Deletes a Dad, promoting its children upwards if the shared parameter compression is no longer worth the cost of the intermediate node.
-- **Move Class ([move_class](file:///home/michel/Projects/snob-factor/src/tactics.c#583-648))**: Detaches a class and reattaches it to a different Dad.
+- **Split Leaf [split_leaf]()**: Converts a large, diffuse leaf into a Dad with Subclass leaves.
+- **Insert Dad [insert_dad]()**: Selects two classes that are structurally sibling nodes and groups them under a newly created "Dad" class. This is accepted if the cost of stating the new Dad's parameters is offset by the savings in specifying the two children's parameters as small offsets from the new Dad.
+- **Remove/Splice Dad [splice_dad]()**: Deletes a Dad, promoting its children upwards if the shared parameter compression is no longer worth the cost of the intermediate node.
+- **Move Class [move_class]()**: Detaches a class and reattaches it to a different Dad.
 
 ## 4. Main Pseudocode
 
-The following pseudocode synthesizes the core logic behind the [classify](file:///home/michel/Projects/snob-factor/src/glob.c#281-365) process:
+The following pseudocode synthesizes the core logic behind the [classify]() process:
 
 ```python
 def classify(dataset, max_cycles, tol):

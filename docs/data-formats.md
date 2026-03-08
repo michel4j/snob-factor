@@ -1,5 +1,8 @@
-Data Formats - Python
----------------------
+Data Formats
+============
+
+Data for Python API
+-------------------
 
 The Python interface to snob-factor is very simple. You only need to provide a pandas DataFrame with the data,
 and a list of variable types.
@@ -31,8 +34,8 @@ model.fit(data)
 
 
 
-Data Formats - auto-snob
-------------------------
+Data for auto-snob executable
+-----------------------------
 
 The program needs 2 data files.  One of these is called a "Vset" file which lists the number and types of the variables in the data.
 
