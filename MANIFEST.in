@@ -3,7 +3,6 @@ graft docs
 graft tests
 graft examples
 include CMakeLists.txt
-include build.sh
 prune .vscode/*
 prune .idea/*
 prune .github/*
