@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$SCRIPT_DIR/.."
+
 
 if [ -d build ]; then
     /bin/rm -rf build/
@@ -10,7 +10,11 @@ fi
 mkdir build    &&
 cd build       &&
 cmake ..       &&
-make           &&
-/bin/cp _snob.so ../snob/
+cmake --build . --config Release &&
+if [ -f Release/_snob.so ]; then
+    /bin/cp Release/_snob.so ../snob/
+else
+    /bin/cp _snob.so ../snob/
+fi
 
 cd $SCRIPT_DIR

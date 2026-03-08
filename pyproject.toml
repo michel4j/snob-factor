@@ -1,28 +1,27 @@
-[build-system]
-requires = ["setuptools>=64", "wheel", "setuptools_scm"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "snob-factor"
 dynamic = ["version"]
 description = "Mixture modelling by Minimum Message Length (MML) using Factor Snob"
-requires-python = ">=3.11"
-license = "GPL-3.0-or-later"
-license-files = ["LICENSE"]
-readme = "README.md"
-keywords = ["MML", "Unsupervised Classification", "Machine Learning", "Snob", "Factor Analysis"]
 authors = [
     { name = "Chris Wallace", email = "csw@cs.monash.edu.au"},
     { name = "Michel Fodje", email = "michel.fodje@lightsource.ca" },
 ]
 maintainers = [
-     { name = "Michel Fodje", email = "michel.fodje@lightsource.ca" },
+    { name = "Michel Fodje", email = "michel.fodje@lightsource.ca" },
 ]
-dependencies = [
-    "pandas",
-    "numpy",
-    "prettytable"
-]
+readme = "README.md"
+license = "GPL-3.0-or-later"
+keywords = ["MML", "Unsupervised Classification", "Machine Learning", "Snob", "Factor Analysis"]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry]
+packages = [{ include = "snob" }]
+include = [{ path = "snob/_snob.so", format = "wheel" }]
+build = "build.py"
+
 classifiers = [
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
@@ -32,10 +31,26 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
+version = "0.0.0"
 
-[project.urls]
+[tool.poetry.dependencies]
+python = ">=3.11"
+pandas = "*"
+numpy = "*"
+prettytable = "*"
+
+[tool.poetry.urls]
 Homepage = "https://github.com/michel4j/snob-factor"
 documentation = "https://github.com/michel4j/snob-factor"
 repository = "https://github.com/michel4j/snob-factor"
 
-[tool.setuptools_scm]
+[tool.poetry.group.dev.dependencies]
+pytest = ">=7.0.0"
+
+[tool.poetry.requires-plugins]
+poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+format = "{base}.{revision}{distance}"

@@ -8,21 +8,25 @@ import pandas as pd
 import snob
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     train_data = pd.read_csv("./examples/sst.csv")
     sfc = snob.SNOBClassifier(
-        name='sst_test',
+        name="sst_test",
         attrs={
-            'stretch': 'real',
-            'curve': 'real',
-            'twist': 'real',
+            "stretch": "real",
+            "curve": "real",
+            "twist": "real",
         },
-        cycles=50, steps=50, moves=4, seed=1234567
+        cycles=50,
+        steps=50,
+        moves=4,
+        seed=1234567,
     )
 
     sfc.fit(train_data)
-    sfc.save_model('/tmp/vmd_test.mod')
+    sfc.save_model("/tmp/vmd_test.mod")
     pred = sfc.predict()
+    for column in ["major_class", "minor_class", "major_prob", "minor_prob"]:
+        train_data[column] = pred[column].values
     snob.show_classes(sfc.get_classes())
-    print(pred)
-
+    print(train_data)
