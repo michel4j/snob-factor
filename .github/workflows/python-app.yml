@@ -17,10 +17,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'build'
+          cache: 'poetry'
       - uses: snok/install-poetry@v1
       - name: Build Wheel
-        run: poetry build --format wheel
+        run: |
+          pipx install poetry
+          poetry build --format wheel
 
       - uses: actions/upload-artifact@v4
         with:
@@ -39,7 +41,9 @@ jobs:
           cache: 'build'
       - uses: snok/install-poetry@v1
       - name: Build Source dist
-        run: poetry build --format sdist
+        run: |
+          pipx install poetry
+          poetry build --format sdist
       - uses: actions/upload-artifact@v4
         with:
           name: poetry-sdist
