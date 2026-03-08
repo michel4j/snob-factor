@@ -68,7 +68,10 @@ int new_line(SnobContext *ctx) {
                     break;
                 }
             } else {
-                sleep(1);
+                clock_t start_time = clock();
+                while (clock() < start_time + CLOCKS_PER_SEC) {
+                    // spin lock for 1 second wait
+                }
             }
         }
 

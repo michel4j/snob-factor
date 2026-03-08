@@ -6,14 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _WIN32
-#include <io.h>
-#define access _access
-
-#else
-#include <unistd.h>
-#endif
-
 /** @brief Convert a class serial to a string
  *  @param ctx Pointer to the Snob context.
  *  @param cls Pointer to the class

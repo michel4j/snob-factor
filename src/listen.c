@@ -1,8 +1,6 @@
 /**
  */
 #include <stdio.h>
-#include <string.h>
-
 #include "snob.h"
 
 #define LI 200
@@ -37,7 +35,9 @@ send:
 open1:
     co = fopen("comms", "w");
     if (!co) {
-        sleep(1);
+        clock_t start_time = clock();
+        while (clock() < start_time + CLOCKS_PER_SEC) {
+        }
         goto open1;
     }
     putc(seq, co);
@@ -53,7 +53,11 @@ finish:
     return (k);
 
 receive:
-    sleep(m);
+    if (m > 0) {
+        clock_t start_time = clock();
+        while (clock() < start_time + (CLOCKS_PER_SEC * m)) {
+        }
+    }
     co = fopen("comms", "r");
     if (!co)
         return (-1);
@@ -103,7 +107,9 @@ main(SnobContext *ctx) {
 loop:
     kk = hark(ctx, gl);
     if (!kk) {
-        sleep(1);
+        clock_t start_time = clock();
+        while (clock() < start_time + CLOCKS_PER_SEC) {
+        }
         goto loop;
     }
     i = 0;

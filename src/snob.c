@@ -1,7 +1,6 @@
 
 // MAIN FILE
 #include "snob.h"
-#include <getopt.h>
 #include <stdarg.h>
 #include <time.h>
 
@@ -16,41 +15,41 @@
 int main(int argc, char *argv[]) {
     int index, cycles = FIT_CYCLES, steps = DO_ALL_STEPS, moves = TRY_MOVE_STEPS;
     int log_level = 1;
-    int opt;
-
-    while ((opt = getopt(argc, argv, "hvc:s:m:")) != -1) {
-        switch (opt) {
-        case 'h':
-            printf("Usage: %s [OPTIONS] <vset.v> <smpl.s> [report.rep]\n", argv[0]);
-            printf("Options:\n");
-            printf("  -h          Print this help message\n");
-            printf("  -v          Verbose Logging (default: off)\n");
-            printf("  -c CYCLES   Set number of fit cycles (default: %d)\n", FIT_CYCLES);
-            printf("  -s STEPS    Set number of EM steps per cycle (default: %d)\n", DO_ALL_STEPS);
-            printf("  -m MOVES    Set number of try moves per cycle (default: %d)\n", TRY_MOVE_STEPS);
-            exit(0);
-        case 'v':
-            log_level = 0;
-            break;
-        case 'c':
-            cycles = atoi(optarg);
-            break;
-        case 's':
-            steps = atoi(optarg);
-            break;
-        case 'm':
-            moves = atoi(optarg);
-            break;
-        default:
-            fprintf(stderr,
-                    "Usage: %s [-h -v -c CYCLES -s STEPS -m MOVES] <vset.v> "
-                    "<smpl.s> [report.rep]\n",
-                    argv[0]);
-            exit(2);
+    
+    int i = 1;
+    while (i < argc) {
+        if (argv[i][0] == '-') {
+            if (strcmp(argv[i], "-h") == 0) {
+                printf("Usage: %s [OPTIONS] <vset.v> <smpl.s> [report.rep]\n", argv[0]);
+                printf("Options:\n");
+                printf("  -h          Print this help message\n");
+                printf("  -v          Verbose Logging (default: off)\n");
+                printf("  -c CYCLES   Set number of fit cycles (default: %d)\n", FIT_CYCLES);
+                printf("  -s STEPS    Set number of EM steps per cycle (default: %d)\n", DO_ALL_STEPS);
+                printf("  -m MOVES    Set number of try moves per cycle (default: %d)\n", TRY_MOVE_STEPS);
+                exit(0);
+            } else if (strcmp(argv[i], "-v") == 0) {
+                log_level = 0;
+            } else if (strcmp(argv[i], "-c") == 0 && i + 1 < argc) {
+                cycles = atoi(argv[++i]);
+            } else if (strcmp(argv[i], "-s") == 0 && i + 1 < argc) {
+                steps = atoi(argv[++i]);
+            } else if (strcmp(argv[i], "-m") == 0 && i + 1 < argc) {
+                moves = atoi(argv[++i]);
+            } else {
+                fprintf(stderr,
+                        "Usage: %s [-h -v -c CYCLES -s STEPS -m MOVES] <vset.v> "
+                        "<smpl.s> [report.rep]\n",
+                        argv[0]);
+                exit(2);
+            }
+        } else {
+            break; // Finished parsing options, positional arguments follow
         }
+        i++;
     }
 
-    if (optind + 2 > argc) {
+    if (i + 2 > argc) {
         fprintf(stderr,
                 "Usage: %s [-h -v -c CYCLES -s STEPS -m MOVES] <vset.v> "
                 "<smpl.s> [report.rep]\n",
@@ -58,9 +57,10 @@ int main(int argc, char *argv[]) {
         exit(2);
     }
 
-    char *vset_file = argv[optind];
-    char *sample_file = argv[optind + 1];
-    char *report_file = (optind + 2 < argc) ? argv[optind + 2] : NULL;
+    char *vset_file = argv[i];
+    char *sample_file = argv[i + 1];
+    char *report_file = (i + 2 < argc) ? argv[i + 2] : NULL;
+
 
     SnobContext *ctx = initialize(0, log_level, 0);
 
