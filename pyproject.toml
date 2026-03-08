@@ -19,7 +19,10 @@ build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry]
 packages = [{ include = "snob" }]
-include = [{ path = "snob/_snob.so", format = "wheel" }]
+include = [
+    { path = "snob/_snob.so", format = "wheel" },
+    { path = "build.sh", format = "sdist" }
+]
 build = "build-package.py"
 
 classifiers = [
