@@ -1,6 +1,6 @@
 # Minimum Message Length (MML) Mixture Modelling in Snob-Factor
 
-This report details how the Minimum Message Length (MML) algorithms are implemented in the `snob-factor` codebase. The system performs unsupervised classification (mixture modelling) by finding a tree-structured set of classes (clusters) that minimizes the total message length of describing both the model parameters and the data itself given the model.
+Here you will find a description of how the Minimum Message Length (MML) algorithms are implemented in the `snob-factor` codebase. The system performs unsupervised classification (mixture modelling) by finding a tree-structured set of classes (clusters) that minimizes the total message length of describing both the model parameters and the data itself given the model.
 
 ## 1. Core Concepts and Objectives
 

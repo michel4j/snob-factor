@@ -60,3 +60,8 @@ poetry-dynamic-versioning = { version = ">=1.10.0,<2.0.0", extras = ["plugin"] }
 enable = true
 vcs = "git"
 format = "{base}.{revision}{distance}"
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "^7.0.0"
+myst-parser = "^3.0.0"
+sphinx-rtd-theme = "^2.0.0"

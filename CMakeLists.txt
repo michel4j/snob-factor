@@ -37,6 +37,7 @@ set(SOURCE_FILES
 
 # Share Library target for Python
 add_library(snob SHARED ${SOURCE_FILES})
+set_target_properties(snob PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set_target_properties (snob PROPERTIES PREFIX "")
 set_target_properties (snob PROPERTIES OUTPUT_NAME "_snob")
 set_target_properties (snob PROPERTIES SUFFIX ".so")

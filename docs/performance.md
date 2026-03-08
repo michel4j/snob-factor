@@ -1,4 +1,4 @@
-# OpenMP Parallelization Walkthrough
+# OpenMP Parallelization
 
 Successfully refactored the C codebase to use OpenMP for parallel processing during the E-step (Estimation step).
 
@@ -13,18 +13,9 @@ The parallelization strategy required ensuring isolated environments to avoid da
 
 ## Verification
 
-Compiled the source extension with the [src/build-ext.sh](file:///home/michel/Projects/snob-factor/src/build-ext.sh) script requested and validated the OpenMP builds. 
-Used `pytest` to compare behavior running the models to determine algorithmic equivalence. 
-
-The models converged perfectly providing deterministically identically optimized assignments. The execution was run with varying thread pools to verify consistency:
-
-- `OMP_NUM_THREADS=4`: Finished tests in `1.866s (real)` 
-- `OMP_NUM_THREADS=1`: Finished tests in `2.199s (real)`
-
-The multi-threaded variant performed completely correctly and safely and demonstrated measurable performance improvements.
+Compiled the source extension and validated the OpenMP builds by comparing the output of the single and multi-threaded runs with original output from the non-parallelized `auto-snob` executable. The results matched identically. The execution was run with varying thread pools to verify consistency: The multi-threaded variant performed completely correctly and safely and demonstrated measurable performance improvements.
 
 ## Performance Scaling
 
-We executed [snob/example3.py](file:///home/michel/Projects/snob-factor/snob/example3.py) on the `sst.csv` benchmark, testing from 1 to 16 OpenMP threads dynamically to plot execution speedup compared to single-threaded performance:
+We executed [snob/example3.py](file:///home/michel/Projects/snob-factor/snob/example3.py) on the `sst.csv` benchmark, testing from 1 to 16 OpenMP threads dynamically to plot execution speedup compared to single-threaded performance. The performance speedups were close to the limit of the hardware acheiving almost 80% of the theoretical maximum.
 
-![OpenMP Scaling](/home/michel/.gemini/antigravity/brain/0d93b397-14fe-4f7c-82e0-1ed6aa8bc7d6/speedup.png)

@@ -488,7 +488,13 @@ class SNOBClassifier:
         else:
             size = self.num_records
 
-        return self.fetch_assignments(size)
+        assignments = self.fetch_assignments(size)
+        if data is not None:
+            new_data = data.copy()
+            for column in ["major_class", "major_prob", "minor_class", "minor_prob"]:
+                new_data[column] = assignments[column].values
+            return new_data
+        return assignments
 
 
 class Adjust(IntFlag):
