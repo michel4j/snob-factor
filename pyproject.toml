@@ -20,7 +20,7 @@ build-backend = "poetry_dynamic_versioning.backend"
 [tool.poetry]
 packages = [{ include = "snob" }]
 include = [{ path = "snob/_snob.so", format = "wheel" }]
-build = "build.py"
+build = "build-package.py"
 
 classifiers = [
     "Intended Audience :: Science/Research",
