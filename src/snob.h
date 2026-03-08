@@ -12,7 +12,13 @@ files. The declarations herein then become converted to "EXT" declarations.
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#ifdef _WIN32
+#include <io.h>
+#define access _access
+
+#else
 #include <unistd.h>
+#endif
 
 typedef struct SnobContextStruct SnobContext;
 
