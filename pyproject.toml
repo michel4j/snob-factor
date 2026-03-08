@@ -14,7 +14,11 @@ license = "GPL-3.0-or-later"
 keywords = ["MML", "Unsupervised Classification", "Machine Learning", "Snob", "Factor Analysis"]
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+requires = [
+    "poetry-core>=2.0.0,<3.0.0", 
+    "poetry-dynamic-versioning>=1.10.0,<2.0.0", 
+    "numpy", "pandas", "prettytable"
+]
 build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry]
@@ -50,7 +54,7 @@ repository = "https://github.com/michel4j/snob-factor"
 pytest = ">=7.0.0"
 
 [tool.poetry.requires-plugins]
-poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
+poetry-dynamic-versioning = { version = ">=1.10.0,<2.0.0", extras = ["plugin"] }
 
 [tool.poetry-dynamic-versioning]
 enable = true
