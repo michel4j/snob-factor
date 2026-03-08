@@ -71,25 +71,25 @@ typedef struct Statsst {
     double bsq;
 } Stats;
 
-static void set_var(SnobContext *ctx, int iv, Class *cls);
+static void set_var(SnobContext *ctx, int var_index, Class *cls);
 static int read_attr_aux(SnobContext *ctx, void *vax);
 static int read_smpl_aux(SnobContext *ctx, void *sax);
 static int set_attr_aux(SnobContext *ctx, void *vax, int aux);
 static int set_smpl_aux(SnobContext *ctx, void *sax, int unit, double prec);
-static int read_datum(SnobContext *ctx, char *loc, int iv);
-static int set_datum(SnobContext *ctx, char *loc, int iv, void *value);
+static int read_datum(SnobContext *ctx, char *loc, int var_index);
+static int set_datum(SnobContext *ctx, char *loc, int var_index, void *value);
 static void print_datum(SnobContext *ctx, char *loc);
-static void set_sizes(SnobContext *ctx, int iv);
-static void set_best_pars(SnobContext *ctx, int iv, Class *cls);
-static void clear_stats(SnobContext *ctx, int iv, Class *cls);
-static void score_var(SnobContext *ctx, int iv, Class *cls);
-static void cost_var(SnobContext *ctx, int iv, int fac, Class *cls);
-static void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls);
-static void cost_var_nonleaf(SnobContext *ctx, int iv, int vald, Class *cls);
-static void adjust(SnobContext *ctx, int iv, int fac, Class *cls);
-static void show(SnobContext *ctx, Class *cls, int iv);
-static void details(SnobContext *ctx, Class *cls, int iv, MemBuffer *buffer);
-static void reduce_stats(SnobContext *ctx, int iv, Class *dest, Class *src);
+static void set_sizes(SnobContext *ctx, int var_index);
+static void set_best_pars(SnobContext *ctx, int var_index, Class *cls);
+static void clear_stats(SnobContext *ctx, int var_index, Class *cls);
+static void score_var(SnobContext *ctx, int var_index, Class *cls);
+static void cost_var(SnobContext *ctx, int var_index, int fac, Class *cls);
+static void deriv_var(SnobContext *ctx, int var_index, int fac, Class *cls);
+static void cost_var_nonleaf(SnobContext *ctx, int var_index, int vald, Class *cls);
+static void adjust(SnobContext *ctx, int var_index, int fac, Class *cls);
+static void show(SnobContext *ctx, Class *cls, int var_index);
+static void details(SnobContext *ctx, Class *cls, int var_index, MemBuffer *buffer);
+static void reduce_stats(SnobContext *ctx, int var_index, Class *dest, Class *src);
 
 /**
  * @brief This routine is used to set up a VarType entry in the global "types"
@@ -452,18 +452,18 @@ void cost_var(SnobContext *ctx, int var_index, int fac, Class *cls) {
  * @brief Given item weight in cwt, calcs derivs of item cost wrt basic
  * params and accumulates in paramd1, paramd2
  * @param ctx Pointer to the Snob context.
- * @param iv
+ * @param var_index
  * @param fac
  * @param cls Pointer to the class.
  */
-void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
+void deriv_var(SnobContext *ctx, int var_index, int fac, Class *cls) {
     const double case_weight = cls->case_weight;
 
-    SampleVar *smpl_var = &ctx->state.sample->variables[iv];
+    SampleVar *smpl_var = &ctx->state.sample->variables[var_index];
     Saux *saux = (Saux *)(smpl_var->saux);
-    Stats *exp_var = (Stats *)cls->stats[iv];
+    Stats *exp_var = (Stats *)cls->stats[var_index];
 
-    set_var(ctx, iv, cls);
+    set_var(ctx, var_index, cls);
     if (saux->missing)
         return;
     //	Do no-fac first
@@ -490,26 +490,26 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
 /**
  * @brief To adjust parameters of a multistate variable
  * @param ctx Pointer to the Snob context.
- * @param iv
+ * @param var_index
  * @param fac
  * @param cls Pointer to the class.
  */
-void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
+void adjust(SnobContext *ctx, int var_index, int fac, Class *cls) {
 
     double pr0, pr1, cc;
     double adj, apd2, cnt, vara, del, tt, spcost, fpcost;
     int n;
     Population *popln = ctx->state.popln;
     Class *dad = (cls->dad_id >= 0) ? popln->classes[cls->dad_id] : 0;
-    Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv];
+    Basic *cls_var = (Basic *)cls->basics[var_index];
+    Stats *exp_var = (Stats *)cls->stats[var_index];
     Basic *dad_var;
 
-    set_var(ctx, iv, cls);
+    set_var(ctx, var_index, cls);
     cnt = exp_var->cnt;
 
     if (dad) { // Not root
-        dad_var = (Basic *)dad->basics[iv];
+        dad_var = (Basic *)dad->basics[var_index];
         cls_var->dadnap = dad_var->nap;
         cls_var->dapsprd = dad_var->napsprd;
     } else { // Root
@@ -580,63 +580,58 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
     cls->nofac_par_cost += spcost;
     cls->fac_par_cost += fpcost;
     if (!(ctx->control & AdjPr))
-        goto adjdone;
+        return;
     if (cnt < ctx->min_size)
-        goto adjdone;
+        return;
 
     //	Adjust non-fac params.
-    n = 3;
-adjloop:
-    cc = cls_var->sap;
-    if (cc > 0.0) {
-        pr1 = 1.0 / (1.0 + exp(-2.0 * cc));
-        pr0 = 1.0 - pr1;
-    } else {
-        pr0 = 1.0 / (1.0 + exp(2.0 * cc));
-        pr1 = 1.0 - pr0;
+    for (n = 3; n > 0; --n) {
+        cc = cls_var->sap;
+        if (cc > 0.0) {
+            pr1 = 1.0 / (1.0 + exp(-2.0 * cc));
+            pr0 = 1.0 - pr1;
+        } else {
+            pr0 = 1.0 / (1.0 + exp(2.0 * cc));
+            pr1 = 1.0 - pr0;
+        }
+        //	Approximate Fisher by 1/(1+cc^2)  (wrt cc)
+        apd2 = 1.0 / (1.0 + cc * cc);
+        //	For a item in state 1, apd1 = -pr0.  If state 0, apd1 = pr1.
+        tt = (cnt - exp_var->cnt1) * pr1 - exp_var->cnt1 * pr0;
+        //	Use dads's nap, cls_var->dapsprd for Normal prior.
+        tt += (cls_var->sap - cls_var->dadnap) / cls_var->dapsprd;
+        //	Fisher deriv wrt cc is -2cc * apd2 * apd2
+        tt -= cnt * cc * apd2 * apd2 * cls_var->sapsprd;
+        apd2 = cnt * apd2 + 1.0 / cls_var->dapsprd;
+        cls_var->sap -= tt / apd2;
+        cls_var->sapsprd = 1.0 / apd2;
     }
-    //	Approximate Fisher by 1/(1+cc^2)  (wrt cc)
-    apd2 = 1.0 / (1.0 + cc * cc);
-    //	For a item in state 1, apd1 = -pr0.  If state 0, apd1 = pr1.
-    tt = (cnt - exp_var->cnt1) * pr1 - exp_var->cnt1 * pr0;
-    //	Use dads's nap, cls_var->dapsprd for Normal prior.
-    tt += (cls_var->sap - cls_var->dadnap) / cls_var->dapsprd;
-    //	Fisher deriv wrt cc is -2cc * apd2 * apd2
-    tt -= cnt * cc * apd2 * apd2 * cls_var->sapsprd;
-    apd2 = cnt * apd2 + 1.0 / cls_var->dapsprd;
-    cls_var->sap -= tt / apd2;
-    cls_var->sapsprd = 1.0 / apd2;
-    //	Repeat the adjustment
-    if (--n)
-        goto adjloop;
 
-    if (!fac)
-        goto facdone2;
+    if (fac) {
+        /*	Adjust factor parameters.  We have fapd1, fbpd1 from the data,
+            but must add derivatives of pcost terms.  */
+        exp_var->fapd1 += (cls_var->fap - cls_var->dadnap) / cls_var->dapsprd;
+        exp_var->fbpd1 += cls_var->fbp;
+        exp_var->apd2 += 1.0 / cls_var->dapsprd;
+        exp_var->bpd2 += 1.0;
+        //	In an attempt to speed things, fiddle adjustment multiple
+        tt = exp_var->ftcost / cnt;
+        if (tt < exp_var->oldftcost)
+            adj = exp_var->adj * 1.1;
+        else
+            adj = ctx->initial_adj;
+        if (adj > ctx->max_adj)
+            adj = ctx->max_adj;
+        exp_var->adj = adj;
+        exp_var->oldftcost = tt;
+        cls_var->fap -= adj * exp_var->fapd1 / exp_var->apd2;
+        cls_var->fbp -= adj * exp_var->fbpd1 / exp_var->bpd2;
 
-    /*	Adjust factor parameters.  We have fapd1, fbpd1 from the data,
-        but must add derivatives of pcost terms.  */
-    exp_var->fapd1 += (cls_var->fap - cls_var->dadnap) / cls_var->dapsprd;
-    exp_var->fbpd1 += cls_var->fbp;
-    exp_var->apd2 += 1.0 / cls_var->dapsprd;
-    exp_var->bpd2 += 1.0;
-    //	In an attempt to speed things, fiddle adjustment multiple
-    tt = exp_var->ftcost / cnt;
-    if (tt < exp_var->oldftcost)
-        adj = exp_var->adj * 1.1;
-    else
-        adj = ctx->initial_adj;
-    if (adj > ctx->max_adj)
-        adj = ctx->max_adj;
-    exp_var->adj = adj;
-    exp_var->oldftcost = tt;
-    cls_var->fap -= adj * exp_var->fapd1 / exp_var->apd2;
-    cls_var->fbp -= adj * exp_var->fbpd1 / exp_var->bpd2;
+        //	Set fapsprd, bpsprd.
+        cls_var->fapsprd = 1.0 / exp_var->apd2;
+        cls_var->bpsprd = 1.0 / exp_var->bpd2;
+    }
 
-    //	Set fapsprd, bpsprd.
-    cls_var->fapsprd = 1.0 / exp_var->apd2;
-    cls_var->bpsprd = 1.0 / exp_var->bpd2;
-
-facdone2:
     //	If no sons, set as-dad params from non-fac params
     if (cls->num_sons < 2) {
         cls_var->nap = cls_var->sap;
@@ -644,22 +639,23 @@ facdone2:
     }
     cls_var->samplesize = exp_var->cnt;
 
-adjdone:
     return;
 }
 
 /**
+ * @brief Show class summary
  * @param ctx Pointer to the Snob context.
  * @param cls Pointer to the class.
- * @param iv
+ * @param var_index
  */
-void show(SnobContext *ctx, Class *cls, int iv) {
+void show(SnobContext *ctx, Class *cls, int var_index) {
 
-    Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv];
+    Basic *cls_var = (Basic *)cls->basics[var_index];
+    Stats *exp_var = (Stats *)cls->stats[var_index];
 
-    set_var(ctx, iv, cls);
-    printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", iv + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out", exp_var->adj);
+    set_var(ctx, var_index, cls);
+    printf("V%3d  Cnt%6.1f  %s  Adj%8.2f\n", var_index + 1, exp_var->cnt, (cls_var->infac) ? " In" : "Out",
+           exp_var->adj);
 
     if (cls->num_sons > 1) {
         printf(" N: AP ");
@@ -676,18 +672,19 @@ void show(SnobContext *ctx, Class *cls, int iv) {
 }
 
 /**
+ * @brief Write class details to a buffer
  * @param ctx Pointer to the Snob context.
  * @param cls Pointer to the class.
- * @param iv
+ * @param var_index Variable Index
  * @param buffer Memory buffer to write/read.
  */
-void details(SnobContext *ctx, Class *cls, int iv, MemBuffer *buffer) {
+void details(SnobContext *ctx, Class *cls, int var_index, MemBuffer *buffer) {
 
-    Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv];
-    VSetVar *vset_var = &ctx->state.vset->variables[iv];
-    set_var(ctx, iv, cls);
-    print_buffer(ctx, buffer, "{\"index\": %d, \"name\": \"%s\", \"weight\": %0.1f, \"factor\": %s, ", iv + 1,
+    Basic *cls_var = (Basic *)cls->basics[var_index];
+    Stats *exp_var = (Stats *)cls->stats[var_index];
+    VSetVar *vset_var = &ctx->state.vset->variables[var_index];
+    set_var(ctx, var_index, cls);
+    print_buffer(ctx, buffer, "{\"index\": %d, \"name\": \"%s\", \"weight\": %0.1f, \"factor\": %s, ", var_index + 1,
                  vset_var->name, exp_var->cnt, (cls_var->infac) ? "true" : "false");
     print_buffer(ctx, buffer, "\"type\": %d, ", vset_var->type);
     if (cls->use == Fac) {
@@ -698,13 +695,14 @@ void details(SnobContext *ctx, Class *cls, int iv, MemBuffer *buffer) {
     }
     print_buffer(ctx, buffer, "}");
 }
+
 /**
  * @param ctx Pointer to the Snob context.
- * @param iv
+ * @param var_index
  * @param vald
  * @param cls Pointer to the class.
  */
-void cost_var_nonleaf(SnobContext *ctx, int iv, int vald, Class *cls) {
+void cost_var_nonleaf(SnobContext *ctx, int var_index, int vald, Class *cls) {
     Basic *son_var;
     Class *son;
     double del, co0, co1, co2, tstvn, tssn;
@@ -712,11 +710,11 @@ void cost_var_nonleaf(SnobContext *ctx, int iv, int vald, Class *cls) {
     int n, ison, nson, nints;
 
     Population *popln = ctx->state.popln;
-    VSetVar *vset_var = &ctx->state.vset->variables[iv];
-    Basic *cls_var = (Basic *)cls->basics[iv];
-    Stats *exp_var = (Stats *)cls->stats[iv];
+    VSetVar *vset_var = &ctx->state.vset->variables[var_index];
+    Basic *cls_var = (Basic *)cls->basics[var_index];
+    Stats *exp_var = (Stats *)cls->stats[var_index];
 
-    set_var(ctx, iv, cls);
+    set_var(ctx, var_index, cls);
     if (vset_var->inactive) {
         exp_var->npcost = exp_var->ntcost = 0.0;
         return;
@@ -728,7 +726,7 @@ void cost_var_nonleaf(SnobContext *ctx, int iv, int vald, Class *cls) {
         cls_var->napsprd = 1.0;
         return;
     }
-    //      We need to accumlate things over sons. We need:
+    // We need to accumlate things over sons. We need:
     nints = 0;   // Number of internal sons (M)
     tap = 0.0;   //  Total of sons' bap-s
     tstvn = 0.0; // Total variance of sons' bap-s
@@ -738,7 +736,7 @@ void cost_var_nonleaf(SnobContext *ctx, int iv, int vald, Class *cls) {
     //	The calculation is like that in reals.c (q.v.)
     for (ison = cls->son_id; ison > 0; ison = son->sib_id) {
         son = popln->classes[ison];
-        son_var = (Basic *)son->basics[iv];
+        son_var = (Basic *)son->basics[var_index];
         tap += son_var->bap;
         tstvn += son_var->bap * son_var->bap;
         if (son->type == Dad) { // used as parent
@@ -760,19 +758,16 @@ void cost_var_nonleaf(SnobContext *ctx, int iv, int vald, Class *cls) {
     //	tstvn now gives total variance about sons' mean
 
     //      Iterate the adjustment of param, spread
-    n = 5;
-adjloop:
-    //      Update param
-    //      The V of comments is tstvn + nson * del * del
-    cls_var->nap = (cls_var->dapsprd * map) / (nson * cls_var->dapsprd + apsprd);
-    del = cls_var->nap - map;
-    tstvn += del * del * nson; // adding variance round new nap
-    co0 = 0.5 * (tstvn + nson * del * del) + tssn;
-    //      Solve for new spread
-    apsprd = 2.0 * co0 / (co1 + sqrt(co1 * co1 + 4.0 * co0 * co2));
-    n--;
-    if (n)
-        goto adjloop;
+    for (n = 5; n > 0; n--) {
+        //      Update param
+        //      The V of comments is tstvn + nson * del * del
+        cls_var->nap = (cls_var->dapsprd * map) / (nson * cls_var->dapsprd + apsprd);
+        del = cls_var->nap - map;
+        tstvn += del * del * nson; // adding variance round new nap
+        co0 = 0.5 * (tstvn + nson * del * del) + tssn;
+        //      Solve for new spread
+        apsprd = 2.0 * co0 / (co1 + sqrt(co1 * co1 + 4.0 * co0 * co2));
+    }
     //	Store new values
     cls_var->napsprd = apsprd;
 
