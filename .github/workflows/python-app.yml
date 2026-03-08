@@ -16,14 +16,17 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'poetry'
 
       - name: Install Poetry
         run: |
-          pipx install poetry
-          pipx inject poetry "poetry-dynamic-versioning[plugin]"
-
-      - name: Install dependencies
-        run: poetry install --no-root
+          pip install poetry
+          poetry install --no-root --with dev
       
       - name: Build wheels
         run: poetry build -f wheel
@@ -42,10 +45,16 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'poetry'
+
       - name: Install Poetry
         run: |
-          pipx install poetry
-          pipx inject poetry "poetry-dynamic-versioning[plugin]"
+          pip install poetry
+          poetry install --no-root --with dev
 
       - name: Build sdist
         run: poetry build -f sdist
