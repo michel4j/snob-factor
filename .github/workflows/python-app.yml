@@ -25,7 +25,7 @@ jobs:
 
       - name: Install Poetry
         run: |
-          pip install poetry
+          pipx install poetry
           poetry install --no-root --with dev
       
       - name: Build wheels
@@ -53,7 +53,7 @@ jobs:
 
       - name: Install Poetry
         run: |
-          pip install poetry
+          pipx install poetry
           poetry install --no-root --with dev
 
       - name: Build sdist
