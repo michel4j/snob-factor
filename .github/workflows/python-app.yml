@@ -13,20 +13,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-      
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'build'
-
+      - uses: snok/install-poetry@v1
       - name: Build Wheel
-        run: |
-          pip install build
-          pythom -m build --wheel
+        run: poetry build --format wheel
 
       - uses: actions/upload-artifact@v4
         with:
@@ -38,21 +32,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'build'
-
-      - name: Build Source Distribution
-        run: |
-          pip install build
-          pythom -m build --sdist
-
+      - uses: snok/install-poetry@v1
+      - name: Build Source dist
+        run: poetry build --format sdist
       - uses: actions/upload-artifact@v4
         with:
           name: poetry-sdist
