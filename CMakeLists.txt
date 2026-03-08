@@ -40,10 +40,14 @@ add_library(snob SHARED ${SOURCE_FILES})
 set_target_properties (snob PROPERTIES PREFIX "")
 set_target_properties (snob PROPERTIES OUTPUT_NAME "_snob")
 set_target_properties (snob PROPERTIES SUFFIX ".so")
-target_link_libraries(snob m)
+if(NOT MSVC)
+    target_link_libraries(snob m)
+endif()
 
 
 # Auto SNOB target
 add_executable(auto-snob ${SOURCE_FILES} ${CMAKE_SOURCE_DIR}/src/snob.c)
-target_link_libraries(auto-snob m)
+if(NOT MSVC)
+    target_link_libraries(auto-snob m)
+endif()
 
