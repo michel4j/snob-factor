@@ -13,6 +13,20 @@ files. The declarations herein then become converted to "EXT" declarations.
 #include <string.h>
 #include <time.h>
 
+#ifdef __GNUC__
+#define FORMAT_PRINTF(fmt, args) __attribute__((format(printf, fmt, args)))
+#else
+#define FORMAT_PRINTF(fmt, args)
+#endif
+
+#ifdef _MSC_VER
+#define THREAD_LOCAL __declspec(thread)
+#elif defined(__GNUC__)
+#define THREAD_LOCAL __thread
+#else
+#define THREAD_LOCAL _Thread_local
+#endif
+
 
 typedef struct SnobContextStruct SnobContext;
 
@@ -512,7 +526,7 @@ int add_record(SnobContext *ctx, int index, char *bytes);
 
 //	In glob.c
 char *serial_to_str(SnobContext *ctx, Class *cls);
-void log_msg(SnobContext *ctx, int level, const char *format, ...) __attribute__((format(printf, 3, 4)));
+void log_msg(SnobContext *ctx, int level, const char *format, ...) FORMAT_PRINTF(3, 4);
 int error_value(SnobContext *ctx, const char *message, const int value);
 void print_progress(SnobContext *ctx, size_t count, size_t max);
 void save_context(SnobContext *ctx);
@@ -528,7 +542,7 @@ void select_population(SnobContext *ctx, char *name);
 void show_pop_names(SnobContext *ctx);
 SnobContext *initialize(int interact, int debug, int seed);
 void get_class_details(SnobContext *ctx, char *buffer, size_t buffer_size);
-void print_buffer(SnobContext *ctx, MemBuffer *buffer, const char *format, ...) __attribute__((format(printf, 3, 4)));
+void print_buffer(SnobContext *ctx, MemBuffer *buffer, const char *format, ...) FORMAT_PRINTF(3, 4);
 Result classify(SnobContext *ctx, const int max_cycles, const int do_steps, const int move_steps, const double tol);
 int save_model(SnobContext *ctx, char *filename);
 int load_model(SnobContext *ctx, char *filename);

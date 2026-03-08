@@ -178,7 +178,7 @@ int error_value(SnobContext *ctx, const char *message, const int value) {
 }
 
 #undef STOP
-__thread SnobContext *signal_ctx = NULL;
+THREAD_LOCAL SnobContext *signal_ctx = NULL;
 
 /** @brief Handle SIGINT signal
  *  @param sig The signal number
