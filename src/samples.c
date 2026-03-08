@@ -1,6 +1,6 @@
 #define NOTGLOB 1
 #define SAMPLES 1
-#include "glob.h"
+#include "snob.h"
 
 /**
  * @brief To print datum for variable i, case n, in sample

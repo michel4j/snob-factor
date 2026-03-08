@@ -1,7 +1,7 @@
 
 // functions to allocate Popln and Sample space
 #define BLOCK 1
-#include "glob.h"
+#include "snob.h"
 #define SpUnit 16
 
 static int allocated = 0; //  Total block space allocated

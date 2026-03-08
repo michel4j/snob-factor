@@ -1,6 +1,6 @@
 //	File of stuff for logistic binary variables
 
-#include "glob.h"
+#include "snob.h"
 
 /*
     The Vaux structure matches that of Multistate, although not all

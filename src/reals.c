@@ -1,7 +1,7 @@
 //	A prototypical file for a variable type
 //	actually for plain Gaussians
 
-#include "glob.h"
+#include "snob.h"
 
 typedef double Datum;
 

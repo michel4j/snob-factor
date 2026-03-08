@@ -1,5 +1,5 @@
 
-#include "glob.h"
+#include "snob.h"
 
 static char *movestr[] = {" ", "Insert", "Delete", "Move"};
 

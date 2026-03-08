@@ -1,6 +1,6 @@
 
 #define DOALL 1
-#include "glob.h"
+#include "snob.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif

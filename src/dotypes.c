@@ -3,9 +3,9 @@
 on XXXdefine() where XXX is the prefix of the fun XXXdefine in the file
 of functions for the new type.
     The routine also sets some global geometric constants.
-    */
+*/
 
-#include "glob.h"
+#include "snob.h"
 
 void reals_define(SnobContext *ctx, int typindx);
 void expmults_define(SnobContext *ctx, int typindx);

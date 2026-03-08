@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.5..3.27)
 set (CMAKE_C_STANDARD 11)
 
 project(snob)
+set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
 
 # Define the C compiler flags
 # Note: CMake automatically handles the '-c' and '-o' flags

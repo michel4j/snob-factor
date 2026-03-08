@@ -1,5 +1,5 @@
 //	Stuff dealing with classes as members of polpns
-#include "glob.h"
+#include "snob.h"
 
 /**
  * @brief Finds class index (id) from serial, or -3 if error
