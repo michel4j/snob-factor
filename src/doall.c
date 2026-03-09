@@ -408,7 +408,7 @@ void find_and_estimate(SnobContext *ctx, int *all, int n_iter, int n_cycles) {
             local_ctx.random_seed = ctx->random_seed + omp_get_thread_num();
 #endif
 
-#pragma omp for
+#pragma omp for schedule(dynamic, 1)
             for (int j = 0; j < num_cases; j++) {
                 do_case(&local_ctx, j, *all, 1, num_son);
             }
