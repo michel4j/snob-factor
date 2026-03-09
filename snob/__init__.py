@@ -245,7 +245,7 @@ class SNOBClassifier:
         :param from_file: File name of saved model to load
         """
 
-        self.ctx = lib.initialize(0, 0 if verbose else 1, seed)
+        self.ctx: SnobContextPtr = 0
         self.has_fit = False
         self.file_pending = False
         self.from_file: Path | None = Path(from_file) if from_file is not None else None
@@ -260,6 +260,7 @@ class SNOBClassifier:
         self.num_records = 0
         self.num_features = len(attrs)
         self.seed = seed
+        self.verbose = verbose
         self.summary = None
         self.encoder: Dict[str, Encoder] = {}
         self.format = "".join(
@@ -294,6 +295,9 @@ class SNOBClassifier:
         Create a new vset for this data
         :param data: Pandas data frame containing the data
         """
+
+        if self.ctx == 0:
+            self.ctx = lib.initialize(0, 0 if self.verbose else 1, self.seed)
 
         lib.create_vset(self.ctx, self.name.encode("utf-8"), len(self.attrs))
         # Add attributes
@@ -370,6 +374,7 @@ class SNOBClassifier:
             )
 
         with Timer():
+            self.ctx = lib.initialize(0, 0 if self.verbose else 1, self.seed)
             self.add_vset(data)
             self.num_records = self.add_data(data, name=self.name)
             result = lib.classify(
