@@ -798,7 +798,7 @@ int save_population(SnobContext *ctx, int p1, int fill, char *newname) {
  * @param ctx Pointer to the Snob context.
  * @param nam Name or filename string.
  */
-int load_population(SnobContext *ctx, char *nam) {
+int load_population(SnobContext *ctx, char *filename) {
     char pname[80], name[80], *jp;
     State oldctx;
     int i, j, k, indx, fncl, fnc, nch, iv;
@@ -812,9 +812,9 @@ int load_population(SnobContext *ctx, char *nam) {
 
     indx = -999;
     memcpy(&oldctx, &ctx->state, sizeof(State));
-    file_ptr = fopen(nam, "r");
+    file_ptr = fopen(filename, "r");
     if (!file_ptr) {
-        log_msg(ctx, 1, "Cannot open %s", nam);
+        log_msg(ctx, 1, "Cannot open %s", filename);
         goto error;
     }
     fscanf(file_ptr, "%s", name);
