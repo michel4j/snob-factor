@@ -480,6 +480,7 @@ class SNOBClassifier:
             return pd.DataFrame()
         elif self.file_pending and data is not None:
             self.file_pending = False
+            self.ctx = lib.initialize(0, 0 if self.verbose else 1, self.seed)
             set_control_flags(self.ctx, Adjust.SCORES)
             self.add_vset(data)
             self.num_records = self.add_data(data, name=sample_name)
