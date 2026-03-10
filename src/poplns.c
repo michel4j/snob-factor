@@ -1,3 +1,4 @@
+
 #define NOTGLOB 1
 #define POPLNS 1
 #include "snob.h"
@@ -285,7 +286,7 @@ void destroy_population(SnobContext *ctx, int px) {
  * @param fill
  * @param newname Name or filename string.
  */
-int copy_population(SnobContext *ctx, int p1, int fill, char *newname) {
+int copy_population(SnobContext *ctx, int p1, int fill, const char *newname) {
     Population *fpop, *popln;
     State oldctx;
     Class *cls, *fcls;
@@ -619,7 +620,7 @@ void track_best(SnobContext *ctx, int verify) {
  * @param ctx Pointer to the Snob context.
  * @param nam Name or filename string.
  */
-int find_population(SnobContext *ctx, char *nam) {
+int find_population(SnobContext *ctx, const char *nam) {
     int i;
     char lname[80];
 
@@ -667,7 +668,7 @@ char *const saveheading = "Scnob-Model-Save-File";
  * @param fill
  * @param newname Name or filename string.
  */
-int save_population(SnobContext *ctx, int p1, int fill, char *newname) {
+int save_population(SnobContext *ctx, int p1, int fill, const char *newname) {
 
     FILE *file_ptr;
     char oldname[80], *jp;
@@ -796,9 +797,9 @@ int save_population(SnobContext *ctx, int p1, int fill, char *newname) {
 /**
  * @brief To read a model saved by savepop
  * @param ctx Pointer to the Snob context.
- * @param nam Name or filename string.
+ * @param filename Name or filename string.
  */
-int load_population(SnobContext *ctx, char *filename) {
+int load_population(SnobContext *ctx, const char *filename) {
     char pname[80], name[80], *jp;
     State oldctx;
     int i, j, k, indx, fncl, fnc, nch, iv;
@@ -811,16 +812,20 @@ int load_population(SnobContext *ctx, char *filename) {
     int num_cases = 0;
 
     indx = -999;
+    log_msg(ctx, 1, "Loading model from %s", filename);
     memcpy(&oldctx, &ctx->state, sizeof(State));
     file_ptr = fopen(filename, "r");
     if (!file_ptr) {
         log_msg(ctx, 1, "Cannot open %s", filename);
-        goto error;
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return indx;
     }
     fscanf(file_ptr, "%s", name);
     if (strcmp(name, saveheading)) {
         log_msg(ctx, 1, "File is not a Scnob save-file");
-        goto error;
+        fclose(file_ptr);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return indx;
     }
     fscanf(file_ptr, "%s", pname);
     log_msg(ctx, 1, "Model %s", pname);
@@ -828,7 +833,9 @@ int load_population(SnobContext *ctx, char *filename) {
     j = find_vset(ctx, name);
     if (j < 0) {
         log_msg(ctx, 1, "Model needs variableset %s", name);
-        goto error;
+        fclose(file_ptr);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return indx;
     }
     ctx->state.vset = ctx->var_sets[j];
     fscanf(file_ptr, "%s", name);          // Reading sample name
@@ -848,7 +855,9 @@ int load_population(SnobContext *ctx, char *filename) {
             ctx->state.sample = ctx->samples[j];
             if (ctx->state.sample->num_cases != fnc) {
                 log_msg(ctx, 1, "Size conflict Model%9d vs. Sample%9d", fnc, num_cases);
-                goto error;
+                fclose(file_ptr);
+                memcpy(&ctx->state, &oldctx, sizeof(State));
+                return indx;
             }
             num_cases = fnc;
         }
@@ -863,91 +872,96 @@ int load_population(SnobContext *ctx, char *filename) {
     if (j >= 0)
         destroy_population(ctx, j);
     indx = make_population(ctx, num_cases);
-    if (indx < 0)
-        goto error;
+    if (indx < 0) {
+        fclose(file_ptr);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return indx;
+    }
     popln = ctx->state.popln = ctx->populations[indx];
     popln->sample_size = num_cases;
     strcpy(popln->name, "TrialPop");
     if (!num_cases)
         strcpy(popln->sample_name, "??");
     popln->num_leaves = 0;
-    //	Popln has a root class set up. We read into it.
-    j = 0;
-    goto haveclass;
 
-newclass:
-    j = make_class(ctx);
-    if (j < 0) {
-        log_msg(ctx, 1, "RestoreClass fails in Makeclass");
-        goto error;
-    }
-haveclass:
-    cls = popln->classes[j];
-    jp = (char *)cls;
-    nch = ((char *)&cls->id) - jp;
-    for (k = 0; k < nch; k++) {
-        *jp = fgetc(file_ptr);
-        jp++;
-    }
-    for (iv = 0; iv < ctx->state.vset->length; iv++) {
-        cls_var = cls->basics[iv];
-        nch = ctx->state.vset->variables[iv].basic_size;
-        jp = (char *)cls_var;
+    //	Read all classes: root slot (cls_idx == 0) already exists;
+    //	additional classes are allocated via make_class.
+    for (int cls_idx = 0; cls_idx < fncl; cls_idx++) {
+        if (cls_idx == 0) {
+            j = 0; // root class slot already exists
+        } else {
+            j = make_class(ctx);
+            if (j < 0) {
+                log_msg(ctx, 1, "RestoreClass fails in Makeclass");
+                fclose(file_ptr);
+                memcpy(&ctx->state, &oldctx, sizeof(State));
+                return j;
+            }
+        }
+
+        cls = popln->classes[j];
+        jp = (char *)cls;
+        nch = ((char *)&cls->id) - jp;
         for (k = 0; k < nch; k++) {
             *jp = fgetc(file_ptr);
             jp++;
         }
-    }
-    for (iv = 0; iv < ctx->state.vset->length; iv++) {
-        exp_var = cls->stats[iv];
-        nch = ctx->state.vset->variables[iv].stats_size;
-        jp = (char *)exp_var;
-        for (k = 0; k < nch; k++) {
-            *jp = fgetc(file_ptr);
-            jp++;
+        for (iv = 0; iv < ctx->state.vset->length; iv++) {
+            cls_var = cls->basics[iv];
+            nch = ctx->state.vset->variables[iv].basic_size;
+            jp = (char *)cls_var;
+            for (k = 0; k < nch; k++) {
+                *jp = fgetc(file_ptr);
+                jp++;
+            }
+        }
+        for (iv = 0; iv < ctx->state.vset->length; iv++) {
+            exp_var = cls->stats[iv];
+            nch = ctx->state.vset->variables[iv].stats_size;
+            jp = (char *)exp_var;
+            for (k = 0; k < nch; k++) {
+                *jp = fgetc(file_ptr);
+                jp++;
+            }
+        }
+        if (cls->type == Leaf)
+            popln->num_leaves++;
+
+        if (fnc) {
+            if (!num_cases) {
+                //	Read scores but discard — sample not available
+                nch = fnc * sizeof(short);
+                for (k = 0; k < nch; k++)
+                    fgetc(file_ptr);
+            } else {
+                nch = num_cases * sizeof(short);
+                jp = (char *)(cls->factor_scores);
+                for (k = 0; k < nch; k++) {
+                    *jp = fgetc(file_ptr);
+                    jp++;
+                }
+            }
         }
     }
-    if (cls->type == Leaf)
-        popln->num_leaves++;
-    if (!fnc)
-        goto classdone;
 
-    //	Read scores but throw away if nc = 0
-    if (!num_cases) {
-        nch = fnc * sizeof(short);
-        for (k = 0; k < nch; k++)
-            fgetc(file_ptr);
-        goto classdone;
-    }
-    nch = num_cases * sizeof(short);
-    jp = (char *)(cls->factor_scores);
-    for (k = 0; k < nch; k++) {
-        *jp = fgetc(file_ptr);
-        jp++;
-    }
-
-classdone:
-    if (popln->num_classes < fncl)
-        goto newclass;
+    fclose(file_ptr);
 
     i = find_population(ctx, pname);
     if (i >= 0) {
         log_msg(ctx, 1, "Overwriting old model %s", pname);
         destroy_population(ctx, i);
     }
-    if (!strcmp(pname, "work"))
-        goto pickwork;
-    strcpy(popln->name, pname);
-error:
-    memcpy(&ctx->state, &oldctx, sizeof(State));
-    goto finish;
 
-pickwork:
-    indx = set_work_population(ctx, popln->id);
-    j = find_population(ctx, "Trialpop");
-    if (j >= 0)
-        destroy_population(ctx, j);
-finish:
+    if (!strcmp(pname, "work")) {
+        indx = set_work_population(ctx, popln->id);
+        j = find_population(ctx, "Trialpop");
+        if (j >= 0)
+            destroy_population(ctx, j);
+    } else {
+        strcpy(popln->name, pname);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+    }
+
     return (indx);
 }
 

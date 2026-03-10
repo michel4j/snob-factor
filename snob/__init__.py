@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from os import PathLike
 import ctypes as ct
 import json
 import os
@@ -52,6 +53,8 @@ lib.load_sample.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.load_sample.restype = ct.c_int
 lib.classify.argtypes = [SnobContextPtr, ct.c_int, ct.c_int, ct.c_int, ct.c_double]
 lib.classify.restype = Classification
+lib.get_classification.argtypes = [SnobContextPtr]
+lib.get_classification.restype = Classification
 lib.print_class.argtypes = [SnobContextPtr, ct.c_int, ct.c_int]
 lib.item_list.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.get_assignments.restype = ct.c_int
@@ -68,7 +71,7 @@ lib.get_class_details.restype = ct.c_int
 lib.save_model.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.save_model.restype = ct.c_int
 lib.load_model.argtypes = [SnobContextPtr, ct.c_char_p]
-lib.load_model.restype = Classification
+lib.load_model.restype = ct.c_int
 lib.set_control_flags.argtypes = [SnobContextPtr, ct.c_int]
 lib.set_control_flags.restype = ct.c_int
 # create_vset
@@ -231,7 +234,7 @@ class SNOBClassifier:
         name: str = "mml",
         seed: int = 0,
         verbose: bool = False,
-        from_file: str | Path | None = None,
+        from_file: PathLike = None,
     ):
         """
         :param attrs: a dictionary mapping attribute  names to attribute types
@@ -248,7 +251,7 @@ class SNOBClassifier:
         self.ctx: SnobContextPtr = 0
         self.has_fit = False
         self.file_pending = False
-        self.from_file: Path | None = Path(from_file) if from_file is not None else None
+        self.from_file: PathLike | None = Path(from_file) if from_file else None
         self.attrs = attrs
         self.columns = list(self.attrs.keys())
         self.cycles = cycles
@@ -275,7 +278,7 @@ class SNOBClassifier:
             else:
                 self.encoder[name] = SimpleEncoder(float)
 
-        if self.from_file is not None:
+        if self.from_file:
             self.file_pending = self.has_fit = self.from_file.exists()
 
     @staticmethod
@@ -484,7 +487,9 @@ class SNOBClassifier:
             set_control_flags(self.ctx, Adjust.SCORES)
             self.add_vset(data)
             self.num_records = self.add_data(data, name=sample_name)
-            self.summary = lib.load_model(self.ctx, str(self.from_file).encode("utf-8"))
+            file_name = str(self.from_file).encode("utf-8")
+            lib.load_model(self.ctx, file_name)
+            self.summary = lib.get_classification(self.ctx)
             self.classes_ = self.fetch_classification(self.summary)
             self.has_fit = True
             size = self.num_records

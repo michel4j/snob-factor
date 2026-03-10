@@ -10,15 +10,16 @@ import snob
 
 if __name__ == "__main__":
     train_data = pd.read_csv("./examples/vmd.csv")
+    attrs = {
+        "v1": "radians",
+        "v2": "radians",
+        "v3": "radians",
+        "v4": "radians",
+        "v5": "radians",
+    }
     sfc = snob.SNOBClassifier(
         name="vmd_test",
-        attrs={
-            "v1": "real",
-            "v2": "real",
-            "v3": "real",
-            "v4": "real",
-            "v5": "real",
-        },
+        attrs=attrs,
         cycles=50,
         steps=50,
         moves=4,
@@ -30,3 +31,15 @@ if __name__ == "__main__":
     pred = sfc.predict(train_data)
     snob.show_classes(sfc.get_classes())
     print(pred)
+
+
+    # create a new classifier from the model
+    sfc2 = snob.SNOBClassifier(
+        name="vmd_test",
+        attrs=attrs,
+        from_file="/tmp/vmd_test.mod",
+    )
+    pred2 = sfc2.predict(train_data)
+    snob.show_classes(sfc2.get_classes())
+    print(pred2)
+    

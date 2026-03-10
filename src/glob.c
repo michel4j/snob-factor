@@ -324,7 +324,6 @@ void print_progress(SnobContext *ctx, size_t count, size_t max) {
  *  cost
  */
 Result classify(SnobContext *ctx, const int max_cycles, const int do_steps, const int move_steps, const double tol) {
-    Result result;
     Class *root;
     int cycle = 0, prev_classes = 0, prev_leaves = 0, no_change_count = 0;
 
@@ -380,6 +379,16 @@ Result classify(SnobContext *ctx, const int max_cycles, const int do_steps, cons
     } else {
         log_msg(ctx, 1, "Classification converged after %d cycles", cycle);
     }
+    return get_classification(ctx);
+}
+
+/** @brief Get the current classification
+ *  @param ctx Pointer to the Snob context.
+ *  @return Result structure containing number of classes and cost
+ */
+Result get_classification(SnobContext *ctx) {
+    Result result;
+    Class *root = ctx->state.popln->classes[ctx->state.popln->root];
 
     //  Prepare return structure
     result.num_classes = ctx->state.popln->num_classes;
@@ -398,7 +407,7 @@ Result classify(SnobContext *ctx, const int max_cycles, const int do_steps, cons
  *  @param filename model file
  *  @return >= 0 if successful
  */
-int save_model(SnobContext *ctx, char *filename) {
+int save_model(SnobContext *ctx, const char *filename) {
     int best;
     best = copy_population(ctx, get_best_pop(ctx), 0, "SavedModel");
     return save_population(ctx, best, 0, filename);
@@ -409,7 +418,7 @@ int save_model(SnobContext *ctx, char *filename) {
  *  @param filename model file
  *  @return >= 0 if successful
  */
-int load_model(SnobContext *ctx, char *filename) {
+int load_model(SnobContext *ctx, const char *filename) {
     int result;
     result = load_population(ctx, filename);
     return set_work_population(ctx, result);

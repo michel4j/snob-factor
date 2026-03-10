@@ -27,7 +27,6 @@ files. The declarations herein then become converted to "EXT" declarations.
 #define THREAD_LOCAL _Thread_local
 #endif
 
-
 typedef struct SnobContextStruct SnobContext;
 
 #define MAX_SAMPLES 5 // Max number of samples
@@ -429,14 +428,14 @@ int make_population(SnobContext *ctx, int fill);
 int init_population(SnobContext *ctx);
 void make_subclasses(SnobContext *ctx, int kk);
 void destroy_population(SnobContext *ctx, int px);
-int copy_population(SnobContext *ctx, int p1, int fill, char *newname);
-int save_population(SnobContext *ctx, int p1, int fill, char *newname);
-int load_population(SnobContext *ctx, char *nam);
+int copy_population(SnobContext *ctx, int p1, int fill, const char *newname);
+int save_population(SnobContext *ctx, int p1, int fill, const char *newname);
+int load_population(SnobContext *ctx, const char *filename);
 int set_work_population(SnobContext *ctx, int pp);
 void print_tree(SnobContext *ctx);
 int get_best_pop(SnobContext *ctx);
 void track_best(SnobContext *ctx, int verify);
-int find_population(SnobContext *ctx, char *nam);
+int find_population(SnobContext *ctx, const char *nam);
 void correlpops(SnobContext *ctx, int xid);
 //		end poplns.c
 
@@ -544,8 +543,9 @@ SnobContext *initialize(int interact, int debug, int seed);
 void get_class_details(SnobContext *ctx, char *buffer, size_t buffer_size);
 void print_buffer(SnobContext *ctx, MemBuffer *buffer, const char *format, ...) FORMAT_PRINTF(3, 4);
 Result classify(SnobContext *ctx, const int max_cycles, const int do_steps, const int move_steps, const double tol);
-int save_model(SnobContext *ctx, char *filename);
-int load_model(SnobContext *ctx, char *filename);
+Result get_classification(SnobContext *ctx);
+int save_model(SnobContext *ctx, const char *filename);
+int load_model(SnobContext *ctx, const char *filename);
 void peek_data(SnobContext *ctx);
 int get_assignments(SnobContext *ctx, int *ids, int *prim_cls, double *prim_probs, int *sec_cls, double *sec_probs);
 int sort_current_sample(SnobContext *ctx);
