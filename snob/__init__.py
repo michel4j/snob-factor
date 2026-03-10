@@ -263,6 +263,7 @@ class SNOBClassifier:
         self.verbose = verbose
         self.summary = None
         self.encoder: Dict[str, Encoder] = {}
+        self.data: pd.DataFrame | None = None
         self.format = "".join(
             self.TypeFormat[type_] for field, type_ in self.attrs.items()
         )
@@ -375,8 +376,9 @@ class SNOBClassifier:
 
         with Timer():
             self.ctx = lib.initialize(0, 0 if self.verbose else 1, self.seed)
-            self.add_vset(data)
-            self.num_records = self.add_data(data, name=self.name)
+            self.data = data
+            self.add_vset(self.data)
+            self.num_records = self.add_data(self.data, name=self.name)
             result = lib.classify(
                 self.ctx, self.cycles, self.steps, self.moves, self.tol
             )
@@ -494,12 +496,13 @@ class SNOBClassifier:
             size = self.num_records
 
         assignments = self.fetch_assignments(size)
-        if data is not None:
-            new_data = data.copy()
-            for column in ["major_class", "major_prob", "minor_class", "minor_prob"]:
-                new_data[column] = assignments[column].values
-            return new_data
-        return assignments
+        data = data if data is not None else self.data
+        new_data = data.copy()
+        for column in ["major_class", "major_prob", "minor_class", "minor_prob"]:
+            new_data.loc[assignments['item'].values, column] = assignments[column].values
+            if column in ["major_class", "minor_class"]:
+                new_data[column] = new_data[column].astype(int)
+        return new_data
 
 
 class Adjust(IntFlag):
