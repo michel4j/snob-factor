@@ -66,8 +66,9 @@ lib.get_assignments.argtypes = [
     ct.POINTER(ct.c_int),
     ct.POINTER(ct.c_double),
 ]
+lib.get_model_details.argtypes = [SnobContextPtr, ct.c_char_p, ct.c_size_t]
 lib.get_class_details.argtypes = [SnobContextPtr, ct.c_char_p, ct.c_size_t]
-lib.get_class_details.restype = ct.c_int
+
 lib.save_model.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.save_model.restype = ct.c_int
 lib.load_model.argtypes = [SnobContextPtr, ct.c_char_p]

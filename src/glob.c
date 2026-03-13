@@ -444,3 +444,30 @@ void restore_context(SnobContext *ctx) { memcpy(&ctx->state, &ctx->state_backup,
  *  @param flags The control flags
  */
 void set_control_flags(SnobContext *ctx, int flags) { ctx->control = ctx->d_control = flags; }
+
+/**
+ * @brief Get the details of the model as a JSON string
+ * @param ctx Pointer to the Snob context.
+ * @param buffer Buffer to store the details
+ * @param buffer_size Size of the buffer
+ */
+void get_model_details(SnobContext *ctx, char *buffer, size_t buffer_size) {
+    MemBuffer dest;
+    VSetVar *var;
+    int i;
+
+    dest.buffer = buffer;
+    dest.size = buffer_size;
+    dest.offset = 0;
+    print_buffer(ctx, &dest, "{\"name\": \"%s\", \"variables\": [", ctx->state.popln->name);
+    for (i = 0; i < ctx->state.vset->length; i++) {
+        var = &ctx->state.vset->variables[i];
+        if (i > 0) {
+            print_buffer(ctx, &dest, ", ");
+        }
+        print_buffer(ctx, &dest, "{\"name\": \"%s\", ", var->name);
+        print_buffer(ctx, &dest, "\"type\": %d,", ((int)var->type));
+        print_buffer(ctx, &dest, "]}");
+    }
+    print_buffer(ctx, &dest, "]}");
+}

@@ -255,18 +255,20 @@ typedef struct SampleVarStruct {
     int offset; //  offset of (missing, value) in record
 } SampleVar;
 
-/*	Sample data is packed into a block of 'records' addressed by
-the 'recs' pointer in a Sample structure. There is one record per item in the
-sample. Each record has the following format:
+/*
+  Sample data is packed into a block of 'records' addressed by the 'recs' pointer in a Sample structure.
+  There is one record per item in the sample. Each record has the following format:
+
     char active_flag. If zero, the item is ignored in building classes.
     int ident	The item identifier, as a positive integer.
+
   Then follow 'nv' fields for the attribute values of the item. Each field
-actually has two parts:
+  actually has two parts:
+
     char missing_flag  If non-zero, shows value is unknown .
-    Datum value.  The type Datum depends on the type of attribute. This
-        field is present even if the missing flag is on, but contains
-        garbage.
-    */
+    Datum value.  The type Datum depends on the type of attribute. This field is present even if
+    the missing flag is on, but contains garbage.
+*/
 
 typedef struct SampleStruct {
     int id;
@@ -431,6 +433,7 @@ void destroy_population(SnobContext *ctx, int px);
 int copy_population(SnobContext *ctx, int p1, int fill, const char *newname);
 int save_population(SnobContext *ctx, int p1, int fill, const char *newname);
 int load_population(SnobContext *ctx, const char *filename);
+
 int set_work_population(SnobContext *ctx, int pp);
 void print_tree(SnobContext *ctx);
 int get_best_pop(SnobContext *ctx);
@@ -540,6 +543,7 @@ void select_sample(SnobContext *ctx, char *name);
 void select_population(SnobContext *ctx, char *name);
 void show_pop_names(SnobContext *ctx);
 SnobContext *initialize(int interact, int debug, int seed);
+void get_model_details(SnobContext *ctx, char *buffer, size_t buffer_size);
 void get_class_details(SnobContext *ctx, char *buffer, size_t buffer_size);
 void print_buffer(SnobContext *ctx, MemBuffer *buffer, const char *format, ...) FORMAT_PRINTF(3, 4);
 Result classify(SnobContext *ctx, const int max_cycles, const int do_steps, const int move_steps, const double tol);
