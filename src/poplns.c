@@ -979,25 +979,39 @@ int set_work_population(SnobContext *ctx, int pp) {
     windx = -1;
     memcpy(&oldctx, &ctx->state, sizeof(State));
     fpop = 0;
-    if (pp < 0)
-        goto error;
+    
+    if (pp < 0) {
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return windx;
+    }
+    
     fpop = popln = ctx->populations[pp];
-    if (!popln)
-        goto error;
+    if (!popln) {
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return windx;
+    }
+    
     //	Save the 'nc' of the popln to be loaded
     fpopnc = popln->sample_size;
+    
     //	Check popln vset
     j = find_vset(ctx, popln->vst_name);
     if (j < 0) {
         log_msg(ctx, 1, "Load cannot find variable set");
-        goto error;
+        fpop->sample_size = fpopnc;
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return windx;
     }
     ctx->state.vset = ctx->var_sets[j];
+    
     //	Check VarSet
     if (ctx->state.sample && strcmp(ctx->state.vset->name, oldctx.sample->vset_name)) {
         log_msg(ctx, 1, "Picked popln has incompatible VariableSet");
-        goto error;
+        fpop->sample_size = fpopnc;
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return windx;
     }
+    
     //	Check sample
     if (fpopnc && strcmp(popln->sample_name, oldctx.sample->name)) {
         log_msg(ctx, 1, "Picked popln attached to non-current sample.");
@@ -1007,38 +1021,47 @@ int set_work_population(SnobContext *ctx, int pp) {
 
     ctx->state.sample = oldctx.sample;
     windx = copy_population(ctx, pp, 1, "work");
-    if (windx < 0)
-        goto error;
-    if (ctx->populations[pp]->sample_size)
-        goto finish;
+    
+    if (windx < 0) {
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+    } else if (ctx->populations[pp]->sample_size == 0) {
+        /*	The popln was copied as if unattached, so scores, weights must be
+            fixed  */
+        log_msg(ctx, 1, "Model will have weights, scores adjusted to sample.");
+        ctx->fix = Partial;
+        ctx->control = AdjSc;
 
-    /*	The popln was copied as if unattached, so scores, weights must be
-        fixed  */
-    log_msg(ctx, 1, "Model will have weights, scores adjusted to sample.");
-    ctx->fix = Partial;
-    ctx->control = AdjSc;
-fixscores:
-    ctx->see_all = 16;
-    do_all(ctx, 15, 0);
-    //	doall should leave a count of score changes in global
-    log_msg(ctx, 1, "%8d  score changes", ctx->score_changes);
-    if (ctx->heard) {
-        log_msg(ctx, 1, "Score fixing stopped prematurely");
-    } else if (ctx->score_changes > 1)
-        goto fixscores;
-    ctx->fix = ctx->d_fix;
-    ctx->control = ctx->d_control;
-    goto finish;
+        int retries = 0;
+        double prev_cost;
 
-error:
-    memcpy(&ctx->state, &oldctx, sizeof(State));
-finish:
+        do {
+            prev_cost = ctx->state.popln->classes[ctx->state.popln->root]->best_cost;
+            ctx->see_all = 16;
+            do_all(ctx, 15, 0);
+            //	doall should leave a count of score changes in global
+            log_msg(ctx, 1, "%8d  score changes", ctx->score_changes);
+            if (ctx->heard) {
+                log_msg(ctx, 1, "Score fixing stopped prematurely");
+                break;
+            }
+            if (ctx->state.popln->classes[ctx->state.popln->root]->best_cost >= prev_cost - ctx->min_gain) {
+                log_msg(ctx, 1, "Score fixing reached convergence in cost");
+                break;
+            }
+            retries++;
+        } while ((ctx->score_changes > 1) && (retries < 10));
+
+        ctx->fix = ctx->d_fix;
+        ctx->control = ctx->d_control;
+    }
+
     //	Restore 'nc' of copied popln
     if (fpop)
         fpop->sample_size = fpopnc;
     if ((windx >= 0) && (ctx->debug < 1))
         print_tree(ctx);
-    return (windx);
+        
+    return windx;
 }
 
 /**
