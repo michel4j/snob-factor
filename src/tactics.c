@@ -168,7 +168,7 @@ double insert_dad(SnobContext *ctx, int ser1, int ser2, int *dadid) {
 int best_insert_dad(SnobContext *ctx, int force) {
     State oldctx;
     Class *cls1, *cls2, *root;
-    int i1, i2, hiid, succ;
+    int i1, i2, hiid;
     int bser1, bser2, ser1, ser2, newp, newid, newser;
     double res, bestdrop, origcost;
 
@@ -179,10 +179,6 @@ int best_insert_dad(SnobContext *ctx, int force) {
     doall, .
     */
 
-    /*	To get all pairs, we need a double loop over class indexes. I use
-    i1, i2 as the indices. i1 runs from 0 to population->hicl-1, i2 from i1+1 to
-    population->hicl
-    */
     ctx->no_subs++;
     //	Do one pass over population to set costs
     do_all(ctx, 1, 1);
@@ -195,75 +191,72 @@ int best_insert_dad(SnobContext *ctx, int force) {
     hiid = ctx->state.popln->hi_class;
     if (ctx->state.popln->num_classes < 4) {
         log_msg(ctx, 0, "Model has only %2d class", ctx->state.popln->num_classes);
-        succ = -1;
-        goto alldone;
+        if (ctx->no_subs > 0)
+            ctx->no_subs--;
+        return -1;
     }
     memcpy(&oldctx, &ctx->state, sizeof(State));
 
-    i1 = 0;
-outer:
-    if (i1 == ctx->state.popln->root)
-        goto i1done;
-    cls1 = ctx->state.popln->classes[i1];
-    if (!cls1)
-        goto i1done;
-    if ((cls1->type == Vacant) || (cls1->type == Sub))
-        goto i1done;
-    ser1 = cls1->serial;
-    i2 = i1 + 1;
-inner:
-    if (i2 == ctx->state.popln->root)
-        goto i2done;
-    cls2 = ctx->state.popln->classes[i2];
-    if (!cls2)
-        goto i2done;
-    if ((cls2->type == Vacant) || (cls2->type == Sub))
-        goto i2done;
-    if (cls1->dad_id != cls2->dad_id)
-        goto i2done;
-    ser2 = cls2->serial;
-    if (chk_bad_move(ctx, 1, ser1, ser2))
-        goto i2done;
+    for (i1 = 0; i1 < hiid; i1++) {
+        if (i1 == ctx->state.popln->root)
+            continue;
+        cls1 = ctx->state.popln->classes[i1];
+        if (!cls1)
+            continue;
+        if ((cls1->type == Vacant) || (cls1->type == Sub))
+            continue;
+        ser1 = cls1->serial;
+        for (i2 = i1 + 1; i2 <= hiid; i2++) {
+            if (i2 == ctx->state.popln->root)
+                continue;
+            cls2 = ctx->state.popln->classes[i2];
+            if (!cls2)
+                continue;
+            if ((cls2->type == Vacant) || (cls2->type == Sub))
+                continue;
+            if (cls1->dad_id != cls2->dad_id)
+                continue;
+            ser2 = cls2->serial;
+            if (chk_bad_move(ctx, 1, ser1, ser2))
+                continue;
 
-    //	Copy population to TrialPop, unfilled
-    newp = copy_population(ctx, ctx->state.popln->id, 0, "TrialPop");
-    if (newp < 0)
-        goto popfails;
-    ctx->state.popln = ctx->populations[newp];
-    root = ctx->state.popln->classes[ctx->state.popln->root];
-    res = insert_dad(ctx, ser1, ser2, &newid);
-    if (newid < 0) {
-        goto i2done;
+            //	Copy population to TrialPop, unfilled
+            newp = copy_population(ctx, ctx->state.popln->id, 0, "TrialPop");
+            if (newp < 0) {
+                log_msg(ctx, 0, "Cannot make TrialPop");
+                if (ctx->no_subs > 0)
+                    ctx->no_subs--;
+                return -1;
+            }
+            ctx->state.popln = ctx->populations[newp];
+            root = ctx->state.popln->classes[ctx->state.popln->root];
+            res = insert_dad(ctx, ser1, ser2, &newid);
+            if (newid >= 0) {
+                if (res > bestdrop) {
+                    bestdrop = res;
+                    bser1 = ser1;
+                    bser2 = ser2;
+                }
+            }
+            memcpy(&ctx->state, &oldctx, sizeof(State));
+            root = ctx->state.popln->classes[ctx->state.popln->root];
+        }
     }
-    if (res > bestdrop) {
-        bestdrop = res;
-        bser1 = ser1;
-        bser2 = ser2;
-    }
-i2done:
-    memcpy(&ctx->state, &oldctx, sizeof(State));
 
-    root = ctx->state.popln->classes[ctx->state.popln->root];
-    i2++;
-    if (i2 <= hiid)
-        goto inner;
-i1done:
-    i1++;
-    if (i1 < hiid)
-        goto outer;
-
-    goto alldone;
-
-alldone:
     if (bser1 < 0) {
         log_msg(ctx, 0, "No possible dad insertions");
-        succ = newser = -1;
-        goto finish;
+        if (ctx->no_subs > 0)
+            ctx->no_subs--;
+        return -1;
     }
     //	Copy population to TrialPop, filled
     newp = copy_population(ctx, ctx->state.popln->id, 1, "TrialPop");
-    if (newp < 0)
-        goto popfails;
+    if (newp < 0) {
+        log_msg(ctx, 0, "Cannot make TrialPop");
+        if (ctx->no_subs > 0)
+            ctx->no_subs--;
+        return -1;
+    }
     ctx->state.popln = ctx->populations[newp];
     root = ctx->state.popln->classes[ctx->state.popln->root];
     log_msg(ctx, 0, "TRYING INSERT %6d,%6d", bser1 >> 2, bser2 >> 2);
@@ -275,44 +268,33 @@ alldone:
     ctx->control = AdjAll;
     if (ctx->heard) {
         log_msg(ctx, 0, "BestInsDad ends prematurely");
-        return (0);
+        if (ctx->no_subs > 0)
+            ctx->no_subs--;
+        return 0;
     }
     if (newser != ctx->state.popln->classes[newid]->serial)
         newser = 0;
+
     //	See if the trial model has improved over original
-    succ = 1;
-    if (root->best_cost < origcost)
-        goto winner;
-    succ = 0;
-    if (force)
-        goto winner;
-    set_bad_move(ctx, 1, bser1, bser2);
-    newser = 0;
-    memcpy(&ctx->state, &oldctx, sizeof(State));
-
-    log_msg(ctx, 0, "Attempted Move Unsuccessful ******");
-    goto finish;
-
-popfails:
-    succ = newser = -1;
-    log_msg(ctx, 0, "Cannot make TrialPop");
-    goto finish;
-
-winner:
-    log_msg(ctx, 0, "%s", (succ) ? "ACCEPTED !!!" : "FORCED");
-    if (ctx->debug < 1)
-        print_tree(ctx);
-    clr_bad_move(ctx);
-    //	Reverse roles of 'work' and TrialPop
-    strcpy(oldctx.popln->name, "TrialPop");
-    strcpy(ctx->state.popln->name, "work");
-    if (succ)
+    if (root->best_cost < origcost || force) {
+        log_msg(ctx, 0, "%s", (root->best_cost < origcost) ? "ACCEPTED !!!" : "FORCED");
+        if (ctx->debug < 1)
+            print_tree(ctx);
+        clr_bad_move(ctx);
+        //	Reverse roles of 'work' and TrialPop
+        strcpy(oldctx.popln->name, "TrialPop");
+        strcpy(ctx->state.popln->name, "work");
         track_best(ctx, 1);
+    } else {
+        set_bad_move(ctx, 1, bser1, bser2);
+        newser = 0;
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        log_msg(ctx, 0, "Attempted Move Unsuccessful ******");
+    }
 
-finish:
     if (ctx->no_subs > 0)
         ctx->no_subs--;
-    return (newser);
+    return newser;
 }
 
 /**
@@ -339,14 +321,14 @@ double splice_dad(SnobContext *ctx, int ser) {
     kk = serial_to_id(ctx, ser);
     cls = popln->classes[kk];
     if (cls->type != Dad)
-        goto finish;
+        return drop;
     if (kk == popln->root)
-        goto finish;
+        return drop;
     kkd = cls->dad_id;
     if (kkd < 0)
-        goto finish;
+        return drop;
     if (cls->num_sons <= 0)
-        goto finish;
+        return drop;
     //	All seems OK. ctx->fix idads in kk's sons
     origcost = root->best_par_cost;
     for (kks = cls->son_id; kks >= 0; kks = son->sib_id) {
@@ -361,8 +343,8 @@ double splice_dad(SnobContext *ctx, int ser) {
     do_dads(ctx, 20);
     newcost = root->best_par_cost;
     drop = origcost - newcost;
-finish:
-    return (drop);
+
+    return drop;
 }
 
 /**
@@ -389,46 +371,54 @@ int best_remove_dad(SnobContext *ctx) {
     origcost = root->best_cost;
     hiid = ctx->state.popln->hi_class;
     memcpy(&oldctx, &ctx->state, sizeof(State));
-    i1 = 0;
-loop:
-    if (i1 == popln->root)
-        goto i1done;
-    cls = ctx->state.popln->classes[i1];
-    if (!cls)
-        goto i1done;
-    if (cls->type != Dad)
-        goto i1done;
-    ser = cls->serial;
-    if (chk_bad_move(ctx, 2, 0, ser))
-        goto i1done;
-    newp = copy_population(ctx, ctx->state.popln->id, 0, "TrialPop");
-    if (newp < 0)
-        goto popfails;
-    popln = ctx->state.popln = ctx->populations[newp];
 
-    root = popln->classes[popln->root];
-    res = splice_dad(ctx, ser);
-    if (res < -1000000.0) {
-        goto i1done;
-    }
-    if (res > bestdrop) {
-        bestdrop = res;
-        bser = ser;
-    }
-i1done:
-    memcpy(&ctx->state, &oldctx, sizeof(State));
+    for (i1 = 0; i1 <= hiid; i1++) {
+        if (i1 == popln->root)
+            continue;
+        cls = ctx->state.popln->classes[i1];
+        if (!cls)
+            continue;
+        if (cls->type != Dad)
+            continue;
+        ser = cls->serial;
+        if (chk_bad_move(ctx, 2, 0, ser))
+            continue;
 
-    i1++;
-    if (i1 <= hiid)
-        goto loop;
+        newp = copy_population(ctx, ctx->state.popln->id, 0, "TrialPop");
+        if (newp < 0) {
+            log_msg(ctx, 0, "Cannot make trial population during parent removal");
+            if (ctx->no_subs > 0)
+                ctx->no_subs--;
+            return -1;
+        }
+        popln = ctx->state.popln = ctx->populations[newp];
+
+        root = popln->classes[popln->root];
+        res = splice_dad(ctx, ser);
+        if (res >= -1000000.0) {
+            if (res > bestdrop) {
+                bestdrop = res;
+                bser = ser;
+            }
+        }
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        popln = ctx->state.popln;
+    }
 
     if (bser < 0) {
         log_msg(ctx, 0, "No possible dad deletions");
-        goto finish;
+        if (ctx->no_subs > 0)
+            ctx->no_subs--;
+        return -1;
     }
+
     newp = copy_population(ctx, ctx->state.popln->id, 1, "TrialPop");
-    if (newp < 0)
-        goto popfails;
+    if (newp < 0) {
+        log_msg(ctx, 0, "Cannot make trial population during parent removal");
+        if (ctx->no_subs > 0)
+            ctx->no_subs--;
+        return -1;
+    }
     popln = ctx->state.popln = ctx->populations[newp];
 
     root = popln->classes[popln->root];
@@ -439,35 +429,29 @@ i1done:
     ctx->control = AdjAll;
     if (ctx->heard) {
         log_msg(ctx, 0, "Parent removals ended prematurely");
-        return (0);
+        if (ctx->no_subs > 0)
+            ctx->no_subs--;
+        return 0;
     }
-    if (root->best_cost < origcost)
-        goto winner;
-    set_bad_move(ctx, 2, 0, bser); // log failure in badmoves
-    bser = 0;
-    memcpy(&ctx->state, &oldctx, sizeof(State));
 
-    log_msg(ctx, 0, "Attempted Move Unsuccessful ******");
-    goto finish;
+    if (root->best_cost < origcost) {
+        clr_bad_move(ctx);
+        log_msg(ctx, 0, "ACCEPTED !!!");
+        if (ctx->debug < 1)
+            print_tree(ctx);
+        strcpy(oldctx.popln->name, "TrialPop");
+        strcpy(ctx->state.popln->name, "work");
+        track_best(ctx, 1);
+    } else {
+        set_bad_move(ctx, 2, 0, bser); // log failure in badmoves
+        bser = 0;
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        log_msg(ctx, 0, "Attempted Move Unsuccessful ******");
+    }
 
-popfails:
-    log_msg(ctx, 0, "Cannot make trial population during parent removal");
-    bser = -1;
-    goto finish;
-
-winner:
-    clr_bad_move(ctx);
-    log_msg(ctx, 0, "ACCEPTED !!!");
-    if (ctx->debug < 1)
-        print_tree(ctx);
-    strcpy(oldctx.popln->name, "TrialPop");
-    strcpy(ctx->state.popln->name, "work");
-    track_best(ctx, 1);
-
-finish:
     if (ctx->no_subs > 0)
         ctx->no_subs--;
-    return (bser);
+    return bser;
 }
 
 /**
@@ -482,45 +466,48 @@ void binary_hierarchy(SnobContext *ctx, int flat) {
     if (flat)
         flatten(ctx);
     ctx->no_subs++;
-    if (ctx->heard)
-        goto kicked;
-    clr_bad_move(ctx);
-insloop:
-    nn = best_insert_dad(ctx, 1);
-    if (ctx->heard)
-        goto kicked;
-    if (nn > 0)
-        goto insloop;
 
-    try_moves(ctx, 2);
-    if (ctx->heard)
-        goto kicked;
+    if (ctx->heard) {
+        nn = find_population(ctx, "work");
+        ctx->state.popln = ctx->populations[nn];
+        log_msg(ctx, 0, "Binary hierarchy ended prematurely");
+    } else {
+        clr_bad_move(ctx);
 
-delloop:
-    nn = best_remove_dad(ctx);
-    if (ctx->heard)
-        goto kicked;
-    if (nn > 0)
-        goto delloop;
+        do {
+            nn = best_insert_dad(ctx, 1);
+            if (ctx->heard)
+                break;
+        } while (nn > 0);
 
-    try_moves(ctx, 2);
-    if (ctx->heard)
-        goto kicked;
+        if (!ctx->heard) {
+            try_moves(ctx, 2);
+            if (!ctx->heard) {
+                do {
+                    nn = best_remove_dad(ctx);
+                    if (ctx->heard)
+                        break;
+                } while (nn > 0);
 
-finish:
+                if (!ctx->heard) {
+                    try_moves(ctx, 2);
+                }
+            }
+        }
+
+        if (ctx->heard) {
+            nn = find_population(ctx, "work");
+            ctx->state.popln = ctx->populations[nn];
+            log_msg(ctx, 0, "Binary hierarchy ended prematurely");
+        }
+    }
+
     if (ctx->debug < 1)
         print_tree(ctx);
     if (ctx->no_subs > 0)
         ctx->no_subs--;
     clr_bad_move(ctx);
     return;
-
-kicked:
-    nn = find_population(ctx, "work");
-    ctx->state.popln = ctx->populations[nn];
-
-    log_msg(ctx, 0, "Binary hierarchy ended prematurely");
-    goto finish;
 }
 
 /**
@@ -537,58 +524,56 @@ void ranclass(SnobContext *ctx, int nn) {
 
     if (!popln) {
         log_msg(ctx, 0, "Ranclass needs a model");
-        goto finish;
+        return;
     }
     if (!popln->sample_size) {
         log_msg(ctx, 0, "Model has no sample");
-        goto finish;
+        return;
     }
     if (nn > (popln->cls_vec_len - 2)) {
         log_msg(ctx, 0, "Too many classes");
-        goto finish;
+        return;
     }
 
     ctx->no_subs = 0;
     delete_all_classes(ctx);
     n = 1;
     if (nn < 2)
-        goto finish;
+        return;
 
-again:
-    if (n >= nn)
-        goto windup;
-    num_son = find_all(ctx, Leaf);
-    //	Locate biggest leaf with subs aged at least ctx->min_age
-    ib = -1;
-    bs = 0.0;
-    for (ic = 0; ic < num_son; ic++) {
-        cls = ctx->sons[ic];
-        if (cls->num_sons < 2)
-            goto icdone;
-        sub = popln->classes[cls->son_id];
-        if (sub->age < ctx->min_age)
-            goto icdone;
-        if (cls->weights_sum > bs) {
-            bs = cls->weights_sum;
-            ib = ic;
+    while (n < nn) {
+        num_son = find_all(ctx, Leaf);
+        //	Locate biggest leaf with subs aged at least ctx->min_age
+        ib = -1;
+        bs = 0.0;
+        for (ic = 0; ic < num_son; ic++) {
+            cls = ctx->sons[ic];
+            if (cls->num_sons < 2)
+                continue;
+            sub = popln->classes[cls->son_id];
+            if (sub->age < ctx->min_age)
+                continue;
+            if (cls->weights_sum > bs) {
+                bs = cls->weights_sum;
+                ib = ic;
+            }
         }
-    icdone:;
+
+        if (ib < 0) {
+            do_all(ctx, 1, 1);
+            continue; // try again
+        }
+
+        //	Split sons[ib]
+        dad = ctx->sons[ib];
+        if (split_leaf(ctx, dad->id))
+            break; // go to windup
+
+        log_msg(ctx, 0, "Splitting %s size%8.1f", serial_to_str(ctx, dad), dad->weights_sum);
+        dad->hold_type = ctx->forever;
+        n++;
     }
 
-    if (ib < 0) {
-        do_all(ctx, 1, 1);
-        goto again;
-    }
-    //	Split sons[ib]
-    dad = ctx->sons[ib];
-    if (split_leaf(ctx, dad->id))
-        goto windup;
-    log_msg(ctx, 0, "Splitting %s size%8.1f", serial_to_str(ctx, dad), dad->weights_sum);
-    dad->hold_type = ctx->forever;
-    n++;
-    goto again;
-
-windup:
     ctx->no_subs = 1;
     do_all(ctx, 5, 1);
     flatten(ctx);
@@ -598,7 +583,6 @@ windup:
         print_tree(ctx);
     root->hold_type = 0;
 
-finish:
     return;
 }
 
@@ -619,28 +603,28 @@ double move_class(SnobContext *ctx, int ser1, int ser2) {
     origcost = root->best_par_cost;
     k1 = serial_to_id(ctx, ser1);
     if (k1 < 0)
-        goto nullit;
+        return -1.0e20;
     k2 = serial_to_id(ctx, ser2);
     if (k2 < 0)
-        goto nullit;
+        return -1.0e20;
     cls1 = popln->classes[k1];
     if (cls1->type == Sub)
-        goto nullit;
+        return -1.0e20;
     cls2 = popln->classes[k2];
     if (cls2->type != Dad) {
         log_msg(ctx, 0, "Class %4d is not a dad", ser2);
-        goto nullit;
+        return -1.0e20;
     }
     //	Check that a change is needed
     if (cls1->dad_id == k2) {
         log_msg(ctx, 0, "No change needed");
-        goto nullit;
+        return -1.0e20;
     }
     //	Check that cls1 is not an ancestor of cls2
     for (od2 = cls2->dad_id; od2 >= 0; od2 = odad->dad_id) {
         if (od2 == k1) {
             log_msg(ctx, 0, "Class %4d is ancestor of class %4d", ser1, ser2);
-            goto nullit;
+            return -1.0e20;
         }
         odad = popln->classes[od2];
     }
@@ -651,25 +635,21 @@ double move_class(SnobContext *ctx, int ser1, int ser2) {
     do_dads(ctx, 30);
     if (popln->sample_size) {
         do_all(ctx, 4, 0);
-        if (ctx->heard)
-            goto kicked;
+        if (ctx->heard) {
+            log_msg(ctx, 0, "Class moves ended prematurely");
+            return -1.0e20;
+        }
         // 	To collect weights, counts
         do_all(ctx, 4, 1);
-        if (ctx->heard)
-            goto kicked;
+        if (ctx->heard) {
+            log_msg(ctx, 0, "Class moves ended prematurely");
+            return -1.0e20;
+        }
     }
     newcost = root->best_par_cost;
     drop = origcost - newcost;
-    goto done;
 
-kicked:
-    log_msg(ctx, 0, "Class moves ended prematurely");
-
-nullit:
-    drop = -1.0e20;
-
-done:
-    return (drop);
+    return drop;
 }
 
 /**
@@ -719,77 +699,81 @@ int best_move_class(SnobContext *ctx, int force) {
     hiid = ctx->state.popln->hi_class;
     if (ctx->state.popln->num_classes < 4) {
         log_msg(ctx, 0, "Model has only%2d class", ctx->state.popln->num_classes);
-        succ = -1;
-        goto alldone;
+        if (ctx->no_subs > 0)
+            ctx->no_subs--;
+        return -1;
     }
     memcpy(&oldctx, &ctx->state, sizeof(State));
 
-    i1 = 0;
-outer:
-    if (i1 == ctx->state.popln->root) {
-        goto i1done;
+    for (i1 = 0; i1 <= hiid; i1++) {
+        if (i1 == ctx->state.popln->root) {
+            continue;
+        }
+        cls1 = ctx->state.popln->classes[i1];
+        if ((!cls1) || (cls1->type == Vacant) || (cls1->type == Sub)) {
+            continue;
+        }
+        ser1 = cls1->serial;
+        for (i2 = 0; i2 <= hiid; i2++) {
+            if (i2 == i1) {
+                continue;
+            }
+            cls2 = ctx->state.popln->classes[i2];
+            if ((!cls2) || (cls2->type != Dad) || (cls1->dad_id == i2)) {
+                continue;
+            }
+            //	Check i1 not an ancestor of i2
+            int is_ancestor = 0;
+            for (od2 = cls2->dad_id; od2 >= 0; od2 = odad->dad_id) {
+                if (od2 == i1) {
+                    is_ancestor = 1;
+                    break;
+                }
+                odad = ctx->state.popln->classes[od2];
+            }
+            if (is_ancestor)
+                continue;
+
+            ser2 = cls2->serial;
+            if (chk_bad_move(ctx, 3, ser1, ser2)) {
+                continue;
+            }
+
+            //	Copy pop to TrialPop, unfilled
+            newp = copy_population(ctx, ctx->state.popln->id, 0, "TrialPop");
+            if (newp < 0) {
+                log_msg(ctx, 0, "Cannot make trial population during class move");
+                if (ctx->no_subs > 0)
+                    ctx->no_subs--;
+                return -1;
+            }
+            ctx->state.popln = ctx->populations[newp];
+            root = ctx->state.popln->classes[ctx->state.popln->root];
+            res = move_class(ctx, ser1, ser2);
+            if (res > bestdrop) {
+                bestdrop = res;
+                bser1 = ser1;
+                bser2 = ser2;
+            }
+            memcpy(&ctx->state, &oldctx, sizeof(State));
+        }
     }
-    cls1 = ctx->state.popln->classes[i1];
-    if ((!cls1) || (cls1->type == Vacant) || (cls1->type == Sub)) {
-        goto i1done;
-    }
-    ser1 = cls1->serial;
-    i2 = 0;
-    while (i2 <= hiid) {
 
-        if (i2 == i1) {
-            goto i2done;
-        }
-        cls2 = ctx->state.popln->classes[i2];
-        if ((!cls2) || (cls2->type != Dad) || (cls1->dad_id == i2)) {
-            goto i2done;
-        }
-        //	Check i1 not an ancestor of i2
-        for (od2 = cls2->dad_id; od2 >= 0; od2 = odad->dad_id) {
-            if (od2 == i1)
-                goto i2done;
-            odad = ctx->state.popln->classes[od2];
-        }
-        ser2 = cls2->serial;
-        if (chk_bad_move(ctx, 3, ser1, ser2)) {
-            goto i2done;
-        }
-
-        //	Copy pop to TrialPop, unfilled
-        newp = copy_population(ctx, ctx->state.popln->id, 0, "TrialPop");
-        if (newp < 0) {
-            goto popfails;
-        }
-        ctx->state.popln = ctx->populations[newp];
-        root = ctx->state.popln->classes[ctx->state.popln->root];
-        res = move_class(ctx, ser1, ser2);
-        if (res > bestdrop) {
-            bestdrop = res;
-            bser1 = ser1;
-            bser2 = ser2;
-        }
-    i2done:
-        memcpy(&ctx->state, &oldctx, sizeof(State));
-        i2++;
-    }
-
-i1done:
-    i1++;
-    if (i1 <= hiid)
-        goto outer;
-
-    goto alldone;
-
-alldone:
     if (bser1 < 0) {
-        succ = -1;
         log_msg(ctx, 0, "No possible class move");
-        goto finish;
+        if (ctx->no_subs > 0)
+            ctx->no_subs--;
+        return -1;
     }
+
     //	Copy pop to TrialPop, filled
     newp = copy_population(ctx, ctx->state.popln->id, 1, "TrialPop");
-    if (newp < 0)
-        goto popfails;
+    if (newp < 0) {
+        log_msg(ctx, 0, "Cannot make trial population during class move");
+        if (ctx->no_subs > 0)
+            ctx->no_subs--;
+        return -1;
+    }
     ctx->state.popln = ctx->populations[newp];
 
     root = ctx->state.popln->classes[ctx->state.popln->root];
@@ -800,40 +784,29 @@ alldone:
     ctx->control = AdjAll;
     if (ctx->heard)
         log_msg(ctx, 0, "Class moves ended prematurely");
+
     //	Setting dogood's target to origcost-1 allows early exit
     //	See if the trial model has improved over original
-    succ = 1;
-    if (root->best_cost < origcost)
-        goto winner;
-    succ = 0;
-    if (force)
-        goto winner;
-    set_bad_move(ctx, 3, bser1, bser2);
-    memcpy(&ctx->state, &oldctx, sizeof(State));
-
-    log_msg(ctx, 0, "Attempted Move Unsuccessful ******");
-    goto finish;
-
-popfails:
-    succ = -1;
-    log_msg(ctx, 0, "Cannot make trial population during class move");
-    goto finish;
-
-winner:
-    log_msg(ctx, 0, "%s", (succ) ? "ACCEPTED !!!" : "FORCED");
-    if (ctx->debug < 1)
-        print_tree(ctx);
-    clr_bad_move(ctx);
-    //	Reverse roles of 'work' and TrialPop
-    strcpy(oldctx.popln->name, "TrialPop");
-    strcpy(ctx->state.popln->name, "work");
-    if (succ)
+    if (root->best_cost < origcost || force) {
+        succ = 1;
+        log_msg(ctx, 0, "%s", (root->best_cost < origcost) ? "ACCEPTED !!!" : "FORCED");
+        if (ctx->debug < 1)
+            print_tree(ctx);
+        clr_bad_move(ctx);
+        //	Reverse roles of 'work' and TrialPop
+        strcpy(oldctx.popln->name, "TrialPop");
+        strcpy(ctx->state.popln->name, "work");
         track_best(ctx, 1);
+    } else {
+        succ = 0;
+        set_bad_move(ctx, 3, bser1, bser2);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        log_msg(ctx, 0, "Attempted Move Unsuccessful ******");
+    }
 
-finish:
     if (ctx->no_subs > 0)
         ctx->no_subs--;
-    return (succ);
+    return succ;
 }
 
 /**
