@@ -18,9 +18,10 @@ if __name__ == "__main__":
             "twist": "real",
         },
         cycles=50,
-        steps=50,
-        moves=4,
-        seed=1234567,
+        steps=100,
+        moves=10,
+        #seed=1234567,
+        tol=1e-3
     )
 
     sfc.fit(train_data)

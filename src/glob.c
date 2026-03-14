@@ -326,6 +326,8 @@ void print_progress(SnobContext *ctx, size_t count, size_t max) {
 Result classify(SnobContext *ctx, const int max_cycles, const int do_steps, const int move_steps, const double tol) {
     Class *root;
     int cycle = 0, prev_classes = 0, prev_leaves = 0, no_change_count = 0;
+    int all_steps = do_steps / 2;
+    int leaf_steps = do_steps / 2;
 
     init_population(ctx);
     cleanup_population(ctx);
@@ -338,21 +340,24 @@ Result classify(SnobContext *ctx, const int max_cycles, const int do_steps, cons
         log_msg(ctx, 1,
                 "=================================================================="
                 "==============");
-        log_msg(ctx, 1, "Cycle %d | %d steps of costing, assignment and adjustments", 1 + cycle, do_steps);
+        log_msg(ctx, 1, "Cycle %d | %d steps of costing, assignment and adjustments", 1 + cycle,
+                all_steps + leaf_steps);
         log_msg(ctx, 1,
                 "=================================================================="
                 "==============");
         do_all(ctx, do_steps, 1);
         cleanup_population(ctx);
+        show_population(ctx);
 
         log_msg(ctx, 1, "Attempting class moves until %d successive failures", move_steps);
         try_moves(ctx, move_steps);
         cleanup_population(ctx);
-
-        log_msg(ctx, 1, "Cost dropped by %8.3f%%", delta);
         show_population(ctx);
+
         root = ctx->state.popln->classes[ctx->state.popln->root];
         delta = fabs(100.0 * (cost - root->best_cost) / cost);
+        log_msg(ctx, 1, "Cost dropped by %8.3f%%", delta);
+
         if ((ctx->state.popln->num_classes > 1)) {
             // test convergence if we are not at the beginning
             if ((prev_classes == ctx->state.popln->num_classes) && (prev_leaves == ctx->state.popln->num_leaves) &&
