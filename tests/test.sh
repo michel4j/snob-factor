@@ -6,6 +6,6 @@ file1="$SCRIPT_DIR/../examples/$1.log"
 file2="testing.log"
 
 # Run program
-./src/auto-snob $SCRIPT_DIR/../examples/$1.{v,s} | tee "$file2"
+$SCRIPT_DIR/../build/auto-snob $SCRIPT_DIR/../examples/$1.{v,s} | tee "$file2"
 
 $SCRIPT_DIR/compare.py "$file1" "$file2"
