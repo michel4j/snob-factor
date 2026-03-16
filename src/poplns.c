@@ -655,7 +655,63 @@ void recordit(FILE *fll, void *from, int nn) {
     }
 }
 
-char *const saveheading = "Scnob-Model-Save-File";
+char *const saveheading = "Snob-Model-V2";
+
+/**
+ * @brief Saves the vset to a binary file.
+ *
+ * @param ctx Pointer to the Snob context.
+ * @param file_ptr Pointer to the file to write to.
+ */
+static void save_vset_binary(SnobContext *ctx, FILE *file_ptr) {
+    int len;
+    VSetVar *var;
+    Attr attr;
+    VarSet *vset = ctx->state.vset;
+
+    len = strlen(vset->name);
+    fwrite(&len, sizeof(int), 1, file_ptr);
+    fwrite(vset->name, sizeof(char), len, file_ptr);
+
+    fwrite(&vset->length, sizeof(int), 1, file_ptr);
+    for (int i = 0; i < vset->length; i++) {
+        attr.index = i;
+        attr.type = vset->variables[i].type + 1;
+        attr.aux = vset->variables[i].vtype->read_aux_attr(ctx, vset->variables[i].vaux);
+        strcpy(attr.name, vset->variables[i].name);
+        fwrite(&attr, sizeof(Attr), 1, file_ptr);
+    }
+}
+
+static int load_vset_binary(SnobContext *ctx, FILE *file_ptr) {
+    int len, num_vars, type, inactive, itype_plus_1, aux, vset_id;
+    Attr attr;
+    char name[80];
+
+    if (fread(&len, sizeof(int), 1, file_ptr) != 1)
+        return -1;
+    if (fread(name, sizeof(char), len, file_ptr) != (size_t)len)
+        return -1;
+    name[len] = '\0';
+
+    if (fread(&num_vars, sizeof(int), 1, file_ptr) != 1)
+        return -1;
+
+    vset_id = create_vset(ctx, name, num_vars);
+    if (vset_id < 0)
+        return vset_id;
+
+    for (int i = 0; i < num_vars; i++) {
+        if (fread(&attr, sizeof(Attr), 1, file_ptr) != 1)
+            return -1;
+
+        if (add_attribute(ctx, i, attr.name, attr.type, attr.aux) < 0) {
+            return -1;
+        }
+    }
+    return vset_id;
+}
+
 /**
  * @brief Copies poplns[p1] into a file called <newname>.
  *
@@ -739,21 +795,19 @@ int save_population(SnobContext *ctx, int p1, int fill, const char *newname) {
         fputc(*jp, file_ptr);
     }
     fputc('\n', file_ptr);
-    for (jp = oldname; *jp; jp++) {
-        fputc(*jp, file_ptr);
-    }
-    fputc('\n', file_ptr);
-    for (jp = popln->vst_name; *jp; jp++) {
-        fputc(*jp, file_ptr);
-    }
-    fputc('\n', file_ptr);
-    for (jp = popln->sample_name; *jp; jp++) {
-        fputc(*jp, file_ptr);
-    }
-    fputc('\n', file_ptr);
-    fprintf(file_ptr, "%4d%10d\n", popln->num_classes, sample_size);
-    fputc('+', file_ptr);
-    fputc('\n', file_ptr);
+
+    save_vset_binary(ctx, file_ptr);
+
+    int str_len = strlen(oldname);
+    fwrite(&str_len, sizeof(int), 1, file_ptr);
+    fwrite(oldname, sizeof(char), str_len, file_ptr);
+
+    str_len = strlen(popln->sample_name);
+    fwrite(&str_len, sizeof(int), 1, file_ptr);
+    fwrite(popln->sample_name, sizeof(char), str_len, file_ptr);
+
+    fwrite(&popln->num_classes, sizeof(int), 1, file_ptr);
+    fwrite(&sample_size, sizeof(int), 1, file_ptr);
 
     //	We must begin copying classes, begining with pop's root
     //	The classes should be lined up in pop->classes
@@ -822,29 +876,63 @@ int load_population(SnobContext *ctx, const char *filename) {
     }
     fscanf(file_ptr, "%s", name);
     if (strcmp(name, saveheading)) {
-        log_msg(ctx, 1, "File is not a Scnob save-file");
+        log_msg(ctx, 1, "File is not a Snob-Model-V2 save-file");
         fclose(file_ptr);
         memcpy(&ctx->state, &oldctx, sizeof(State));
         return indx;
     }
-    fscanf(file_ptr, "%s", pname);
-    log_msg(ctx, 1, "Model %s", pname);
-    fscanf(file_ptr, "%s", name); // Reading v-set name
-    j = find_vset(ctx, name);
-    if (j < 0) {
-        log_msg(ctx, 1, "Model needs variableset %s", name);
-        fclose(file_ptr);
-        memcpy(&ctx->state, &oldctx, sizeof(State));
-        return indx;
-    }
-    ctx->state.vset = ctx->var_sets[j];
-    fscanf(file_ptr, "%s", name);          // Reading sample name
-    fscanf(file_ptr, "%d%d", &fncl, &fnc); // num of classes, cases
-                                           //	Advance to real data
-    while (fgetc(file_ptr) != '+') {
-        // do nothing
-    }
+
+    // Skip the trailing newline after the magic string
     fgetc(file_ptr);
+
+    j = load_vset_binary(ctx, file_ptr);
+    if (j < 0) {
+        log_msg(ctx, 1, "Model failed to load VariableSet");
+        fclose(file_ptr);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return indx;
+    }
+    // ctx->state.vset already set by create_vset implicitly? Yes, create_vset sets ctx->state.vset
+    // However, find_vset is not needed since load_vset_binary loads it into memory.
+
+    int str_len;
+    if (fread(&str_len, sizeof(int), 1, file_ptr) != 1) {
+        fclose(file_ptr);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return indx;
+    }
+    if (fread(pname, sizeof(char), str_len, file_ptr) != (size_t)str_len) {
+        fclose(file_ptr);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return indx;
+    }
+    pname[str_len] = '\0';
+    log_msg(ctx, 1, "Model %s", pname);
+
+    if (fread(&str_len, sizeof(int), 1, file_ptr) != 1) {
+        fclose(file_ptr);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return indx;
+    }
+    if (fread(name, sizeof(char), str_len, file_ptr) != (size_t)str_len) {
+        fclose(file_ptr);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return indx;
+    }
+    name[str_len] = '\0'; // This is the sample name
+
+    if (fread(&fncl, sizeof(int), 1, file_ptr) != 1) {
+        fclose(file_ptr);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return indx;
+    }
+
+    if (fread(&fnc, sizeof(int), 1, file_ptr) != 1) {
+        fclose(file_ptr);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return indx;
+    }
+
     if (fnc) {
         j = find_sample(ctx, name, 1);
         if (j < 0) {

@@ -41,6 +41,21 @@ class Classification(ct.Structure):
         ("message", ct.c_double),
     ]
 
+class Attr(ct.Structure):
+    """Attribute"""
+    _fields_ = [
+        ("name", ct.c_char * 80),
+        ("index", ct.c_int),
+        ("type", ct.c_int),
+        ("aux", ct.c_int),
+    ]
+
+    def to_dict(self):
+        return {
+            "name": self.name.decode("utf-8").strip(),
+            "type": self.type,
+        }
+
 
 lib.initialize.argtypes = [ct.c_int, ct.c_int, ct.c_int]
 lib.initialize.restype = SnobContextPtr
@@ -68,7 +83,8 @@ lib.get_assignments.argtypes = [
 ]
 lib.get_model_details.argtypes = [SnobContextPtr, ct.c_char_p, ct.c_size_t]
 lib.get_class_details.argtypes = [SnobContextPtr, ct.c_char_p, ct.c_size_t]
-
+lib.get_num_vars.argtypes = [SnobContextPtr]
+lib.get_num_vars.restype = ct.c_int
 lib.save_model.argtypes = [SnobContextPtr, ct.c_char_p]
 lib.save_model.restype = ct.c_int
 lib.load_model.argtypes = [SnobContextPtr, ct.c_char_p]
@@ -218,8 +234,10 @@ class SNOBClassifier:
         "degrees": "d",
         "radians": "d",
     }
-
+    attrs: Dict[str, DataType]  # a dictionary mapping attribute  names to attribute types
+    columns: list[str]  # list of attribute names
     summary: Classification | None
+    format: str  # packed format string for attribute value types
     classes_: list  # list of class information after fitting
     num_records: int  # Number of records for fitted data
     num_features: int  # Number of features
@@ -227,7 +245,7 @@ class SNOBClassifier:
 
     def __init__(
         self,
-        attrs: Dict[str, DataType],
+        attrs: Dict[str, DataType] = None,
         cycles: int = 25,
         steps: int = 50,
         moves: int = 4,
@@ -251,10 +269,9 @@ class SNOBClassifier:
 
         self.ctx: SnobContextPtr = 0
         self.has_fit = False
-        self.file_pending = False
         self.from_file: PathLike | None = Path(from_file) if from_file else None
-        self.attrs = attrs
-        self.columns = list(self.attrs.keys())
+        self.fit_pending = False
+
         self.cycles = cycles
         self.steps = steps
         self.moves = moves
@@ -262,26 +279,38 @@ class SNOBClassifier:
         self.name = name
         self.classes_ = []
         self.num_records = 0
-        self.num_features = len(attrs)
+
         self.seed = seed
         self.verbose = verbose
         self.summary = None
         self.encoder: Dict[str, Encoder] = {}
         self.data: pd.DataFrame | None = None
+        if attrs is not None:
+            self._update_attrs(attrs)
+        elif from_file:
+            self.load_model(from_file)
+
+
+    def __str__(self):
+        return f"SNOBClassifier({self.name!r}, attrs={self.attrs!r})"
+
+    def __repr__(self):
+        return str(self)
+
+    def _update_attrs(self, attrs):
+        self.attrs = attrs
+        self.columns = list(self.attrs.keys())
+        self.num_features = len(attrs)
         self.format = "".join(
             self.TypeFormat[type_] for field, type_ in self.attrs.items()
-        )
-
+        )   
         # initialize encoders
         for name, type_ in self.attrs.items():
             if type_ in ["binary", "multi-state"]:
                 self.encoder[name] = CategoryEncoder()
             else:
-                self.encoder[name] = SimpleEncoder(float)
-
-        if self.from_file:
-            self.file_pending = self.has_fit = self.from_file.exists()
-
+                self.encoder[name] = SimpleEncoder(float)     
+        
     @staticmethod
     def get_precision(col) -> float:
         """
@@ -302,7 +331,7 @@ class SNOBClassifier:
         """
 
         if self.ctx == 0:
-            self.ctx = lib.initialize(0, 0 if self.verbose else 1, self.seed)
+            self.ctx = initialize(0 if self.verbose else 1, self.seed)
 
         lib.create_vset(self.ctx, self.name.encode("utf-8"), len(self.attrs))
         # Add attributes
@@ -379,7 +408,7 @@ class SNOBClassifier:
             )
 
         with Timer():
-            self.ctx = lib.initialize(0, 0 if self.verbose else 1, self.seed)
+            self.ctx = initialize(0 if self.verbose else 1, self.seed)
             self.data = data
             self.add_vset(self.data)
             self.num_records = self.add_data(self.data, name=self.name)
@@ -482,23 +511,15 @@ class SNOBClassifier:
         if not self.has_fit:
             print("No fitted model!")
             return pd.DataFrame()
-        elif self.file_pending and data is not None:
-            self.file_pending = False
-            self.ctx = lib.initialize(0, 0 if self.verbose else 1, self.seed)
-            set_control_flags(self.ctx, Adjust.SCORES)
-            self.add_vset(data)
-            self.num_records = self.add_data(data, name=sample_name)
-            file_name = str(self.from_file).encode("utf-8")
-            lib.load_model(self.ctx, file_name)
-            self.summary = lib.get_classification(self.ctx)
-            self.classes_ = self.fetch_classification(self.summary)
-            self.has_fit = True
-            size = self.num_records
-        elif data is not None:
+        elif self.fit_pending and data is not None:
+            # Get model classification
             set_control_flags(self.ctx, Adjust.SCORES)
             with SnobContextManager(self.ctx):
                 size = self.add_data(data, name=sample_name)
             select_sample(self.ctx, sample_name)
+            self.summary = lib.get_classification(self.ctx)
+            self.classes_ = self.fetch_classification(self.summary)
+            self.has_fit = True
         else:
             size = self.num_records
 
@@ -510,6 +531,39 @@ class SNOBClassifier:
             if column in ["major_class", "minor_class"]:
                 new_data[column] = new_data[column].astype(int)
         return new_data
+    
+    def load_model(self, path: PathLike) -> bool:
+        """
+        Load the model from a file
+        :param path: path to model file
+        :return: True if successful, False otherwise
+        """
+
+        if not Path(path).exists():
+            print("Model file does not exist!")
+            return False
+        
+        # Initialize SNOB and read the model form file
+        self.ctx = initialize(0 if self.verbose else 1, self.seed)
+        set_control_flags(self.ctx, Adjust.SCORES)
+        file_name = str(path).encode("utf-8")
+        lib.load_model(self.ctx, file_name)
+
+        # Get model name and attributes
+        inverse_typevar = {code: label for label, code in self.TypeValue.items()}
+        num_attrs = lib.get_num_vars(self.ctx)
+        print(num_attrs)
+        buffer_size = num_attrs * 1024
+        buffer = ct.create_string_buffer(buffer_size)
+        model_info = lib.get_model_details(self.ctx, buffer, buffer_size)
+        self.name = model_info['name']
+        attrs = {
+            var_name: inverse_typevar.get(var_type, 0)
+            for var_name, var_type in json.loads(buffer.value.decode("utf-8")).items()
+        }
+        self._update_attrs(attrs)
+        self.fit_pending = True
+        return True
 
 
 class Adjust(IntFlag):
@@ -681,3 +735,34 @@ def show_classes(info):
             ]
         )
     print(x)
+
+
+def read_attributes(model_file: PathLike) -> list[Attr]:
+    """
+    Read attributes from the model file
+    :param model_file: path to the model file
+    :return: list of attributes
+    """
+
+    with open(model_file, "rb") as f:
+        header = f.readline()
+        if header.decode("utf-8").strip() != "Snob-Model-V2":
+            raise ValueError("Invalid model file")
+        
+        # read model name
+        int_size = struct.calcsize("=i")
+        name_length = struct.unpack("=i", f.read(int_size))[0]
+        name = f.read(name_length).decode("utf-8").strip()
+        print("Model Name", name)
+
+        num_attrs = struct.unpack("=i", f.read(int_size))[0]
+        print("Number of Attributes", num_attrs)
+
+        attrs = [
+            Attr.from_buffer_copy(f.read(ct.sizeof(Attr)))
+            for _ in range(num_attrs)
+        ]
+        return attrs
+
+        
+    

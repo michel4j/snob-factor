@@ -466,3 +466,10 @@ void get_model_details(SnobContext *ctx, char *buffer, size_t buffer_size) {
     }
     print_buffer(ctx, &dest, "]}");
 }
+
+/**
+ * @brief Get the number of variables
+ * @param ctx Pointer to the Snob context.
+ * @return The number of variables
+ */
+int get_num_vars(SnobContext *ctx) { return ctx->state.vset->length; }

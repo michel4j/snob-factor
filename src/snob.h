@@ -246,6 +246,13 @@ typedef struct VSetStruct {
     VSetVar *variables;
 } VarSet;
 
+typedef struct AttrStruct {
+    char name[80]; // Attribute name
+    int index;     // Attribute index
+    int type;      // Type of attribute 1 = real, 2 = Multi-State, 3 = Binary, 4 = Von Mises
+    int aux;       // Auxillary info, ignored by types 1, 3, and 4. Number of states for type 2.
+} Attr;
+
 // ctx->samples
 
 typedef struct SampleVarStruct {
@@ -543,6 +550,7 @@ void select_sample(SnobContext *ctx, char *name);
 void select_population(SnobContext *ctx, char *name);
 void show_pop_names(SnobContext *ctx);
 SnobContext *initialize(int interact, int debug, int seed);
+int get_num_vars(SnobContext *ctx);
 void get_model_details(SnobContext *ctx, char *buffer, size_t buffer_size);
 void get_class_details(SnobContext *ctx, char *buffer, size_t buffer_size);
 void print_buffer(SnobContext *ctx, MemBuffer *buffer, const char *format, ...) FORMAT_PRINTF(3, 4);
