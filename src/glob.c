@@ -344,7 +344,6 @@ Result classify(SnobContext *ctx, const int max_cycles, const int do_steps, cons
                 "==============");
         do_all(ctx, do_steps, 1);
         cleanup_population(ctx);
-        show_population(ctx);
 
         log_msg(ctx, 1, "Attempting class moves until %d successive failures", move_steps);
         try_moves(ctx, move_steps);
