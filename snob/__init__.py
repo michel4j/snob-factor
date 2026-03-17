@@ -54,6 +54,7 @@ class Attr(ct.Structure):
         return {
             "name": self.name.decode("utf-8").strip(),
             "type": self.type,
+            "aux": self.aux,
         }
 
 
@@ -110,7 +111,7 @@ lib.create_sample.argtypes = [
 lib.create_sample.restype = ct.c_int
 
 # add_record
-lib.add_record.argtypes = [SnobContextPtr, ct.c_int]
+lib.add_record.argtypes = [SnobContextPtr, ct.c_int, ct.c_char_p]
 lib.add_record.restype = ct.c_int
 
 # select_sample
@@ -218,6 +219,12 @@ CONVERTERS = {
     "multi-state": int,
 }
 
+AttrType = {
+    1: "real",
+    2: "multi-state",
+    3: "binary",
+    4: "vonmises",
+}
 
 class SNOBClassifier:
     TypeValue = {
@@ -288,7 +295,9 @@ class SNOBClassifier:
         if attrs is not None:
             self._update_attrs(attrs)
         elif from_file:
-            self.load_model(from_file)
+            name, attrs = read_model_attributes(from_file)
+            self.name = name
+            self._update_attrs(attrs)
 
 
     def __str__(self):
@@ -362,7 +371,7 @@ class SNOBClassifier:
         """
         units = np.array(
             [1 if type_ == "degrees" else 0 for name, type_ in self.attrs.items()],
-            dtype="int64",
+            dtype="int32",
         )
         precs = np.array(
             [
@@ -379,7 +388,7 @@ class SNOBClassifier:
             self.ctx,
             name.encode("utf-8"),
             size,
-            units.ctypes.data_as(ct.POINTER(ct.c_int)),
+            units.ctypes.data_as(ct.POINTER(ct.c_int32)),
             precs.ctypes.data_as(ct.POINTER(ct.c_double)),
         )
 
@@ -737,11 +746,26 @@ def show_classes(info):
     print(x)
 
 
-def read_attributes(model_file: PathLike) -> list[Attr]:
+def get_attr_type(attr: Attr) -> str:
+    """
+    Convert attribute type to string
+    :param attr: attribute
+    :return: string representation of attribute type
+    """
+    
+    type_ = AttrType.get(attr.type, 'real')
+    if type_ == 'vonmises' and attr.aux == 0:
+        return "radians"
+    elif type_ == 'vonmises' and attr.aux == 1:
+        return "degrees"
+    else:
+        return type_
+
+def read_model_attributes(model_file: PathLike) -> tuple[str, dict[str, str]]:
     """
     Read attributes from the model file
     :param model_file: path to the model file
-    :return: list of attributes
+    :return: tuple of (model_name, attributes)
     """
 
     with open(model_file, "rb") as f:
@@ -758,11 +782,14 @@ def read_attributes(model_file: PathLike) -> list[Attr]:
         num_attrs = struct.unpack("=i", f.read(int_size))[0]
         print("Number of Attributes", num_attrs)
 
-        attrs = [
+        raw_attrs = [
             Attr.from_buffer_copy(f.read(ct.sizeof(Attr)))
             for _ in range(num_attrs)
         ]
-        return attrs
+        attrs = {
+            attr.name.decode("utf-8"): get_attr_type(attr) for attr in raw_attrs
+        }
+        return name, attrs
 
         
     

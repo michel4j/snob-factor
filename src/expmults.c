@@ -120,6 +120,7 @@ static double *gausorg; // ptr to gaustab[1]
 static void set_var(SnobContext *ctx, int iv, Class *cls);
 static int read_attr_aux(SnobContext *ctx, void *vax);
 static int read_smpl_aux(SnobContext *ctx, void *sax);
+static int get_unit(SnobContext *ctx, int iv);
 static int set_attr_aux(SnobContext *ctx, void *vax, int aux);
 static int set_smpl_aux(SnobContext *ctx, void *sax, int unit, double prec);
 static int read_datum(SnobContext *ctx, char *loc, int iv);
@@ -181,6 +182,7 @@ void expmults_define(SnobContext *ctx, int typindx) {
     vtype->show = &show;
     vtype->set_var = &set_var;
     vtype->details = &details;
+    vtype->get_unit = &get_unit;
 
     /*	Make table of exp (-0.5 * x * x) in gaustab[]
         Entry for x = 0 is at gaustab[1]  */
@@ -243,6 +245,7 @@ int set_attr_aux(SnobContext *ctx, void *vaux, int states) {
  */
 int read_smpl_aux(SnobContext *ctx, void *sax) { return (0); } //	Multistate has no auxilliary info re sample
 int set_smpl_aux(SnobContext *ctx, void *sax, int unit, double prec) { return (0); }
+int get_unit(SnobContext *ctx, int iv) { return (0); }
 
 /**
  * @brief To read a value for this variable type

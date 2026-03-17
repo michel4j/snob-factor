@@ -74,6 +74,7 @@ typedef struct Statsst {
 static void set_var(SnobContext *ctx, int var_index, Class *cls);
 static int read_attr_aux(SnobContext *ctx, void *vax);
 static int read_smpl_aux(SnobContext *ctx, void *sax);
+static int get_unit(SnobContext *ctx, int iv);
 static int set_attr_aux(SnobContext *ctx, void *vax, int aux);
 static int set_smpl_aux(SnobContext *ctx, void *sax, int unit, double prec);
 static int read_datum(SnobContext *ctx, char *loc, int var_index);
@@ -129,6 +130,7 @@ void expbinary_define(SnobContext *ctx, int type_index) {
     vtype->adjust = &adjust;
     vtype->show = &show;
     vtype->set_var = &set_var;
+    vtype->get_unit = &get_unit;
     vtype->details = &details;
 }
 
@@ -161,6 +163,7 @@ int set_attr_aux(SnobContext *ctx, void *vax, int aux) { return (0); }
  */
 int read_smpl_aux(SnobContext *ctx, void *sax) { return (0); } //	Multistate has no auxilliary info re sample
 int set_smpl_aux(SnobContext *ctx, void *sax, int unit, double prec) { return (0); }
+int get_unit(SnobContext *ctx, int iv) { return (0); }
 
 /**
  * @brief Read a value for this variable type

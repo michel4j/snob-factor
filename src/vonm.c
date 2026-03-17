@@ -40,7 +40,7 @@ typedef struct Sauxst {
        value of cos(z) in the range +- eps/2, that is,
        epsfac = 2 sin (eps/2) / eps.   */
     int unit;
-} Saux;
+} VonMisesSaux;
 
 typedef struct Pauxst {
     int dummy;
@@ -109,6 +109,7 @@ static int set_attr_aux(SnobContext *ctx, void *vax, int aux);
 static int set_smpl_aux(SnobContext *ctx, void *sax, int unit, double prec);
 static int read_datum(SnobContext *ctx, char *loc, int iv);
 static int set_datum(SnobContext *ctx, char *loc, int iv, void *value);
+static int get_unit(SnobContext *ctx, int iv);
 static void print_datum(SnobContext *ctx, char *loc);
 static void set_sizes(SnobContext *ctx, int iv);
 static void set_best_pars(SnobContext *ctx, int iv, Class *cls);
@@ -144,7 +145,7 @@ void vonm_define(SnobContext *ctx, int typindx) {
     vtype->data_size = sizeof(Datum);
     vtype->attr_aux_size = sizeof(Vaux);
     vtype->pop_aux_size = sizeof(Paux);
-    vtype->smpl_aux_size = sizeof(Saux);
+    vtype->smpl_aux_size = sizeof(VonMisesSaux);
     vtype->read_aux_attr = &read_attr_aux;
     vtype->read_aux_smpl = &read_smpl_aux;
     vtype->set_aux_attr = &set_attr_aux;
@@ -164,6 +165,7 @@ void vonm_define(SnobContext *ctx, int typindx) {
     vtype->show = &show;
     vtype->set_var = &set_var;
     vtype->details = &details;
+    vtype->get_unit = &get_unit;
 }
 
 /**
@@ -187,6 +189,14 @@ void set_var(SnobContext *ctx, int iv, Class *cls) {
  */
 int read_attr_aux(SnobContext *ctx, void *vax) { return (0); }
 int set_attr_aux(SnobContext *ctx, void *vax, int aux) { return (0); }
+
+/**
+ * @brief To get the unit of a variable of this type in some sample.
+ * @param ctx Pointer to the Snob context.
+ * @param iv
+ */
+int get_unit(SnobContext *ctx, int iv) { return (((VonMisesSaux *)(ctx->state.sample->variables[iv].saux))->unit); }
+
 /**
  * @brief To read any auxiliary info about a variable of this type in some
  * sample.
@@ -213,10 +223,11 @@ int read_smpl_aux(SnobContext *ctx, void *saux) {
     return (0);
 }
 int set_smpl_aux(SnobContext *ctx, void *saux, int unit, double prec) {
-    Saux *sax = (Saux *)saux;
+    VonMisesSaux *sax = (VonMisesSaux *)saux;
 
     sax->unit = unit;
     sax->eps = prec;
+
     if (sax->unit)
         sax->eps *= (SNOB_PI / 180.0);
     if (sax->eps > 0.01)
@@ -249,8 +260,8 @@ int set_datum(SnobContext *ctx, char *loc, int iv, void *value) {
     double epsfac;
     Datum xn;
     SampleVar *smpl_var = &ctx->state.sample->variables[iv];
-    unit = ((Saux *)(smpl_var->saux))->unit;
-    epsfac = ((Saux *)(smpl_var->saux))->epsfac; //	Get quantization effect from Saux
+    unit = ((VonMisesSaux *)(smpl_var->saux))->unit;
+    epsfac = ((VonMisesSaux *)(smpl_var->saux))->epsfac; //	Get quantization effect from Saux
 
     xn.xx = *(double *)(value);
     int active = (isnan(xn.xx)) ? -1 : 1;
@@ -400,7 +411,7 @@ void score_var(SnobContext *ctx, int iv, Class *cls) {
     double dwdt, dwdv, r2, dr2dw;
     VSetVar *vset_var = &ctx->state.vset->variables[iv];
     SampleVar *smpl_var = &ctx->state.sample->variables[iv];
-    Saux *saux = (Saux *)(smpl_var->saux);
+    VonMisesSaux *saux = (VonMisesSaux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
 
     set_var(ctx, iv, cls);
@@ -469,7 +480,7 @@ void cost_var(SnobContext *ctx, int iv, int fac, Class *cls) {
     double del, cost, tt, tsprd, cosw, sinw, r2;
 
     SampleVar *smpl_var = &ctx->state.sample->variables[iv];
-    Saux *saux = (Saux *)(smpl_var->saux);
+    VonMisesSaux *saux = (VonMisesSaux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
 
@@ -530,7 +541,7 @@ void deriv_var(SnobContext *ctx, int iv, int fac, Class *cls) {
     const double case_weight = cls->case_weight;
 
     SampleVar *smpl_var = &ctx->state.sample->variables[iv];
-    Saux *saux = (Saux *)(smpl_var->saux);
+    VonMisesSaux *saux = (VonMisesSaux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
 
@@ -609,7 +620,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
     double hxd1, hyd1, hkd1, hkd2;
 
     SampleVar *smpl_var = &ctx->state.sample->variables[iv];
-    Saux *saux = (Saux *)(smpl_var->saux);
+    VonMisesSaux *saux = (VonMisesSaux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
     Class *dad = (cls->dad_id >= 0) ? ctx->state.popln->classes[cls->dad_id] : 0;
@@ -822,7 +833,7 @@ void adjust(SnobContext *ctx, int iv, int fac, Class *cls) {
 void show(SnobContext *ctx, Class *cls, int iv) {
     double mu, kappa;
     SampleVar *smpl_var = &ctx->state.sample->variables[iv];
-    Saux *saux = (Saux *)(smpl_var->saux);
+    VonMisesSaux *saux = (VonMisesSaux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
 
@@ -856,7 +867,7 @@ void show(SnobContext *ctx, Class *cls, int iv) {
 void details(SnobContext *ctx, Class *cls, int iv, MemBuffer *buffer) {
     double mu, kappa;
     SampleVar *smpl_var = &ctx->state.sample->variables[iv];
-    Saux *saux = (Saux *)(smpl_var->saux);
+    VonMisesSaux *saux = (VonMisesSaux *)(smpl_var->saux);
     Basic *cls_var = (Basic *)cls->basics[iv];
     Stats *exp_var = (Stats *)cls->stats[iv];
     VSetVar *vset_var = &ctx->state.vset->variables[iv];

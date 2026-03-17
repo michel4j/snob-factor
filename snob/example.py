@@ -12,7 +12,7 @@ if __name__ == "__main__":
     train_data = pd.read_csv("./examples/vmd.csv")
     attrs = {
         "v1": "radians",
-        "v2": "radians",
+        "v2": "degrees",
         "v3": "radians",
         "v4": "radians",
         "v5": "radians",

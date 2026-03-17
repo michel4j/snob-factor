@@ -203,6 +203,7 @@ typedef struct VarTypeStruct {
     int (*set_aux_attr)(SnobContext *ctx, void *vax, int aux);               // Func to add attribute aux info directly
     int (*set_aux_smpl)(SnobContext *ctx, void *sax, int unit, double prec); // Func to add sample aux info directly
     int (*set_datum)(SnobContext *ctx, char *loc, int iv, void *value);      // Func to add a datum
+    int (*get_unit)(SnobContext *ctx, int iv); // Func to get the unit of a variable of this type in some sample
 } VarType;
 
 /**
