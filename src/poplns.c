@@ -655,7 +655,59 @@ void recordit(FILE *fll, void *from, int nn) {
     }
 }
 
-char *const saveheading = "Scnob-Model-Save-File";
+char *const saveheading = "Snob-Model-V2";
+
+/**
+ * @brief Saves the vset to a binary file.
+ *
+ * @param ctx Pointer to the Snob context.
+ * @param file_ptr Pointer to the file to write to.
+ */
+static void save_vset_binary(SnobContext *ctx, FILE *file_ptr) {
+    int len;
+    Attr attr;
+    VarSet *vset = ctx->state.vset;
+    VSetVar *vset_var;
+
+    len = strlen(vset->name);
+    fwrite(&len, sizeof(int), 1, file_ptr);
+    fwrite(vset->name, sizeof(char), len, file_ptr);
+
+    fwrite(&vset->length, sizeof(int), 1, file_ptr);
+    for (int i = 0; i < vset->length; i++) {
+        attr.index = i;
+        attr.type = vset->variables[i].type + 1;
+        attr.aux = vset->variables[i].vtype->read_aux_attr(ctx, vset->variables[i].vaux);
+        if (attr.type == 4) {
+            vset_var = &vset->variables[i];
+            attr.aux = vset_var->vtype->get_unit(ctx, i);
+        }
+        strcpy(attr.name, vset->variables[i].name);
+        fwrite(&attr, sizeof(Attr), 1, file_ptr);
+    }
+}
+
+static int load_vset_binary(SnobContext *ctx, FILE *file_ptr) {
+    int len, num_vars;
+    Attr attr;
+    char name[80];
+
+    if (fread(&len, sizeof(int), 1, file_ptr) != 1)
+        return -1;
+    if (fread(name, sizeof(char), len, file_ptr) != (size_t)len)
+        return -1;
+    name[len] = '\0';
+
+    if (fread(&num_vars, sizeof(int), 1, file_ptr) != 1)
+        return -1;
+
+    for (int i = 0; i < num_vars; i++) {
+        if (fread(&attr, sizeof(Attr), 1, file_ptr) != 1)
+            return -1;
+    }
+    return 0;
+}
+
 /**
  * @brief Copies poplns[p1] into a file called <newname>.
  *
@@ -739,21 +791,19 @@ int save_population(SnobContext *ctx, int p1, int fill, const char *newname) {
         fputc(*jp, file_ptr);
     }
     fputc('\n', file_ptr);
-    for (jp = oldname; *jp; jp++) {
-        fputc(*jp, file_ptr);
-    }
-    fputc('\n', file_ptr);
-    for (jp = popln->vst_name; *jp; jp++) {
-        fputc(*jp, file_ptr);
-    }
-    fputc('\n', file_ptr);
-    for (jp = popln->sample_name; *jp; jp++) {
-        fputc(*jp, file_ptr);
-    }
-    fputc('\n', file_ptr);
-    fprintf(file_ptr, "%4d%10d\n", popln->num_classes, sample_size);
-    fputc('+', file_ptr);
-    fputc('\n', file_ptr);
+
+    save_vset_binary(ctx, file_ptr);
+
+    int str_len = strlen(oldname);
+    fwrite(&str_len, sizeof(int), 1, file_ptr);
+    fwrite(oldname, sizeof(char), str_len, file_ptr);
+
+    str_len = strlen(popln->sample_name);
+    fwrite(&str_len, sizeof(int), 1, file_ptr);
+    fwrite(popln->sample_name, sizeof(char), str_len, file_ptr);
+
+    fwrite(&popln->num_classes, sizeof(int), 1, file_ptr);
+    fwrite(&sample_size, sizeof(int), 1, file_ptr);
 
     //	We must begin copying classes, begining with pop's root
     //	The classes should be lined up in pop->classes
@@ -822,29 +872,55 @@ int load_population(SnobContext *ctx, const char *filename) {
     }
     fscanf(file_ptr, "%s", name);
     if (strcmp(name, saveheading)) {
-        log_msg(ctx, 1, "File is not a Scnob save-file");
+        log_msg(ctx, 1, "File is not a Snob-Model-V2 save-file");
         fclose(file_ptr);
         memcpy(&ctx->state, &oldctx, sizeof(State));
         return indx;
     }
-    fscanf(file_ptr, "%s", pname);
-    log_msg(ctx, 1, "Model %s", pname);
-    fscanf(file_ptr, "%s", name); // Reading v-set name
-    j = find_vset(ctx, name);
-    if (j < 0) {
-        log_msg(ctx, 1, "Model needs variableset %s", name);
-        fclose(file_ptr);
-        memcpy(&ctx->state, &oldctx, sizeof(State));
-        return indx;
-    }
-    ctx->state.vset = ctx->var_sets[j];
-    fscanf(file_ptr, "%s", name);          // Reading sample name
-    fscanf(file_ptr, "%d%d", &fncl, &fnc); // num of classes, cases
-                                           //	Advance to real data
-    while (fgetc(file_ptr) != '+') {
-        // do nothing
-    }
+
+    // Skip the trailing newline after the magic string
     fgetc(file_ptr);
+
+    load_vset_binary(ctx, file_ptr);
+
+    int str_len;
+    if (fread(&str_len, sizeof(int), 1, file_ptr) != 1) {
+        fclose(file_ptr);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return indx;
+    }
+    if (fread(pname, sizeof(char), str_len, file_ptr) != (size_t)str_len) {
+        fclose(file_ptr);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return indx;
+    }
+    pname[str_len] = '\0';
+    log_msg(ctx, 1, "Model %s", pname);
+
+    if (fread(&str_len, sizeof(int), 1, file_ptr) != 1) {
+        fclose(file_ptr);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return indx;
+    }
+    if (fread(name, sizeof(char), str_len, file_ptr) != (size_t)str_len) {
+        fclose(file_ptr);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return indx;
+    }
+    name[str_len] = '\0'; // This is the sample name
+
+    if (fread(&fncl, sizeof(int), 1, file_ptr) != 1) {
+        fclose(file_ptr);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return indx;
+    }
+
+    if (fread(&fnc, sizeof(int), 1, file_ptr) != 1) {
+        fclose(file_ptr);
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return indx;
+    }
+
     if (fnc) {
         j = find_sample(ctx, name, 1);
         if (j < 0) {
@@ -979,25 +1055,39 @@ int set_work_population(SnobContext *ctx, int pp) {
     windx = -1;
     memcpy(&oldctx, &ctx->state, sizeof(State));
     fpop = 0;
-    if (pp < 0)
-        goto error;
+    
+    if (pp < 0) {
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return windx;
+    }
+    
     fpop = popln = ctx->populations[pp];
-    if (!popln)
-        goto error;
+    if (!popln) {
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return windx;
+    }
+    
     //	Save the 'nc' of the popln to be loaded
     fpopnc = popln->sample_size;
+    
     //	Check popln vset
     j = find_vset(ctx, popln->vst_name);
     if (j < 0) {
         log_msg(ctx, 1, "Load cannot find variable set");
-        goto error;
+        fpop->sample_size = fpopnc;
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return windx;
     }
     ctx->state.vset = ctx->var_sets[j];
+    
     //	Check VarSet
     if (ctx->state.sample && strcmp(ctx->state.vset->name, oldctx.sample->vset_name)) {
         log_msg(ctx, 1, "Picked popln has incompatible VariableSet");
-        goto error;
+        fpop->sample_size = fpopnc;
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+        return windx;
     }
+    
     //	Check sample
     if (fpopnc && strcmp(popln->sample_name, oldctx.sample->name)) {
         log_msg(ctx, 1, "Picked popln attached to non-current sample.");
@@ -1007,38 +1097,47 @@ int set_work_population(SnobContext *ctx, int pp) {
 
     ctx->state.sample = oldctx.sample;
     windx = copy_population(ctx, pp, 1, "work");
-    if (windx < 0)
-        goto error;
-    if (ctx->populations[pp]->sample_size)
-        goto finish;
+    
+    if (windx < 0) {
+        memcpy(&ctx->state, &oldctx, sizeof(State));
+    } else if (ctx->populations[pp]->sample_size == 0) {
+        /*	The popln was copied as if unattached, so scores, weights must be
+            fixed  */
+        log_msg(ctx, 1, "Model will have weights, scores adjusted to sample.");
+        ctx->fix = Partial;
+        ctx->control = AdjSc;
 
-    /*	The popln was copied as if unattached, so scores, weights must be
-        fixed  */
-    log_msg(ctx, 1, "Model will have weights, scores adjusted to sample.");
-    ctx->fix = Partial;
-    ctx->control = AdjSc;
-fixscores:
-    ctx->see_all = 16;
-    do_all(ctx, 15, 0);
-    //	doall should leave a count of score changes in global
-    log_msg(ctx, 1, "%8d  score changes", ctx->score_changes);
-    if (ctx->heard) {
-        log_msg(ctx, 1, "Score fixing stopped prematurely");
-    } else if (ctx->score_changes > 1)
-        goto fixscores;
-    ctx->fix = ctx->d_fix;
-    ctx->control = ctx->d_control;
-    goto finish;
+        int retries = 0;
+        double prev_cost;
 
-error:
-    memcpy(&ctx->state, &oldctx, sizeof(State));
-finish:
+        do {
+            prev_cost = ctx->state.popln->classes[ctx->state.popln->root]->best_cost;
+            ctx->see_all = 16;
+            do_all(ctx, 15, 0);
+            //	doall should leave a count of score changes in global
+            log_msg(ctx, 1, "%8d  score changes", ctx->score_changes);
+            if (ctx->heard) {
+                log_msg(ctx, 1, "Score fixing stopped prematurely");
+                break;
+            }
+            if (ctx->state.popln->classes[ctx->state.popln->root]->best_cost >= prev_cost - ctx->min_gain) {
+                log_msg(ctx, 1, "Score fixing reached convergence in cost");
+                break;
+            }
+            retries++;
+        } while ((ctx->score_changes > 1) && (retries < 10));
+
+        ctx->fix = ctx->d_fix;
+        ctx->control = ctx->d_control;
+    }
+
     //	Restore 'nc' of copied popln
     if (fpop)
         fpop->sample_size = fpopnc;
     if ((windx >= 0) && (ctx->debug < 1))
         print_tree(ctx);
-    return (windx);
+        
+    return windx;
 }
 
 /**
