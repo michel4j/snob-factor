@@ -73,6 +73,7 @@ typedef struct Statsst { // Stuff accumulated to revise Basic
 static void set_var(SnobContext *ctx, int iv, Class *cls);
 static int read_attr_aux(SnobContext *ctx, void *vax);
 static int read_smpl_aux(SnobContext *ctx, void *sax);
+static int get_unit(SnobContext *ctx, int iv);
 static int set_attr_aux(SnobContext *ctx, void *vax, int aux);
 static int set_smpl_aux(SnobContext *ctx, void *sax, int unit, double prec);
 static int read_datum(SnobContext *ctx, char *loc, int iv);
@@ -132,6 +133,7 @@ void reals_define(SnobContext *ctx, int typindx) {
     vtype->show = &show;
     vtype->set_var = &set_var;
     vtype->details = &details;
+    vtype->get_unit = &get_unit;
 }
 
 /**
@@ -155,6 +157,7 @@ void set_var(SnobContext *ctx, int iv, Class *cls) {
  */
 int read_attr_aux(SnobContext *ctx, void *vax) { return (0); }
 int set_attr_aux(SnobContext *ctx, void *vax, int aux) { return (0); }
+int get_unit(SnobContext *ctx, int iv) { return (0); }
 
 /**
  * @brief To read any auxiliary info about a variable of this type in some
@@ -337,7 +340,8 @@ void score_var(SnobContext *ctx, int iv, Class *cls) {
     if (saux->missing)
         return;
     del = cls_var->fmu + ctx->scores.case_fac_score * cls_var->ld - saux->xn;
-    ctx->scores.case_fac_score_d1 += exp_var->frsds * (del * cls_var->ld + ctx->scores.case_fac_score * cls_var->ldsprd);
+    ctx->scores.case_fac_score_d1 +=
+        exp_var->frsds * (del * cls_var->ld + ctx->scores.case_fac_score * cls_var->ldsprd);
     md2 = exp_var->frsds * (exp_var->ldsq + cls_var->ldsprd);
     ctx->scores.case_fac_score_d2 += md2;
     ctx->scores.est_fac_score_d2 += 1.1 * md2;

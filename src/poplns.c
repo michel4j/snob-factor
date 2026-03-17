@@ -665,9 +665,9 @@ char *const saveheading = "Snob-Model-V2";
  */
 static void save_vset_binary(SnobContext *ctx, FILE *file_ptr) {
     int len;
-    VSetVar *var;
     Attr attr;
     VarSet *vset = ctx->state.vset;
+    VSetVar *vset_var;
 
     len = strlen(vset->name);
     fwrite(&len, sizeof(int), 1, file_ptr);
@@ -678,13 +678,17 @@ static void save_vset_binary(SnobContext *ctx, FILE *file_ptr) {
         attr.index = i;
         attr.type = vset->variables[i].type + 1;
         attr.aux = vset->variables[i].vtype->read_aux_attr(ctx, vset->variables[i].vaux);
+        if (attr.type == 4) {
+            vset_var = &vset->variables[i];
+            attr.aux = vset_var->vtype->get_unit(ctx, i);
+        }
         strcpy(attr.name, vset->variables[i].name);
         fwrite(&attr, sizeof(Attr), 1, file_ptr);
     }
 }
 
 static int load_vset_binary(SnobContext *ctx, FILE *file_ptr) {
-    int len, num_vars, type, inactive, itype_plus_1, aux, vset_id;
+    int len, num_vars;
     Attr attr;
     char name[80];
 
@@ -697,19 +701,11 @@ static int load_vset_binary(SnobContext *ctx, FILE *file_ptr) {
     if (fread(&num_vars, sizeof(int), 1, file_ptr) != 1)
         return -1;
 
-    vset_id = create_vset(ctx, name, num_vars);
-    if (vset_id < 0)
-        return vset_id;
-
     for (int i = 0; i < num_vars; i++) {
         if (fread(&attr, sizeof(Attr), 1, file_ptr) != 1)
             return -1;
-
-        if (add_attribute(ctx, i, attr.name, attr.type, attr.aux) < 0) {
-            return -1;
-        }
     }
-    return vset_id;
+    return 0;
 }
 
 /**
@@ -885,15 +881,7 @@ int load_population(SnobContext *ctx, const char *filename) {
     // Skip the trailing newline after the magic string
     fgetc(file_ptr);
 
-    j = load_vset_binary(ctx, file_ptr);
-    if (j < 0) {
-        log_msg(ctx, 1, "Model failed to load VariableSet");
-        fclose(file_ptr);
-        memcpy(&ctx->state, &oldctx, sizeof(State));
-        return indx;
-    }
-    // ctx->state.vset already set by create_vset implicitly? Yes, create_vset sets ctx->state.vset
-    // However, find_vset is not needed since load_vset_binary loads it into memory.
+    load_vset_binary(ctx, file_ptr);
 
     int str_len;
     if (fread(&str_len, sizeof(int), 1, file_ptr) != 1) {

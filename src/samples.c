@@ -51,6 +51,33 @@ void peek_data(SnobContext *ctx) {
     }
     printf("\n");
 
+    // print types
+    printf("%9s ", "type");
+    for (int i = 0; i < ctx->state.vset->length; i++) {
+        if ((ctx->state.vset->length > 10) && (i > 5) && (i < ctx->state.vset->length - 5))
+            continue;
+        if ((i == 5) && (ctx->state.vset->length > 10)) {
+            printf("%9s ", "...");
+        } else {
+            printf("%9d ", ctx->state.vset->variables[i].vtype->id + 1);
+        }
+    }
+    printf("\n");
+
+    // print units
+    printf("%9s ", "units");
+    for (int i = 0; i < ctx->state.vset->length; i++) {
+        if ((ctx->state.vset->length > 10) && (i > 5) && (i < ctx->state.vset->length - 5))
+            continue;
+        vset_var = &ctx->state.vset->variables[i];
+        if ((i == 5) && (ctx->state.vset->length > 10)) {
+            printf("%9s ", "...");
+        } else {
+            printf("%9d ", vset_var->vtype->get_unit(ctx, i));
+        }
+    }
+    printf("\n");
+
     for (int n = 0; n < ctx->state.sample->num_cases; n++) {
         if ((ctx->state.sample->num_cases > 20) && (n > 5) && (n < ctx->state.sample->num_cases - 5))
             continue;
