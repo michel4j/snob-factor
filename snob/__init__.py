@@ -295,6 +295,7 @@ class SNOBClassifier:
         if attrs is not None:
             self._update_attrs(attrs)
         elif from_file:
+            self.fit_pending = True
             name, attrs = read_model_attributes(from_file)
             self.name = name
             self._update_attrs(attrs)
@@ -517,18 +518,26 @@ class SNOBClassifier:
             )
 
         sample_name = str(uuid.uuid4())[:8] if name is None else name
-        if not self.has_fit:
+        if not (self.has_fit or self.fit_pending):
             print("No fitted model!")
             return pd.DataFrame()
         elif self.fit_pending and data is not None:
-            # Get model classification
+            self.fit_pending = False
+            self.ctx = lib.initialize(0, 0 if self.verbose else 1, self.seed)
+            set_control_flags(self.ctx, Adjust.SCORES)
+            self.add_vset(data)
+            self.num_records = self.add_data(data, name=sample_name)
+            file_name = str(self.from_file).encode("utf-8")
+            lib.load_model(self.ctx, file_name)
+            self.summary = lib.get_classification(self.ctx)
+            self.classes_ = self.fetch_classification(self.summary)
+            self.has_fit = True
+            size = self.num_records
+        elif data is not None:
             set_control_flags(self.ctx, Adjust.SCORES)
             with SnobContextManager(self.ctx):
                 size = self.add_data(data, name=sample_name)
             select_sample(self.ctx, sample_name)
-            self.summary = lib.get_classification(self.ctx)
-            self.classes_ = self.fetch_classification(self.summary)
-            self.has_fit = True
         else:
             size = self.num_records
 

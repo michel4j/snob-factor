@@ -36,6 +36,6 @@ if __name__ == "__main__":
     # create a new classifier from the model
     sfc2 = snob.SNOBClassifier(from_file="/tmp/vmd_test.mod")
     pred2 = sfc2.predict(train_data)
-    print(sfc2.get_classes())
+    snob.show_classes(sfc2.get_classes())
     print(pred2)
     
