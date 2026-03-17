@@ -17,10 +17,7 @@ from numpy.typing import NDArray
 import numpy as np
 import pandas as pd
 
-try:
-    __version__ = version("snob")
-except PackageNotFoundError:
-    __version__ = "0.0.0"
+__version__ = "0.0.0"
 
 # Load the shared library
 lib_path = os.path.join(os.path.dirname(__file__), "_snob.so")
@@ -422,6 +419,11 @@ class SNOBClassifier:
                 {field: data[:, i] for i, field in enumerate(self.columns)}
             )
 
+        # check that data has same columns as model
+        if not set(self.columns).issubset(data.columns):
+            missing_cols = set(self.columns) - set(data.columns)
+            raise ValueError(f"Model attributes {missing_cols} are not in the data.")
+        
         with Timer():
             self.ctx = initialize(0 if self.verbose else 1, self.seed)
             self.data = data
@@ -521,6 +523,10 @@ class SNOBClassifier:
             data = pd.DataFrame(
                 {field: data[:, i] for i, field in enumerate(self.columns)}
             )
+        
+        if not set(self.columns).issubset(data.columns):
+            missing_cols = set(self.columns) - set(data.columns)
+            raise ValueError(f"Model attributes {missing_cols} are not in the data.")
 
         sample_name = str(uuid.uuid4())[:8] if name is None else name
         if not (self.has_fit or self.fit_pending):

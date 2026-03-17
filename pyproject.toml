@@ -61,6 +61,8 @@ enable = true
 vcs = "git"
 format = "{base}.{revision}{distance}"
 
+[tool.poetry-dynamic-versioning.substitution]
+files = ["snob/__init__.py"]
 
 [tool.poetry.group.docs.dependencies]
 sphinx = "^7.0.0"
