@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from numpy.testing import verbose
 import os
 import sys
 from pathlib import Path
@@ -28,6 +29,6 @@ if __name__ == "__main__":
         print(f"Classifying: {name}")
 
         classes = snob.classify(
-            vset_file, sample_file, cycles=25, steps=50, moves=4, seed=1234567, tol=5e-3
+            vset_file, sample_file, cycles=10, steps=50, moves=2, seed=1234567, verbose=True
         )
         snob.show_classes(classes)

@@ -20,10 +20,11 @@ if __name__ == "__main__":
     sfc = snob.SNOBClassifier(
         name="vmd_test",
         attrs=attrs,
-        cycles=50,
+        cycles=3,
         steps=50,
-        moves=4,
+        moves=2,
         seed=1234567,
+        verbose=True
     )
 
     sfc.fit(train_data)

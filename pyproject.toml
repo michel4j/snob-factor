@@ -61,6 +61,7 @@ enable = true
 vcs = "git"
 format = "{base}.{revision}{distance}"
 
+
 [tool.poetry.group.docs.dependencies]
 sphinx = "^7.0.0"
 myst-parser = "^3.0.0"

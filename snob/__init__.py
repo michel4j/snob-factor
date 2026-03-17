@@ -11,10 +11,16 @@ import uuid
 from enum import IntFlag, auto
 from pathlib import Path
 from typing import Dict, Literal, Any, Sequence
+from importlib.metadata import version, PackageNotFoundError
 
 from numpy.typing import NDArray
 import numpy as np
 import pandas as pd
+
+try:
+    __version__ = version("snob")
+except PackageNotFoundError:
+    __version__ = "0.0.0"
 
 # Load the shared library
 lib_path = os.path.join(os.path.dirname(__file__), "_snob.so")
@@ -383,7 +389,6 @@ class SNOBClassifier:
             ],
             dtype="float64",
         )
-
         size = len(data.index)
         lib.create_sample(
             self.ctx,
@@ -651,6 +656,7 @@ def classify(
     moves: int = 3,
     seed: int = 0,
     tol: float = 1e-2,
+    verbose: bool = False,
 ):
     """
     Run a classification based on vset and sample files like original SNOB
@@ -664,7 +670,7 @@ def classify(
     :return: list of class dictionaries
     """
     with Timer():
-        ctx = initialize(log_level=1, seed=seed)
+        ctx = initialize(log_level=0 if verbose else 1, seed=seed)
         lib.load_vset(ctx, str(vset_file).encode("utf-8"))
         lib.load_sample(ctx, str(sample_file).encode("utf-8"))
         lib.peek_data(ctx)
