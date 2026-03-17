@@ -104,7 +104,7 @@ def train_and_save_model():
         name="vmd_test",
         attrs={
             "v1": "real",
-            "v2": "real",
+            "v2": "degrees",
             "v3": "real",
             "v4": "real",
             "v5": "real",
@@ -130,21 +130,7 @@ To reload a trained model for prediction:
 ```python
 def load_and_predict():
     # Load the model
-    sfc = snob.SNOBClassifier(
-        name="vmd_test",
-        attrs={
-            "v1": "real",
-            "v2": "real",
-            "v3": "real",
-            "v4": "real",
-            "v5": "real",
-        },
-        cycles=50,
-        steps=50,
-        moves=4,
-        seed=1234567,
-        from_file="vmd_test.mod"    # load trained model
-    )
+    sfc = snob.SNOBClassifier(from_file="vmd_test.mod")
     
     # Load dataset
     new_data = pd.read_csv("./test_data.csv")
