@@ -26,6 +26,8 @@ packages = [{ include = "snob" }]
 include = [
     { path = "snob/_snob.so", format = "wheel" },
     { path = "docs/**", format = ["sdist"]},
+    { path = "snob/**.py", format = ["sdist"]},
+    { path = "src/**", format = ["sdist"]},
     { path = "examples/**", format = ["sdist"]},
     { path = "LICENSE", format = ["sdist"]},
     { path = "README.md", format = ["sdist"]},
