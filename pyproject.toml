@@ -24,8 +24,17 @@ build-backend = "poetry_dynamic_versioning.backend"
 [tool.poetry]
 packages = [{ include = "snob" }]
 include = [
-    { path = "snob/_snob.so", format = "wheel" }
-]
+    { path = "snob/_snob.so", format = "wheel" },
+    { path = "docs/**", format = ["sdist"]},
+    { path = "examples/**", format = ["sdist"]},
+    { path = "LICENSE", format = ["sdist"]},
+    { path = "README.md", format = ["sdist"]},
+    { path = "build-package.py", format = ["sdist"]},
+    { path = "pyproject.toml", format = ["sdist"]},
+    { path = "poetry.toml", format = ["sdist"]},
+    { path = "CMakeLists.txt", format = ["sdist"]},
+]    
+
 build = "build-package.py"
 
 classifiers = [
