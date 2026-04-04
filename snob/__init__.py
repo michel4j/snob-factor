@@ -220,25 +220,31 @@ CONVERTERS = {
     "degrees": float,
     "radians": float,
     "multi-state": int,
+    "gaussian": float,
+    "von-mises-fisher": float,
 }
 
 AttrType = {
-    1: "real",
+    1: "gaussian",
     2: "multi-state",
     3: "binary",
-    4: "vonmises",
+    4: "von-mises-fisher",
 }
 
 class SNOBClassifier:
     TypeValue = {
         "real": 1,
+        "gaussian": 1,
         "multi-state": 2,
         "binary": 3,
+        "von-mises-fisher": 4,
         "degrees": 4,
         "radians": 4,
     }
     TypeFormat = {
         "real": "d",
+        "gaussian": "d",
+        "von-mises-fisher": "d",
         "multi-state": "i",
         "binary": "i",
         "degrees": "d",
@@ -255,7 +261,8 @@ class SNOBClassifier:
 
     def __init__(
         self,
-        attrs: Dict[str, DataType] = None,
+        attrs: dict[str, DataType] = None,
+        models: list[dict] = None,
         cycles: int = 25,
         steps: int = 50,
         moves: int = 4,
@@ -266,7 +273,8 @@ class SNOBClassifier:
         from_file: PathLike = None,
     ):
         """
-        :param attrs: a dictionary mapping attribute  names to attribute types
+        :param attrs: a dictionary mapping attribute  names to attribute types optional if models is provided
+        :param models: a list of dictionaries, each containing the keys "name", "attrs", "epsilon", etc.
         :param cycles: Maximum number of cost-assign-adjust-move cycles
         :param steps: number of steps of cost-assign-adjust
         :param moves: maximum number of failed attempts to move classes
@@ -295,6 +303,20 @@ class SNOBClassifier:
         self.summary = None
         self.encoder: Dict[str, Encoder] = {}
         self.data: pd.DataFrame | None = None
+        self.epsilons = {}
+        self.units = {}
+
+        if models:
+            attrs = {
+                attr: model['name'] for model in models for attr in model['attrs']
+            }
+            self.epsilons = {
+                attr: model['epsilon'] for model in models for attr in model['attrs'] if 'epsilon' in model
+            }
+            self.units = {
+                attr: model['units'] for model in models for attr in model['attrs'] if 'units' in model
+            }
+
         if attrs is not None:
             self._update_attrs(attrs)
         elif from_file:
@@ -322,15 +344,20 @@ class SNOBClassifier:
             if type_ in ["binary", "multi-state"]:
                 self.encoder[name] = CategoryEncoder()
             else:
-                self.encoder[name] = SimpleEncoder(float)     
+                self.encoder[name] = SimpleEncoder(float)
+            if type_ in ['degrees', 'radians']:
+                self.units[name] = type_
+                self.attrs[name] = 'von-mises-fisher'
         
-    @staticmethod
     def get_precision(col) -> float:
         """
         Given an array of floats, return the estimated precision of the values
         :param col: array
         :return: integer
         """
+        if col in self.epsilons:
+            return self.epsilons[col]
+
         err = 1e-6
         prec = 1
         while prec < 6 and (col - col.round(prec)).abs().mean() * 10**prec > err:
@@ -374,7 +401,7 @@ class SNOBClassifier:
         :return: the number of cases added
         """
         units = np.array(
-            [1 if type_ == "degrees" else 0 for name, type_ in self.attrs.items()],
+            [1 if self.units.get(name, "radians") == "degrees" else 0 for name in self.columns],
             dtype="int32",
         )
         precs = np.array(

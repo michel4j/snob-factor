@@ -14,8 +14,8 @@ if __name__ == "__main__":
         name="sst_test",
         attrs={
             "stretch": "real",
-            "curve": "real",
-            "twist": "real",
+            "curve": "radians",
+            "twist": "radians",
         },
         cycles=50,
         steps=100,
