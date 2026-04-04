@@ -306,6 +306,11 @@ class SNOBClassifier:
         self.epsilons = {}
         self.units = {}
 
+        if from_file:
+            self.fit_pending = True
+            name, models = read_model_attributes(from_file)
+            self.name = name
+        
         if models:
             attrs = {
                 attr: model['name'] for model in models for attr in model['attrs']
@@ -313,18 +318,20 @@ class SNOBClassifier:
             self.epsilons = {
                 attr: model['epsilon'] for model in models for attr in model['attrs'] if 'epsilon' in model
             }
-            self.units = {
+            self.units.update({
                 attr: model['units'] for model in models for attr in model['attrs'] if 'units' in model
-            }
+            })
+        
+        self._update_attrs(attrs)
 
-        if attrs is not None:
-            self._update_attrs(attrs)
-        elif from_file:
-            self.fit_pending = True
-            name, attrs = read_model_attributes(from_file)
-            self.name = name
-            self._update_attrs(attrs)
-
+    @classmethod
+    def from_file(cls, from_file: PathLike):
+        """
+        Create a new SNOBClassifier from a file
+        :param from_file: File name of saved model to load
+        :return: SNOBClassifier
+        """
+        return cls(from_file=from_file)
 
     def __str__(self):
         return f"SNOBClassifier({self.name!r}, attrs={self.attrs!r})"
@@ -349,14 +356,12 @@ class SNOBClassifier:
                 self.units[name] = type_
                 self.attrs[name] = 'von-mises-fisher'
         
-    def get_precision(col) -> float:
+    def get_precision(self, col) -> float:
         """
         Given an array of floats, return the estimated precision of the values
         :param col: array
         :return: integer
         """
-        if col in self.epsilons:
-            return self.epsilons[col]
 
         err = 1e-6
         prec = 1
@@ -393,6 +398,28 @@ class SNOBClassifier:
                 self.ctx, i, str(name).encode("utf-8"), self.TypeValue[type_], aux
             )
 
+    def get_attr_epsilon(self, name: str, data: pd.DataFrame) -> float:
+        """
+        Get the epsilon for an attribute
+        :param name: name of attribute
+        :param data: Pandas data frame containing the data
+        :return: epsilon value
+        """
+
+        if name in self.epsilons:
+            return self.epsilons[name]
+        elif self.attrs[name] in ["multi-state", "binary"]:
+            return 0.0
+        return self.get_precision(data[name])
+    
+    def get_attr_units(self, name: str) -> int:
+        """
+        Get the units for an attribute
+        :param name: name of attribute
+        :return: units value
+        """
+        return 1 if self.units.get(name) == "degrees" else 0
+
     def add_data(self, data: pd.DataFrame, name: str = "sample") -> int:
         """
         Create a new sample and load the data
@@ -401,14 +428,12 @@ class SNOBClassifier:
         :return: the number of cases added
         """
         units = np.array(
-            [1 if self.units.get(name, "radians") == "degrees" else 0 for name in self.columns],
+            [self.get_attr_units(name) for name in self.columns],
             dtype="int32",
         )
         precs = np.array(
             [
-                0.0
-                if type_ in ["multi-state", "binary"]
-                else self.get_precision(data[name])
+                self.get_attr_epsilon(name, data)
                 for name, type_ in self.attrs.items()
             ],
             dtype="float64",
@@ -794,20 +819,20 @@ def show_classes(info):
     print(x)
 
 
-def get_attr_type(attr: Attr) -> str:
+def get_attr_model(attr: Attr) -> dict:
     """
     Convert attribute type to string
     :param attr: attribute
     :return: string representation of attribute type
     """
     
-    type_ = AttrType.get(attr.type, 'real')
-    if type_ == 'vonmises' and attr.aux == 0:
-        return "radians"
-    elif type_ == 'vonmises' and attr.aux == 1:
-        return "degrees"
-    else:
-        return type_
+    type_ = AttrType.get(attr.type, 'gaussian')
+    model = {'name': type_, 'attrs': [attr.name.decode("utf-8")]}
+    if type_ == 'von-mises-fisher' and attr.aux == 0:
+        model['units'] = "radians"
+    elif type_ == 'von-mises-fisher' and attr.aux == 1:
+        model['units'] = "degrees"
+    return model
 
 def read_model_attributes(model_file: PathLike) -> tuple[str, dict[str, str]]:
     """
@@ -834,10 +859,8 @@ def read_model_attributes(model_file: PathLike) -> tuple[str, dict[str, str]]:
             Attr.from_buffer_copy(f.read(ct.sizeof(Attr)))
             for _ in range(num_attrs)
         ]
-        attrs = {
-            attr.name.decode("utf-8"): get_attr_type(attr) for attr in raw_attrs
-        }
-        return name, attrs
+        models = [get_attr_model(attr) for attr in raw_attrs]
+        return name, models
 
         
     
