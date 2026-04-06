@@ -115,6 +115,15 @@ def train_and_save_model():
         seed=1234567,
     )
 
+    # alternatively, you can provide more explicit model parameters instead of the attrs dictionary:
+    sfc = snob.SNOBClassifier(
+        name="vmd_test",
+        models=[
+            {'name': 'von-mises-fisher', 'attrs': ['v1', 'v3', 'v4', 'v5'], 'units': 'radians', 'epsilon': 0.001},
+            {'name': 'von-mises-fisher', 'attrs': ['v2'], 'units': 'degrees', 'epsilon': 0.1},
+        ]
+    )
+
     # Fit the model
     sfc.fit(train_data)
 
@@ -130,7 +139,7 @@ To reload a trained model for prediction:
 ```python
 def load_and_predict():
     # Load the model
-    sfc = snob.SNOBClassifier(from_file="vmd_test.mod")
+    sfc = snob.SNOBClassifier.from_file("vmd_test.mod")
     
     # Load dataset
     new_data = pd.read_csv("./test_data.csv")
